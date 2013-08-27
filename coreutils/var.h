@@ -70,11 +70,11 @@ public:
 
 	template <typename T> var& operator=(T t) {
 		holder = std::unique_ptr<Holder>(new VHolder<T>(t));
-		if(callback) {
+		/*if(callback) {
 			LOGD("Assigning to variable with callback");
 			callback();
 		} else
-			LOGD("Assigning to variable WITHOUT callback");
+			LOGD("Assigning to variable WITHOUT callback"); */
 
 		return *this;
 	}

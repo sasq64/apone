@@ -8,7 +8,7 @@ MODULES := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/webutils $(UTILS)/netli
 
 TARGET := utest
 LIBS := -lz
-OBJS := bbstest.o
+OBJS := utest.o
 
 LINUX_CC := gcc-4.7
 LINUX_CXX := g++-4.7
