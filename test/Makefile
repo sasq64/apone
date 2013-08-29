@@ -21,4 +21,4 @@ all : start_rule
 run :
 	./utest
 
-include Makefile.inc
+include ../Makefile.inc

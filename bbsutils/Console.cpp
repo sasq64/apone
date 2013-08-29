@@ -227,6 +227,36 @@ void Console::moveCursor(int x, int y) {
 	curY = y;
 }
 
+void Console::write(const std::string &text) {
+
+	int &x = curX;
+	int &y = curY;
+
+	LOGD("Putting %s to %d,%d", text, x, y);
+
+	if(y >= height)
+		return;
+	for(int i=0; i<(int)text.length(); i++) {
+
+		if(x+i >= width) {
+			x -= width;
+			y++;
+			if(y >= height)
+				return;
+		}
+
+		Tile &t = grid[(x+i) + y * width];
+		//LOGD("put to %d %d",x+i,y);	
+		t.c = (Char)(text[i] & 0xff);
+		impl_translate(t.c);
+		if(fgColor >= 0)
+			t.fg = fgColor;
+		if(bgColor >= 0)
+			t.bg = bgColor;
+	}
+	flush();
+}
+
 int Console::getKey(int timeout) {
 
 	std::chrono::milliseconds ms { 100 };
@@ -255,6 +285,10 @@ int Console::getKey(int timeout) {
 				return KEY_TIMEOUT;
 		}
 	}
+}
+
+std::string Console::getLine() {
+	return "";
 }
 
 

@@ -72,18 +72,13 @@ public:
 	typedef uint16_t Char;
 
 
-	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(24), curFg(-1), curBg(-1) {
-		/*int w = terminal.getWidth();
-		int h = terminal.getHeight();
-		if(w > 0) width = w;
-		if(h > 0) height = h;
-		resize(width, height);*/
+	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(24), curX(0), curY(0), curFg(-1), curBg(-1) {
 	}
 
-	virtual int getKey(int timeout);
-
+	virtual int getKey(int timeout = -1);
 	virtual void clear();
 	virtual void put(int x, int y, const std::string &text);
+	virtual void write(const std::string &text);
 	virtual void setFg(int fg) { fgColor = fg; }
 	virtual void setBg(int bg) { bgColor = bg; }
 	virtual void resize(int w, int h);
@@ -91,8 +86,9 @@ public:
 	virtual void putChar(Char c);
 	virtual void moveCursor(int x, int y);
 	virtual void fill(int x, int y, int width, int height);
-
 	virtual void refresh();
+
+	virtual std::string getLine();
 
 	int getWidth() { return width; }
 	int getHeight() { return height; }
