@@ -1,5 +1,5 @@
 #include <coreutils/log.h>
-#include "TelnetServer.h"
+#include "telnetserver.h"
 //#include <coreutils/utils.h>
 
 #include <algorithm>

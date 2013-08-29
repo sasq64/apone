@@ -1,5 +1,5 @@
  
-#include "WebGetter.h"
+#include "webgetter.h"
 
 #include <coreutils/log.h>
 #include <coreutils/utils.h>

@@ -1,7 +1,7 @@
 #ifndef BBS_CONSOLE_H
 #define BBS_CONSOLE_H
 
-#include "Terminal.h"
+#include "terminal.h"
 
 #include <string>
 #include <vector>

@@ -2,7 +2,7 @@
 #define BBS_TELNET_SERVER_H
 
 #include <coreutils/format.h>
-#include "Terminal.h"
+#include "terminal.h"
 
 #include <string>
 #include <vector>
