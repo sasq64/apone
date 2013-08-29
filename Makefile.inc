@@ -1,5 +1,28 @@
 
-############################## NORMALLY DONT TOUCH ANYTHING BELOW ###########################
+########################################################################################
+# Makefile build system by Jonas Minnberg (sasq)
+#
+# Before including this makefile, define the following variables;
+#
+# At least;
+#    TARGET := myapp  (Target file)
+#    OBJS := myapp.o myutils.o (Object files to build)
+# Optional;
+#    CFLAGS := -g -O2 (coompilation flags)
+#    CXXFLAGS := -std=c++0x
+#    LIBS := -lz
+#    LDFLAGS := -Lcurl/lib -static
+#    INCLUDES := include modules/ziplib (Include directories inside SRCDIR)
+#    SRCDIR := src/ (Added to OBJS and INCLUDES)
+#    OBJDIR := obj/ (All object files lands here)
+#    MODULES := modules/ziplib xutils (Directories of source files that should be compiled also)
+#    XDEPENDS := mylib (Extra dependencies)
+# System specific (CXX, CC, CFLAGS, MODULES, LIBS, LDFLAGS);
+#    LINUX_??? := (Linux specfic variables)
+#    WIN_??? := (Window specific variables)
+#    PI_??? := (Raspberry PI specfic variables)
+#
+########################################################################################
 
 TOP_MAKEFILE = $(firstword $(MAKEFILE_LIST))
 
@@ -115,82 +138,81 @@ OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 
 DEPS := $(XDEPENDS) $(DEPS)
 
-start_rule : $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(EXT)
+start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(EXT)
 
 -include $(OBJFILES:.o=.d)
 
 # Implicit rules
 
-
-$(OBJDIR)%.o : %.c
+$(OBJDIR)%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c -MMD $(CFLAGS) $< -o $@
 
-$(OBJDIR)%.o : %.cpp
+$(OBJDIR)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) -c -MMD $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : %.cc
+$(OBJDIR)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : %.cxx
+$(OBJDIR)%.o: %.cxx
 	@mkdir -p $(@D)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : %.S
+$(OBJDIR)%.o: %.S
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(OBJDIR)%.o : %.s
+$(OBJDIR)%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(OBJDIR)%.d : %.c
+$(OBJDIR)%.d: %.c
 	@mkdir -p $(@D)
 	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
 
-$(OBJDIR)%.d : %.cpp
+$(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
 	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
 
-$(OBJDIR)icon.o : icon.rc
+$(OBJDIR)icon.o: icon.rc
 	windres $< -O coff -o $@
 	
-$(OBJDIR) :
+$(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-$(TARGETDIR) :
+$(TARGETDIR):
 	mkdir -p $(TARGETDIR)
 
-$(TARGETDIR)$(TARGET).a : $(TARGETDIR) $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET).a: $(TARGETDIR) $(OBJFILES) $(DEPS)
 	$(AR) r $(TARGETDIR)$(TARGET).a $(OBJFILES)
 	 
-$(TARGETDIR)$(TARGET).elf : $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET).elf: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).elf
 
-$(TARGETDIR)$(TARGET).exe : $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET).exe: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).exe
 
-$(TARGETDIR)$(TARGET) : $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET): $(OBJFILES) $(DEPS)
 	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBS) 
 
-$(TARGETDIR)$(TARGET).bin : $(TARGETDIR)$(TARGET).elf
+$(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
-$(TARGETDIR)$(TARGET).so : $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
 
-$(TARGETDIR)$(TARGET).dll : $(OBJFILES) $(DEPS)
+$(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)
 
-clean :
+clean:
 	rm -rf $(OBJDIR) $(TARGET)$(EXT)
 	
-cleandep :
+cleandep:
 	rm -f $(OBJFILES:.o=.d)
 
 superclean:
@@ -203,11 +225,11 @@ superclean:
 ##
 #
 
-%.gbfs :
+%.gbfs:
 	gbfs $@ data/*
 
 
-$(TARGETDIR)$(TARGET).ds.gba : $(TARGETDIR)$(TARGET).nds
+$(TARGETDIR)$(TARGET).ds.gba: $(TARGETDIR)$(TARGET).nds
 	dsbuild $< -o $@.tmp
 	padbin 256 $@.tmp
 	cat $@.tmp $(TARGETDIR)$(TARGET).gbfs > $(TARGETDIR)$(TARGET).ds.gba
@@ -220,16 +242,16 @@ $(TARGETDIR)$(TARGET).ds.gba : $(TARGETDIR)$(TARGET).nds
 # NDSTFLAGS += -7 $(ARM7BIN)
 #endif
 
-$(TARGETDIR)$(TARGET).nds : $(TARGETDIR)$(TARGET).bin
+$(TARGETDIR)$(TARGET).nds: $(TARGETDIR)$(TARGET).bin
 	ndstool $(NDSTFLAGS) -9 $(TARGETDIR)$(TARGET).bin -c $@
 	
 
-toflash : $(TARGETDIR)$(TARGET).nds
+toflash: $(TARGETDIR)$(TARGET).nds
 	mount /mnt/cflash
 	cp $(TARGETDIR)$(TARGET).nds /mnt/cflash/_boot_mp.nds
 	umount /mnt/cflash
 
-togbfs : $(TARGETDIR)$(TARGET).nds
+togbfs: $(TARGETDIR)$(TARGET).nds
 	cp $(TARGETDIR)$(TARGET).nds $(TARGETDIR)$(TARGET)_temp.nds
 	padbin 1024 $(TARGETDIR)$(TARGET)_temp.nds
 	cat $(TARGETDIR)$(TARGET)_temp.nds $(TARGETDIR)$(TARGET).gbfs > $(TARGETDIR)$(TARGET).nds
@@ -240,7 +262,7 @@ togbfs : $(TARGETDIR)$(TARGET).nds
 ##
 #
 
-$(TARGETDIR)$(TARGET).pbp : $(TARGETDIR)$(TARGET).elf
+$(TARGETDIR)$(TARGET).pbp: $(TARGETDIR)$(TARGET).elf
 	psp-fixup-imports $<
 	mksfo $(PSP_APPNAME) PARAM.SFO
 	psp-strip $< -o $<.strip
