@@ -81,11 +81,13 @@ OBJDUMP := $(PREFIX)objdump
 
 export PATH := $(XPATH):$(PATH)
 
-SRC_INCLUDES := $(addprefix -I$(SRCDIR),$(INCLUDES))
+INCLUDES := $(addprefix $(SRCDIR), $(INCLUDES))
+
+SRC_INCLUDES := $(addprefix -I,$(INCLUDES))
 CFLAGS += $(SRC_INCLUDES)
 
 
-#SRC_MODULES := $(addprefix $(SRCDIR),$(MODULES))
+#SRC_MODULES := $(addprefix ,$(MODULES))
 SRC_MODULES := $(realpath $(MODULES))
 
 #CFLAGS += $(addprefix -I,$(SRC_MODULES))
@@ -98,13 +100,15 @@ MODULEOBJS += $(patsubst %.c,%.o, $(wildcard $(addsuffix /*.c, $(SRC_MODULES))))
 MODULEOBJS += $(patsubst %.s,%.o, $(wildcard $(addsuffix /*.s, $(SRC_MODULES))))
 
 #MODULEOBJS := $(MO)
-#$(subst $(SRCDIR),,$(MO))
+#$(subst ,,$(MO))
 
 
 #OBJDIR := $(realpath $(OBJDIR))
 
 OBJFILES := $(addprefix $(OBJDIR),$(MODULEOBJS))
-OBJDIR := $(OBJDIR)$(SRCDIR)
+#OBJDIR := $(OBJDIR)
+
+OBJS := $(addprefix $(SRCDIR), $(OBJS))
 
 #OBJFILES += $(addprefix $(OBJDIR), $(subst ../,,$(OBJS)))
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
@@ -118,35 +122,35 @@ start_rule : $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(EXT)
 # Implicit rules
 
 
-$(OBJDIR)%.o : $(SRCDIR)%.c
+$(OBJDIR)%.o : %.c
 	@mkdir -p $(@D)
 	$(CC) -c -MMD $(CFLAGS) $< -o $@
 
-$(OBJDIR)%.o : $(SRCDIR)%.cpp
+$(OBJDIR)%.o : %.cpp
 	@mkdir -p $(@D)
 	$(CXX) -c -MMD $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : $(SRCDIR)%.cc
+$(OBJDIR)%.o : %.cc
 	@mkdir -p $(@D)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : $(SRCDIR)%.cxx
+$(OBJDIR)%.o : %.cxx
 	@mkdir -p $(@D)
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(OBJDIR)%.o : $(SRCDIR)%.S
+$(OBJDIR)%.o : %.S
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(OBJDIR)%.o : $(SRCDIR)%.s
+$(OBJDIR)%.o : %.s
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(OBJDIR)%.d : $(SRCDIR)%.c
+$(OBJDIR)%.d : %.c
 	@mkdir -p $(@D)
 	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
 
-$(OBJDIR)%.d : $(SRCDIR)%.cpp
+$(OBJDIR)%.d : %.cpp
 	@mkdir -p $(@D)
 	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
