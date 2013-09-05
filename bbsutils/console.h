@@ -45,8 +45,8 @@ public:
 
 	enum {
 		KEY_ESCAPE = 0x1b,
-		KEY_BACKSPACE = 0x7f,
-		KEY_LEFT = 256,
+		KEY_BACKSPACE = 256,
+		KEY_LEFT,
 		KEY_UP,
 		KEY_RIGHT,
 		KEY_DOWN,
@@ -56,6 +56,7 @@ public:
 		KEY_END,
 		KEY_ENTER,
 		KEY_TAB,
+		KEY_DELETE,
 
 		KEY_F1,
 		KEY_F2,

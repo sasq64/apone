@@ -90,11 +90,13 @@ LocalTerminal localTerminal;
 void Console::clear() {
 	for(auto &t : grid) {
 		t.c = 0x20;
-		t.fg = t.bg = BLACK;
+		t.fg = WHITE;
+		t.bg = BLACK;
 	}
 	for(auto &t : oldGrid) {
 		t.c = 0x20;
-		t.fg = t.bg = BLACK;
+		t.fg = WHITE;
+		t.bg = BLACK;
 	}
 	impl_clear();
 	curX = curY = 0;
@@ -117,7 +119,7 @@ void Console::refresh() {
 void Console::fill(int x, int y, int w, int h) {
 	for(int yy = y; yy < y + h; yy++)
 		for(int xx = x; xx < x + w; xx++) {
-			Tile &t = grid[xx + width * yy];
+			auto &t = grid[xx + width * yy];
 			if(fgColor >= 0) t.fg = fgColor;
 			if(bgColor >= 0) t.bg = bgColor;
 			t.c = 0x20;
@@ -132,7 +134,7 @@ void Console::put(int x, int y, const string &text) {
 		if(x+i >= width)
 			return;
 
-		Tile &t = grid[(x+i) + y * width];
+		auto &t = grid[(x+i) + y * width];
 		//LOGD("put to %d %d",x+i,y);	
 		t.c = (Char)(text[i] & 0xff);
 		impl_translate(t.c);
@@ -154,14 +156,14 @@ void Console::resize(int w, int h) {
 
 void Console::flush() {
 
-	int w = terminal.getWidth();
-	int h = terminal.getHeight();
+	auto w = terminal.getWidth();
+	auto h = terminal.getHeight();
 	if((w > 0 && w != width) || (h > 0 && h != height)) {
 		resize(w, h);
 	}
 
-	int saveX = curX;
-	int saveY = curY;
+	auto saveX = curX;
+	auto saveY = curY;
 
 	//int saveFg = fgColor;
 	//int saveBg = bgColor;
@@ -169,8 +171,8 @@ void Console::flush() {
 	//LOGD("update");
 	for(int y = 0; y<height; y++) {
 		for(int x = 0; x<width; x++) {
-			Tile &t0 = oldGrid[x+y*width];
-			Tile &t1 = grid[x+y*width];
+			auto &t0 = oldGrid[x+y*width];
+			auto &t1 = grid[x+y*width];
 			if(t0 != t1) {
 				//LOGD("diff in %d %d",x,y);			
 				if(curY != y or curX != x) {
@@ -229,32 +231,41 @@ void Console::moveCursor(int x, int y) {
 
 void Console::write(const std::string &text) {
 
-	int &x = curX;
-	int &y = curY;
+	auto &x = curX;
+	auto &y = curY;
+
+	LOGD("%d/%d %d/%d", curX, curY, width, height);
+
 
 	LOGD("Putting %s to %d,%d", text, x, y);
 
 	if(y >= height)
 		return;
-	for(int i=0; i<(int)text.length(); i++) {
-
-		if(x+i >= width) {
-			x -= width;
+	//for(int i=0; i<(int)text.length(); i++) {
+	for(const auto &c : text) {
+		if(x >= width || c == 0xa) {
+			x = 0;
 			y++;
 			if(y >= height)
-				return;
+				break;
+
+			if(c == 0xa)
+				continue;
 		}
 
-		Tile &t = grid[(x+i) + y * width];
+		auto &t = grid[x + y * width];
+		x++;
 		//LOGD("put to %d %d",x+i,y);	
-		t.c = (Char)(text[i] & 0xff);
+		t.c = (Char)(c & 0xff);
 		impl_translate(t.c);
 		if(fgColor >= 0)
 			t.fg = fgColor;
 		if(bgColor >= 0)
 			t.bg = bgColor;
 	}
+	LOGD("%d/%d", curX, curY);
 	flush();
+	LOGD("%d/%d", curX, curY);
 }
 
 int Console::getKey(int timeout) {
@@ -265,7 +276,7 @@ int Console::getKey(int timeout) {
 	temp.reserve(16);
 
 	while(true) {
-		int rc = terminal.read(temp, 16);
+		auto rc = terminal.read(temp, 16);
 		if(rc > 0) {
 			//LOGD("Got %d bytes", rc);
 			for(int i=0; i<rc; i++) {
@@ -288,7 +299,61 @@ int Console::getKey(int timeout) {
 }
 
 std::string Console::getLine() {
-	return "";
+	string line;
+
+	auto startX = curX;
+	auto startY = curY;
+
+	int x = 0;
+	//bool lineChanged = false;
+
+	while(true) {
+		auto c = getKey();
+		auto lastLen = line.length();
+		switch(c) {
+		case KEY_ENTER:
+			return line;
+		case KEY_BACKSPACE:
+			if(x > 0) {
+				x--;				
+				line.erase(x, 1);
+			}
+			break;
+		case KEY_DELETE:
+			if(x < line.length()) {
+				line.erase(x, 1);
+			}
+			break;
+		case KEY_LEFT:
+			if(x > 0)
+				x--;
+			break;
+		case KEY_HOME:
+			x = 0;
+			break;
+		case KEY_END:
+			x = line.length();
+			break;
+		case KEY_RIGHT:
+			if(x < (int)line.length())
+				x++;
+			break;
+		default:
+			if(c < 256) {
+				line.insert(x, 1, c);
+				x++;
+			}
+			break;
+		}
+		if(line.length() != lastLen) {
+			put(startX, startY, line);
+			if(lastLen > line.length());
+				put(startX+line.length(), startY, " ");
+			LOGD("Line now '%s'", line);
+			flush();
+		}
+		moveCursor(startX + x, startY);
+	}
 }
 
 
@@ -297,7 +362,7 @@ std::string Console::getLine() {
 AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 	resize(width, height);
 	for(int i=0; i<16; i++) {
-		uint8_t *p = &c64pal[i*3];
+		auto *p = &c64pal[i*3];
 		const string &s = utils::format("\x1b]4;%d;#%02x%02x%02x\x07", 160 + i, p[0], p[1], p[2]);
 		//LOGD(s);
 		outBuffer.insert(outBuffer.end(), s.begin(), s.end());
@@ -313,7 +378,7 @@ void AnsiConsole::putChar(Char c) {
 
 		outBuffer.push_back(0xC0 | (c >> 6));
 		outBuffer.push_back(0x80 | (c & 0x3F));
-		int l = outBuffer.size();
+		auto l = outBuffer.size();
 		LOGD("Translated %02x to %02x %02x", c, (int)outBuffer[l-2], (int)outBuffer[l-1]);
 	}
 
@@ -332,7 +397,7 @@ void AnsiConsole::impl_color(int fg, int bg) {
 
 	//LOGD("## BG %d\n", ab);
 	//const string &s = utils::format("\x1b[%d;%d%sm", af + 30, ab + 40, hl ? ";1" : "");
-	const string &s = utils::format("\x1b[38;5;%d;48;5;%dm", fg+160, bg+160);
+	const auto s = utils::format("\x1b[38;5;%d;48;5;%dm", fg+160, bg+160);
 
 	//uint8_t *fp = &c64pal[fg*3];
 	//uint8_t *bp = &c64pal[bg*3];
@@ -348,25 +413,47 @@ void AnsiConsole::impl_clear() {
 
 void AnsiConsole::impl_gotoxy(int x, int y) {
 	// Not so smart for now
-	const string &s = utils::format("\x1b[%d;%dH", y+1, x+1);
+	const auto s = utils::format("\x1b[%d;%dH", y+1, x+1);
 	outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 }
 
 int AnsiConsole::impl_handlekey() {
-	uint8_t c = inBuffer.front();
+	auto c = inBuffer.front();
 	inBuffer.pop();
 	if(c != 0x1b) {	
 		LOGD("Normal key %d", (int)c);	
+		if(c == 13 || c == 10) {
+			if(c == 13) {
+				auto c2 = inBuffer.front();
+				if(c2 == 10) {
+					inBuffer.pop();
+				}
+			}
+			return KEY_ENTER;
+		} else if(c == 0x7f)
+			return KEY_BACKSPACE;
+		else if(c == 0x7e)
+			return KEY_DELETE;
 		return c;
 	} else {
 		if(inBuffer.size() > 0) {
-			uint8_t c2 = inBuffer.front();
+			auto c2 = inBuffer.front();
 			inBuffer.pop();
-			uint8_t c3 = inBuffer.front();
+			auto c3 = inBuffer.front();
 			inBuffer.pop();
+
+			LOGD("ESCAPE key %02x %02x %02x", c, c2, c3);
 
 			if(c2 == 0x5b || c2 == 0x4f) {
 				switch(c3) {
+				case 0x33:
+					if(!inBuffer.empty() && inBuffer.front() == 126)
+						inBuffer.pop();
+					return KEY_DELETE;
+				case 0x48:
+					return KEY_HOME;
+				case 0x46:
+					return KEY_END;
 				case 0x44:
 					return KEY_LEFT;
 				case 0x43:
@@ -411,7 +498,7 @@ void PetsciiConsole::putChar(Char c) {
 
 void PetsciiConsole::impl_translate(Char &c) {
 
-	int *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
+	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
 	if(pc != end(petsciiTable))
 		c = (pc - petsciiTable + 0x20);
 }
@@ -463,7 +550,7 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 }
 
 int PetsciiConsole::impl_handlekey() {
-	int k = inBuffer.front();
+	auto k = inBuffer.front();
 	inBuffer.pop();
 	switch(k) {
 	case 13 :
