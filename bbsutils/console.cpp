@@ -231,11 +231,8 @@ void Console::moveCursor(int x, int y) {
 
 void Console::write(const std::string &text) {
 
-	auto &x = curX;
-	auto &y = curY;
-
-	LOGD("%d/%d %d/%d", curX, curY, width, height);
-
+	auto x = curX;
+	auto y = curY;
 
 	LOGD("Putting %s to %d,%d", text, x, y);
 
@@ -265,6 +262,7 @@ void Console::write(const std::string &text) {
 	}
 	LOGD("%d/%d", curX, curY);
 	flush();
+	moveCursor(x, y);
 	LOGD("%d/%d", curX, curY);
 }
 
@@ -320,7 +318,7 @@ std::string Console::getLine() {
 			}
 			break;
 		case KEY_DELETE:
-			if(x < line.length()) {
+			if(x < (int)line.length()) {
 				line.erase(x, 1);
 			}
 			break;
@@ -367,6 +365,7 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 		//LOGD(s);
 		outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 	}
+	impl_gotoxy(0,0);
 };
 
 

@@ -8,3 +8,11 @@ Console
 * A *refresh* means to send the necessary (and preferably minimal) set of characters and control codes to mirror the internal representation on to the client screen.
 * Refreshing should restore the real cursor position.
 * 
+
+Example
+
+console.write("One line\nNext line");
+
+for(int y=0; y<10; y++)
+	console.put(0,y, format("Line%d", y));
+console.flush();
