@@ -18,7 +18,30 @@
 namespace bbs {
 
 class TelnetInit;
+/*
+template <class T> class MessageQueue {
+public:
+	void post(const T& val) {
+		//std::lock_guard<std::mutex> guard(lock);
+		messages.push_back(val);
+	}
 
+	T get() {
+		//std::lock_guard<std::mutex> guard(lock);
+		T rc = messages.front();
+		messages.pop_front();
+		return rc;
+	}
+
+	bool isEmpty() {
+		//std::lock_guard<std::mutex> guard(lock);
+		return (messages.size() == 0);
+	}
+private:
+	std::vector<T> messages;
+	std::mutex lock;
+};
+*/
 
 class TelnetServer {
 public:
@@ -33,9 +56,9 @@ public:
 
 		typedef std::function<void(Session&)> Callback;
 
-		Session(NL::Socket *socket) : socket(socket), state(NORMAL), localEcho(true), disconnected(false), winWidth(-1), winHeight(-1), termExplored(false) {}
+		Session(NL::Socket *socket, TelnetServer *ts = nullptr) : socket(socket), state(NORMAL), localEcho(true), disconnected(false), winWidth(-1), winHeight(-1), termExplored(false), tsParent(ts) {}
 		Session(const Session &s) = delete;
-		Session(const Session &&s) : socket(s.socket), state(NORMAL), localEcho(true), disconnected(false), winWidth(-1), winHeight(-1), termExplored(false) {}
+		Session(const Session &&s) : socket(s.socket), state(NORMAL), localEcho(true), disconnected(false), winWidth(-1), winHeight(-1), termExplored(false), tsParent(s.tsParent) {}
 
 		char getChar() throw(disconnect_excpetion);
 		bool hasChar() const;
@@ -87,6 +110,8 @@ public:
 			FOUND_IAC_SUB	
 		};
 
+		//MessageQueue<std::string> msgQueue;
+
 		State state;
 		uint8_t option;
 		std::vector<uint8_t> optionData;
@@ -99,6 +124,8 @@ public:
 		int winWidth;
 		int winHeight;
 		mutable bool termExplored;
+
+		TelnetServer *tsParent;
 
 		void setOption(int opt, int val);
 		void handleOptionData();

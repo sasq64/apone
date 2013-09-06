@@ -17,7 +17,7 @@ void TelnetServer::OnAccept::exec(NL::Socket* socket, NL::SocketGroup* group, vo
 	group->add(c);
 	LOGD("Connection from %s:%d", c->hostTo(), c->portTo());
 
-	ts->sessions.push_back(make_shared<Session>(c));
+	ts->sessions.push_back(make_shared<Session>(c, this));
 
 	LOGD("Now %d active sessions", ts->sessions.size());
 

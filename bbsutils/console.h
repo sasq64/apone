@@ -125,7 +125,7 @@ public:
 
 	virtual std::string getLine();
 
-	virtual std::future<std::string> getAsyncLine() {
+	virtual std::future<std::string> getLineAsync() {
 		return std::async(std::launch::async, &Console::getLine, this);
 	};
 
