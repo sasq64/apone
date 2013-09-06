@@ -129,6 +129,7 @@ void Console::fill(int x, int y, int w, int h) {
 void Console::put(int x, int y, const string &text) {
 	if(y >= height)
 		return;
+	lock_guard<mutex> guard(lock);
 	for(int i=0; i<(int)text.length(); i++) {
 
 		if(x+i >= width)
@@ -146,6 +147,7 @@ void Console::put(int x, int y, const string &text) {
 }
 
 void Console::resize(int w, int h) {
+	lock_guard<mutex> guard(lock);
 	width = w;
 	height = h;
 	LOGD("Resize");
@@ -161,6 +163,8 @@ void Console::flush() {
 	if((w > 0 && w != width) || (h > 0 && h != height)) {
 		resize(w, h);
 	}
+
+	lock_guard<mutex> guard(lock);
 
 	auto saveX = curX;
 	auto saveY = curY;
@@ -220,6 +224,7 @@ void Console::putChar(Char c) {
 }
 
 void Console::moveCursor(int x, int y) {
+	lock_guard<mutex> guard(lock);
 	impl_gotoxy(x, y);
 	if(outBuffer.size() > 0) {
 		terminal.write(outBuffer, outBuffer.size());
@@ -353,7 +358,6 @@ std::string Console::getLine() {
 		moveCursor(startX + x, startY);
 	}
 }
-
 
 // ANSIS
 

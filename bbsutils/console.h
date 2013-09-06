@@ -12,6 +12,8 @@
 #include <queue>
 #include <thread>
 #include <chrono>
+#include <future>
+#include <mutex>
 #include <stdint.h>
 
 #include <termios.h>
@@ -123,6 +125,10 @@ public:
 
 	virtual std::string getLine();
 
+	virtual std::future<std::string> getAsyncLine() {
+		return std::async(std::launch::async, &Console::getLine, this);
+	};
+
 	int getWidth() { return width; }
 	int getHeight() { return height; }
 
@@ -177,6 +183,8 @@ protected:
 	// The current REAL colors of the console (cursor)
 	int curFg;
 	int curBg;
+
+	std::mutex lock;
 
 };
 
