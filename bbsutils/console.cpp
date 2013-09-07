@@ -350,12 +350,28 @@ std::string Console::getLine() {
 		}
 		if(line.length() != lastLen) {
 			put(startX, startY, line);
-			if(lastLen > line.length());
+			if(lastLen > line.length())
 				put(startX+line.length(), startY, " ");
 			LOGD("Line now '%s'", line);
 			flush();
 		}
 		moveCursor(startX + x, startY);
+	}
+}
+
+void Console::scroll(int dx, int dy) {
+	impl_scroll(dx,dy);
+	for(int y = 0; y<height-1; y++) {
+		for(int x = 0; x<width; x++) {
+			int i = x+y*width;
+			oldGrid[i] = oldGrid[i+width];
+			grid[i] = grid[i+width];
+		}
+	}
+	for(int x = (height-1)*width; x<height*width; x++) {
+		oldGrid[x].c = grid[x].c = 0x20;
+		oldGrid[x].fg = grid[x].fg = WHITE;
+		oldGrid[x].bg = grid[x].bg = BLACK;
 	}
 }
 
@@ -392,6 +408,10 @@ void AnsiConsole::putChar(Char c) {
 	}
 }
 
+void AnsiConsole::impl_scroll(int dx, int dy) {
+	const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
+	outBuffer.insert(outBuffer.end(), s.begin(), s.end());			
+}
 
 void AnsiConsole::impl_color(int fg, int bg) {
 

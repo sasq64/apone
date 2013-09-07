@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include <functional>
 #include <thread>
 #include <mutex>
@@ -18,30 +19,30 @@
 namespace bbs {
 
 class TelnetInit;
-/*
+
 template <class T> class MessageQueue {
 public:
 	void post(const T& val) {
-		//std::lock_guard<std::mutex> guard(lock);
+		std::lock_guard<std::mutex> guard(lock);
 		messages.push_back(val);
 	}
 
 	T get() {
-		//std::lock_guard<std::mutex> guard(lock);
+		std::lock_guard<std::mutex> guard(lock);
 		T rc = messages.front();
 		messages.pop_front();
 		return rc;
 	}
 
 	bool isEmpty() {
-		//std::lock_guard<std::mutex> guard(lock);
+		std::lock_guard<std::mutex> guard(lock);
 		return (messages.size() == 0);
 	}
 private:
-	std::vector<T> messages;
+	std::deque<T> messages;
 	std::mutex lock;
 };
-*/
+
 
 class TelnetServer {
 public:
@@ -98,6 +99,22 @@ public:
 		virtual int getHeight() const override;
 		virtual std::string getTermType() const override;
 
+		void postOthers(const std::string &msg) {
+			auto sessions = tsParent->getSessions();
+			for(auto s : sessions) {
+				if(s.get() != this)
+					s->msgQueue.post(msg);
+			}
+		}
+
+		const std::string getMessage() {
+			return msgQueue.get();
+		}
+
+		bool hasMessages() {
+			return !msgQueue.isEmpty();
+		}
+
 	private:
 		NL::Socket *socket;
 
@@ -110,7 +127,7 @@ public:
 			FOUND_IAC_SUB	
 		};
 
-		//MessageQueue<std::string> msgQueue;
+		MessageQueue<std::string> msgQueue;
 
 		State state;
 		uint8_t option;
@@ -171,6 +188,10 @@ public:
 	void setOnConnect(Session::Callback callback);
 	Session& getSession(NL::Socket* socket);
 	void removeSession(const Session &session);
+
+	const std::vector<std::shared_ptr<Session>>& getSessions() {
+		return sessions;
+	}
 
 private:
 

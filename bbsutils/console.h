@@ -123,6 +123,8 @@ public:
 	virtual void fill(int x, int y, int width, int height);
 	virtual void refresh();
 
+	virtual void scroll(int dx, int dy);
+
 	virtual std::string getLine();
 
 	virtual std::future<std::string> getLineAsync() {
@@ -138,6 +140,9 @@ protected:
 
 	virtual void impl_color(int fg, int bg) = 0;
 	virtual void impl_gotoxy(int x, int y) = 0;
+	virtual void impl_scroll(int dx, int dy) {
+		// TODO: For loop
+	};
 	virtual int impl_handlekey() = 0;
 	virtual void impl_clear() = 0;
 	virtual void impl_translate(Char &c) {}
@@ -198,6 +203,7 @@ public:
 
 protected:
 
+	virtual void impl_scroll(int dx, int dy) override;
 	virtual void impl_color(int fg, int bg) override;
 	virtual void impl_gotoxy(int x, int y) override;
 	virtual int impl_handlekey() override;
