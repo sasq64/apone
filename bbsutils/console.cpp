@@ -9,7 +9,7 @@ namespace bbs {
 
 using namespace std;
 
-/** PETSCII->ASCII 0x20 -> 0xFF */
+/** PETSCII->ASCII 0x20 -> 0xFF **/
 
 static int petsciiTable[] = {
 	0x0020,0x0021,0x0022,0x0023,0x0024,0x0025,0x0026,0x0027,
@@ -172,7 +172,7 @@ void Console::flush() {
 	//int saveFg = fgColor;
 	//int saveBg = bgColor;
 
-	//LOGD("update");
+	//LOGD("flush");
 	for(int y = 0; y<height; y++) {
 		for(int x = 0; x<width; x++) {
 			auto &t0 = oldGrid[x+y*width];
@@ -202,16 +202,17 @@ void Console::flush() {
 		curBg = bgColor;
 	}
 
-	impl_gotoxy(saveX, saveY);
-	curX = saveX;
-	curY = saveY;
-
 	if(outBuffer.size() > 0) {
 		LOGV("OUTBYTES: [%02x]", outBuffer);
 		terminal.write(outBuffer, outBuffer.size());
 		outBuffer.resize(0);
 	}
 
+	//LOGD("Restorting cursor");
+
+	impl_gotoxy(saveX, saveY);
+	curX = saveX;
+	curY = saveY;
 }
 
 void Console::putChar(Char c) {
@@ -311,7 +312,7 @@ std::string Console::getLine() {
 	//bool lineChanged = false;
 
 	while(true) {
-		auto c = getKey();
+		auto c = getKey(500);
 		auto lastLen = line.length();
 		switch(c) {
 		case KEY_ENTER:
@@ -348,13 +349,13 @@ std::string Console::getLine() {
 			}
 			break;
 		}
-		if(line.length() != lastLen) {
+		//if(line.length() != lastLen) {
 			put(startX, startY, line);
 			if(lastLen > line.length())
 				put(startX+line.length(), startY, " ");
 			LOGD("Line now '%s'", line);
 			flush();
-		}
+		//}
 		moveCursor(startX + x, startY);
 	}
 }
@@ -541,6 +542,8 @@ void PetsciiConsole::impl_clear() {
 }
 
 void PetsciiConsole::impl_gotoxy(int x, int y) {
+
+	//LOGD("Petscii GOTOXY from %d,%d to %d,%d", curX, curY, x, y);
 
 	if(curX - x > x) {
 		outBuffer.push_back(SHIFT_RETURN);
