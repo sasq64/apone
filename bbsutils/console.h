@@ -123,7 +123,8 @@ public:
 	virtual void fill(int x, int y, int width, int height);
 	virtual void refresh();
 
-	virtual void scroll(int dx, int dy);
+	virtual void scrollScreen(int dy);
+	//virtual void scrollLine(int dx);
 
 	virtual std::string getLine();
 
@@ -140,9 +141,8 @@ protected:
 
 	virtual void impl_color(int fg, int bg) = 0;
 	virtual void impl_gotoxy(int x, int y) = 0;
-	virtual void impl_scroll(int dx, int dy) {
-		// TODO: For loop
-	};
+	virtual bool impl_scroll_screen(int dy) { return false; };
+	virtual bool impl_scroll_line(int dx) { return false; };
 	virtual int impl_handlekey() = 0;
 	virtual void impl_clear() = 0;
 	virtual void impl_translate(Char &c) {}
@@ -160,6 +160,9 @@ protected:
 		int bg;
 		Char c;
 	};
+
+	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
+	void clearTiles(std::vector<Tile> &tiles, int x0, int y0, int w, int h);
 
 	Terminal &terminal;
 
@@ -203,7 +206,7 @@ public:
 
 protected:
 
-	virtual void impl_scroll(int dx, int dy) override;
+	virtual bool impl_scroll_screen(int dy) override;
 	virtual void impl_color(int fg, int bg) override;
 	virtual void impl_gotoxy(int x, int y) override;
 	virtual int impl_handlekey() override;

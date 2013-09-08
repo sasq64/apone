@@ -12,8 +12,8 @@ using namespace utils;
 // TELNETSERVER
 
 void TelnetServer::OnAccept::exec(NL::Socket* socket, NL::SocketGroup* group, void* reference) {
-	TelnetServer *ts = static_cast<TelnetServer*>(reference);
-	NL::Socket* c = socket->accept();
+	auto *ts = static_cast<TelnetServer*>(reference);
+	auto* c = socket->accept();
 	group->add(c);
 	LOGD("Connection from %s:%d", c->hostTo(), c->portTo());
 
@@ -21,7 +21,7 @@ void TelnetServer::OnAccept::exec(NL::Socket* socket, NL::SocketGroup* group, vo
 
 	LOGD("Now %d active sessions", ts->sessions.size());
 
-	shared_ptr<Session> session = ts->sessions.back();
+	auto session = ts->sessions.back();
 	if(ts->connectCallback) {
 		session->startThread(ts->connectCallback);
 	}
@@ -32,7 +32,7 @@ void TelnetServer::OnRead::exec(NL::Socket* socket, NL::SocketGroup* group, void
 	TelnetServer *ts = static_cast<TelnetServer*>(reference);
 	auto &session = ts->getSession(socket);
 
-	int len = socket->read(&ts->buffer[0], 128);
+	auto len = socket->read(&ts->buffer[0], 128);
 	//ts->buffer.resize(len);
 	//LOGD("Read %d bytes [%02x]\n", len, make_slice(ts->buffer, 0, len));
 	session.handleIndata(ts->buffer, len);
@@ -127,11 +127,9 @@ void TelnetServer::removeSession(const Session &session) {
 // TELNETSESSION
 
 void TelnetServer::Session::handleIndata(vector<uint8_t> &buffer, int len) {
-
-	inMutex.lock();
+	lock_guard<mutex> guard(inMutex);
 
 	int start = inBuffer.size();
-
 
 	for(int i=0; i<len; i++) {
 		uint8_t b = buffer[i];
@@ -198,7 +196,6 @@ void TelnetServer::Session::handleIndata(vector<uint8_t> &buffer, int len) {
 	if(localEcho)
 		socket->send(&inBuffer[start], inBuffer.size()-start);
 
-	inMutex.unlock();
 }
 
 
@@ -228,13 +225,13 @@ void TelnetServer::Session::write(const string &text) {
 int TelnetServer::Session::read(std::vector<uint8_t> &data, int len) {
 	if(disconnected)
 		throw disconnect_excpetion{};
-	inMutex.lock();
+
+	lock_guard<mutex> guard(inMutex);
 	int rc = inBuffer.size();
 	if(rc > 0) {
 		data.insert(data.end(), inBuffer.begin(), inBuffer.end());
 		inBuffer.resize(0);
 	}
-	inMutex.unlock();
 	return rc;
 }
 
@@ -260,10 +257,9 @@ char TelnetServer::Session::getChar() throw(disconnect_excpetion) {
 }
 
 bool TelnetServer::Session::hasChar() const {
-	inMutex.lock();
-	bool rc = inBuffer.size() > 0;
-	inMutex.unlock();
-	return rc;
+	lock_guard<mutex> guard(inMutex);
+
+	return (inBuffer.size() > 0);
 }
 
 string TelnetServer::Session::getLine() throw(disconnect_excpetion) {

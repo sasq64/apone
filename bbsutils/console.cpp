@@ -360,19 +360,39 @@ std::string Console::getLine() {
 	}
 }
 
-void Console::scroll(int dx, int dy) {
-	impl_scroll(dx,dy);
-	for(int y = 0; y<height-1; y++) {
+// Shift all tiles
+void Console::shiftTiles(vector<Tile> &tiles, int dx, int dy) {
+	auto tempTiles = tiles;
+	for(int y = 0; y<height; y++) {
 		for(int x = 0; x<width; x++) {
-			int i = x+y*width;
-			oldGrid[i] = oldGrid[i+width];
-			grid[i] = grid[i+width];
+			int tx = x - dx;
+			int ty = y - dy;
+			if(tx >= 0 && ty >= 0 && tx < width && ty < height)
+				tiles[tx+ty*width] = tempTiles[x+y*width];
 		}
 	}
-	for(int x = (height-1)*width; x<height*width; x++) {
-		oldGrid[x].c = grid[x].c = 0x20;
-		oldGrid[x].fg = grid[x].fg = WHITE;
-		oldGrid[x].bg = grid[x].bg = BLACK;
+}
+
+void Console::clearTiles(vector<Tile> &tiles, int x0, int y0, int w, int h) {
+	auto x1 = x0 + w;
+	auto y1 = y0 + h;
+	for(int y = y0; y<y1; y++) {
+		for(int x = x0; x<x1; x++) {
+			Tile &t = tiles[x+y*width];
+			t.c = 0x20;
+			t.fg = WHITE;
+			t.bg = BLACK;
+		}
+	}
+}
+
+void Console::scrollScreen(int dy) {
+	flush();
+	shiftTiles(grid, 0, dy);
+	clearTiles(grid, 0, height-dy, width, dy);
+	if(impl_scroll_screen(dy)) {
+		shiftTiles(oldGrid, 0, dy);
+		clearTiles(oldGrid, 0, height-dy, width, dy);
 	}
 }
 
@@ -409,9 +429,10 @@ void AnsiConsole::putChar(Char c) {
 	}
 }
 
-void AnsiConsole::impl_scroll(int dx, int dy) {
+bool AnsiConsole::impl_scroll_screen(int dy) {
 	const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
-	outBuffer.insert(outBuffer.end(), s.begin(), s.end());			
+	outBuffer.insert(outBuffer.end(), s.begin(), s.end());
+	return true;
 }
 
 void AnsiConsole::impl_color(int fg, int bg) {
