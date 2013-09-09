@@ -126,7 +126,7 @@ void Console::fill(int x, int y, int w, int h) {
 		}
 }
 
-void Console::put(int x, int y, const string &text) {
+void Console::put(int x, int y, const string &text, int fg, int bg) {
 	if(y >= height)
 		return;
 	lock_guard<mutex> guard(lock);
@@ -139,10 +139,16 @@ void Console::put(int x, int y, const string &text) {
 		//LOGD("put to %d %d",x+i,y);	
 		t.c = (Char)(text[i] & 0xff);
 		impl_translate(t.c);
-		if(fgColor >= 0)
-			t.fg = fgColor;
-		if(bgColor >= 0)
-			t.bg = bgColor;
+
+		if(fg == CURRENT_COLOR)
+			fg = fgColor;
+		if(bg == CURRENT_COLOR)
+			bg = bgColor;
+
+		if(fg >= 0)
+			t.fg = fg;
+		if(bg >= 0)
+			t.bg = bg;
 	}
 }
 
@@ -211,8 +217,8 @@ void Console::flush() {
 	//LOGD("Restorting cursor");
 
 	impl_gotoxy(saveX, saveY);
-	curX = saveX;
-	curY = saveY;
+	//curX = saveX;
+	//curY = saveY;
 }
 
 void Console::putChar(Char c) {
@@ -231,8 +237,8 @@ void Console::moveCursor(int x, int y) {
 		terminal.write(outBuffer, outBuffer.size());
 		outBuffer.resize(0);
 	}
-	curX = x;
-	curY = y;
+	//curX = x;
+	//curY = y;
 }
 
 void Console::write(const std::string &text) {
@@ -308,6 +314,11 @@ std::string Console::getLine() {
 	auto startX = curX;
 	auto startY = curY;
 
+	auto fg = fgColor;
+	auto bg = bgColor;
+
+	getLineStarted = true;
+
 	int x = 0;
 	//bool lineChanged = false;
 
@@ -349,14 +360,15 @@ std::string Console::getLine() {
 			}
 			break;
 		}
-		//if(line.length() != lastLen) {
-			put(startX, startY, line);
+		{
+			//lock_guard<mutex> guard(lock);
+			put(startX, startY, line, fg, bg);
 			if(lastLen > line.length())
-				put(startX+line.length(), startY, " ");
+				put(startX+line.length(), startY, " ", fg, bg);
 			LOGD("Line now '%s'", line);
 			flush();
-		//}
-		moveCursor(startX + x, startY);
+			moveCursor(startX + x, startY);
+		}
 	}
 }
 
@@ -388,6 +400,8 @@ void Console::clearTiles(vector<Tile> &tiles, int x0, int y0, int w, int h) {
 
 void Console::scrollScreen(int dy) {
 	flush();
+
+	lock_guard<mutex> guard(lock);
 	shiftTiles(grid, 0, dy);
 	clearTiles(grid, 0, height-dy, width, dy);
 	if(impl_scroll_screen(dy)) {
@@ -399,7 +413,7 @@ void Console::scrollScreen(int dy) {
 // ANSIS
 
 AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
-	resize(width, height);
+	//resize(width, height);
 	for(int i=0; i<16; i++) {
 		auto *p = &c64pal[i*3];
 		const string &s = utils::format("\x1b]4;%d;#%02x%02x%02x\x07", 160 + i, p[0], p[1], p[2]);
@@ -407,6 +421,7 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 		outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 	}
 	impl_gotoxy(0,0);
+	flush();
 };
 
 
@@ -458,8 +473,11 @@ void AnsiConsole::impl_clear() {
 
 void AnsiConsole::impl_gotoxy(int x, int y) {
 	// Not so smart for now
+	//LOGD("gotoxy %d,%d", x,y);
 	const auto s = utils::format("\x1b[%d;%dH", y+1, x+1);
 	outBuffer.insert(outBuffer.end(), s.begin(), s.end());
+	curX = x;
+	curY = y;
 }
 
 int AnsiConsole::impl_handlekey() {

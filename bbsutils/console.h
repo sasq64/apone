@@ -69,7 +69,9 @@ public:
 		LIGHT_GREY, //7
 		PURPLE, //5
 		YELLOW,//3
-		CYAN //6
+		CYAN, //6
+		CURRENT_COLOR = -2,
+		NO_COLOR = -1
 	};
 
 	enum {
@@ -112,7 +114,7 @@ public:
 
 	virtual int getKey(int timeout = -1);
 	virtual void clear();
-	virtual void put(int x, int y, const std::string &text);
+	virtual void put(int x, int y, const std::string &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
 	virtual void setFg(int fg) { fgColor = fg; }
 	virtual void setBg(int bg) { bgColor = bg; }
@@ -129,7 +131,12 @@ public:
 	virtual std::string getLine();
 
 	virtual std::future<std::string> getLineAsync() {
-		return std::async(std::launch::async, &Console::getLine, this);
+		getLineStarted = false;
+		auto rc = std::async(std::launch::async, &Console::getLine, this);
+		while(!getLineStarted) {
+    		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    	}
+    	return rc;
 	};
 
 	int getWidth() { return width; }
@@ -193,6 +200,8 @@ protected:
 	int curBg;
 
 	std::mutex lock;
+
+	std::atomic<bool> getLineStarted;
 
 };
 
