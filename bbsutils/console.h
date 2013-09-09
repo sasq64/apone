@@ -139,8 +139,12 @@ public:
     	return rc;
 	};
 
-	int getWidth() { return width; }
-	int getHeight() { return height; }
+	int getWidth() const { return width; }
+	int getHeight() const { return height; }
+	int getCursorX() const { return curX; }
+	int getCursorY() const { return curY; }
+	int getFg() const { return fgColor; }
+	int getBg() const { return bgColor; }
 
 protected:
 
@@ -265,14 +269,6 @@ protected:
 	virtual int impl_handlekey() override;
 	virtual void impl_clear() override;
 	virtual void impl_translate(Char &c) override;
-};
-
-class Editor {
-public:
-	Editor(std::shared_ptr<Console> screen) : screen(screen) {}
-	virtual void put(std::vector<uint8_t> &data) = 0;
-private:
-	std::shared_ptr<Console> screen;
 };
 
 }
