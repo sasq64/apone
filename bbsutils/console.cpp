@@ -116,12 +116,14 @@ void Console::refresh() {
 	flush();
 }
 
-void Console::fill(int x, int y, int w, int h) {
+void Console::fill(int x, int y, int w, int h, int bg) {
+	if(bg == CURRENT_COLOR)
+		bg = bgColor;
 	for(int yy = y; yy < y + h; yy++)
 		for(int xx = x; xx < x + w; xx++) {
 			auto &t = grid[xx + width * yy];
 			if(fgColor >= 0) t.fg = fgColor;
-			if(bgColor >= 0) t.bg = bgColor;
+			if(bg >= 0) t.bg = bg;
 			t.c = 0x20;
 		}
 }
@@ -246,17 +248,21 @@ void Console::write(const std::string &text) {
 	auto x = curX;
 	auto y = curY;
 
-	LOGD("Putting %s to %d,%d", text, x, y);
+	//LOGD("Putting %s to %d,%d", text, x, y);
 
-	if(y >= height)
-		return;
+	while(y >= height) {
+		scrollScreen(1);
+		y--;
+	}
 	//for(int i=0; i<(int)text.length(); i++) {
 	for(const auto &c : text) {
 		if(x >= width || c == 0xa) {
 			x = 0;
 			y++;
-			if(y >= height)
-				break;
+			if(y >= height) {
+				scrollScreen(1);
+				y--;
+			}
 
 			if(c == 0xa)
 				continue;
@@ -271,6 +277,8 @@ void Console::write(const std::string &text) {
 			t.fg = fgColor;
 		if(bgColor >= 0)
 			t.bg = bgColor;
+		//flush();
+		this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	LOGD("%d/%d", curX, curY);
 	flush();
@@ -399,15 +407,15 @@ void Console::clearTiles(vector<Tile> &tiles, int x0, int y0, int w, int h) {
 }
 
 void Console::scrollScreen(int dy) {
-	flush();
 
-	lock_guard<mutex> guard(lock);
+	//lock_guard<mutex> guard(lock);
 	shiftTiles(grid, 0, dy);
 	clearTiles(grid, 0, height-dy, width, dy);
 	if(impl_scroll_screen(dy)) {
 		shiftTiles(oldGrid, 0, dy);
 		clearTiles(oldGrid, 0, height-dy, width, dy);
 	}
+	flush();
 }
 
 // ANSIS

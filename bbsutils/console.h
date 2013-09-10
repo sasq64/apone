@@ -122,7 +122,7 @@ public:
 	virtual void flush();
 	virtual void putChar(Char c);
 	virtual void moveCursor(int x, int y);
-	virtual void fill(int x, int y, int width, int height);
+	virtual void fill(int x, int y, int width, int height, int bg = CURRENT_COLOR);
 	virtual void refresh();
 
 	virtual void scrollScreen(int dy);
