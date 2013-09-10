@@ -269,6 +269,8 @@ protected:
 	virtual int impl_handlekey() override;
 	virtual void impl_clear() override;
 	virtual void impl_translate(Char &c) override;
+	virtual bool impl_scroll_screen(int dy) override;
+
 };
 
 }

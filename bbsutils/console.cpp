@@ -23,7 +23,7 @@ static int petsciiTable[] = {
 	0x004E,0x004F,0x0050,0x0051,0x0052,0x0053,0x0054,0x0055,0x0056,0x0057,
 	0x0058,0x0059,0x005A,0x253C,0xF12E,0x2502,0x2592,0xF139,0x0000,0x0000,
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
-	0x0000,0x000A,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+	0x0000,0x000A,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0,
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x00A0,
 	0x258C,0x2584,0x2594,0x2581,0x258F,0x2592,0x2595,0xF12F,0xF13A,0xF130,
 	0x251C,0xF134,0x2514,0x2510,0x2582,0x250C,0x2534,0x252C,0x2524,0x258E,
@@ -254,14 +254,35 @@ void Console::write(const std::string &text) {
 		scrollScreen(1);
 		y--;
 	}
-	//for(int i=0; i<(int)text.length(); i++) {
-	for(const auto &c : text) {
-		if(x >= width || c == 0xa) {
+	int spaces = 0;
+	for(int i=0; i<(int)text.length(); i++) {
+	//for(const auto &c : text) {
+		char c;
+		if(spaces) {
+			spaces--;
+			i--;
+			c = ' ';
+		} else {
+			c = text[i];
+			if(c == '\t') {
+				spaces = 4;
+				continue;
+			}
+		}
+
+
+		if(x >= width || c == 0xa || c == 0xd) {
 			x = 0;
 			y++;
 			if(y >= height) {
 				scrollScreen(1);
 				y--;
+			}
+
+			if(c == 0xd) {
+				if(text[i+1] == 0xa);
+					i++;
+				c = 0xa;
 			}
 
 			if(c == 0xa)
@@ -278,7 +299,7 @@ void Console::write(const std::string &text) {
 		if(bgColor >= 0)
 			t.bg = bgColor;
 		//flush();
-		this_thread::sleep_for(std::chrono::milliseconds(20));
+		//this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
 	LOGD("%d/%d", curX, curY);
 	flush();
@@ -569,9 +590,11 @@ void PetsciiConsole::putChar(Char c) {
 
 void PetsciiConsole::impl_translate(Char &c) {
 
+	Char x = c;
 	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
 	if(pc != end(petsciiTable))
 		c = (pc - petsciiTable + 0x20);
+	//LOGD("Translated %c (%02x) to %c (%02x)", x, x, c, c);
 }
 
 void PetsciiConsole::impl_color(int fg, int bg) {
@@ -643,10 +666,20 @@ int PetsciiConsole::impl_handlekey() {
 			return KEY_F1 + k - F1;
 		}
 	}
-	if(k >= 0x20) 
+	if(k >= 0x20) {
+		auto k2 = k;
 		k = petsciiTable[k-0x20];
+		LOGD("%02x became %02x", k2, k);
+	}
 	return k;
 }
+
+bool PetsciiConsole::impl_scroll_screen(int dy) {
+	//const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
+	//outBuffer.insert(outBuffer.end(), s.begin(), s.end());
+	return false;
+}
+
 
 Console *createLocalConsole() {
 	return new AnsiConsole(localTerminal);
