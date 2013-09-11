@@ -590,7 +590,7 @@ void PetsciiConsole::putChar(Char c) {
 
 void PetsciiConsole::impl_translate(Char &c) {
 
-	Char x = c;
+	//Char x = c;
 	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
 	if(pc != end(petsciiTable))
 		c = (pc - petsciiTable + 0x20);
@@ -616,13 +616,16 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 	//LOGD("Petscii GOTOXY from %d,%d to %d,%d", curX, curY, x, y);
 
 	if(curX - x > x) {
+		if(curY == height-1) {
+			outBuffer.push_back(UP);
+		} else
+			curY++;	
 		outBuffer.push_back(SHIFT_RETURN);
 		if(curBg != BLACK) {
 			curFg = curBg;
 			curBg = BLACK;
 		}
 		curX=0;
-		curY++;	
 	}
 
 	while(y > curY) {
@@ -677,7 +680,13 @@ int PetsciiConsole::impl_handlekey() {
 bool PetsciiConsole::impl_scroll_screen(int dy) {
 	//const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
 	//outBuffer.insert(outBuffer.end(), s.begin(), s.end());
-	return false;
+	int steps = dy + height - curY -1;
+	while(steps--)
+		outBuffer.push_back(DOWN);
+	steps = height - curY - 1;
+	while(steps--)
+		outBuffer.push_back(UP);
+	return true;
 }
 
 

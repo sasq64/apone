@@ -67,7 +67,6 @@ void LineEditor::refresh() {
 	console.put(startX, startY, line);
 	//if(lastLen > line.length())
 		console.put(startX+line.length(), startY, " ");
-	LOGD("Line now '%s'", line);
 	console.flush();
 
 }

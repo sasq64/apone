@@ -104,7 +104,7 @@ public:
 	typedef uint16_t Char;
 
 
-	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(24), curX(0), curY(0), curFg(-1), curBg(-1) {
+	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(25), curX(0), curY(0), curFg(-1), curBg(-1) {
 		terminal.open();
 	}
 
@@ -258,7 +258,7 @@ public:
 
 
 	PetsciiConsole(Terminal &terminal) : Console(terminal) {
-		resize(width, height);
+		resize(40, 25);
 	}
 
 	virtual void putChar(Char c);
