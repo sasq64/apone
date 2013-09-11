@@ -116,7 +116,13 @@ void Console::refresh() {
 	flush();
 }
 
-void Console::fill(int x, int y, int w, int h, int bg) {
+void Console::fill(int bg, int x, int y, int w, int h) {
+
+	if(x < 0) x = width+x;
+	if(y < 0) y = height+y;
+	if(w <= 0) w = width+w;
+	if(h <= 0) h = height+w;
+
 	if(bg == CURRENT_COLOR)
 		bg = bgColor;
 	for(int yy = y; yy < y + h; yy++)
@@ -129,9 +135,12 @@ void Console::fill(int x, int y, int w, int h, int bg) {
 }
 
 void Console::put(int x, int y, const string &text, int fg, int bg) {
+
+	if(x < 0) x = width+x;
+	if(y < 0) y = height+y;
+
 	if(y >= height)
 		return;
-	lock_guard<mutex> guard(lock);
 	for(int i=0; i<(int)text.length(); i++) {
 
 		if(x+i >= width)
@@ -155,7 +164,6 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 }
 
 void Console::resize(int w, int h) {
-	lock_guard<mutex> guard(lock);
 	width = w;
 	height = h;
 	LOGD("Resize");
@@ -171,8 +179,6 @@ void Console::flush() {
 	if((w > 0 && w != width) || (h > 0 && h != height)) {
 		resize(w, h);
 	}
-
-	lock_guard<mutex> guard(lock);
 
 	auto saveX = curX;
 	auto saveY = curY;
@@ -233,7 +239,10 @@ void Console::putChar(Char c) {
 }
 
 void Console::moveCursor(int x, int y) {
-	lock_guard<mutex> guard(lock);
+
+	if(x < 0) x = width+x;
+	if(y < 0) y = height+y;
+
 	impl_gotoxy(x, y);
 	if(outBuffer.size() > 0) {
 		terminal.write(outBuffer, outBuffer.size());
@@ -346,7 +355,7 @@ std::string Console::getLine() {
 	auto fg = fgColor;
 	auto bg = bgColor;
 
-	getLineStarted = true;
+	//getLineStarted = true;
 
 	int x = 0;
 	//bool lineChanged = false;
@@ -390,7 +399,6 @@ std::string Console::getLine() {
 			break;
 		}
 		{
-			//lock_guard<mutex> guard(lock);
 			put(startX, startY, line, fg, bg);
 			if(lastLen > line.length())
 				put(startX+line.length(), startY, " ", fg, bg);
@@ -429,7 +437,6 @@ void Console::clearTiles(vector<Tile> &tiles, int x0, int y0, int w, int h) {
 
 void Console::scrollScreen(int dy) {
 
-	//lock_guard<mutex> guard(lock);
 	shiftTiles(grid, 0, dy);
 	clearTiles(grid, 0, height-dy, width, dy);
 	if(impl_scroll_screen(dy)) {
@@ -538,6 +545,34 @@ int AnsiConsole::impl_handlekey() {
 
 			if(c2 == 0x5b || c2 == 0x4f) {
 				switch(c3) {
+				case 0x50:
+					return KEY_F1;
+				case 0x51:
+					return KEY_F2;
+				case 0x52:
+					return KEY_F3;
+				case 0x53:
+					return KEY_F4;
+				case 0x31:
+					if(inBuffer.size() >= 2) {
+						auto c4 = inBuffer.front();
+						inBuffer.pop();
+						auto c5 = inBuffer.front();
+						inBuffer.pop();
+						if(c5 == 126) {
+							switch(c4) {
+							case '5':
+								return KEY_F5;
+							case '7':
+								return KEY_F6;
+							case '8':
+								return KEY_F7;
+							case '9':
+								return KEY_F8;
+							}
+						}
+					}
+					break;
 				case 0x33:
 					if(!inBuffer.empty() && inBuffer.front() == 126)
 						inBuffer.pop();
@@ -669,7 +704,7 @@ int PetsciiConsole::impl_handlekey() {
 			return KEY_F1 + k - F1;
 		}
 	}
-	if(k >= 0x20) {
+	if(k >= 0x20 && k <= 0x7f) {
 		auto k2 = k;
 		k = petsciiTable[k-0x20];
 		LOGD("%02x became %02x", k2, k);
@@ -680,7 +715,7 @@ int PetsciiConsole::impl_handlekey() {
 bool PetsciiConsole::impl_scroll_screen(int dy) {
 	//const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
 	//outBuffer.insert(outBuffer.end(), s.begin(), s.end());
-	int steps = dy + height - curY -1;
+	auto steps = dy + height - curY -1;
 	while(steps--)
 		outBuffer.push_back(DOWN);
 	steps = height - curY - 1;

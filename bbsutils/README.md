@@ -1,18 +1,17 @@
 Console
 =======
 
-* Is a grid of *Tiles*
-* Each Tile has a character, a foreground color and a background color.
-* The console keeps track of the clients screen contents
-* The console keeps track of the clients real cursor position
-* A *refresh* means to send the necessary (and preferably minimal) set of characters and control codes to mirror the internal representation on to the client screen.
+A Console takes a reference to a *Terminal* on creation, and holds a grid of tiles. The user can draw
+characters and colors to these tiles using varous functions, and then call *refresh()* to have the Console
+translate the changes into screen codes that will update the remote screen accordingly.
 
 Example
 -------
 
 	auto *console = createLocalConsole();
 
-	// Write commands are written to the terminal directly
+	// Write commands are written to the terminal directly. They don't need to be *flushed* and they will wrap at the
+	// last column and scroll the screen at the last line
 	console->write("One line\nNext line");
 
 	vector<int> colors { Console::RED, Console::WHITE, Console::BLUE };
@@ -28,8 +27,12 @@ Example
 	// A telnetserver listens for connections on a port and for each connection runs a function in its own thread.
 	TelnetServer telnet { 12345 };
 	telnet.setOnConnect([&](TelnetServer::Session &session) {
-		session.echo(false);
+
+		// Console input will not work with echo turned on, so always turn off
+		session.echo(false); 
 		auto console = unique_ptr<Console>(new AnsiConsole { session });
 		console->write("LOGIN:);
+
+		// getLine blocks until the full line is entered. For asynchronous behavour, use the *LineEditor* class.
 		auto name = console->getLine();
 	}

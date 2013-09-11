@@ -12,7 +12,7 @@
 #include <queue>
 #include <thread>
 #include <chrono>
-#include <future>
+//#include <future>
 #include <mutex>
 #include <stdint.h>
 
@@ -70,7 +70,7 @@ public:
 		PURPLE, //5
 		YELLOW,//3
 		CYAN, //6
-		CURRENT_COLOR = -2,
+		CURRENT_COLOR = -2, // Use the currently set fg or bg color
 		NO_COLOR = -1
 	};
 
@@ -103,6 +103,19 @@ public:
 
 	typedef uint16_t Char;
 
+	struct Tile {
+		Tile(Char c = ' ', int fg = -1, int bg = -1) : fg(fg), bg(bg), c(c) {}
+		bool operator==(const Tile &o) const {
+   			return (fg == o.fg && bg == o.bg && c == o.c);
+  		}
+  		bool operator!=(const Tile &o) const {
+  			return !(*this == o);
+  		}
+
+		int fg;
+		int bg;
+		Char c;
+	};
 
 	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(25), curX(0), curY(0), curFg(-1), curBg(-1) {
 		terminal.open();
@@ -122,14 +135,19 @@ public:
 	virtual void flush();
 	virtual void putChar(Char c);
 	virtual void moveCursor(int x, int y);
-	virtual void fill(int x, int y, int width, int height, int bg = CURRENT_COLOR);
+	virtual void fill(int bg = CURRENT_COLOR, int x = 0, int y = 0, int width = 0, int height = 0);
+
+	virtual void fillLine(int y, int bg = CURRENT_COLOR) {
+		fill(bg, 0, y, 0, 1);
+	}
+
 	virtual void refresh();
 
 	virtual void scrollScreen(int dy);
 	//virtual void scrollLine(int dx);
 
 	virtual std::string getLine();
-
+/*
 	virtual std::future<std::string> getLineAsync() {
 		getLineStarted = false;
 		auto rc = std::async(std::launch::async, &Console::getLine, this);
@@ -138,6 +156,14 @@ public:
     	}
     	return rc;
 	};
+*/
+
+	virtual const std::vector<Tile> &getTiles() const {
+		return grid;
+	}
+	virtual void setTiles(const std::vector<Tile> &tiles) {
+		grid = tiles;
+	}
 
 	int getWidth() const { return width; }
 	int getHeight() const { return height; }
@@ -158,20 +184,6 @@ protected:
 	virtual void impl_clear() = 0;
 	virtual void impl_translate(Char &c) {}
 
-	struct Tile {
-		Tile(Char c = ' ', int fg = -1, int bg = -1) : fg(fg), bg(bg), c(c) {}
-		bool operator==(const Tile &o) const {
-   			return (fg == o.fg && bg == o.bg && c == o.c);
-  		}
-  		bool operator!=(const Tile &o) const {
-  			return !(*this == o);
-  		}
-
-		int fg;
-		int bg;
-		Char c;
-	};
-
 	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
 	void clearTiles(std::vector<Tile> &tiles, int x0, int y0, int w, int h);
 
@@ -189,6 +201,7 @@ protected:
 	// send characters to update the console.
 	std::vector<Tile> oldGrid;
 
+
 	int fgColor;
 	int bgColor;
 
@@ -203,9 +216,9 @@ protected:
 	int curFg;
 	int curBg;
 
-	std::mutex lock;
+	//std::mutex lock;
 
-	std::atomic<bool> getLineStarted;
+	//std::atomic<bool> getLineStarted;
 
 };
 
