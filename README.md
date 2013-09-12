@@ -22,4 +22,4 @@ the module directories you want to use. If you are using Makefiles, the easiest 
 	include $(MODULE_DIR)/Makefile.inc
 
 If you do not wish to use *Makefile.inc* you need to either copy the modules into your source directory, or
-set up appropriate build rules that can build the modules source files into your own object directory.
+set up appropriate build rules that can build from the modules source files into your own object directory.
