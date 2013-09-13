@@ -3,6 +3,7 @@
 
 #include "format.h"
 #include <string>
+#include <unordered_map>
 
 
 namespace logging {
@@ -37,12 +38,25 @@ void log2(const char *fn, int line, LogLevel level, const std::string &fmt, cons
 
 void setLevel(LogLevel level);
 void setOutputFile(const std::string &fileName);
+void setLogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName);
 
 #define LOGV(...) logging::log2(__FILE__, __LINE__, logging::VERBOSE, __VA_ARGS__)
 #define LOGD(...) logging::log2(__FILE__, __LINE__, logging::DEBUG, __VA_ARGS__)
 #define LOGI(...) logging::log2(__FILE__, __LINE__, logging::INFO, __VA_ARGS__)
 #define LOGW(...) logging::log2(__FILE__, __LINE__, logging::WARNING, __VA_ARGS__)
 #define LOGE(...) logging::log2(__FILE__, __LINE__, logging::ERROR, __VA_ARGS__)
+
+class LogSpace {
+public:
+	LogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName) {
+		spaces[sourceFile] = spaceName;
+		LOGD("LogSpace %s for %s '%s'", spaceName, sourceFile, function);
+	}
+	static std::unordered_map<std::string, std::string> spaces;
+
+};
+
+#define LOGSPACE(x) static logging::LogSpace lsp(__FILE__, __FUNCTION__, x);
 
 }
 

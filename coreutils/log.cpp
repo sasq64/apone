@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctime>
+#include <unordered_map>
 
 #ifdef LOG_INCLUDE
 #include LOG_INCLUDE
@@ -19,6 +20,7 @@ using namespace std;
 
 LogLevel defaultLevel = DEBUG;
 static FILE *logFile = nullptr;
+unordered_map<string, string> LogSpace::spaces;
 
 void log(const std::string &text) {
 	log(defaultLevel, text);
@@ -47,6 +49,9 @@ void log(LogLevel level, const std::string &text) {
 }
 
 void log2(const char *fn, int line, LogLevel level, const std::string &text) {
+
+	const string &spaceName = LogSpace::spaces[fn];
+
 	char temp[2048];
 	sprintf(temp, "[%s:%d] ", fn, line);
 	log(level, std::string(temp).append(text));
@@ -59,6 +64,10 @@ void setOutputFile(const std::string &fileName) {
 	if(logFile)
 		fclose(logFile);
 	logFile = fopen(fileName.c_str(), "wb");
+}
+
+void setLogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName) {
+	LogSpace::spaces[sourceFile] = spaceName;
 }
 
 

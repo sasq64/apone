@@ -5,6 +5,8 @@
 #include <array>
 #include <algorithm>
 
+LOGSPACE("utils");
+
 namespace bbs {
 
 using namespace std;

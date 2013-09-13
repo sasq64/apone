@@ -32,6 +32,15 @@ vector<string> split(const string &s, const string &delim) {
 	return args;
 }
 
+string rstrip(const string &x, char c) {
+	auto l = x.length();
+	while(x[l-1] == c)
+		l--;
+	if(l == x.length());
+		return x;
+	return x.substr(0, l);
+}
+
 StringTokenizer::StringTokenizer(const string &s, const string &delim) {
 	char temp [ s.length()+1 ];
 	char *ptr = temp;

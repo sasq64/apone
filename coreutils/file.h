@@ -3,6 +3,8 @@
 
 #include <sys/stat.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <limits.h>
 #include <typeinfo>
 #include <cstdio>
 #include <vector>
@@ -40,6 +42,8 @@ public:
 
 	File();
 	File(const std::string &name, Mode mode  = NONE);
+	File(const File &parent, const std::string &name, Mode mode  = NONE);
+	File(const std::string &parent, const std::string &name, Mode mode  = NONE);
 	~File() {
 		if(readFP)
 			fclose(readFP);
@@ -50,8 +54,18 @@ public:
 	void write(const std::string &text);
 	void close();
 
+	std::vector<File> listFiles();
+
 	bool exists();
 	static bool exists(const std::string &fileName);
+
+	static std::string resolvePath(const std::string &fileName) {
+		char temp[PATH_MAX];
+		if(::realpath(fileName.c_str(), temp))
+			return temp;
+		return fileName;
+	}
+
 	uint8_t *getPtr();
 	const std::string &getName() const { return fileName; }
 	int getSize() const { 

@@ -23,7 +23,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const char arg) {
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x\n", (int)arg);
+			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
@@ -34,7 +34,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const unsigned char 
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x\n", (int)arg);
+			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
@@ -45,7 +45,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const signed char ar
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x\n", (int)arg);
+			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 		}
@@ -149,7 +149,6 @@ char parse_format(stringstream &ss, string &fmt) {
 	if(ptr >= end)
 		return 0;
 
-
 	switch(*ptr++) {
 	case '0':
 		ss.fill('0');
@@ -158,6 +157,7 @@ char parse_format(stringstream &ss, string &fmt) {
 		ss.fill(' ');
 		break;
 	case '-':
+		ss << left;
 		break;
 	default:
 		ptr--;
@@ -169,6 +169,7 @@ char parse_format(stringstream &ss, string &fmt) {
 
 	char *endPtr;
 	int width = strtol(ptr, &endPtr, 10);
+
 	if(endPtr != nullptr && endPtr > ptr) {
 		ss.width(width);
 		ptr = endPtr;

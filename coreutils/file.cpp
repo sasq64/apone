@@ -15,17 +15,40 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
+#include <dirent.h>
 namespace utils {
 
 using namespace std;
 
 File::File() : size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {}
 
-File::File(const string &name, Mode mode) : fileName(name), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
+File::File(const string &name, Mode mode) : fileName(rstrip(name, '/')), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
+
+	fileName = resolvePath(fileName);
+
 	if(mode != NONE)
 		open(mode);
 };
+
+File::File(const File &parent, const std::string &name, Mode mode) : File(parent.getName() + "/" + name, mode) {}
+
+File::File(const std::string &parent, const std::string &name, Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
+
+vector<File> File::listFiles() {
+	DIR *dir;
+	struct dirent *ent;
+	vector<File> rc;
+	if( (dir = opendir(fileName.c_str())) != nullptr) {
+		while ((ent = readdir (dir)) != nullptr) {
+			char *p = ent->d_name;
+			if(p[0] == '.' && (p[1] == 0 || (p[1] == '.' && p[2] == 0)))
+				continue;
+			rc.emplace_back(fileName + "/" + ent->d_name);
+		}
+	}
+	closedir(dir);
+	return rc;
+}
 
 void File::readAll()  {		
 	if(!loaded) {
