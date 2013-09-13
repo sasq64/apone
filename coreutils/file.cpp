@@ -22,7 +22,9 @@ using namespace std;
 
 File::File() : size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {}
 
-File::File(const string &name) : fileName(name), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
+File::File(const string &name, Mode mode) : fileName(name), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
+	if(mode != NONE)
+		open(mode);
 };
 
 void File::readAll()  {		
@@ -42,21 +44,32 @@ void File::readAll()  {
 	}
 }
 
-void File::open() {
-	if(readFP == nullptr) {
-		readFP = fopen(fileName.c_str(), "rb");
-		if(!readFP)
-			throw file_not_found_exception{};
-	}
+void File::open(Mode mode) {
+	if(mode == READ) {
+		if(!readFP) {
+			readFP = fopen(fileName.c_str(), "rb");
+			if(!readFP)
+				throw file_not_found_exception{};
+		}
+	} else if(mode == WRITE) {
+		if(!writeFP) {
+			makedirs(fileName);
+			writeFP = fopen(fileName.c_str(), "wb");
+			if(!writeFP)
+				throw io_exception{"Could not open file for writing"};
+		}
+	} else
+		throw io_exception { "Can't open file with no mode" };
+
 }
 
 int File::read(uint8_t *target, int len) {
-	open();
+	open(READ);
 	return fread(target, 1, len, readFP);
 }
 
 void File::seek(int where) {
-	open();
+	open(READ);
 	if(!readFP)
 		throw file_not_found_exception{};
 	fseek(readFP, where, SEEK_SET);
@@ -78,33 +91,18 @@ vector<string> File::getLines() {
 }
 
 void File::write(const uint8_t *data, int size) {
-	if(!writeFP) {
-		makedirs(fileName);
-		writeFP = fopen(fileName.c_str(), "wb");
-		if(!writeFP)
-			throw io_exception{"Could not open file for writing"};
-	}
+	open(WRITE);
 	fwrite(data, 1, size, writeFP);
 }
 
 void File::write(const string &data) {
-	if(!writeFP) {
-		makedirs(fileName);
-		writeFP = fopen(fileName.c_str(), "wb");
-		if(!writeFP)
-			throw io_exception{"Could not open file for writing"};
-	}
+	open(WRITE);
 	fwrite(data.c_str(), 1, data.length(), writeFP);
 }
 
 
 void File::copyFrom(File &otherFile) {
-	if(!writeFP) {
-		makedirs(fileName);
-		writeFP = fopen(fileName.c_str(), "wb");
-		if(!writeFP)
-			throw io_exception{"Could not open file for writing"};
-	}
+	open(WRITE);
 	uint8_t *ptr = otherFile.getPtr();
 	int size = otherFile.getSize();
 	fwrite(ptr, 1, size, writeFP);

@@ -129,10 +129,10 @@ void TelnetServer::removeSession(const Session &session) {
 void TelnetServer::Session::handleIndata(vector<uint8_t> &buffer, int len) {
 	lock_guard<mutex> guard(inMutex);
 
-	int start = inBuffer.size();
+	auto start = inBuffer.size();
 
 	for(int i=0; i<len; i++) {
-		uint8_t b = buffer[i];
+		auto b = buffer[i];
 
 		if(b >= SE || b == 13 || state != NORMAL) {
 			switch(state) {
@@ -227,7 +227,7 @@ int TelnetServer::Session::read(std::vector<uint8_t> &data, int len) {
 		throw disconnect_excpetion{};
 
 	lock_guard<mutex> guard(inMutex);
-	int rc = inBuffer.size();
+	auto rc = inBuffer.size();
 	if(rc > 0) {
 		data.insert(data.end(), inBuffer.begin(), inBuffer.end());
 		inBuffer.resize(0);
@@ -318,7 +318,7 @@ std::string TelnetServer::Session::getTermType() const  {
 void TelnetServer::Session::close() {
 	//closeMe = true;
 	disconnected = true;
-	delete socket;
+	//delete socket;
 	socket = nullptr;
 }
 

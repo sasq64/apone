@@ -1,13 +1,12 @@
 #ifndef WEBGETTER_H
 #define WEBGETTER_H
 
-//#include <coreutils/utils.h>
+#include <coreutils/file.h>
 
 #include <string>
-
 #include <mutex>
 #include <thread>
-
+#include <memory>
 #include <stdio.h>
 
 class WebGetter {
@@ -29,12 +28,12 @@ public:
 		int returnCode;
 		std::thread jobThread;
 		std::string targetDir;
-		FILE *fp;
+		std::unique_ptr<utils::File> file;
 		std::string target;
 	};
 
 	WebGetter(const std::string &workDir) ;
-	Job *getURL(const std::string &url);
+	Job* getURL(const std::string &url);
 private:
 	std::string workDir;
 };

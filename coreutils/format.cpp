@@ -23,7 +23,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const char arg) {
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x", (int)arg);
+			printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
@@ -34,7 +34,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const unsigned char 
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x", (int)arg);
+			printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
@@ -45,7 +45,7 @@ void format_stream(std::stringstream &ss, std::string &fmt, const signed char ar
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			printf("Printing char! %02x", (int)arg);
+			printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 		}

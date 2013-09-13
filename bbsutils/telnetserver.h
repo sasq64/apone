@@ -80,7 +80,7 @@ public:
 
 		int read(std::vector<uint8_t> &data, int len = -1) override;
 
-		NL::Socket *getSocket() const { return socket; }
+		NL::Socket *getSocket() const { return socket.get(); }
 		void handleIndata(std::vector<uint8_t> &buffer, int len);
 
 		void startThread(Callback callback);
@@ -116,7 +116,7 @@ public:
 		}
 
 	private:
-		NL::Socket *socket;
+		std::shared_ptr<NL::Socket> socket;
 
 		enum State {
 			NORMAL,
@@ -142,7 +142,7 @@ public:
 		int winHeight;
 		mutable bool termExplored;
 
-		TelnetServer *tsParent;
+		std::shared_ptr<TelnetServer> tsParent;
 
 		void setOption(int opt, int val);
 		void handleOptionData();

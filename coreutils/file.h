@@ -31,8 +31,15 @@ public:
 
 class File {
 public:
+
+	enum Mode {
+		NONE = 0,
+		READ = 1,
+		WRITE = 2
+	};
+
 	File();
-	File(const std::string &name);
+	File(const std::string &name, Mode mode  = NONE);
 	~File() {
 		if(readFP)
 			fclose(readFP);
@@ -68,12 +75,12 @@ public:
 
 	void seek(int where);
 	template <typename T> int read(T *target, int count) {
-		open();
+		open(READ);
 		return fread(target, sizeof(T), count, readFP);
 	}
 
 	template <typename T> T read() {
-		open();
+		open(READ);
 		T temp;
 		if(fread(&temp, sizeof(T), 1, readFP) > 0)
 			return temp;
@@ -83,7 +90,7 @@ public:
 	void readAll(); // throw(file_not_found_exception, io_exception);
 
 private:
-	void open();
+	void open(Mode mode);
 
 	std::string fileName;
 	std::vector<uint8_t> data;

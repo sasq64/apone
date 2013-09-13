@@ -10,7 +10,7 @@ using namespace utils;
 using namespace logging;
 using namespace std;
 
-WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir), fp(nullptr) {
+WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir) {
 	LOGD("Job created");
 	jobThread = thread {&Job::urlGet, this, url};
 }
@@ -55,8 +55,8 @@ void WebGetter::Job::urlGet(string url) {
 		LOGD("Getting %s from cache", target);
 	}
 
-	if(fp)
-		fclose(fp);
+	//if(fp)
+	//	fclose(fp);
 
 	m.lock();
 	returnCode = rc;
@@ -66,25 +66,24 @@ void WebGetter::Job::urlGet(string url) {
 
 size_t WebGetter::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	Job *job = (Job*)userdata;
-	if(!job->fp) {
-		job->fp = fopen(job->target.c_str(), "wb");
-		LOGD("Opened %s => %s", job->target, job->fp ? "OK" : "FAIL");
+	if(!job->file) {
+		//job->fp = fopen(job->target.c_str(), "wb");
+		job->file = make_unique<File>(job->target, File::WRITE);
+		LOGD("Opened %s", job->target);
 	}
-	if(job->fp) {
-		fwrite(ptr, size, nmemb, job->fp); 
-	}
+	job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
 	return size * nmemb;
 }
 
 size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
-	int sz = size * nmemb;
+	auto sz = size * nmemb;
 	char *text = (char*)ptr;
-	Job *job = (Job*)userdata;
+	Job *job = static_cast<Job*>(userdata);
 
 	while(sz > 0 && (text[sz-1] == '\n' || text[sz-1] == '\r'))
 		sz--;
 
-	string line = string(text, sz);
+	auto line = string(text, sz);
 
 	log(VERBOSE, "HEADER:'%s'", line);
 
@@ -94,8 +93,6 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 		job->target = job->targetDir + "/" + urlencode(newUrl, ":/\\?;");
 	}
 
-
-	//delete [] tmp;
 	return size *nmemb;
 }
 
@@ -104,6 +101,6 @@ WebGetter::WebGetter(const string &workDir) : workDir(workDir) {
 }
 
 
-WebGetter::Job *WebGetter::getURL(const string &url) {
+WebGetter::Job* WebGetter::getURL(const string &url) {
 	return new Job(url, workDir);
 }

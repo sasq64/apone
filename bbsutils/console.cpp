@@ -701,15 +701,17 @@ int PetsciiConsole::impl_handlekey() {
 		return KEY_RIGHT;
 	default:
 		if(k >= F1 && k <= F8) {
-			return KEY_F1 + k - F1;
+			k -= F1;
+			return KEY_F1 + (k * 2 % 8) + (k / 4); // A little bit of trickery to convert :)
 		}
 	}
-	if(k >= 0x20 && k <= 0x7f) {
+	if(k >= 0x20 && (k <= 0x7f || k >= 0xa0)) {
 		auto k2 = k;
 		k = petsciiTable[k-0x20];
-		LOGD("%02x became %02x", k2, k);
+		LOGD("%02x became %02x (%c)", k2, k, k);
+		return k;
 	}
-	return k;
+	return KEY_UNKNOWN;
 }
 
 bool PetsciiConsole::impl_scroll_screen(int dy) {

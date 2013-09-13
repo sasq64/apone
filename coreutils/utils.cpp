@@ -18,7 +18,7 @@ using namespace std;
 
 vector<string> split(const string &s, const string &delim) {
 	vector<string> args;
-	char *temp = new char [ s.length()+1 ];
+	char temp [ s.length()+1 ];
 	char *ptr = temp;
 	strcpy(temp, s.c_str());
 	while(true) {
@@ -29,12 +29,11 @@ vector<string> split(const string &s, const string &delim) {
 			break;
 		ptr = nullptr;
 	}
-	delete [] temp;
 	return args;
 }
 
 StringTokenizer::StringTokenizer(const string &s, const string &delim) {
-	char *temp = new char [ s.length()+1 ];
+	char temp [ s.length()+1 ];
 	char *ptr = temp;
 	strcpy(temp, s.c_str());
 	int pos = 0;
@@ -48,15 +47,14 @@ StringTokenizer::StringTokenizer(const string &s, const string &delim) {
 			break;
 		ptr = nullptr;
 	}
-	delete [] temp;
 }
 
 
 string urlencode(const string &s, const string &chars) {
-	char *target = new char [s.length() * 3 + 1];
+	char target [s.length() * 3 + 1];
 	char *ptr = target;
 	for(uint i=0; i<s.length(); i++) {
-		char c = s[i];
+		auto c = s[i];
 		if(chars.find(c) != string::npos) {
 			sprintf(ptr, "%%%02x", c);
 			ptr += 3;
@@ -68,10 +66,10 @@ string urlencode(const string &s, const string &chars) {
 }
 
 string urldecode(const string &s, const string &chars) {
-	char *target = new char [s.length() + 1];
+	char target [s.length() + 1];
 	char *ptr = target;
 	for(uint i=0; i<s.length(); i++) {
-		char c = s[i];
+		auto c = s[i];
 		if(c == '%') {
 			*ptr++ = strtol(s.substr(i+1,2).c_str(), nullptr, 16);
 			i += 2;
@@ -102,7 +100,7 @@ void makedir(const std::string &name) {
 void makedirs(const std::string &path) {
 	int start = 0;
 	while(true) {
-		size_t pos = path.find("/", start);
+		auto pos = path.find("/", start);
 		if(pos != string::npos) {
 			makedir(path.substr(0, pos));
 			start = pos+1;
@@ -112,7 +110,7 @@ void makedirs(const std::string &path) {
 }
 
 bool endsWith(const string &name, const string &ext) {
-	size_t pos = name.rfind(ext);
+	auto pos = name.rfind(ext);
 	return (pos == name.length() - ext.length());
 }
 
@@ -122,12 +120,12 @@ void makeLower(string &s) {
 }
 
 string path_basename(const string &name) {
-	size_t slashPos = name.rfind(path_separator);
+	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
 		slashPos = 0;
 	else
 		slashPos++;
-	size_t dotPos = name.rfind('.');
+	auto dotPos = name.rfind('.');
 	//LOGD("%s : %d %d", name, slashPos, dotPos);
 	if(dotPos == string::npos || dotPos < slashPos)
 		return name.substr(slashPos);
@@ -135,14 +133,14 @@ string path_basename(const string &name) {
 }
 
 string path_directory(const string &name) {
-	size_t slashPos = name.rfind(path_separator);
+	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
 		slashPos = 0;
 	return name.substr(0, slashPos);
 }
 
 string path_filename(const string &name) {
-	size_t slashPos = name.rfind(path_separator);
+	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
 		slashPos = 0;
 	else
@@ -151,8 +149,8 @@ string path_filename(const string &name) {
 }
 
 string path_extention(const string &name) {
-	size_t dotPos = name.rfind('.');
-	size_t slashPos = name.rfind(path_separator);
+	auto dotPos = name.rfind('.');
+	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
 		slashPos = 0;
 	else
@@ -166,8 +164,8 @@ string path_extention(const string &name) {
 string path_suffix(const string &name) { return path_extention(name); }
 
 string path_prefix(const string &name) {
-	size_t slashPos = name.rfind(path_separator);
-	size_t dotPos = name.find('.', slashPos);
+	auto slashPos = name.rfind(path_separator);
+	auto dotPos = name.find('.', slashPos);
 	if(slashPos == string::npos)
 		slashPos = 0;
 	else

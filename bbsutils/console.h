@@ -98,6 +98,7 @@ public:
 		KEY_F7,
 		KEY_F8,
 
+		KEY_UNKNOWN = 0xfffe,
 		KEY_TIMEOUT = 0xffff
 	};
 
@@ -254,12 +255,12 @@ public:
 		RIGHT = 0x1d,
 		RUN = 131,
 		F1 = 133,
-		F2 = 134,
-		F3 = 135,
-		F4 = 136,
-		F5 = 137,
-		F6 = 138,
-		F7 = 139,
+		F3 = 134,
+		F5 = 135,
+		F7 = 136,
+		F2 = 137,
+		F4 = 138,
+		F6 = 139,
 		F8 = 140,
 		SHIFT_RETURN = 0x8d,
 		UP = 0x91,
