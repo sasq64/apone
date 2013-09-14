@@ -21,6 +21,8 @@ int LineEditor::update(int msec) {
 	auto c = console.getKey(msec);
 	auto lastLen = line.length();
 	switch(c) {
+	case Console::KEY_TIMEOUT:
+		return -1;
 	case Console::KEY_ENTER:
 		return 0;
 	case Console::KEY_BACKSPACE:

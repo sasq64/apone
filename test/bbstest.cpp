@@ -37,13 +37,21 @@ int menu(Console &console, const vector<pair<char, string>> &entries) {
 	}
 	console.flush();
 
-	auto k = console.getKey();
-
+	int rc = -1;
+	while(true) {
+		auto k = console.getKey();
+		auto y = 0;
+		for(const auto &e : entries) {
+			if(e.first == k) {
+				rc = y;
+				break;
+			}
+			y++;
+		};
+	}
 
 	console.setTiles(contents);
-
-	return k;
-
+	return rc;
 }
 
 int main(int argc, char **argv) {
@@ -99,8 +107,8 @@ int main(int argc, char **argv) {
 		while(true) {
 
 			auto key = lineEd->update(500);
-			if(key >= 0)
-				LOGD("Key %d", key);
+			//if(key >= 0)
+			//	LOGD("Key %d", key);
 			switch(key) {
 			case 0:
 				{ lock_guard<mutex> guard(chatLock);

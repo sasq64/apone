@@ -91,27 +91,19 @@ LocalTerminal localTerminal;
 
 void Console::clear() {
 	for(auto &t : grid) {
-		t.c = 0x20;
-		t.fg = WHITE;
-		t.bg = BLACK;
+		t = { 0x20, WHITE, BLACK };
 	}
 	for(auto &t : oldGrid) {
-		t.c = 0x20;
-		t.fg = WHITE;
-		t.bg = BLACK;
+		t = { 0x20, WHITE, BLACK };
 	}
 	impl_clear();
 	curX = curY = 0;
 }
 
 void Console::refresh() {
-	for(int y = 0; y<height; y++) {
-		for(int x = 0; x<width; x++) {
-			Tile &t0 = oldGrid[x+y*width];
-			t0.c = -1;
-			t0.fg = -1;
-			t0.bg = -1;
-		}
+
+	for(auto &t : oldGrid) {
+		t = {-1, -1, -1};
 	}
 	impl_clear();
 	curX = curY = 0;
@@ -197,8 +189,8 @@ void Console::flush() {
 				//LOGD("diff in %d %d",x,y);			
 				if(curY != y or curX != x) {
 					impl_gotoxy(x, y);
-					curX = x;
-					curY = y;
+					//curX = x;
+					//curY = y;
 				}
 				if(t1.fg != curFg || t1.bg != curBg) {
 					impl_color(t1.fg, t1.bg);
@@ -265,8 +257,8 @@ void Console::write(const std::string &text) {
 		scrollScreen(1);
 		y--;
 	}
-	int spaces = 0;
-	for(int i=0; i<(int)text.length(); i++) {
+	auto spaces = 0;
+	for(auto i=0; i<(int)text.length(); i++) {
 	//for(const auto &c : text) {
 		char c;
 		if(spaces) {

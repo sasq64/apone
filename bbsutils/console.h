@@ -14,6 +14,7 @@
 #include <chrono>
 //#include <future>
 #include <mutex>
+#include <initializer_list>
 #include <stdint.h>
 
 #include <termios.h>
@@ -106,6 +107,15 @@ public:
 
 	struct Tile {
 		Tile(Char c = ' ', int fg = -1, int bg = -1) : fg(fg), bg(bg), c(c) {}
+		Tile& operator=(std::initializer_list<int> il) {
+			auto it = il.begin();
+			c = *it;
+			++it;
+			fg = *it;
+			++it;
+			bg = *it;
+			return *this;
+		}
 		bool operator==(const Tile &o) const {
    			return (fg == o.fg && bg == o.bg && c == o.c);
   		}

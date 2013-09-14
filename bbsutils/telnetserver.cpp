@@ -1,6 +1,6 @@
 #include <coreutils/log.h>
 #include "telnetserver.h"
-//#include <coreutils/utils.h>
+#include <coreutils/utils.h>
 
 #include <algorithm>
 
@@ -68,7 +68,6 @@ bool TelnetInit::inited = false;
 
 TelnetServer::TelnetServer(int port) : init(new TelnetInit()), no_session(nullptr), socketServer(port), doQuit(false) {
 
-	delete init;
 	init = nullptr;
 
 	buffer.resize(128);
