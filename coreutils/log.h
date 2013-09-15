@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_map>
 
-
 namespace logging {
 
 enum LogLevel {
@@ -38,7 +37,9 @@ void log2(const char *fn, int line, LogLevel level, const std::string &fmt, cons
 
 void setLevel(LogLevel level);
 void setOutputFile(const std::string &fileName);
-void setLogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName);
+//void setLogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName);
+
+void useLogSpace(const std::string &spaceName, bool on = true);
 
 #define LOGV(...) logging::log2(__FILE__, __LINE__, logging::VERBOSE, __VA_ARGS__)
 #define LOGD(...) logging::log2(__FILE__, __LINE__, logging::DEBUG, __VA_ARGS__)
@@ -48,11 +49,11 @@ void setLogSpace(const std::string &sourceFile, const std::string &function, con
 
 class LogSpace {
 public:
-	LogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName) {
-		spaces[sourceFile] = spaceName;
-		LOGD("LogSpace %s for %s '%s'", spaceName, sourceFile, function);
+	LogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName, bool on = true) {
+		spaces[sourceFile] = std::make_pair(spaceName, on);
+		//LOGD("LogSpace %s for %s '%s'", spaceName, sourceFile, function);
 	}
-	static std::unordered_map<std::string, std::string> spaces;
+	static std::unordered_map<std::string, std::pair<std::string, bool>> spaces;
 
 };
 

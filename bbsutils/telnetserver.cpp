@@ -84,7 +84,6 @@ void TelnetServer::run() {
 			if(!session->valid()) {
 				LOGD("Removing invalid session");
 				removeSession(*session.get());
-				break;
 			}
 		}
 	}
@@ -124,6 +123,8 @@ void TelnetServer::removeSession(Session &session) {
 	session.getSocket()->disconnect();
 
 	for(auto it = sessions.begin(); it != sessions.end(); ++it) {
+	//for(auto &s : sessions) {
+		
 		if(it->get()->getSocket() == session.getSocket()) {
 			LOGD("Removing session");
 			sessions.erase(it);

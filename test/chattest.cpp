@@ -17,6 +17,9 @@ int main(int argc, char **argv) {
 	setvbuf(stdout, NULL, _IONBF, 0);
 	logging::setLevel(logging::DEBUG);
 
+	// Turn off logging from the utility classes
+	logging::useLogSpace("utils", false);
+
 	vector<string> chatLines;
 	mutex chatLock;
 
@@ -31,8 +34,9 @@ int main(int argc, char **argv) {
 		try {
 			session.echo(false);
 			auto termType = session.getTermType();		
-
 			unique_ptr<Console> con;
+
+			// We just assume that no terminal reported means petscii.
 			if(termType.length() > 0) {
 				con = make_unique<AnsiConsole>(session);
 			} else {
@@ -43,7 +47,7 @@ int main(int argc, char **argv) {
 			console.flush();
 			auto h = console.getHeight();
 			auto w = console.getWidth();
-			LOGD("New connection, TERMTYPE '%s' SIZE %dx%d", termType, w, h);
+			LOGD("New connection, terminal:'%s', size:%dx%d", termType, w, h);
 
 			console.write("\nNAME:");
 			userName = console.getLine();
@@ -56,17 +60,17 @@ int main(int argc, char **argv) {
 			console.put(0, -13, "F7 = Log out", Console::CURRENT_COLOR, Console::BLUE);
 			console.moveCursor(0, -1);
 			
-			auto lineEd = make_unique<LineEditor>(console);
-
+			// Don't show more lines from the backlog than fits the screen
 			{ lock_guard<mutex> guard(chatLock);
 				if((int)chatLines.size() > h)
 					lastLine = chatLines.size() - h;
 			}
+
+			auto lineEd = make_unique<LineEditor>(console);
+
 			while(true) {
 
-				auto key = lineEd->update(500);
-				if(key >= 0)
-					LOGD("Key %d", key);
+				auto key = lineEd->update(500);				
 				switch(key) {
 				case 0:
 					addChatLine(userName + ": " + lineEd->getResult());
@@ -80,6 +84,7 @@ int main(int argc, char **argv) {
 					return;
 				}
 
+				// Update screen with new chat lines if necessary
 				{ lock_guard<mutex> guard(chatLock);
 					auto newLines = false;
 					while(chatLines.size() > lastLine) {
