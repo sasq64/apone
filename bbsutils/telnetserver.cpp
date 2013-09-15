@@ -287,11 +287,6 @@ string TelnetServer::Session::getLine() throw(disconnect_excpetion) {
 			if(inBuffer.size() > 0 && inBuffer[0] == LF)
 				inBuffer.erase(inBuffer.begin());
 			inMutex.unlock();
-
-			//if(line[line.length()-1] == CR)
-			//	line.pop_back();
-				//line.resize(line.length()-1);
-
 			return line;
 		}
 		inMutex.unlock();
