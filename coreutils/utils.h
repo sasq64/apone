@@ -16,6 +16,11 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <initializer_list>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 //#include "utils/format.h"
 
@@ -59,6 +64,52 @@ std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
 
 std::string utf8_encode(const std::string &s);
+
+// Vectors
+
+template <class T> struct vec {
+	vec() : x(0), y(0) {}
+	vec(T x, T y) : x(x), y(y) {}
+
+	vec operator+(const vec &v) const {
+		return vec(x + v.x, y + v.y);
+	}
+
+	vec operator+(std::initializer_list<T> il) const {
+		return vec(x + 0, y + 0);
+	}
+
+	vec operator-(const vec &v) const {
+		return vec(x - v.x, y - v.y);
+	}
+
+	vec operator/(T n) const {
+		return vec(x / n, y / n);
+	}
+
+	vec operator*(T n) const {
+		return vec(x * n, y * n);
+	}
+
+	T angle() {
+		T l = sqrt(x * x + y * y);
+		T a = acos(x / l);
+		if(y < 0) a = (M_PI - a) + M_PI;
+			return a;
+	}
+
+	T dist2() {
+		return x * x + y * y;
+	}
+
+	T dist() {
+		return sqrt(x * x + y * y);
+	}
+
+	T x;
+	T y;
+};
+
 
 // SLICE
 

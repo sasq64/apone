@@ -31,6 +31,8 @@ void TelnetServer::OnAccept::exec(NL::Socket* socket, NL::SocketGroup* group, vo
 
 void TelnetServer::OnRead::exec(NL::Socket* socket, NL::SocketGroup* group, void* reference) {
 
+	LOGD("Read data on socket %p", socket);
+
 	TelnetServer *ts = static_cast<TelnetServer*>(reference);
 	auto &session = ts->getSession(socket);
 
@@ -42,14 +44,11 @@ void TelnetServer::OnRead::exec(NL::Socket* socket, NL::SocketGroup* group, void
 
 
 void TelnetServer::OnDisconnect::exec(NL::Socket* socket, NL::SocketGroup* group, void* reference) {
-	group->remove(socket);
 	LOGD("Connection from %s disconnected", socket->hostTo());
-
 	TelnetServer *ts = static_cast<TelnetServer*>(reference);
 	auto &session = ts->getSession(socket);
 	session.close();
-
-	session.join();
+	group->remove(socket);
 }
 
 // Dummy class to make sure NL:init() is called before the socketServer is created
@@ -115,10 +114,20 @@ TelnetServer::Session& TelnetServer::getSession(NL::Socket* socket) {
 	return no_session;
 }
 
-void TelnetServer::removeSession(const Session &session) {
+void TelnetServer::removeSession(Session &session) {
+	//group.remove(session.getSocket());
+	//session.getSocket()->disconnect();
+	LOGD("Session thread join");
+	session.join();
+
+	group.remove(session.getSocket());
+	session.getSocket()->disconnect();
+
 	for(auto it = sessions.begin(); it != sessions.end(); ++it) {
 		if(it->get()->getSocket() == session.getSocket()) {
+			LOGD("Removing session");
 			sessions.erase(it);
+			LOGD("Returning");
 			return;
 		}
 	}
@@ -315,12 +324,17 @@ std::string TelnetServer::Session::getTermType() const  {
 	}
 }
 
+void TelnetServer::Session::disconnect() {
+
+	tsParent->group.remove(socket);
+	socket->disconnect();
+}
 
 void TelnetServer::Session::close() {
 	//closeMe = true;
 	disconnected = true;
 	//delete socket;
-	socket = nullptr;
+	//socket = nullptr;
 }
 
 

@@ -74,13 +74,14 @@ public:
 			write(s);
 		}
 
-		bool valid() { return socket != nullptr; }
+		bool valid() { return !disconnected; }
+		void disconnect();
 
 	//private
 
 		int read(std::vector<uint8_t> &data, int len = -1) override;
 
-		NL::Socket *getSocket() const { return socket.get(); }
+		NL::Socket *getSocket() const { return socket; }
 		void handleIndata(std::vector<uint8_t> &buffer, int len);
 
 		void startThread(Callback callback);
@@ -116,7 +117,7 @@ public:
 		}
 
 	private:
-		std::shared_ptr<NL::Socket> socket;
+		NL::Socket *socket;
 
 		enum State {
 			NORMAL,
@@ -142,7 +143,7 @@ public:
 		int winHeight;
 		mutable bool termExplored;
 
-		std::shared_ptr<TelnetServer> tsParent;
+		TelnetServer *tsParent;
 
 		void setOption(int opt, int val);
 		void handleOptionData();
@@ -187,7 +188,7 @@ public:
 
 	void setOnConnect(Session::Callback callback);
 	Session& getSession(NL::Socket* socket);
-	void removeSession(const Session &session);
+	void removeSession(Session &session);
 
 	const std::vector<std::shared_ptr<Session>>& getSessions() {
 		return sessions;
