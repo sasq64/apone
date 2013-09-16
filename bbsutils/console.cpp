@@ -5,6 +5,12 @@
 #include <array>
 #include <algorithm>
 
+//#include <iostream>
+//#include <string>
+#include <locale>
+//#include <codecvt>
+ 
+
 LOGSPACE("utils");
 
 namespace bbs {
@@ -20,10 +26,10 @@ static int petsciiTable[] = {
 	0x003C,0x003D,0x003E,0x003F,0x0040,0x0061,0x0062,0x0063,0x0064,0x0065,
 	0x0066,0x0067,0x0068,0x0069,0x006A,0x006B,0x006C,0x006D,0x006E,0x006F,
 	0x0070,0x0071,0x0072,0x0073,0x0074,0x0075,0x0076,0x0077,0x0078,0x0079,
-	0x007A,0x005B,0x00A3,0x005D,0x2191,0x2190,0x2501,0x0041,0x0042,0x0043,
+	0x007A,0x005B,0x00A3,0x005D,0x2191,0x2190,0x2500,0x0041,0x0042,0x0043,
 	0x0044,0x0045,0x0046,0x0047,0x0048,0x0049,0x004A,0x004B,0x004C,0x004D,
 	0x004E,0x004F,0x0050,0x0051,0x0052,0x0053,0x0054,0x0055,0x0056,0x0057,
-	0x0058,0x0059,0x005A,0x253C,0xF12E,0x2502,0x2592,0xF139,0x0000,0x0000,
+	0x0058,0x0059,0x005A,0x254B,0xF12E,0x2503,0x2592,0xF139,0x0000,0x0000,
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
 	0x0000,0x000A,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0,
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x00A0,
@@ -128,6 +134,65 @@ void Console::fill(int bg, int x, int y, int w, int h) {
 		}
 }
 
+static const u_int32_t offsetsFromUTF8[6] = {
+    0x00000000UL, 0x00003080UL, 0x000E2080UL,
+    0x03C82080UL, 0xFA082080UL, 0x82082080UL
+};
+
+static const char trailingBytesForUTF8[256] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+};
+
+/* returns length of next utf-8 sequence */
+int u8_seqlen(char *s)
+{
+    return trailingBytesForUTF8[(unsigned int)(unsigned char)s[0]] + 1;
+}
+
+/* conversions without error checking
+   only works for valid UTF-8, i.e. no 5- or 6-byte sequences
+   srcsz = source size in bytes, or -1 if 0-terminated
+   sz = dest size in # of wide characters
+
+   returns # characters converted
+   dest will always be L'\0'-terminated, even if there isn't enough room
+   for all the characters.
+   if sz = srcsz+1 (i.e. 4*srcsz+4 bytes), there will always be enough space.
+*/
+int u8_to_ucs(const char *src, uint32_t *dest, int sz)
+{
+    u_int32_t ch;
+    int nb;
+    int i=0;
+
+    while (i < sz-1) {
+        nb = trailingBytesForUTF8[(unsigned char)*src];
+        if (*src == 0)
+        	break;
+        ch = 0;
+        switch (nb) {
+            /* these fall through deliberately */
+        case 3: ch += (unsigned char)*src++; ch <<= 6;
+        case 2: ch += (unsigned char)*src++; ch <<= 6;
+        case 1: ch += (unsigned char)*src++; ch <<= 6;
+        case 0: ch += (unsigned char)*src++;
+        }
+        ch -= offsetsFromUTF8[nb];
+        dest[i++] = ch;
+    }
+
+    dest[i] = 0;
+    return i;
+}
+
+
 void Console::put(int x, int y, const string &text, int fg, int bg) {
 
 	if(x < 0) x = width+x;
@@ -135,15 +200,31 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 
 	if(y >= height)
 		return;
-	for(int i=0; i<(int)text.length(); i++) {
+/*
+	std::u16string ucs2;
+    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
+    try {
+        usc2 = ucs2conv.from_bytes(text);
+    } catch(const std::range_error& e) {
+    }
+*/
+
+    vector<uint32_t> output(128);
+    int l = u8_to_ucs(text.c_str(), &output[0], 128);
+
+	//for(int i=0; i<(int)text.length(); i++) {
+    for(int i=0; i<l; i++) {
 
 		if(x+i >= width)
 			return;
 
+
 		auto &t = grid[(x+i) + y * width];
 		//LOGD("put to %d %d",x+i,y);	
-		t.c = (Char)(text[i] & 0xff);
+		//t.c = (Char)(text[i] & 0xff);
+		t.c = output[i];
 		impl_translate(t.c);
+		LOGD("Putting %04x as %04x", output[i], t.c);
 
 		if(fg == CURRENT_COLOR)
 			fg = fgColor;
@@ -457,16 +538,18 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 
 void AnsiConsole::putChar(Char c) {
 
-	if(c <= 0x7f)
+	if(c < 0x80)
 		outBuffer.push_back(c);
-	else {
-
+	else if(c < 0x800) {
 		outBuffer.push_back(0xC0 | (c >> 6));
 		outBuffer.push_back(0x80 | (c & 0x3F));
-		auto l = outBuffer.size();
-		LOGD("Translated %02x to %02x %02x", c, (int)outBuffer[l-2], (int)outBuffer[l-1]);
+		//ato l = outBuffer.size();
+		//LOGD("Translated %02x to %02x %02x", c, (int)outBuffer[l-2], (int)outBuffer[l-1]);
+	} else /*if (c < 0x10000) */ {
+		outBuffer.push_back(0xE0 | (c >> 12));
+		outBuffer.push_back(0x80 | (c >> 6));
+		outBuffer.push_back(0x80 | (c & 0x3F));
 	}
-
 	curX++;
 	if(curX >= width) {
 		curX -= width;
@@ -601,6 +684,7 @@ int AnsiConsole::impl_handlekey() {
 // PETSCII
 
 void PetsciiConsole::putChar(Char c) {
+
 	if(curX == 39) {
 		outBuffer.push_back(DEL);
 		outBuffer.push_back(c & 0xff);
@@ -621,8 +705,12 @@ void PetsciiConsole::impl_translate(Char &c) {
 
 	//Char x = c;
 	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
-	if(pc != end(petsciiTable))
+	if(pc != end(petsciiTable)) {
+		//if(c > 0x800)
+		LOGD("Unicode %04x to petcii %02x", c, (pc - petsciiTable + 0x20));
 		c = (pc - petsciiTable + 0x20);
+	} else
+		c = '?';
 	//LOGD("Translated %c (%02x) to %c (%02x)", x, x, c, c);
 }
 
