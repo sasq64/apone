@@ -79,11 +79,17 @@ void File::open(Mode mode) {
 			makedirs(fileName);
 			writeFP = fopen(fileName.c_str(), "wb");
 			if(!writeFP)
-				throw io_exception{"Could not open file for writing"};
+				throw io_exception { "Could not open file for writing" };
 		}
 	} else
 		throw io_exception { "Can't open file with no mode" };
 
+}
+
+bool File::isChildOf(const File &f) {
+	string myPath = resolvePath(getName());
+	string parentPath = resolvePath(f.getName());
+	return (myPath.find(parentPath) == 0);
 }
 
 int File::read(uint8_t *target, int len) {

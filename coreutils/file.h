@@ -87,6 +87,8 @@ public:
 
 	int read(uint8_t *target, int len);
 
+	bool isChildOf(const File &f);
+
 	void seek(int where);
 	template <typename T> int read(T *target, int count) {
 		open(READ);
