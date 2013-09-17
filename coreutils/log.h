@@ -57,7 +57,7 @@ public:
 
 };
 
-#define LOGSPACE(x) static logging::LogSpace lsp(__FILE__, __FUNCTION__, x);
+#define LOGSPACE(x) static logging::LogSpace lsp(__FILE__, "", x);
 
 }
 

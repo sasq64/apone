@@ -192,6 +192,25 @@ int u8_to_ucs(const char *src, uint32_t *dest, int sz)
     return i;
 }
 
+void Console::put(int x, int y, Char c, int fg, int bg) {
+	if(x < 0) x = width+x;
+	if(y < 0) y = height+y;
+
+	auto &t = grid[x + y * width];
+	t.c = c;
+	impl_translate(t.c);
+
+	if(fg == CURRENT_COLOR)
+		fg = fgColor;
+	if(bg == CURRENT_COLOR)
+		bg = bgColor;
+
+	if(fg >= 0)
+		t.fg = fg;
+	if(bg >= 0)
+		t.bg = bg;
+
+}
 
 void Console::put(int x, int y, const string &text, int fg, int bg) {
 
@@ -218,13 +237,10 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 		if(x+i >= width)
 			return;
 
-
 		auto &t = grid[(x+i) + y * width];
-		//LOGD("put to %d %d",x+i,y);	
-		//t.c = (Char)(text[i] & 0xff);
 		t.c = output[i];
 		impl_translate(t.c);
-		LOGD("Putting %04x as %04x", output[i], t.c);
+		//LOGD("Putting %04x as %04x", output[i], t.c);
 
 		if(fg == CURRENT_COLOR)
 			fg = fgColor;
@@ -261,6 +277,11 @@ void Console::flush() {
 	//int saveFg = fgColor;
 	//int saveBg = bgColor;
 
+	auto curFg = fgColor;
+	auto curBg = bgColor;
+
+	//LOGD("Color at flush %d %d", fgColor, bgColor);
+
 	//LOGD("flush");
 	for(int y = 0; y<height; y++) {
 		for(int x = 0; x<width; x++) {
@@ -284,17 +305,13 @@ void Console::flush() {
 		}
 	}
 
-	if(curFg != fgColor || curBg != bgColor) {
-		if(fgColor >= 0 && bgColor >= 0)
-			impl_color(fgColor, bgColor);
-		curFg = fgColor;
-		curBg = bgColor;
-	}
 
-	if(outBuffer.size() > 0) {
-		LOGV("OUTBYTES: [%02x]", outBuffer);
-		terminal.write(outBuffer, outBuffer.size());
-		outBuffer.resize(0);
+
+	if(curFg != fgColor || curBg != bgColor) {
+		if(fgColor >= 0 && bgColor >= 0) {
+			LOGD("Restoring color to %d %d", fgColor, bgColor);
+			impl_color(fgColor, bgColor);
+		}
 	}
 
 	//LOGD("Restorting cursor");
@@ -302,6 +319,12 @@ void Console::flush() {
 	impl_gotoxy(saveX, saveY);
 	//curX = saveX;
 	//curY = saveY;
+
+	if(outBuffer.size() > 0) {
+		LOGV("OUTBYTES: [%02x]", outBuffer);
+		terminal.write(outBuffer, outBuffer.size());
+		outBuffer.resize(0);
+	}
 }
 
 void Console::putChar(Char c) {
@@ -312,6 +335,17 @@ void Console::putChar(Char c) {
 		curY++;
 	}
 }
+
+void Console::setColor(int fg, int bg) {
+	fgColor = fg;
+	bgColor = bg;
+	impl_color(fg, bg);
+	if(outBuffer.size() > 0) {
+		terminal.write(outBuffer, outBuffer.size());
+		outBuffer.resize(0);
+	}
+}
+
 
 void Console::moveCursor(int x, int y) {
 
@@ -364,7 +398,7 @@ void Console::write(const std::string &text) {
 			}
 
 			if(c == 0xd) {
-				if(text[i+1] == 0xa);
+				if(text[i+1] == 0xa)
 					i++;
 				c = 0xa;
 			}
@@ -531,8 +565,12 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 		//LOGD(s);
 		outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 	}
+	impl_clear();
+	impl_color(fgColor, bgColor);
 	impl_gotoxy(0,0);
-	flush();
+
+	//impl_gotoxy(0,0);
+	//flush();
 };
 
 
@@ -738,9 +776,10 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 		} else
 			curY++;	
 		outBuffer.push_back(SHIFT_RETURN);
-		if(curBg != BLACK) {
-			curFg = curBg;
-			curBg = BLACK;
+		if(bgColor != BLACK) {
+			outBuffer.push_back(RVS_ON);
+			//curFg = curBg;
+			//curBg = BLACK;
 		}
 		curX=0;
 	}

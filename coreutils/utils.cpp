@@ -36,7 +36,7 @@ string rstrip(const string &x, char c) {
 	auto l = x.length();
 	while(x[l-1] == c)
 		l--;
-	if(l == x.length());
+	if(l == x.length())
 		return x;
 	return x.substr(0, l);
 }

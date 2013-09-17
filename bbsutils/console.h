@@ -12,7 +12,6 @@
 #include <queue>
 #include <thread>
 #include <chrono>
-//#include <future>
 #include <mutex>
 #include <initializer_list>
 #include <stdint.h>
@@ -128,7 +127,7 @@ public:
 		Char c;
 	};
 
-	Console(Terminal &terminal) : terminal(terminal), fgColor(-1), bgColor(-1), width(40), height(25), curX(0), curY(0), curFg(-1), curBg(-1) {
+	Console(Terminal &terminal) : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40), height(25), curX(0), curY(0) {
 		terminal.open();
 	}
 
@@ -139,9 +138,11 @@ public:
 	virtual int getKey(int timeout = -1);
 	virtual void clear();
 	virtual void put(int x, int y, const std::string &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
+	virtual void put(int x, int y, Char c, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
-	virtual void setFg(int fg) { fgColor = fg; }
-	virtual void setBg(int bg) { bgColor = bg; }
+	//virtual void setFg(int fg);
+	//virtual void setBg(int bg);
+	virtual void setColor(int fg, int bg = BLACK);
 	virtual void resize(int w, int h);
 	virtual void flush();
 	virtual void putChar(Char c);
@@ -224,8 +225,8 @@ protected:
 	int curY;
 
 	// The current REAL colors of the console (cursor)
-	int curFg;
-	int curBg;
+	//int curFg;
+	//int curBg;
 
 	//std::mutex lock;
 
@@ -283,6 +284,9 @@ public:
 
 	PetsciiConsole(Terminal &terminal) : Console(terminal) {
 		resize(40, 25);
+		impl_clear();
+		impl_color(fgColor, bgColor);
+		impl_gotoxy(0,0);
 	}
 
 	virtual void putChar(Char c);

@@ -77,6 +77,14 @@ public:
 		}
 		return size;
 	}
+
+	bool isDir() const {
+		struct stat ss;
+		if(stat(fileName.c_str(), &ss) != 0)
+			throw io_exception("Could not stat file");
+		return S_ISDIR(ss.st_mode);
+	}
+
 	std::vector<std::string> getLines();
 	void remove() {
 		if(std::remove(fileName.c_str()) != 0)
