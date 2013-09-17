@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 			auto ypos = 0;
 			console.clear();
 			console.fill(Console::BLUE, 0, -2, 0, 1);
-			console.put(0, -13, "F7 = Log out", Console::CURRENT_COLOR, Console::BLUE);
+			console.put(-13, -2, "F7 = Log out", Console::CURRENT_COLOR, Console::BLUE);
 			console.moveCursor(0, -1);
 			
 			// Don't show more lines from the backlog than fits the screen
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 							console.scrollScreen(1);
 							console.fill(Console::BLACK, 0, -3, 0, 1);
 							console.fill(Console::BLUE, 0, -2, 0, 1);
-							console.put(0, -13, "F7 = Log out", Console::CURRENT_COLOR, Console::BLUE);
+							console.put(-13, -2, "F7 = Log out", Console::CURRENT_COLOR, Console::BLUE);
 							ypos--;
 						}
 						console.put(0, ypos-1, msg);
