@@ -1,24 +1,22 @@
 #ifndef BBS_CONSOLE_H
 #define BBS_CONSOLE_H
 
-#include <coreutils/log.h>
 
 #include "terminal.h"
 
+#include <coreutils/log.h>
 
+#include <stdint.h>
+#include <termios.h>
+#include <time.h>
+#include <string.h>
 #include <string>
 #include <vector>
 #include <memory>
 #include <queue>
 #include <thread>
-#include <chrono>
 #include <mutex>
 #include <initializer_list>
-#include <stdint.h>
-
-#include <termios.h>
-#include <time.h>
-#include <string.h>
 
 namespace bbs {
 
@@ -54,22 +52,22 @@ class Console {
 public:	
 
 	enum Color {
-		WHITE, //15
-		RED, //1
-		GREEN, //2
-		BLUE,//4
+		WHITE,
+		RED,
+		GREEN,
+		BLUE,
 		ORANGE,
-		BLACK, //0
+		BLACK,
 		BROWN,
-		PINK, //9
-		DARK_GREY, //8
+		PINK,
+		DARK_GREY,
 		GREY,
-		LIGHT_GREEN, //10
-		LIGHT_BLUE, //12
-		LIGHT_GREY, //7
-		PURPLE, //5
-		YELLOW,//3
-		CYAN, //6
+		LIGHT_GREEN,
+		LIGHT_BLUE,
+		LIGHT_GREY,
+		PURPLE,
+		YELLOW,
+		CYAN,
 		CURRENT_COLOR = -2, // Use the currently set fg or bg color
 		NO_COLOR = -1
 	};
@@ -140,8 +138,6 @@ public:
 	virtual void put(int x, int y, const std::string &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, Char c, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
-	//virtual void setFg(int fg);
-	//virtual void setBg(int bg);
 	virtual void setColor(int fg, int bg = BLACK);
 	virtual void resize(int w, int h);
 	virtual void flush();
@@ -186,6 +182,9 @@ public:
 
 protected:
 
+	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
+	void clearTiles(std::vector<Tile> &tiles, int x0, int y0, int w, int h);
+
 	// Functions that needs to be implemented by real console implementations
 
 	virtual void impl_color(int fg, int bg) = 0;
@@ -196,8 +195,6 @@ protected:
 	virtual void impl_clear() = 0;
 	virtual void impl_translate(Char &c) {}
 
-	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
-	void clearTiles(std::vector<Tile> &tiles, int x0, int y0, int w, int h);
 
 	Terminal &terminal;
 
@@ -224,83 +221,13 @@ protected:
 	int curX;
 	int curY;
 
-	// The current REAL colors of the console (cursor)
-	//int curFg;
-	//int curBg;
-
 	//std::mutex lock;
-
 	//std::atomic<bool> getLineStarted;
 
 };
 
 Console *createLocalConsole();
 
-class AnsiConsole : public Console {
-public:
-	AnsiConsole(Terminal &terminal);
-
-	void putChar(Char c);
-
-protected:
-
-	virtual bool impl_scroll_screen(int dy) override;
-	virtual void impl_color(int fg, int bg) override;
-	virtual void impl_gotoxy(int x, int y) override;
-	virtual int impl_handlekey() override;
-	virtual void impl_clear() override;
-	//virtual void impl_translate(Char &c) override;
-
-};
-
-class PetsciiConsole : public Console {
-public:
-
-	enum {
-		STOP = 3,
-		WHITE = 5,
-		DOWN = 0x11,
-		RVS_ON = 0x12,
-		HOME = 0x13,
-		DEL = 0x14,
-		RIGHT = 0x1d,
-		RUN = 131,
-		F1 = 133,
-		F3 = 134,
-		F5 = 135,
-		F7 = 136,
-		F2 = 137,
-		F4 = 138,
-		F6 = 139,
-		F8 = 140,
-		SHIFT_RETURN = 0x8d,
-		UP = 0x91,
-		RVS_OFF = 0x92,
-		CLEAR = 0x93,
-		INS = 0x94,
-		LEFT = 0x9d
-	};
-
-
-	PetsciiConsole(Terminal &terminal) : Console(terminal) {
-		resize(40, 25);
-		impl_clear();
-		impl_color(fgColor, bgColor);
-		impl_gotoxy(0,0);
-	}
-
-	virtual void putChar(Char c);
-protected:
-
-	virtual void impl_color(int fg, int bg) override;
-	virtual void impl_gotoxy(int x, int y) override;
-	virtual int impl_handlekey() override;
-	virtual void impl_clear() override;
-	virtual void impl_translate(Char &c) override;
-	virtual bool impl_scroll_screen(int dy) override;
-
-};
-
-}
+} // namespace bbs
 
 #endif // BBS_CONSOLE_H

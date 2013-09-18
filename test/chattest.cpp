@@ -3,6 +3,8 @@
 #include <coreutils/utils.h>
 #include <bbsutils/telnetserver.h>
 #include <bbsutils/console.h>
+#include <bbsutils/ansiconsole.h>
+#include <bbsutils/petsciiconsole.h>
 #include <bbsutils/editor.h>
 
 #include <string>
