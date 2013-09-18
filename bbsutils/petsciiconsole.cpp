@@ -40,6 +40,25 @@ static int petsciiTable[] = {
 
 static vector<uint8_t> petsciiColors = { 5, 28, 30, 31, 129, 144, 149, 150, 151, 152, 153, 154, 155, 156, 158, 159 };
 
+PetsciiConsole::PetsciiConsole(Terminal &terminal) : Console(terminal) {
+	resize(40, 25);
+	impl_clear();
+	impl_color(fgColor, bgColor);
+	impl_gotoxy(0,0);
+	int i = 0x20;
+	for(auto c : petsciiTable) {
+		unicodeToPetscii[c] = i;
+		i++;
+	}
+
+	unicodeToPetscii[L'{'] = 0xb3;
+	unicodeToPetscii[L'}'] = 0xab;
+	unicodeToPetscii[L'_'] = 0xa4;
+
+
+}
+
+
 void PetsciiConsole::putChar(Char c) {
 
 	if(curX == 39) {
@@ -61,6 +80,10 @@ void PetsciiConsole::putChar(Char c) {
 void PetsciiConsole::impl_translate(Char &c) {
 
 	//Char x = c;
+
+	c = unicodeToPetscii[c];
+	if(c == 0) c = '?';
+/*
 	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
 	if(pc != end(petsciiTable)) {
 		//if(c > 0x800)
@@ -68,7 +91,7 @@ void PetsciiConsole::impl_translate(Char &c) {
 		c = (pc - petsciiTable + 0x20);
 	} else
 		c = '?';
-	//LOGD("Translated %c (%02x) to %c (%02x)", x, x, c, c);
+	//LOGD("Translated %c (%02x) to %c (%02x)", x, x, c, c);*/
 }
 
 void PetsciiConsole::impl_color(int fg, int bg) {
@@ -139,6 +162,12 @@ int PetsciiConsole::impl_handlekey() {
 		return KEY_LEFT;
 	case RIGHT :
 		return KEY_RIGHT;
+	case HOME:
+		return KEY_HOME;
+	case CLEAR:
+		return KEY_END;
+	case STOP:
+		return KEY_ESCAPE;
 	default:
 		if(k >= F1 && k <= F8) {
 			k -= F1;

@@ -1,6 +1,9 @@
 #include "console.h"
 
+#include "editor.h"
+
 #include <coreutils/log.h>
+#include <coreutils/utils.h>
 
 #include <array>
 #include <algorithm>
@@ -374,67 +377,10 @@ int Console::getKey(int timeout) {
 	}
 }
 
-std::string Console::getLine() {
-	string line;
-
-	auto startX = curX;
-	auto startY = curY;
-
-	auto fg = fgColor;
-	auto bg = bgColor;
-
-	//getLineStarted = true;
-
-	int x = 0;
-	//bool lineChanged = false;
-
-	while(true) {
-		auto c = getKey(500);
-		auto lastLen = line.length();
-		switch(c) {
-		case KEY_ENTER:
-			return line;
-		case KEY_BACKSPACE:
-			if(x > 0) {
-				x--;				
-				line.erase(x, 1);
-			}
-			break;
-		case KEY_DELETE:
-			if(x < (int)line.length()) {
-				line.erase(x, 1);
-			}
-			break;
-		case KEY_LEFT:
-			if(x > 0)
-				x--;
-			break;
-		case KEY_HOME:
-			x = 0;
-			break;
-		case KEY_END:
-			x = line.length();
-			break;
-		case KEY_RIGHT:
-			if(x < (int)line.length())
-				x++;
-			break;
-		default:
-			if(c < 256) {
-				line.insert(x, 1, c);
-				x++;
-			}
-			break;
-		}
-		{
-			put(startX, startY, line, fg, bg);
-			if(lastLen > line.length())
-				put(startX+line.length(), startY, " ", fg, bg);
-			LOGD("Line now '%s'", line);
-			flush();
-			moveCursor(startX + x, startY);
-		}
-	}
+std::string Console::getLine(int maxlen) {
+	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
+	while(lineEd->update(500) != 0);
+	return lineEd->getResult();
 }
 
 // Shift all tiles

@@ -3,6 +3,8 @@
 
 #include "console.h"
 
+#include <unordered_map>
+
 namespace bbs {
 
 class PetsciiConsole : public Console {
@@ -34,13 +36,7 @@ public:
 	};
 
 
-	PetsciiConsole(Terminal &terminal) : Console(terminal) {
-		resize(40, 25);
-		impl_clear();
-		impl_color(fgColor, bgColor);
-		impl_gotoxy(0,0);
-	}
-
+	PetsciiConsole(Terminal &terminal);
 	virtual void putChar(Char c);
 protected:
 
@@ -51,6 +47,7 @@ protected:
 	virtual void impl_translate(Char &c) override;
 	virtual bool impl_scroll_screen(int dy) override;
 
+	std::unordered_map<int, int> unicodeToPetscii; 
 };
 
 }

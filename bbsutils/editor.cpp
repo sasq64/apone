@@ -7,12 +7,15 @@ namespace bbs {
 
 using namespace std;
 
-LineEditor::LineEditor(Console &console) : console(console) {
+LineEditor::LineEditor(Console &console, int width) : console(console), width(width), xpos(0), xoffset(0) {
 	startX = console.getCursorX();
 	startY = console.getCursorY();
 	fg = console.getFg();
 	bg = console.getBg();
-	x = 0;
+	if(this->width == 0)
+		this->width = console.getWidth() - startX - 1;
+	maxlen = width;
+	xpos = 0;
 	line = "";
 }
 
@@ -26,49 +29,75 @@ int LineEditor::update(int msec) {
 	case Console::KEY_ENTER:
 		return 0;
 	case Console::KEY_BACKSPACE:
-		if(x > 0) {
-			x--;				
-			line.erase(x, 1);
+		if(xpos > 0) {
+			xpos--;				
+			line.erase(xpos, 1);
 		}
 		break;
 	case Console::KEY_DELETE:
-		if(x < (int)line.length()) {
-			line.erase(x, 1);
+		if(xpos < (int)line.length()) {
+			line.erase(xpos, 1);
 		}
 		break;
 	case Console::KEY_LEFT:
-		if(x > 0)
-			x--;
+		if(xpos > 0)
+			xpos--;
 		break;
 	case Console::KEY_HOME:
-		x = 0;
+		xpos = 0;
 		break;
 	case Console::KEY_END:
-		x = line.length();
+		xpos = line.length();
 		break;
 	case Console::KEY_RIGHT:
-		if(x < (int)line.length())
-			x++;
+		if(xpos < (int)line.length())
+			xpos++;
+		break;
+	case Console::KEY_ESCAPE:
+		xpos = 0;
+		line = "";
 		break;
 	default:
 		if(c < 256) {
-			line.insert(x, 1, c);
-			x++;
+			line.insert(xpos, 1, c);
+			xpos++;
 		} else
 			return c;
 		break;
 	}
+
+	auto endX = startX + width;
+	auto cursorX = startX + xpos - xoffset;
+	while(cursorX < startX) {
+		xoffset--;
+		cursorX++;
+		lastLen = -1;
+	}
+	while(cursorX >= endX) {
+		xoffset++;
+		cursorX--;
+		lastLen = -1;
+	}
+
 	if(line.length() != lastLen) {
 		refresh();
 	}
-	console.moveCursor(startX + x, startY);
+
+	//int cursorx = startX + x;
+	//if(cursorx > maxCursor)
+	//	cursorx = maxCursor;
+
+
+	console.moveCursor(cursorX, startY);
 	return -1;
 }
 
 void LineEditor::refresh() {
-	console.put(startX, startY, line);
+	console.fill(bg, startX, startY, width, 1);
+	auto l = line.substr(xoffset, width) + " ";
+	console.put(startX, startY, l);
 	//if(lastLen > line.length())
-		console.put(startX+line.length(), startY, " ");
+	//	console.put(startX+line.length(), startY, " ");
 	console.flush();
 
 }

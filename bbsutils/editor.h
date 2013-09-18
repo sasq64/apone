@@ -10,7 +10,7 @@ class Editor {
 
 class LineEditor : public Editor {
 public:
-	LineEditor(Console &console);
+	LineEditor(Console &console, int width = 0);
 	int update(int msec);
 	bool isDone();
 	std::string getResult();
@@ -23,7 +23,16 @@ protected:
 	int startY;
 	int fg;
 	int bg;
-	int x;
+
+	int width;
+	int maxlen;
+
+	bool password;
+	std::string filter;
+
+	int xpos;
+	int xoffset;
+
 };
 
 }

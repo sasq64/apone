@@ -154,7 +154,7 @@ public:
 	virtual void scrollScreen(int dy);
 	//virtual void scrollLine(int dx);
 
-	virtual std::string getLine();
+	virtual std::string getLine(int maxlen = 0);
 /*
 	virtual std::future<std::string> getLineAsync() {
 		getLineStarted = false;
