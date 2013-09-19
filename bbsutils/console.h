@@ -74,7 +74,7 @@ public:
 
 	enum {
 		KEY_ESCAPE = 0x1b,
-		KEY_BACKSPACE = 256,
+		KEY_BACKSPACE = 0x10000,
 		KEY_LEFT,
 		KEY_UP,
 		KEY_RIGHT,
@@ -96,8 +96,9 @@ public:
 		KEY_F7,
 		KEY_F8,
 
-		KEY_UNKNOWN = 0xfffe,
-		KEY_TIMEOUT = 0xffff
+		KEY_UNKNOWN = 0x1fffe,
+		KEY_TIMEOUT = 0x1ffff
+
 	};
 
 	typedef uint16_t Char;

@@ -59,7 +59,7 @@ int LineEditor::update(int msec) {
 		line = L"";
 		break;
 	default:
-		if(c < 256) {
+		if(c < 0x10000) {
 			line.insert(xpos, 1, c);
 			xpos++;
 		} else
