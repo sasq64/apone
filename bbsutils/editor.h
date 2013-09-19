@@ -14,7 +14,17 @@ public:
 	int update(int msec);
 	bool isDone();
 	std::string getResult();
+	std::wstring getWResult();
 	void refresh();
+
+	void setString(const std::string &text);
+	void setString(const std::wstring &text);
+	void setXY(int x, int y);
+	void setCursor(int pos);
+
+	int getCursor() { return xpos; }
+	int getLength() { return line.length(); }
+
 protected:
 	Console &console;
 	std::wstring line;
@@ -41,6 +51,14 @@ public:
 	int update(int msec);
 	std::string getResult();
 	void refresh();
+protected:
+
+	Console &console;
+
+	int lineNo;
+	int column;
+	std::vector<std::wstring> lines;
+	std::unique_ptr<LineEditor> lineEd;
 };
 
 }

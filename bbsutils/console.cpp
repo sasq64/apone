@@ -421,7 +421,7 @@ int Console::getKey(int timeout) {
 
 std::string Console::getLine(int maxlen) {
 	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
-	while(lineEd->update(500) != 0);
+	while(lineEd->update(500) != KEY_ENTER);
 	return lineEd->getResult();
 }
 

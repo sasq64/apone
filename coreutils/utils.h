@@ -65,6 +65,7 @@ std::string path_prefix(const std::string &name);
 
 std::string utf8_encode(const std::string &s);
 std::string utf8_encode(const std::wstring &s);
+std::wstring utf8_decode(const std::string &s);
 
 // Vectors
 

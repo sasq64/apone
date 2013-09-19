@@ -184,6 +184,43 @@ string path_prefix(const string &name) {
 	return name.substr(slashPos, dotPos-slashPos);
 }
 
+static const u_int32_t offsetsFromUTF8[6] = {
+    0x00000000UL, 0x00003080UL, 0x000E2080UL,
+    0x03C82080UL, 0xFA082080UL, 0x82082080UL
+};
+
+static const uint8_t trailingBytesForUTF8[256] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+};
+
+wstring utf8_decode(const string &s)
+{
+    int i=0;
+    wstring result;
+    while (i < s.length()) {
+        auto nb = trailingBytesForUTF8[(uint8_t)s[i]];
+        if(s[i] == 0)
+        	break;
+        wchar_t ch = 0;
+        switch (nb) {
+            /* these fall through deliberately */
+        case 3: ch |= (unsigned char)s[i++]; ch <<= 6;
+        case 2: ch |= (unsigned char)s[i++]; ch <<= 6;
+        case 1: ch |= (unsigned char)s[i++]; ch <<= 6;
+        case 0: ch |= (unsigned char)s[i++];
+        }
+        ch -= offsetsFromUTF8[nb];
+        result.push_back(ch);
+    }
+    return result;
+}
 
 string utf8_encode(const string &s) {
 	string out;

@@ -305,7 +305,7 @@ int TelnetServer::Session::getHeight() const  {
 }
 std::string TelnetServer::Session::getTermType() const  { 
 	chrono::milliseconds ms { 100 };
-	int delay = 8;
+	int delay = 20;
 	while(true) {
 		if(disconnected)
 			throw disconnect_excpetion{};
