@@ -199,8 +199,24 @@ string utf8_encode(const string &s) {
 }
 
 
+string utf8_encode(const wstring &s) {
+	string out;
+	for(const auto &c : s) {
+		if(c <= 0x7f)
+			out.push_back(c);
+		else if(c < 0x800) {
+			out.push_back(0xC0 | (c >> 6));
+			out.push_back(0x80 | (c & 0x3F));
+		} else /*if (c < 0x10000) */ {
+			out.push_back(0xE0 | (c >> 12));
+			out.push_back(0x80 | (c >> 6));
+			out.push_back(0x80 | (c & 0x3F));
+		}
+	}
+	return out;
 }
 
+}
 
 #ifdef UNIT_TEST
 

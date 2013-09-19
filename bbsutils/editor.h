@@ -17,7 +17,7 @@ public:
 	void refresh();
 protected:
 	Console &console;
-	std::string line;
+	std::wstring line;
 
 	int startX;
 	int startY;

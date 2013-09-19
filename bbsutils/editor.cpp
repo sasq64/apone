@@ -2,6 +2,7 @@
 #include "editor.h"
 
 #include <coreutils/log.h>
+#include <coreutils/utils.h>
 
 namespace bbs {
 
@@ -16,7 +17,7 @@ LineEditor::LineEditor(Console &console, int width) : console(console), width(wi
 		this->width = console.getWidth() - startX - 1;
 	maxlen = width;
 	xpos = 0;
-	line = "";
+	line = L"";
 }
 
 int LineEditor::update(int msec) {
@@ -55,7 +56,7 @@ int LineEditor::update(int msec) {
 		break;
 	case Console::KEY_ESCAPE:
 		xpos = 0;
-		line = "";
+		line = L"";
 		break;
 	default:
 		if(c < 256) {
@@ -100,7 +101,7 @@ void LineEditor::refresh() {
 }
 
 string LineEditor::getResult() {
-	return line;
+	return utils::utf8_encode(line);
 }
 
 } // namespace bbs

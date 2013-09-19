@@ -107,9 +107,11 @@ void AnsiConsole::impl_gotoxy(int x, int y) {
 
 int AnsiConsole::impl_handlekey() {
 	auto c = inBuffer.front();
+	if(c >= 0x80)
+		return get_utf8();
 	inBuffer.pop();
 	if(c != 0x1b) {	
-		LOGD("Normal key %d", (int)c);	
+		LOGD("Normal key %d", (int)c);
 		if(c == 13 || c == 10) {
 			if(c == 13) {
 				auto c2 = inBuffer.front();

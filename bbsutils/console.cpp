@@ -114,6 +114,26 @@ int u8_to_ucs(const char *src, uint32_t *dest, int sz)
     return i;
 }
 
+int Console::get_utf8(){
+
+	int nb = trailingBytesForUTF8[inBuffer.front()];
+
+	LOGD("Utf8 %02x -> %d bytes, vs %d bytes", inBuffer.front(),nb, inBuffer.size());
+
+
+	int ch = 0;
+	switch (nb) {
+	case 3: ch += inBuffer.front(); inBuffer.pop(); ch <<= 6;
+	case 2: ch += inBuffer.front(); inBuffer.pop(); ch <<= 6;
+	case 1: ch += inBuffer.front(); inBuffer.pop(); ch <<= 6;
+	case 0: ch += inBuffer.front(); inBuffer.pop();
+	}
+	ch -= offsetsFromUTF8[nb];
+	LOGD("Got %04x", ch);
+	return ch;
+}
+
+
 void Console::put(int x, int y, Char c, int fg, int bg) {
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
@@ -141,14 +161,6 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 
 	if(y >= height)
 		return;
-/*
-	std::u16string ucs2;
-    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> ucs2conv;
-    try {
-        usc2 = ucs2conv.from_bytes(text);
-    } catch(const std::range_error& e) {
-    }
-*/
 
     vector<uint32_t> output(128);
     int l = u8_to_ucs(text.c_str(), &output[0], 128);
@@ -161,6 +173,36 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 
 		auto &t = grid[(x+i) + y * width];
 		t.c = output[i];
+		impl_translate(t.c);
+		//LOGD("Putting %04x as %04x", output[i], t.c);
+
+		if(fg == CURRENT_COLOR)
+			fg = fgColor;
+		if(bg == CURRENT_COLOR)
+			bg = bgColor;
+
+		if(fg >= 0)
+			t.fg = fg;
+		if(bg >= 0)
+			t.bg = bg;
+	}
+}
+
+void Console::put(int x, int y, const wstring &text, int fg, int bg) {
+
+	if(x < 0) x = width+x;
+	if(y < 0) y = height+y;
+
+	if(y >= height)
+		return;
+	
+	for(int i=0; i<(int)text.length(); i++) {
+  
+		if(x+i >= width)
+			return;
+
+		auto &t = grid[(x+i) + y * width];
+		t.c = text[i];
 		impl_translate(t.c);
 		//LOGD("Putting %04x as %04x", output[i], t.c);
 
