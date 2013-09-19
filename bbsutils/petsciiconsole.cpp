@@ -51,11 +51,11 @@ PetsciiConsole::PetsciiConsole(Terminal &terminal) : Console(terminal) {
 		i++;
 	}
 
-	unicodeToPetscii[L'{'] = 0xb3;
-	unicodeToPetscii[L'}'] = 0xab;
-	unicodeToPetscii[L'_'] = 0xa4;
-
-
+	wstring s = L"╋┃━┏┓┗┛{}_";
+	vector<uint8_t> v { 0xdd,0xdb,0x60,0xb0,0xae,0xad,0xbd,0xb3,0xab,0xa4 };
+	for(int i=0; i<v.size(); i++) {
+		unicodeToPetscii[s[i]] = v[i];
+	}
 }
 
 
