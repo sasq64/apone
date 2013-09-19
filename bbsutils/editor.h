@@ -35,6 +35,14 @@ protected:
 
 };
 
+class FullEditor : public Editor {
+public:
+	FullEditor(Console &console);
+	int update(int msec);
+	std::string getResult();
+	void refresh();
+};
+
 }
 
 #endif // BBS_EDITOR_H

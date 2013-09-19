@@ -68,25 +68,25 @@ int LineEditor::update(int msec) {
 
 	auto endX = startX + width;
 	auto cursorX = startX + xpos - xoffset;
-	while(cursorX < startX) {
-		xoffset--;
-		cursorX++;
+	auto dx = startX - cursorX;
+
+	if(dx > 0) {
+		xoffset -= dx;
+		cursorX += dx;
 		lastLen = -1;
 	}
-	while(cursorX >= endX) {
-		xoffset++;
-		cursorX--;
+	dx = cursorX - endX;
+	if(dx >= 0) {
+		xoffset += dx;
+		cursorX -= dx;
 		lastLen = -1;
 	}
+
+
 
 	if(line.length() != lastLen) {
 		refresh();
 	}
-
-	//int cursorx = startX + x;
-	//if(cursorx > maxCursor)
-	//	cursorx = maxCursor;
-
 
 	console.moveCursor(cursorX, startY);
 	return -1;
@@ -94,12 +94,9 @@ int LineEditor::update(int msec) {
 
 void LineEditor::refresh() {
 	console.fill(bg, startX, startY, width, 1);
-	auto l = line.substr(xoffset, width) + " ";
+	auto l = line.substr(xoffset, width);
 	console.put(startX, startY, l);
-	//if(lastLen > line.length())
-	//	console.put(startX+line.length(), startY, " ");
 	console.flush();
-
 }
 
 string LineEditor::getResult() {
