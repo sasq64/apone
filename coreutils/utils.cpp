@@ -16,21 +16,6 @@ namespace utils {
 
 using namespace std;
 
-vector<string> split(const string &s, const string &delim) {
-	vector<string> args;
-	char temp [ s.length()+1 ];
-	char *ptr = temp;
-	strcpy(temp, s.c_str());
-	while(true) {
-		char *arg = strtok(ptr, delim.c_str());			
-		if(arg) {
-			args.push_back(string(arg));
-		} else
-			break;
-		ptr = nullptr;
-	}
-	return args;
-}
 
 string rstrip(const string &x, char c) {
 	auto l = x.length();

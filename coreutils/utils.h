@@ -42,7 +42,48 @@ private:
 	std::vector<char> delims;
 };
 
-std::vector<std::string> split(const std::string &s, const std::string &delim = " ");
+std::string utf8_encode(const std::string &s);
+std::string utf8_encode(const std::wstring &s);
+std::wstring utf8_decode(const std::string &s);
+
+template <typename T>
+std::vector<T> split(const T &s, const T &delim = T(" ")) {
+	std::vector<T> args;
+	auto l = delim.length();
+	if(l == 0) return args;
+	int pos = 0;
+	while(true) {
+		auto newpos = s.find(delim, pos);
+		if(newpos == std::string::npos) {
+			args.push_back(s.substr(pos));
+			break;
+		}
+		LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
+		args.push_back(s.substr(pos, newpos-pos));
+		pos = newpos + l;
+	}
+
+	return args;
+}
+
+template<template <typename, typename> class Container, class V, class A>
+V join(const Container<V, A> &strings, const V &separator) {
+	V out;
+	for(const auto &s : strings) {
+		out += (s + separator);
+	}
+	return out;
+}
+
+template<template <typename, typename> class Container, class V, class A>
+V join(const Container<V, A> &strings, const wchar_t *separator) {
+	V out;
+	for(const auto &s : strings) {
+		out += (s + separator);
+	}
+	return out;
+}
+
 
 std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
@@ -62,10 +103,6 @@ std::string path_filename(const std::string &name);
 std::string path_extention(const std::string &name);
 std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
-
-std::string utf8_encode(const std::string &s);
-std::string utf8_encode(const std::wstring &s);
-std::wstring utf8_decode(const std::string &s);
 
 // Vectors
 
