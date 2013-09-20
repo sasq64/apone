@@ -43,7 +43,7 @@ void Console::fill(int bg, int x, int y, int w, int h) {
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
 	if(w <= 0) w = width+w;
-	if(h <= 0) h = height+w;
+	if(h <= 0) h = height+h;
 
 	if(bg == CURRENT_COLOR)
 		bg = bgColor;
