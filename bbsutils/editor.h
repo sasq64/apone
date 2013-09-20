@@ -21,6 +21,7 @@ public:
 	void setString(const std::wstring &text);
 	void setXY(int x, int y);
 	void setCursor(int pos);
+	void setWidth(int w) { width = w; }
 
 	int getCursor() { return xpos; }
 	int getLength() { return line.length(); }
@@ -51,12 +52,23 @@ public:
 	int update(int msec);
 	std::string getResult();
 	void refresh();
+
+	void setString(const std::string &text);
+	void setString(const std::wstring &text);
+
 protected:
+	void redraw(bool lines, int cursor = -1);
 
 	Console &console;
 
+	int startX;
+	int startY;
+	int width;
+	int height;
+
+	int yscroll;
+
 	int lineNo;
-	int column;
 	std::vector<std::wstring> lines;
 	std::unique_ptr<LineEditor> lineEd;
 };

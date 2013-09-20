@@ -29,20 +29,20 @@ void LineEditor::setString(const std::wstring &text) {
 	line = text;
 	if(xpos > line.size())
 		xpos = line.size();
-	refresh();
+	//refresh();
 }
 
 void LineEditor::setXY(int x, int y) {
 	startX = x;
 	startY = y;
-	refresh();
+	//refresh();
 }
 
 void LineEditor::setCursor(int pos) {
 	xpos = pos;
 	if(xpos > line.size())
 		xpos = line.size();
-	refresh();
+	//refresh();
 }
 
 
@@ -157,10 +157,79 @@ FullEditor::FullEditor(Console &console) : console(console) {
 	console.moveCursor(0,0);
 	lineEd = make_unique<LineEditor>(console);
 	lineNo = 0;
+	yscroll = 0;
+	startX = 0;
+	startY = 0;
+	width = console.getWidth();
+	//height = console.getHeight() - 2;
+	height = console.getHeight()-1;
+
+	lineEd->setXY(startX, startY);
+	lineEd->setWidth(width);
 	lines.push_back(L"");
+
+	//console.fill(Console::RED, 0, 0, 2, 0);
+	//console.fill(Console::RED, 19, 0, 2, 0);
+
 	console.fill(Console::RED, 0, -1, 0, 1);
-	console.put(1, -1, format("%02d:%02d", lineNo+1, lineEd->getCursor()+1), Console::WHITE, Console::RED);
+	console.put(1, -1, format("%02d/%02d", lineNo+1, lines.size()), Console::WHITE, Console::RED);
 	console.flush();
+
+
+}
+
+/*
+height = 4
+0 2
+1 3 
+2 4
+3 5
+
+lineNo = 5
+
+*/
+
+
+
+void FullEditor::redraw(bool full, int cursor) {
+	//if(y1 <= 0)
+	//	y1 = lines.size() + y1;
+
+	//if(y1 > lines.size()-1)
+	//	y1 = lines.size()-1;
+	auto startLine = lineNo-yscroll-1;
+	if(startLine < 0) startLine = 0;
+
+	if(lineNo-yscroll >= height) {
+		yscroll = lineNo - height + 1;
+		//y0 = 0;
+		//y1 = height;
+		startLine = 0;
+		full = true;
+		LOGD("yscroll %d", yscroll);
+	} else if(lineNo-yscroll < 0) {
+		yscroll = lineNo;
+		//y0 = 0;
+		//y1 = height;
+		startLine = 0;
+		full = true;
+		LOGD("yscroll %d", yscroll);
+	}
+	if(full) {
+		for(int i=startLine; i<height; i++) {
+			console.fill(Console::BLACK, startX, i + startY, width, 1);
+			if(i+yscroll >= lines.size())
+				break;
+			console.put(startX, i + startY, lines[i + yscroll].substr(0,width));
+		}
+	}
+	console.flush();
+	if(cursor >= 0) {
+		lineEd->setXY(startX, lineNo + startY - yscroll);
+		lineEd->setString(lines[lineNo]);
+		lineEd->setCursor(cursor);
+		lineEd->refresh();
+	}
 }
 
 int FullEditor::update(int msec){
@@ -177,24 +246,14 @@ int FullEditor::update(int msec){
 	switch(rc) {
 	case Console::KEY_ENTER:
 		{
-		auto x = lineEd->getCursor();
-		auto l = lineEd->getWResult();
-		auto l0 = l.substr(0, x);
-		auto l1 = l.substr(x);
-		lines[lineNo] = l0;
-		lineNo++;
-		lines.insert(lines.begin() + lineNo, l1);
-		for(int i=lineNo-1; i<lines.size(); i++) {
-			console.fill(Console::BLACK, 0, i, 0, 1);
-			console.put(0, i, lines[i]);
-		}
-		console.flush();
-		//column = 0;
-		//console.moveCursor(column, lineNo);
-		//lineEd = make_unique<LineEditor>(console, lines[lineNo]);
-		lineEd->setXY(0, lineNo);
-		lineEd->setString(lines[lineNo]);
-		lineEd->setCursor(0);
+			auto x = lineEd->getCursor();
+			auto l = lineEd->getWResult();
+			auto l0 = l.substr(0, x);
+			auto l1 = l.substr(x);
+			lines[lineNo] = l0;
+			lineNo++;
+			lines.insert(lines.begin() + lineNo, l1);
+			redraw(true, 0);
 		}
 		break;
 	case Console::KEY_BACKSPACE:
@@ -204,15 +263,8 @@ int FullEditor::update(int msec){
 			lineNo--;
 			auto len = lines[lineNo].length();
 			lines[lineNo] = lines[lineNo] + l;
-			for(int i=lineNo; i<lines.size(); i++) {
-				console.fill(Console::BLACK, 0, i, 0, 1);
-				console.put(0, i, lines[i]);
-			}
-			console.fill(Console::BLACK, 0, lines.size(), 0, 1);
-			console.flush();
-			lineEd->setXY(0, lineNo);
-			lineEd->setString(lines[lineNo]);
-			lineEd->setCursor(len);
+			redraw(true, len);
+			//console.fill(Console::BLACK, startX, startY + lines.size(), width, 1);
 		}
 		break;
 	case Console::KEY_DELETE:
@@ -221,76 +273,59 @@ int FullEditor::update(int msec){
 			auto l = lineEd->getWResult();
 			lineEd->setString(l + lines[lineNo+1]);
 			lines.erase(lines.begin() + lineNo + 1);
-			for(int i=lineNo+1; i<lines.size(); i++) {
-				console.fill(Console::BLACK, 0, i, 0, 1);
-				console.put(0, i, lines[i]);
-			}
-			console.fill(Console::BLACK, 0, lines.size(), 0, 1);
-			console.flush();
-			//lineEd->setXY(0, lineNo);
-			//lineEd->setString(lines[lineNo]);
-			//lineEd->setCursor(len);
+			redraw(true);
+			//console.fill(Console::BLACK, startX, startY +lines.size(), width, 1);
 		}
 		break;
 	case Console::KEY_LEFT:
 		if(xpos == 0 && lineNo > 0) {
-			lines[lineNo] = lineEd->getWResult();
-			lineNo--;
-			lineEd->setXY(0, lineNo);
-			lineEd->setString(lines[lineNo]);
-			lineEd->setCursor(lines[lineNo].length());
+			lines[lineNo--] = lineEd->getWResult();
+			redraw(false,lines[lineNo].length());
 		}
 		break;
 	case Console::KEY_RIGHT:
 		if(xpos == lineEd->getLength() && lineNo < lines.size()-1) {
-			lines[lineNo] = lineEd->getWResult();
-			lineNo++;
-			lineEd->setXY(0, lineNo);
-			lineEd->setString(lines[lineNo]);
-			lineEd->setCursor(0);
+			lines[lineNo++] = lineEd->getWResult();
+			redraw(false,0);
 		}
 		break;
 	case Console::KEY_UP:
 		if(lineNo > 0) {
-			lines[lineNo] = lineEd->getWResult();
-			lineNo--;
-			lineEd->setXY(0, lineNo);
-			lineEd->setString(lines[lineNo]);
-			//lineEd->setCursor(0);
+			lines[lineNo--] = lineEd->getWResult();
+			redraw(false,0);
 		}
 		break;
 	case Console::KEY_DOWN:
 		if(lineNo < lines.size()-1) {
-			lines[lineNo] = lineEd->getWResult();
-			lineNo++;
-			lineEd->setXY(0, lineNo);
-			lineEd->setString(lines[lineNo]);
-			//lineEd->setCursor(0);
+			lines[lineNo++] = lineEd->getWResult();
+			redraw(false,0);
 		}
 		break;
 	}
 
-	console.put(1, -1, format("%02d:%02d", lineNo+1, lineEd->getCursor()+1), Console::WHITE, Console::RED);
+	console.put(1, -1, format("%02d/%02d", lineNo+1, lines.size()), Console::WHITE, Console::RED);
 	console.flush();
 
 	return rc;
 }
 
-/*
-
-0 something
-1 other
-
-2 line here
-
-
-*/
-
 std::string FullEditor::getResult(){
-	return "";
+	auto text = join(lines, L"\n");
+	return utf8_encode(text);
 }
 
+void FullEditor::setString(const std::string &text) {
+	lines = split(utf8_decode(text), wstring(L"\n"));
+}
+
+void FullEditor::setString(const std::wstring &text) {
+	lines = split(text, wstring(L"\n"));
+}
+
+
+
 void FullEditor::refresh(){
+	redraw(true);
 }
 
 
