@@ -84,8 +84,13 @@ void PetsciiConsole::putChar(Char c) {
 		outBuffer.push_back(c & 0xff);
 		outBuffer.push_back(LEFT);
 		outBuffer.push_back(INS);
-		// NOTE: We don't handle the case where char 38 and 39 have different colors!
-		outBuffer.push_back(grid[curY*width+38].c & 0xff);
+		Tile &t = grid[curY*width+38];
+		if(t.fg != grid[curY*width+39].fg || t.bg != grid[curY*width+39].bg) {
+			impl_color(t.fg, t.bg);
+			outBuffer.push_back(t.c & 0xff);
+			impl_color(fgColor, bgColor);
+		} else
+			outBuffer.push_back(t.c & 0xff);
 	} else {
 		outBuffer.push_back(c & 0xff);
 		curX++;
