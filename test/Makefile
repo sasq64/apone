@@ -1,17 +1,10 @@
-OBJDIR := obj/
-CFLAGS := -g -Wall
-CXXFLAGS := -std=c++0x
 
-UTILS = ..
-CFLAGS += -I$(UTILS) -I../netlink
-MODULES := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/netlink
+all :
+	+make -f simplebbs.mk
+	+make -f chattest.mk
+	+make -f shelltest.mk
 
-LDFLAGS := -pthread
-
-TARGET := shelltest
-OBJS := shelltest.o
-
-CC := gcc-4.7
-CXX := g++-4.7
-
-include ../Makefile.inc
+clean :
+	+make clean -f simplebbs.mk
+	+make clean -f chattest.mk
+	+make clean -f shelltest.mk

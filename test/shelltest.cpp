@@ -93,26 +93,18 @@ int main(int argc, char **argv) {
 					console.write("\n");
 				} else if(cmd == "ed") {
 					auto saved = console.getTiles();
-<<<<<<< HEAD
 					auto xy = console.getCursor();
-=======
-					auto x = console.getCursorX();
-					auto y = console.getCursorY();
->>>>>>> origin/master
 					File file { currentDir, parts[1] };
 					string contents((char*)file.getPtr(), file.getSize());
 					FullEditor ed(console);
+
 					ed.setString(contents);
 					while(true) {
 						auto rc = ed.update(500);
 						if(rc == Console::KEY_F1) {
 							console.setTiles(saved);					
 							console.flush();
-<<<<<<< HEAD
 							console.moveCursor(xy);
-=======
-							console.moveCursor(x, y);
->>>>>>> origin/master
 							break;
 						}
 					}

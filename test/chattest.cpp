@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 				auto key = lineEd->update(500);				
 				switch(key) {
-				case KEY_ENTER:
+				case Console::KEY_ENTER:
 					addChatLine(userName + ": " + lineEd->getResult());
 					console.fill(Console::BLACK, 0, -1, 0, 1);
 					console.moveCursor(0, -1);
