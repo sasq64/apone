@@ -18,21 +18,17 @@ using namespace std;
 LocalTerminal localTerminal;
 
 void Console::clear() {
-	for(auto &t : grid) {
-		t = { 0x20, WHITE, BLACK };
-	}
-	for(auto &t : oldGrid) {
-		t = { 0x20, WHITE, BLACK };
-	}
+	Tile t { 0x20, WHITE, BLACK };
+	std::fill(begin(grid), end(grid), t);
+	std::fill(begin(oldGrid), end(oldGrid), t);
 	impl_clear();
-	curX = curY = 0;
+	//curX = curY = 0;
 }
 
 void Console::refresh() {
 
-	for(auto &t : oldGrid) {
-		t = {-1, -1, -1};
-	}
+	Tile t { 0, -1, -1 };
+	std::fill(begin(oldGrid), end(oldGrid), t);
 	impl_clear();
 	curX = curY = 0;
 	flush();
@@ -227,7 +223,7 @@ void Console::resize(int w, int h) {
 	clear();
 }
 
-void Console::flush() {
+void Console::flush(bool restoreCursor) {
 
 	auto w = terminal.getWidth();
 	auto h = terminal.getHeight();
@@ -244,19 +240,15 @@ void Console::flush() {
 	auto curFg = fgColor;
 	auto curBg = bgColor;
 
-	//LOGD("Color at flush %d %d", fgColor, bgColor);
+	// TODO: Try this from clean oldGrid and clear before if more effecient
 
-	//LOGD("flush");
 	for(int y = 0; y<height; y++) {
 		for(int x = 0; x<width; x++) {
 			auto &t0 = oldGrid[x+y*width];
 			auto &t1 = grid[x+y*width];
 			if(t0 != t1) {
-				//LOGD("diff in %d %d",x,y);			
 				if(curY != y or curX != x) {
 					impl_gotoxy(x, y);
-					//curX = x;
-					//curY = y;
 				}
 				if(t1.fg != curFg || t1.bg != curBg) {
 					impl_color(t1.fg, t1.bg);
@@ -269,8 +261,6 @@ void Console::flush() {
 		}
 	}
 
-
-
 	if(curFg != fgColor || curBg != bgColor) {
 		if(fgColor >= 0 && bgColor >= 0) {
 			LOGD("Restoring color to %d %d", fgColor, bgColor);
@@ -279,10 +269,8 @@ void Console::flush() {
 	}
 
 	//LOGD("Restorting cursor");
-
-	impl_gotoxy(saveX, saveY);
-	//curX = saveX;
-	//curY = saveY;
+	if(restoreCursor)
+		impl_gotoxy(saveX, saveY);
 
 	if(outBuffer.size() > 0) {
 		LOGV("OUTBYTES: [%02x]", outBuffer);
@@ -315,6 +303,9 @@ void Console::moveCursor(int x, int y) {
 
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
+
+	if(curX == x && curY == y)
+		return;
 
 	impl_gotoxy(x, y);
 	if(outBuffer.size() > 0) {

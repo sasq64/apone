@@ -142,7 +142,7 @@ public:
 	virtual void write(const std::string &text);
 	virtual void setColor(int fg, int bg = BLACK);
 	virtual void resize(int w, int h);
-	virtual void flush();
+	virtual void flush(bool restoreCursor = true);
 	virtual void putChar(Char c);
 	virtual void moveCursor(int x, int y);
 	virtual void fill(int bg = CURRENT_COLOR, int x = 0, int y = 0, int width = 0, int height = 0);
