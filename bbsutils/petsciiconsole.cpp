@@ -133,9 +133,23 @@ void PetsciiConsole::impl_clear() {
 
 void PetsciiConsole::impl_gotoxy(int x, int y) {
 
-	//LOGD("Petscii GOTOXY from %d,%d to %d,%d", curX, curY, x, y);
+	int dx = curX-x;
+	if(dx < 0) dx = -dx;
+	int dy = curY-y;
+	if(dy < 0) dy = -dy;
 
-	if(curX - x > x) {
+	if(x + y < dx + dy) {
+		outBuffer.push_back(HOME);
+		d += "C";
+		curX = curY = 0;
+		dx = x;
+		dy = y;
+	}
+
+	// dx dy is the distance to move the cursor
+
+	// If its closer to move from the edge, do a line feed
+	if(40 - x < dx || curX - x > x) {
 		if(curY == height-1) {
 			outBuffer.push_back(UP);
 		} else
@@ -146,7 +160,12 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 			//curFg = curBg;
 			//curBg = BLACK;
 		}
-		curX=0;
+		curX = 0;
+		if(40 - x < dx && curY > 0) {
+			outBuffer.push_back(LEFT);
+			curY--;
+			curX = 39;
+		}
 	}
 
 	while(y > curY) {
