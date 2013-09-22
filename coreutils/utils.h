@@ -106,28 +106,32 @@ std::string path_prefix(const std::string &name);
 
 // Vectors
 
-template <class T> struct vec {
-	vec() : x(0), y(0) {}
-	vec(T x, T y) : x(x), y(y) {}
+template <class T> struct vec2 {
+	vec2() : x(0), y(0) {}
+	vec2(T x, T y) : x(x), y(y) {}
 
-	vec operator+(const vec &v) const {
-		return vec(x + v.x, y + v.y);
+	vec2 operator+(const vec2 &v) const {
+		return vec2(x + v.x, y + v.y);
 	}
 
-	vec operator+(std::initializer_list<T> il) const {
-		return vec(x + 0, y + 0);
+	vec2 operator+(std::initializer_list<T> il) const {
+		auto it = il.begin();
+		auto xa = *it;
+		++it;
+		auto ya = *it;
+		return vec2(x + xa, y + ya);
 	}
 
-	vec operator-(const vec &v) const {
-		return vec(x - v.x, y - v.y);
+	vec2 operator-(const vec2 &v) const {
+		return vec2(x - v.x, y - v.y);
 	}
 
-	vec operator/(T n) const {
-		return vec(x / n, y / n);
+	vec2 operator/(T n) const {
+		return vec2(x / n, y / n);
 	}
 
-	vec operator*(T n) const {
-		return vec(x * n, y * n);
+	vec2 operator*(T n) const {
+		return vec2(x * n, y * n);
 	}
 
 	T angle() {

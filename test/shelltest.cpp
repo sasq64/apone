@@ -50,13 +50,12 @@ int main(int argc, char **argv) {
 			Console &console = *con;
 
 			console.flush();
-			auto h = console.getHeight();
-			auto w = console.getWidth();
-			LOGD("New connection, terminal:'%s', size:%dx%d", termType, w, h);
+			auto size = console.getSize();
+			LOGD("New connection, termtype: %s, size (%dx%d)", termType, size.x, size.y);
 
 			console.write("System shell. Use 'exit' to quit\n\n");
 
-			File rootDir = { "/home/sasq/projects/bbs" };
+			File rootDir = File::cwd();
 			auto rootName = rootDir.getName();
 			auto rootLen = rootName.length();
 			auto currentDir = rootDir;
@@ -93,8 +92,7 @@ int main(int argc, char **argv) {
 					console.write("\n");
 				} else if(cmd == "ed") {
 					auto saved = console.getTiles();
-					auto x = console.getCursorX();
-					auto y = console.getCursorY();
+					auto xy = console.getCursor();
 					File file { currentDir, parts[1] };
 					string contents((char*)file.getPtr(), file.getSize());
 					FullEditor ed(console);
@@ -104,7 +102,7 @@ int main(int argc, char **argv) {
 						if(rc == Console::KEY_F1) {
 							console.setTiles(saved);					
 							console.flush();
-							console.moveCursor(x, y);
+							console.moveCursor(xy);
 							break;
 						}
 					}

@@ -5,6 +5,7 @@
 #include "terminal.h"
 
 #include <coreutils/log.h>
+#include <coreutils/utils.h>
 
 #include <stdint.h>
 #include <termios.h>
@@ -177,8 +178,14 @@ public:
 
 	int getWidth() const { return width; }
 	int getHeight() const { return height; }
+	utils::vec2<int> getSize() const { return utils::vec2<int>(width, height); }
 	int getCursorX() const { return curX; }
 	int getCursorY() const { return curY; }
+
+	utils::vec2<int> getCursor() const { return utils::vec2<int>(curX, curY); }
+	void moveCursor(const utils::vec2<int> &pos) { moveCursor(pos.x, pos.y); }
+
+
 	int getFg() const { return fgColor; }
 	int getBg() const { return bgColor; }
 

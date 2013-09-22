@@ -26,6 +26,7 @@ string rstrip(const string &x, char c) {
 	return x.substr(0, l);
 }
 
+/*
 StringTokenizer::StringTokenizer(const string &s, const string &delim) {
 	char temp [ s.length()+1 ];
 	char *ptr = temp;
@@ -42,7 +43,7 @@ StringTokenizer::StringTokenizer(const string &s, const string &delim) {
 		ptr = nullptr;
 	}
 }
-
+*/
 
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
@@ -187,9 +188,9 @@ static const uint8_t trailingBytesForUTF8[256] = {
 
 wstring utf8_decode(const string &s)
 {
-    size_t i = 0;
+    int i=0;
     wstring result;
-    while (i < s.length()) {
+    while (i < (int)s.length()) {
         auto nb = trailingBytesForUTF8[(uint8_t)s[i]];
         if(s[i] == 0)
         	break;
