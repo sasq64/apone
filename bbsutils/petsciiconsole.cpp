@@ -69,8 +69,8 @@ PetsciiConsole::PetsciiConsole(Terminal &terminal) : Console(terminal) {
 		i++;
 	}
 
-	wstring s = L"╋┃━┏┓┗┛{}_";
-	vector<uint8_t> v { 0xdd,0xdb,0x60,0xb0,0xae,0xad,0xbd,0xb3,0xab,0xa4 };
+	wstring s = L"\t╋┃━┏┓┗┛{}_";
+	vector<uint8_t> v { 0x20,0xdd,0xdb,0x60,0xb0,0xae,0xad,0xbd,0xb3,0xab,0xa4 };
 	for(uint i=0; i<v.size(); i++) {
 		unicodeToPetscii[s[i]] = v[i];
 	}
@@ -79,31 +79,37 @@ PetsciiConsole::PetsciiConsole(Terminal &terminal) : Console(terminal) {
 
 void PetsciiConsole::putChar(Char c) {
 
+
 	if(curX == 39) {
+		if(c == '\"') c = 0xa9; // NOTE: No fix, just avoids a bigger mess.
 		outBuffer.push_back(DEL);
-		if(c == '\"') c = ' '; // NOTE: No fix, just avoids a bigger mess.
 		outBuffer.push_back(c & 0xff);
 		outBuffer.push_back(LEFT);
 		Tile &t = grid[curY*width+38];
+		c = t.c;
+		if(c == '\"') c = 0xa9; // NOTE: No fix, just avoids a bigger mess.
 		if(t.fg != grid[curY*width+39].fg || t.bg != grid[curY*width+39].bg) {
 			impl_color(t.fg, t.bg);
 			outBuffer.push_back(INS);
-			outBuffer.push_back(t.c & 0xff);
+			outBuffer.push_back(c & 0xff);
 			impl_color(fgColor, bgColor);
 		} else {
 			outBuffer.push_back(INS);
-			outBuffer.push_back(t.c & 0xff);
+			outBuffer.push_back(c & 0xff);
 		}
 	} else {		
 
 		outBuffer.push_back(c & 0xff);		
 		if(c == '\"') {
-			// Handle quotes.
+			// Handle quotes. ""
 			// NOTE: Quotes in last column are NOT handled currently :(
+			uint8_t nextc = grid[curY*width+curX+1].c & 0xff;
 			outBuffer.push_back(c & 0xff);
 			outBuffer.push_back(LEFT);
-			outBuffer.push_back(grid[curY*width+curX+1].c & 0xff);
-			outBuffer.push_back(LEFT);
+			if(nextc != '\"') {
+				outBuffer.push_back(nextc);
+				outBuffer.push_back(LEFT);
+			}
 		}
 
 		curX++;
@@ -114,20 +120,8 @@ void PetsciiConsole::putChar(Char c) {
 }
 
 void PetsciiConsole::impl_translate(Char &c) {
-
-	//Char x = c;
-
 	c = unicodeToPetscii[c];
 	if(c == 0) c = '?';
-/*
-	auto *pc = std::find(begin(petsciiTable), end(petsciiTable), c);
-	if(pc != end(petsciiTable)) {
-		//if(c > 0x800)
-		LOGD("Unicode %04x to petcii %02x", c, (pc - petsciiTable + 0x20));
-		c = (pc - petsciiTable + 0x20);
-	} else
-		c = '?';
-	//LOGD("Translated %c (%02x) to %c (%02x)", x, x, c, c);*/
 }
 
 void PetsciiConsole::impl_color(int fg, int bg) {
@@ -243,6 +237,11 @@ bool PetsciiConsole::impl_scroll_screen(int dy) {
 	while(steps--)
 		outBuffer.push_back(DOWN);
 	steps = height - curY - 1;
+	if(curY < steps) {
+		outBuffer.push_back(HOME);
+		outBuffer.push_back(DOWN);
+		return true;
+	}
 	while(steps--)
 		outBuffer.push_back(UP);
 	return true;
