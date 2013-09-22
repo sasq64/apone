@@ -25,6 +25,7 @@ public:
 
 	int getCursor() { return xpos; }
 	int getLength() { return line.length(); }
+	int getOffset() { return xoffset; }
 
 protected:
 	Console &console;
