@@ -30,18 +30,6 @@ typedef unsigned int uint;
 
 const char path_separator = '/';
 
-
-class StringTokenizer {
-public:
-	StringTokenizer(const std::string &s, const std::string &delim);
-	int noParts() { return args.size(); }
-	const std::string &getString(int no) { return args[no]; }
-	const char getDelim(int no) { return delims[no]; }
-private:
-	std::vector<std::string> args;
-	std::vector<char> delims;
-};
-
 std::string utf8_encode(const std::string &s);
 std::string utf8_encode(const std::wstring &s);
 std::wstring utf8_decode(const std::string &s);

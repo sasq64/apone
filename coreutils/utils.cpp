@@ -26,25 +26,6 @@ string rstrip(const string &x, char c) {
 	return x.substr(0, l);
 }
 
-/*
-StringTokenizer::StringTokenizer(const string &s, const string &delim) {
-	char temp [ s.length()+1 ];
-	char *ptr = temp;
-	strcpy(temp, s.c_str());
-	int pos = 0;
-	while(true) {
-		char *arg = strtok(ptr, delim.c_str());			
-		if(arg) {
-			args.push_back(string(arg));
-			delims.push_back(ptr ? 0 : s[pos-1]);//ptr[-1]);
-			pos += (strlen(arg)+1);
-		} else
-			break;
-		ptr = nullptr;
-	}
-}
-*/
-
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
 	char *ptr = target;

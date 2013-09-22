@@ -78,7 +78,8 @@ int main(int argc, char **argv) {
 					addChatLine(userName + ": " + lineEd->getResult());
 					console.fill(Console::BLACK, 0, -1, 0, 1);
 					console.moveCursor(0, -1);
-					lineEd = make_unique<LineEditor>(console);
+					//lineEd = make_unique<LineEditor>(console);
+					lineEd->setString("");
 					break;
 				case Console::KEY_F7:
 					addChatLine(userName + " logged out");
