@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <unistd.h>
 #include <typeinfo>
 #include <cstdio>
 #include <vector>
@@ -66,13 +67,21 @@ public:
 		return fileName;
 	}
 
+	static File cwd() {
+		char temp[PATH_MAX];
+		if(::getcwd(temp, sizeof(temp))) {
+			return File(temp);
+		}
+		throw io_exception {"Could not get current directory"};
+	}
+
 	uint8_t *getPtr();
 	const std::string &getName() const { return fileName; }
 	int getSize() const { 
 		if(size < 0) {
 			struct stat ss;
 			if(stat(fileName.c_str(), &ss) != 0)
-				throw io_exception("Could not stat file");
+				throw io_exception {"Could not stat file"};
 			size = ss.st_size;
 		}
 		return size;
@@ -81,14 +90,14 @@ public:
 	bool isDir() const {
 		struct stat ss;
 		if(stat(fileName.c_str(), &ss) != 0)
-			throw io_exception("Could not stat file");
+			throw io_exception {"Could not stat file"};
 		return S_ISDIR(ss.st_mode);
 	}
 
 	std::vector<std::string> getLines();
 	void remove() {
 		if(std::remove(fileName.c_str()) != 0)
-			throw io_exception("Could not delete file");
+			throw io_exception {"Could not delete file"};
 	}
 
 	void copyFrom(File &otherFile);
