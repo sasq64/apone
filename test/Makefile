@@ -8,8 +8,8 @@ MODULES := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/netlink
 
 LDFLAGS := -pthread
 
-TARGET := chattest
-OBJS := chattest.o
+TARGET := shelltest
+OBJS := shelltest.o
 
 CC := gcc-4.7
 CXX := g++-4.7
