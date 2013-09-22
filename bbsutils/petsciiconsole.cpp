@@ -98,6 +98,7 @@ void PetsciiConsole::putChar(Char c) {
 			outBuffer.push_back(c & 0xff);
 		}
 	} else {		
+		if(c == '\"' && curX == 38) c = 0xa9; // NOTE: No fix, just avoids a bigger mess.
 
 		outBuffer.push_back(c & 0xff);		
 		if(c == '\"') {
