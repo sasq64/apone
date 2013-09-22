@@ -81,18 +81,31 @@ void PetsciiConsole::putChar(Char c) {
 
 	if(curX == 39) {
 		outBuffer.push_back(DEL);
+		if(c == '\"') c = ' '; // NOTE: No fix, just avoids a bigger mess.
 		outBuffer.push_back(c & 0xff);
 		outBuffer.push_back(LEFT);
-		outBuffer.push_back(INS);
 		Tile &t = grid[curY*width+38];
 		if(t.fg != grid[curY*width+39].fg || t.bg != grid[curY*width+39].bg) {
 			impl_color(t.fg, t.bg);
+			outBuffer.push_back(INS);
 			outBuffer.push_back(t.c & 0xff);
 			impl_color(fgColor, bgColor);
-		} else
+		} else {
+			outBuffer.push_back(INS);
 			outBuffer.push_back(t.c & 0xff);
-	} else {
-		outBuffer.push_back(c & 0xff);
+		}
+	} else {		
+
+		outBuffer.push_back(c & 0xff);		
+		if(c == '\"') {
+			// Handle quotes.
+			// NOTE: Quotes in last column are NOT handled currently :(
+			outBuffer.push_back(c & 0xff);
+			outBuffer.push_back(LEFT);
+			outBuffer.push_back(grid[curY*width+curX+1].c & 0xff);
+			outBuffer.push_back(LEFT);
+		}
+
 		curX++;
 		if(curX >= width) {
 			curX -= width;
@@ -140,7 +153,6 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 
 	if(x + y < dx + dy) {
 		outBuffer.push_back(HOME);
-		d += "C";
 		curX = curY = 0;
 		dx = x;
 		dy = y;

@@ -187,7 +187,7 @@ static const uint8_t trailingBytesForUTF8[256] = {
 
 wstring utf8_decode(const string &s)
 {
-    int i=0;
+    size_t i = 0;
     wstring result;
     while (i < s.length()) {
         auto nb = trailingBytesForUTF8[(uint8_t)s[i]];
