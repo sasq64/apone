@@ -75,7 +75,6 @@ template<template <typename, typename> class Container, class A> void format_str
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
 			else {
-				printf("Printing char! %02x", (int)b);
 				ss << b;
 			}
 			first = false;
@@ -94,7 +93,6 @@ template<template <typename, typename> class Container, class A> void format_str
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
 			else {
-				printf("Printing char! %02x", (int)b);
 				ss << b;
 			}
 			first = false;
@@ -113,7 +111,6 @@ template<template <typename, typename> class Container, class A> void format_str
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
 			else {
-				printf("Printing char! %02x", (int)b);
 				ss << b;
 			}
 			first = false;
