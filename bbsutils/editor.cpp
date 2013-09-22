@@ -189,24 +189,31 @@ void FullEditor::redraw(bool full, int cursor) {
 		lineEd->refresh();
 	}
 
+	int scroll = height/4;
+	if(scroll < 3) scroll = 3;
+
 	auto startLine = lineNo-yscroll-1;
 	if(startLine < 0) startLine = 0;
 
 	if(lineNo-yscroll >= height) {
-		yscroll = lineNo - height + 1;
-		//y0 = 0;
-		//y1 = height;
+		// Scroll down
+		yscroll++;// = lineNo - height + 1;
+		console.fill(Console::BLUE, 0, 1, 0, 1);
+		console.flush();
+		console.scrollScreen(1);
 		startLine = 0;
 		full = true;
 		LOGD("yscroll %d", yscroll);
 	} else if(lineNo-yscroll < 0) {
-		yscroll = lineNo;
-		//y0 = 0;
-		//y1 = height;
+		// Scroll up
+		yscroll = lineNo - scroll;
 		startLine = 0;
 		full = true;
 		LOGD("yscroll %d", yscroll);
 	}
+
+	if(yscroll < 0) yscroll = 0;
+
 	if(full) {
 		for(int i=startLine; i<height; i++) {
 			console.fill(Console::BLACK, startX, i + startY, width, 1);

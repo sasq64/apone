@@ -204,7 +204,9 @@ protected:
 	virtual bool impl_scroll_line(int dx) { return false; };
 	virtual int impl_handlekey() = 0;
 	virtual void impl_clear() = 0;
-	virtual void impl_translate(Char &c) {}
+	virtual void impl_translate(Char &c) {
+		if(c == '\t') c = ' ';
+	}
 
 
 	Terminal &terminal;
