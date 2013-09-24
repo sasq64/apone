@@ -31,8 +31,6 @@ void TelnetServer::OnAccept::exec(NL::Socket* socket, NL::SocketGroup* group, vo
 
 void TelnetServer::OnRead::exec(NL::Socket* socket, NL::SocketGroup* group, void* reference) {
 
-	LOGD("Read data on socket %p", socket);
-
 	TelnetServer *ts = static_cast<TelnetServer*>(reference);
 	auto &session = ts->getSession(socket);
 
@@ -67,6 +65,7 @@ bool TelnetInit::inited = false;
 
 TelnetServer::TelnetServer(int port) : init(new TelnetInit()), no_session(nullptr), socketServer(port), doQuit(false) {
 
+	delete init;
 	init = nullptr;
 
 	buffer.resize(128);
@@ -80,11 +79,17 @@ TelnetServer::TelnetServer(int port) : init(new TelnetInit()), no_session(nullpt
 void TelnetServer::run() {
 	while(!doQuit) {
 		group.listen(500, this);
-		for(auto &session : sessions) {
+		for(auto it = sessions.begin(); it != sessions.end();) {
+			Session *session = it->get();
 			if(!session->valid()) {
-				LOGD("Removing invalid session");
-				removeSession(*session.get());
-			}
+				LOGD("Session thread join");
+				session->join();
+				group.remove(session->getSocket());
+				session->getSocket()->disconnect();
+				delete session->getSocket();
+				it = sessions.erase(it);
+			} else
+				it++;
 		}
 	}
 }
@@ -112,28 +117,6 @@ TelnetServer::Session& TelnetServer::getSession(NL::Socket* socket) {
 	}
 	return no_session;
 }
-
-void TelnetServer::removeSession(Session &session) {
-	//group.remove(session.getSocket());
-	//session.getSocket()->disconnect();
-	LOGD("Session thread join");
-	session.join();
-
-	group.remove(session.getSocket());
-	session.getSocket()->disconnect();
-
-	for(auto it = sessions.begin(); it != sessions.end(); ++it) {
-	//for(auto &s : sessions) {
-		
-		if(it->get()->getSocket() == session.getSocket()) {
-			LOGD("Removing session");
-			sessions.erase(it);
-			LOGD("Returning");
-			return;
-		}
-	}
-}
-
 
 // TELNETSESSION
 
@@ -221,6 +204,7 @@ int TelnetServer::Session::write(const vector<uint8_t> &data, int len) {
 	if(disconnected)
 		throw disconnect_excpetion{};
 	if(len == -1) len = data.size();
+	LOGD("Writing %d bytes", len);
 	socket->send(&data[0], len);
 	return len;
 }
@@ -327,10 +311,7 @@ void TelnetServer::Session::disconnect() {
 }
 
 void TelnetServer::Session::close() {
-	//closeMe = true;
 	disconnected = true;
-	//delete socket;
-	//socket = nullptr;
 }
 
 
