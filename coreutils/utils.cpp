@@ -26,6 +26,15 @@ string rstrip(const string &x, char c) {
 	return x.substr(0, l);
 }
 
+string lstrip(const string &x, char c) {
+	size_t l = 0;
+	while(x[l] == c)
+		l++;
+	if(l == 0)
+		return x;
+	return x.substr(l);
+}
+
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
 	char *ptr = target;
