@@ -35,6 +35,34 @@ string lstrip(const string &x, char c) {
 	return x.substr(l);
 }
 
+vector<string> text_wrap(const string &text, int width, int subseqWidth) {
+
+	vector<string> lines;
+	int start = 0;
+	int end = width;
+	if(subseqWidth < 0)
+		subseqWidth = width;
+	// Find space from right
+	while(true) {
+		if(end > text.length()) {
+			lines.push_back(text.substr(start));
+			break;
+		}
+		auto pos = text.rfind(' ', end);
+		if(pos != string::npos && pos > start) {
+			lines.push_back(text.substr(start, pos - start));
+			start = pos+1;
+		} else {
+			lines.push_back(text.substr(start, width));
+			start += width;
+		}
+		width = subseqWidth;
+		end = start + width;
+
+	}
+	return lines;
+}
+
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
 	char *ptr = target;
@@ -235,6 +263,19 @@ string utf8_encode(const wstring &s) {
 
 #include "catch.hpp"
 
+TEST_CASE("utils::text", "Text operations") {
+
+	using namespace utils;
+	using namespace std;
+
+	string text = "This is a journey into sound. Stereophonic sound. Stereophonic sound with mounds of boundless hounds rounding the ground.";
+
+	auto lines = text_wrap(text, 25);
+	for(const auto &l : lines) {
+		LOGD("Line:%s", l);
+	}
+}
+/*
 TEST_CASE("utils::File", "File operations") {
 
 	using namespace utils;
@@ -268,6 +309,7 @@ TEST_CASE("utils::File", "File operations") {
 	REQUIRE(!file.exists());
 
 }
+*/
 
 TEST_CASE("utils::path", "Path name operations") {
 

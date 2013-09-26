@@ -72,21 +72,6 @@ int main(int argc, char **argv) {
 
 			while(true) {
 
-				auto key = lineEd->update(500);				
-				switch(key) {
-				case Console::KEY_ENTER:
-					addChatLine(userName + ": " + lineEd->getResult());
-					console.fill(Console::BLACK, 0, -1, 0, 1);
-					console.moveCursor(0, -1);
-					//lineEd = make_unique<LineEditor>(console);
-					lineEd->setString("");
-					break;
-				case Console::KEY_F7:
-					addChatLine(userName + " logged out");
-					session.close();
-					return;
-				}
-
 				// Update screen with new chat lines if necessary
 				{ lock_guard<mutex> guard(chatLock);
 					auto newLines = false;
@@ -109,6 +94,22 @@ int main(int argc, char **argv) {
 
 					console.flush();
 				}
+
+				auto key = lineEd->update(500);				
+				switch(key) {
+				case Console::KEY_ENTER:
+					addChatLine(userName + ": " + lineEd->getResult());
+					console.fill(Console::BLACK, 0, -1, 0, 1);
+					console.moveCursor(0, -1);
+					//lineEd = make_unique<LineEditor>(console);
+					lineEd->setString("");
+					break;
+				case Console::KEY_F7:
+					addChatLine(userName + " logged out");
+					session.close();
+					return;
+				}
+
 			}
 		} catch (TelnetServer::disconnect_excpetion e) {
 			LOGD("Client disconnected");

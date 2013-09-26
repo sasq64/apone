@@ -16,7 +16,7 @@ LineEditor::LineEditor(Console &console, int width) : console(console), width(wi
 	bg = console.getBg();
 	if(this->width == 0)
 		this->width = console.getWidth() - startX - 1;
-	maxlen = width;
+	maxlen = 256;
 	xpos = 0;
 	line = L"";
 }
@@ -90,9 +90,9 @@ int LineEditor::update(int msec) {
 		break;
 	default:
 		if(c < 0x10000) {
-			LOGD("Insert at %d in line %d", xpos, line.length());
-			line.insert(xpos, 1, c);
-			xpos++;
+			if(line.length() < maxlen) {
+				line.insert(xpos++, 1, c);
+			}
 		} else
 			return c;
 		break;

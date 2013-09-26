@@ -85,6 +85,8 @@ void makeLower(std::string &s);
 
 std::string rstrip(const std::string &x, char c = ' ');
 std::string lstrip(const std::string &x, char c = ' ');
+//std::string wordwrap( std::string str, size_t width);
+std::vector<std::string> text_wrap(const std::string &text, int width, int subseqWidth = -1);
 
 std::string path_basename(const std::string &name);
 std::string path_directory(const std::string &name);

@@ -491,7 +491,7 @@ public:
 
 
 };
-
+/*
 TEST_CASE("console::basic", "Console") {
 
 	TestTerminal terminal;
@@ -510,5 +510,5 @@ TEST_CASE("console::basic", "Console") {
 	REQUIRE(true);
 
 }
-
+*/
 #endif
