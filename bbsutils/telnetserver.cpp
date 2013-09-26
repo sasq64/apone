@@ -35,8 +35,6 @@ void TelnetServer::OnRead::exec(NL::Socket* socket, NL::SocketGroup* group, void
 	auto &session = ts->getSession(socket);
 
 	auto len = socket->read(&ts->buffer[0], 128);
-	//ts->buffer.resize(len);
-	//LOGD("Read %d bytes [%02x]\n", len, make_slice(ts->buffer, 0, len));
 	session.handleIndata(ts->buffer, len);
 }
 
@@ -123,6 +121,9 @@ TelnetServer::Session& TelnetServer::getSession(NL::Socket* socket) {
 void TelnetServer::Session::handleIndata(vector<uint8_t> &buffer, int len) {
 	lock_guard<mutex> guard(inMutex);
 
+	//buffer.resize(len);
+	//LOGD("Read [%02x]", buffer);
+
 	auto start = inBuffer.size();
 
 	for(int i=0; i<len; i++) {
@@ -204,15 +205,22 @@ int TelnetServer::Session::write(const vector<uint8_t> &data, int len) {
 	if(disconnected)
 		throw disconnect_excpetion{};
 	if(len == -1) len = data.size();
-	LOGD("Writing %d bytes", len);
-	socket->send(&data[0], len);
+	try {
+		socket->send(&data[0], len);
+	} catch (NL::Exception e) {
+		close();
+	}
 	return len;
 }
 
 void TelnetServer::Session::write(const string &text) {
 	if(disconnected)
 		throw disconnect_excpetion{};
-	socket->send(text.c_str(), text.length());
+	try {
+		socket->send(text.c_str(), text.length());
+	} catch (NL::Exception e) {
+		close();
+	}
 }
 
 //void TelnetServer::Session::handleIndata(vector<uint8_t> &buffer);
@@ -330,7 +338,6 @@ void TelnetServer::Session::setOption(int opt, int val) {
 				write(vector<uint8_t>({ IAC, WILL, ECHO }));
 				write(vector<uint8_t>({ IAC, WILL, SUPRESS_GO_AHEAD }));
 				write(vector<uint8_t>({ IAC, DO, WINDOW_SIZE }));
-				termExplored = true;
 			}
 		}
 		else if(val == WINDOW_SIZE) 
@@ -348,6 +355,7 @@ void TelnetServer::Session::handleOptionData() {
 		winWidth = (optionData[0] << 8) | (optionData[1]&0xff);
 		winHeight = (optionData[2] << 8) | (optionData[3]&0xff);
 		LOGD("Window size is '%d x %d'", winWidth, winHeight);
+		termExplored = true;
 	}
 	optionData.resize(0);
 }
