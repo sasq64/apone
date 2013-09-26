@@ -180,7 +180,7 @@ wstring utf8_decode(const string &s)
 {
     size_t i = 0;
     wstring result;
-    while (i < (int)s.length()) {
+    while (i < s.length()) {
         auto nb = trailingBytesForUTF8[(uint8_t)s[i]];
         if(s[i] == 0)
         	break;

@@ -416,6 +416,14 @@ std::string Console::getLine(int maxlen) {
 	return lineEd->getResult();
 }
 
+std::string Console::getPassword(int maxlen) {
+	auto lineEd = utils::make_unique<LineEditor>(*this, [](int c) -> int {
+		return c >= 0x20 && c < 0x7f ? '*' : c;
+	}, maxlen);
+	while(lineEd->update(500) != KEY_ENTER);
+	return lineEd->getResult();
+}
+
 // Shift all tiles
 void Console::shiftTiles(vector<Tile> &tiles, int dx, int dy) {
 	auto tempTiles = tiles;

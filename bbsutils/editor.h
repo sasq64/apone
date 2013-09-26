@@ -11,6 +11,7 @@ class Editor {
 class LineEditor : public Editor {
 public:
 	LineEditor(Console &console, int width = 0);
+	LineEditor(Console &console, std::function<int(int)> filter, int width = 0);
 	int update(int msec);
 	bool isDone();
 	std::string getResult();
@@ -23,6 +24,10 @@ public:
 	void setCursor(int pos);
 	void setWidth(int w) { width = w; }
 
+	void setFilterFunction(std::function<int(int)> filter) {
+		filterFunction = filter;
+	}
+
 	int getCursor() { return xpos; }
 	int getLength() { return line.length(); }
 	int getOffset() { return xoffset; }
@@ -30,6 +35,8 @@ public:
 protected:
 	Console &console;
 	std::wstring line;
+
+	std::function<int(int)> filterFunction;
 
 	int startX;
 	int startY;
@@ -39,8 +46,8 @@ protected:
 	int width;
 	int maxlen;
 
-	bool password;
-	std::string filter;
+	//bool password;
+	//std::string filter;
 
 	int xpos;
 	int xoffset;

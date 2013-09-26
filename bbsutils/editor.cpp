@@ -21,28 +21,31 @@ LineEditor::LineEditor(Console &console, int width) : console(console), width(wi
 	line = L"";
 }
 
+LineEditor::LineEditor(Console &console, function<int(int)> filter, int width) : LineEditor(console, width) {
+	filterFunction = filter;
+}
+
 void LineEditor::setString(const std::string &text) {
 	line = utf8_decode(text);
+	if(xpos > (int)line.size())
+		xpos = (int)line.size();
 }
 
 void LineEditor::setString(const std::wstring &text) {
 	line = text;
 	if(xpos > (int)line.size())
 		xpos = (int)line.size();
-	//refresh();
 }
 
 void LineEditor::setXY(int x, int y) {
 	startX = x;
 	startY = y;
-	//refresh();
 }
 
 void LineEditor::setCursor(int pos) {
 	xpos = pos;
 	if(xpos > (int)line.size())
 		xpos = line.size();
-	//refresh();
 }
 
 
@@ -50,6 +53,11 @@ void LineEditor::setCursor(int pos) {
 int LineEditor::update(int msec) {
 
 	auto c = console.getKey(msec);
+
+	if(filterFunction) {
+		c = filterFunction(c);
+	}
+
 	switch(c) {
 	case Console::KEY_BACKSPACE:
 		if(xpos > 0) {
@@ -82,6 +90,7 @@ int LineEditor::update(int msec) {
 		break;
 	default:
 		if(c < 0x10000) {
+			LOGD("Insert at %d in line %d", xpos, line.length());
 			line.insert(xpos, 1, c);
 			xpos++;
 		} else
@@ -192,8 +201,9 @@ void FullEditor::redraw(bool full, int cursor) {
 	int scroll = height/4;
 	if(scroll < 3) scroll = 3;
 
-	auto startLine = lineNo-yscroll-1;
-	if(startLine < 0) startLine = 0;
+	//auto startLine = lineNo-yscroll-1;
+	//if(startLine < 0) startLine = 0;
+	auto startLine = 0;
 
 	if(lineNo-yscroll >= height) {
 		// Scroll down
@@ -243,6 +253,7 @@ int FullEditor::update(int msec){
 	LOGD("update %d %d", xpos, rc);
 
 	//auto line = lineEd->getWResult();
+	int lcount = (int)lines.size();
 
 	switch(rc) {
 	case Console::KEY_ENTER:
@@ -295,6 +306,25 @@ int FullEditor::update(int msec){
 			lines[lineNo--] = lineEd->getWResult();
 			redraw(false);
 		}
+		break;
+	case Console::KEY_PAGEUP:
+	case Console::KEY_F1:
+		lines[lineNo] = lineEd->getWResult();
+		yscroll -= height;
+		lineNo -= height;
+		if(lineNo < 0) lineNo = 0;
+		if(yscroll < 0) yscroll = 0;
+		redraw(true);
+		break;
+	case Console::KEY_PAGEDOWN:
+	case Console::KEY_F3:
+		lines[lineNo] = lineEd->getWResult();
+		yscroll += height;
+		lineNo += height;
+		if(lineNo >  lcount-1) lineNo = lcount-1;
+		if(yscroll > lcount - height)
+			yscroll = lcount - height;
+		redraw(true);
 		break;
 	case Console::KEY_DOWN:
 		if(lineNo < (int)lines.size()-1) {

@@ -99,13 +99,52 @@ void AnsiConsole::impl_clear() {
 void AnsiConsole::impl_gotoxy(int x, int y) {
 	// Not so smart for now
 	//LOGD("gotoxy %d,%d", x,y);
+	// 6-8 bytes
 	const auto s = utils::format("\x1b[%d;%dH", y+1, x+1);
 	outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 	curX = x;
 	curY = y;
 }
 
+
+class Matcher {
+public:
+	Matcher(std::queue<uint8_t> &buffer) : buffer(buffer) {}
+
+	bool match(const vector<int> &pattern) {
+		for(auto i : pattern) {
+			if(i == buffer.front()) {
+				buffer.pop();
+			} else
+				return false;
+		}
+		return true;
+	}
+
+	void addPattern(const vector<int> &pattern) {
+	};
+
+	//int findPattern() {
+	//}
+
+
+
+private:
+	std::queue<uint8_t> buffer;
+
+};
+
+//match(0x1b, 0x5b, 0x50)
+
+
 int AnsiConsole::impl_handlekey() {
+
+	Matcher matcher(inBuffer);
+
+	//addPattern({0x1b, 0x5b, 0x50}, KEY_F1);
+	//if(matcher.match({0x1b, 0x50})) {
+	//}
+
 	auto c = inBuffer.front();
 	if(c >= 0x80)
 		return get_utf8();
@@ -126,6 +165,7 @@ int AnsiConsole::impl_handlekey() {
 			return KEY_DELETE;
 		return c;
 	} else {
+
 		if(inBuffer.size() > 0) {
 			auto c2 = inBuffer.front();
 			inBuffer.pop();
