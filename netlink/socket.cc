@@ -388,7 +388,7 @@ Socket* Socket::accept() {
     #ifdef OS_WIN32
         int addrSize = sizeof(incoming_addr);
     #else
-        unsigned addrSize = sizeof(incoming_addr);
+        socklen_t addrSize = sizeof(incoming_addr);
     #endif
 
     int new_handler = ::accept(_socketHandler, (struct sockaddr *)&incoming_addr, &addrSize);

@@ -15,7 +15,9 @@ namespace bbs {
 
 using namespace std;
 
-LocalTerminal localTerminal;
+#ifdef LOCAL_TERMINAL
+//LocalTerminal localTerminal;
+#endif
 
 void Console::clear() {
 	Tile t { 0x20, WHITE, BLACK };
@@ -461,10 +463,12 @@ void Console::scrollScreen(int dy) {
 	flush();
 }
 
+
+#ifdef LOCAL_TERMINAL
 Console *createLocalConsole() {
 	return nullptr;//new AnsiConsole(localTerminal);
 }
-
+#endif
 }
 
 #ifdef UNIT_TEST

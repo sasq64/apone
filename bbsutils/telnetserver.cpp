@@ -335,7 +335,7 @@ void TelnetServer::Session::setOption(int opt, int val) {
 		if(val == TERMINAL_TYPE) {
 			write(std::vector<uint8_t>({ IAC, SB, TERMINAL_TYPE, 1, IAC, SE }));
 			if(!termExplored) {
-				write(vector<uint8_t>({ IAC, WILL, ECHO }));
+				write(vector<uint8_t>({ IAC, WILL, ECHO_CHARS }));
 				write(vector<uint8_t>({ IAC, WILL, SUPRESS_GO_AHEAD }));
 				write(vector<uint8_t>({ IAC, DO, WINDOW_SIZE }));
 			}

@@ -175,7 +175,7 @@ public:
 
 	enum {
 		TRANSMIT_BINARY = 0,
-		ECHO = 1,
+		ECHO_CHARS = 1,
 		SUPRESS_GO_AHEAD = 3,
 		TERMINAL_TYPE = 24,
 		WINDOW_SIZE = 31

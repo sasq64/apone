@@ -7,6 +7,7 @@
 //#endif
 //#include <unistd.h>
 //#include <cstring>
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>

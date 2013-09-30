@@ -21,6 +21,7 @@
 
 namespace bbs {
 
+#ifdef LOCAL_TERMINAL
 class LocalTerminal : public Terminal {
 public:
 
@@ -46,8 +47,8 @@ private:
 	struct termios orig_term_attr;
 
 };
-
 extern LocalTerminal localTerminal;
+#endif
 
 class Console {
 public:	
