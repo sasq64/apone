@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <chrono>
 using namespace std;
 using namespace utils;
 
@@ -120,7 +121,7 @@ public:
 	void clear() {
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		glViewport(0,0,width,height);
-		glClearColor(0.0, 0, 0, 0);
+		glClearColor(0.0, 0.0, 0.2, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
@@ -314,12 +315,12 @@ private:
 class window : public basic_buffer {
 public:
 
-	window() : basic_buffer(), winOpen(false) {
+	window() : basic_buffer(), winOpen(false), bmCounter(0) {
 		open();
 	}
-	window(int width, int height) : basic_buffer(0, width, height), winOpen(false) {
+	/*window(int width, int height) : basic_buffer(0, width, height), winOpen(false) {
 		open();
-	}
+	}*/
 
 	void draw(renderbuffer &buffer, int x, int y) {
 		basic_buffer::draw(buffer.texture(), x, y, buffer.getWidth(), buffer.getHeight());
@@ -355,6 +356,17 @@ public:
 	};
 
 	void flip() {
+		if(bmCounter) {
+			bmCounter--;
+			if(!bmCounter) {
+				glfwCloseWindow();
+				winOpen = false;
+				auto t = chrono::high_resolution_clock::now();
+				auto ms = chrono::duration_cast<chrono::microseconds>(t - benchStart).count();
+				fprintf(stderr, "TIME: %ldus per frame\n", ms / 100);
+			}
+			return;
+		}
 		glfwSwapBuffers();
 		if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
 			glfwCloseWindow();
@@ -369,9 +381,16 @@ public:
 
 	constexpr static const double FPS = 1.0/60.0;
 
+	void benchmark() {
+		benchStart = chrono::high_resolution_clock::now();
+		bmCounter = 100;
+	}
+
 private:
 	int lastTime;
 	bool winOpen;
+	uint bmCounter;
+	chrono::high_resolution_clock::time_point benchStart;
 };
 
 window screen;
