@@ -17,7 +17,8 @@
 #include <type_traits>
 #include <utility>
 #include <initializer_list>
-
+#include <stdexcept>
+#include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -100,9 +101,21 @@ std::string path_prefix(const std::string &name);
 template <class T> struct vec2 {
 	vec2() : x(0), y(0) {}
 	vec2(T x, T y) : x(x), y(y) {}
+	vec2(std::pair<T, T> pair) : x(pair.first), y(pair.second) {}
+
+	vec2(std::initializer_list<T> &il) {
+		auto it = il.begin();
+		auto xa = *it;
+		++it;
+		auto ya = *it;
+	}
 
 	vec2 operator+(const vec2 &v) const {
 		return vec2(x + v.x, y + v.y);
+	}
+
+	vec2 operator+(const T &i) const {
+		return vec2(x + i, y + i);
 	}
 
 	vec2 operator+(std::initializer_list<T> il) const {
@@ -111,6 +124,26 @@ template <class T> struct vec2 {
 		++it;
 		auto ya = *it;
 		return vec2(x + xa, y + ya);
+	}
+
+	vec2 operator+=(std::initializer_list<T> il) {
+		auto it = il.begin();
+		auto xa = *it;
+		++it;
+		auto ya = *it;
+		x += xa;
+		y += ya;
+		return *this;
+	}
+
+	T operator[](const int &i) {
+		switch(i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		}
+		throw std::out_of_range("Only 0 or 1 are valid indexes");
 	}
 
 	vec2 operator-(const vec2 &v) const {
@@ -123,6 +156,10 @@ template <class T> struct vec2 {
 
 	vec2 operator*(T n) const {
 		return vec2(x * n, y * n);
+	}
+
+	vec2 operator*(const vec2 &v) const {
+		return vec2(x * v.x, y * v.y);
 	}
 
 	T angle() {
@@ -144,6 +181,16 @@ template <class T> struct vec2 {
 	T y;
 };
 
+typedef vec2<float> vec2f;
+typedef vec2<int> vec2i;
+
+template <typename T> vec2<T> cossin(const vec2<T> &v) {
+	return vec2<T>(cos(v.x), sin(v.y));
+}
+
+template <typename T> vec2<T> sin(const vec2<T> &v) {
+	return vec2<T>(sinf(v.x), sinf(v.y));
+}
 
 // SLICE
 

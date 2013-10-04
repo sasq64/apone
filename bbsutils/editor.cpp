@@ -90,7 +90,7 @@ int LineEditor::update(int msec) {
 		break;
 	default:
 		if(c < 0x10000) {
-			if(line.length() < maxlen) {
+			if((int)line.length() < maxlen) {
 				line.insert(xpos++, 1, c);
 			}
 		} else
@@ -249,8 +249,6 @@ int FullEditor::update(int msec){
 
 	if(rc == Console::KEY_TIMEOUT)
 		return rc;
-
-	LOGD("update %d %d", xpos, rc);
 
 	//auto line = lineEd->getWResult();
 	int lcount = (int)lines.size();

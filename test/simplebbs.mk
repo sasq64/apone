@@ -9,7 +9,7 @@ MODULES := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/netlink
 LDFLAGS := -pthread
 
 TARGET := simplebbs
-OBJS := simplebbs.cpp
+OBJS := simplebbs.o
 
 CC := gcc-4.7
 CXX := g++-4.7

@@ -218,6 +218,8 @@ cleandep:
 superclean:
 	rm -rf $(OBJDIR) $(TARGET)$(EXT) $(addsuffix /*~, $(MODULES)) *.elf *~
 
+run: start_rule
+	$(CURDIR)/$(TARGET)$(EXT)
 
 #
 ##
