@@ -7,7 +7,7 @@ CXXFLAGS=-std=c++0x
 TARGET=test
 
 LIBS := -lglfw -lGL -lGLEW
-OBJS := main.o shader.o
+OBJS := main.o shader.o basic_buffer.o renderbuffer.o window.o
 MODULES := $(UTILS)/coreutils
 
 LINUX_CC=ccache clang -Qunused-arguments

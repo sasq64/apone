@@ -1,5 +1,7 @@
 #include <grappix.h>
 
+using namespace utils;
+
 int main() {
 	// Create our ball image
 	vec2f size {128, 128};
@@ -10,15 +12,13 @@ int main() {
 	sprite.circle(size/2, radius-10, 0xC00000); // Main ball
 	sprite.circle(size/2 + vec2f{20,-20}, radius-50, 0xFF4040); // Hilight
 
-
-	//screen.benchmark();
-
 	// Loop and render ball worm
 	vec2f xy{0, 0};
+	auto scale = vec2f(screen.size()) / 2.3;
 	while(screen.is_open()) {
 		screen.clear();
 		for(int i=0; i<350; i++)
-			screen.draw((sin(xy + vec2f{i*0.09f, i*0.13f}) + 1.0f) * screen.size() / 2.3, sprite);
+			screen.draw((sin(xy + vec2f{i*0.09f, i*0.13f}) + 1.0f) * scale, sprite);
 		xy += {0.01, 0.03};
 		screen.flip();
 	}
