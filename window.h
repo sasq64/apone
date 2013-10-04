@@ -17,7 +17,7 @@ public:
 		open();
 	}*/
 
-	void draw(renderbuffer &buffer, int x, int y) {
+	void draw(int x, int y, renderbuffer &buffer) {
 		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.getWidth(), buffer.getHeight());
 	};
 

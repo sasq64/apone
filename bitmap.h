@@ -7,13 +7,18 @@
 template <typename T = uint32_t> class basic_bitmap {
 public:
 	basic_bitmap(int width, int height) : w(width), h(height) {
-		data.resize(width * height);
+		pixels.resize(width * height);
 	}
-	T& operator[](const int &i) { return data[i]; }
-	int width() { return w; }
-	int height() { return h; }
+	T& operator[](const int &i) { return pixels[i]; }
+	T operator[](const int &i) const { return pixels[i]; }
+
+	const T* data() const { return &pixels[0]; }
+
+	int width() const { return w; }
+	int height() const { return h; }
+	int size() const { return w*h; }
 private:
-	std::vector<T> data;
+	std::vector<T> pixels;
 	int w;
 	int h;
 };
