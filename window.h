@@ -18,11 +18,11 @@ public:
 	}*/
 
 	void draw(renderbuffer &buffer, int x, int y) {
-		basic_buffer::draw(buffer.texture(), x, y, buffer.getWidth(), buffer.getHeight());
+		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.getWidth(), buffer.getHeight());
 	};
 
 	template <typename T> void draw(T pos, renderbuffer &buffer) {
-		basic_buffer::draw(buffer.texture(), pos[0], pos[1], buffer.getWidth(), buffer.getHeight());
+		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.getWidth(), buffer.getHeight());
 	};
 
 	void open();

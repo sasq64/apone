@@ -87,7 +87,7 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 		auto cx = cos(i*M_PI*2/count) * radius + x;
 		auto cy = sin(i*M_PI*2/count) * radius + y;
 		p[i*2] = (cx * 2.0 / width) - 1.0;
-		p[i*2+1] = 1.0 - (cy * 2.0 / height);
+		p[i*2+1] = (cy * 2.0 / height) - 1.0;
 	}
 
 	//LOGD("POS %f %f", p[0], p[1]);
@@ -101,16 +101,16 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	//	glfwSwapBuffers();
 }
 
-void basic_buffer::draw(GLuint texture, int x0, int y0, int w, int h) {
+void basic_buffer::draw_texture(GLuint texture, int x0, int y0, int w, int h) {
 
-	static float uvs[8] = {0,0, 1,0, 0,1, 1,1};
+	static float uvs[8] = {0,1, 1,1, 0,0, 1,0};
 
 
-	//glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-	//glViewport(0,0,width,height);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glViewport(0,0,width,height);
 	//if(singleBuffer)
 	//	glfwSwapBuffers();
-	//glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	auto program = get_program(TEXTURED_PROGRAM);
 	glUseProgram(program);

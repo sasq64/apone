@@ -26,7 +26,7 @@ public:
 	}
 
 	void circle(int x, int y, float radius, uint32_t color);
-	void draw(unsigned int texture, int x0, int y0, int w, int h);
+	void draw_texture(unsigned int texture, int x0, int y0, int w, int h);
 	int getWidth() { return width; }
 	int getHeight() { return height; }
 
