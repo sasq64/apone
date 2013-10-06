@@ -60,24 +60,24 @@ void render_text(int x, int y, const string &text) {
 			x += texture_glyph_get_kerning(glyph, lastChar);
 		lastChar = c;
 
-		float x0  = (int)( x + glyph->offset_x );
-		float y0  = (int)( y + glyph->offset_y );
-		float x1  = (int)( x0 + glyph->width );
-		float y1  = (int)( y0 - glyph->height );
+		float x0  = x + glyph->offset_x;
+		float y0  = y + glyph->offset_y;
+		float x1  = x0 + glyph->width;
+		float y1  = y0 - glyph->height;
 
 		float s0 = glyph->s0;
 		float t0 = glyph->t0;
 		float s1 = glyph->s1;
 		float t1 = glyph->t1;
 
-		p.push_back((x0 * 2.0 / _width) - 1.0);
-		p.push_back((y1 * 2.0 / _height) - 1.0);
-		p.push_back((x1 * 2.0 / _width) - 1.0);
-		p.push_back((y1 * 2.0 / _height) - 1.0);
-		p.push_back((x0 * 2.0 / _width) - 1.0);
-		p.push_back((y0 * 2.0 / _height) - 1.0);
-		p.push_back((x1 * 2.0 / _width) - 1.0);
-		p.push_back((y0 * 2.0 / _height) - 1.0);
+		p.push_back(x0);
+		p.push_back(y1);
+		p.push_back(x1);
+		p.push_back(y1);
+		p.push_back(x0);
+		p.push_back(y0);
+		p.push_back(x1);
+		p.push_back(y0);
 
 		uvs.push_back(s0); uvs.push_back(t1);
 		uvs.push_back(s1); uvs.push_back(t1);
@@ -106,6 +106,9 @@ void render_text(int x, int y, const string &text) {
 	GLuint uvHandle = glGetAttribLocation(program, "vUV");
 
 	uint32_t color = 0x40ff80;
+
+	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	GLuint scaleHandle = glGetUniformLocation(program, "fScale");
 	GLuint colorHandle = glGetUniformLocation(program, "fColor");
@@ -139,9 +142,7 @@ int main() {
 
 	renderbuffer sprite(tileSize);
 	sprite.clear();
-	sprite.circle(tileSize/2, tileSize[0]/2-2, 0x002000); 
-	sprite.circle(tileSize/2, tileSize[0]/2-3, 0x008000); 
-	sprite.circle(tileSize/2, tileSize[0]/2-4, 0x00ff00); 
+	sprite.circle(tileSize/2, tileSize[0]/2, 0x00c000); 
 
 	int w = playFieldSize.x;
 	int h = playFieldSize.y;
@@ -151,6 +152,7 @@ int main() {
 	playField[rand() % (w*h)] = -1;
 
 	vec2f pos = {5,5};
+	int score = 0;
 
 	int d = 2;
 	vector<vec2f> adds { {0,-1}, {1,0}, {0,1}, {-1,0} };
@@ -161,48 +163,52 @@ int main() {
 	int snakeLen = 100;
 
 	make_text();
-	
+	bool gameOver = false;
+	float endScale = 1.0;
 	while(screen.is_open()) {
 
-		if(screen.key_pressed(window::LEFT)) {
-			if(noKey)
-				d--;
-			noKey = false;
-		} else if(screen.key_pressed(window::RIGHT)) {
-			if(noKey)
-				d++;
-			noKey = false;
-		} else
-			noKey = true;
+		if(!gameOver) {
+			if(screen.key_pressed(window::LEFT)) {
+				if(noKey)
+					d--;
+				noKey = false;
+			} else if(screen.key_pressed(window::RIGHT)) {
+				if(noKey)
+					d++;
+				noKey = false;
+			} else
+				noKey = true;
 
-		d = (d+4) % 4;
+			d = (d+4) % 4;
 
-		if(delay-- == 0) {
-			pos += adds[d];
-			if(pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h || playField[pos.x + pos.y * w] > 0) {
-				break;
-			}
+			if(delay-- == 0) {
+				pos += adds[d];
+				if(pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h || playField[pos.x + pos.y * w] > 0) {
+					gameOver = true;
+				}
 
-			snakeLen += 1;
+				snakeLen += 4;
 
-			if(playField[pos.x + pos.y * w] == -1) {
-				while(true) {
-					auto applePos = rand() % (w*h);
-					if(playField[applePos] == 0) {
-						playField[applePos] = -1;
-						break;
+				if(playField[pos.x + pos.y * w] == -1) {
+					snakeLen += 24;
+					score++;
+					while(true) {
+						auto applePos = rand() % (w*h);
+						if(playField[applePos] == 0) {
+							playField[applePos] = -1;
+							break;
+						}
 					}
 				}
+
+				playField[pos.x + pos.y * w] = 1;
+				delay = speed;
 			}
-
-			playField[pos.x + pos.y * w] = snakeLen;
-			delay = speed;
 		}
-
 		screen.clear();
 
 		vec2f pfpos { 50, 50 };
-
+		screen.scale(1.0);
 		screen.rectangle(pfpos - 10, tileSize.x * w + 20, tileSize.y * h + 20, 0x00a000);
 		screen.rectangle(pfpos, tileSize.x * w, tileSize.y * h, 0x000000);
 		int i = 0;
@@ -210,15 +216,30 @@ int main() {
 			if(p) {
 				vec2f pos { (float)(i%w), (float)(i/w) };
 				if(p == -1) {
-					screen.draw(pos * tileSize + pfpos, sprite);
+					//screen.draw(pos * tileSize + pfpos, sprite);
+					float r = tileSize.x/3;
+					screen.circle(pos * tileSize + pfpos + r, r, 0x00ff00);
 				} else {
-					screen.rectangle(pos * tileSize + pfpos, tileSize, blend(0x00ff00, 0x004000, (float)p/snakeLen));
-					p--;
+					if(endScale < 10.0) {
+						if(gameOver) {
+							screen.scale(endScale);
+							screen.rectangle(pos * tileSize + pfpos, tileSize, blend(0x00ff00, 0x000000, 1.0/endScale));
+						} else  {
+							screen.scale(1.0 - (float)p/snakeLen);
+							screen.rectangle(pos * tileSize + pfpos, tileSize, blend(0x004000, 0x00ff00, (float)p/snakeLen));
+							p++;
+							if(p == snakeLen)
+								p = 0;
+						}
+					}
 				}
 			}
 			i++;
 		}
-		render_text(10, 10, "Snake");
+		if(gameOver)
+			endScale *= 1.05;
+
+		render_text(10, 5, format("Score:%d", score));
 		screen.flip();
 	}
 

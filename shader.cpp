@@ -5,9 +5,13 @@
 using namespace std;
 
 static const char *vShader = R"(
-	attribute vec4 vPosition;
+	attribute vec4 vertex;
+	uniform vec4 vScreenScale;
+	uniform vec4 vScale;
+	uniform vec4 vPosition;
 	void main() {
-		gl_Position = vPosition;
+		vec4 v = vertex * vScale + vPosition;
+		gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0, 1);
 	}
 )";
 
@@ -31,14 +35,19 @@ static const char *pTexShader = R"(
 )";
 
 static const char *vTexShader = R"(
-	attribute vec4 vPosition;
-	attribute vec2 vUV;
+	attribute vec4 vertex;
+	attribute vec2 uv;
 
 	varying vec2 UV;
 
+	uniform vec4 vScreenScale;
+	uniform vec4 vScale;
+	uniform vec4 vPosition;
+
 	void main() {
-		gl_Position = vPosition;
-		UV = vUV;
+		vec4 v = vertex * vScale + vPosition;
+		gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0, 1);
+		UV = uv;
 	}
 )";
 
@@ -57,12 +66,13 @@ static const char *vFontShader = R"(
 	attribute vec4 vPosition;
 	attribute vec2 vUV;
 	uniform float fScale;
+	uniform vec2 vScreenScale;
 
 	varying vec2 UV;
 
 	void main() {
-		gl_Position = vPosition * vec4(fScale, fScale, 1.0, 1.0); //vec4(1.0, 1.0, 1.0, 1.0);
-		UV = vUV * 1.0;
+		gl_Position = vec4(vPosition.x * vScreenScale.x - 1.0, vPosition.y * vScreenScale.y - 1.0, 0, 1);
+		UV = vUV;
 	}
 )";
 

@@ -8,7 +8,8 @@ TARGET=test
 
 LIBS := -lglfw -lGL -lGLEW -lglut -lGLU -lm
 OBJS := snake.o shader.o basic_buffer.o renderbuffer.o window.o image.o
-MODULES := $(UTILS)/coreutils freetype-gl
+OBJS += freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o
+MODULES := $(UTILS)/coreutils
 
 CFLAGS += `freetype-config --cflags` -I/usr/X11/include -Ifreetype-gl
 LIBS += `freetype-config --libs`

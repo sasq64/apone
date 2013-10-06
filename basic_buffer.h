@@ -7,8 +7,8 @@
 class basic_buffer {
 public:
 
-	basic_buffer() : frameBuffer(0), _width(0), _height(0) {}
-	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height) {
+	basic_buffer() : frameBuffer(0), _width(0), _height(0), globalScale(1.0) {}
+	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0) {
 	}
 
 	template <typename T> void line(T p0, T p1, uint32_t color) {
@@ -33,17 +33,21 @@ public:
 		rectangle(pos[0], pos[1], w, h, color);
 	}
 
-	void rectangle(int x, int y, int w, int h, uint32_t color);
+	void rectangle(float x, float y, float w, float h, uint32_t color);
 
 	void circle(int x, int y, float radius, uint32_t color);
 	void draw_texture(int texture, int x0, int y0, int w, int h);
 	int width() { return _width; }
 	int height() { return _height; }
 
+	float scale() {  return globalScale; }
+	float scale(float s) { globalScale = s; return s; }
+
 protected:
 	unsigned int frameBuffer;
 	int _width;
 	int _height;
+	float globalScale;
 };
 
 #endif // GRAPPIX_BASIC_BUFFER_H
