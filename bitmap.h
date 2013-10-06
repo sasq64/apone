@@ -12,6 +12,18 @@ public:
 	T& operator[](const int &i) { return pixels[i]; }
 	T operator[](const int &i) const { return pixels[i]; }
 
+	basic_bitmap operator+(T &pixel) {
+		basic_bitmap rb = *this;
+		for(T &p : rb.pixels)
+			p += pixel;
+		return rb;
+	}
+
+	std::vector<basic_bitmap> split(int w, int h) {
+		std::vector<basic_bitmap> rv;
+		return rv;
+	}
+
 	const T* data() const { return &pixels[0]; }
 
 	int width() const { return w; }

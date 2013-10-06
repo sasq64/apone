@@ -7,8 +7,8 @@
 class basic_buffer {
 public:
 
-	basic_buffer() : frameBuffer(0), width(0), height(0) {}
-	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), width(width), height(height) {
+	basic_buffer() : frameBuffer(0), _width(0), _height(0) {}
+	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height) {
 	}
 
 	template <typename T> void line(T p0, T p1, uint32_t color) {
@@ -25,15 +25,25 @@ public:
 		circle(xy[0], xy[1], radius, color);
 	}
 
+	template <typename T> void rectangle(T pos, T size, uint32_t color) {
+		rectangle(pos[0], pos[1], size[0], size[1], color);
+	}
+
+	template <typename T> void rectangle(T pos, int w, int h, uint32_t color) {
+		rectangle(pos[0], pos[1], w, h, color);
+	}
+
+	void rectangle(int x, int y, int w, int h, uint32_t color);
+
 	void circle(int x, int y, float radius, uint32_t color);
-	void draw_texture(unsigned int texture, int x0, int y0, int w, int h);
-	int getWidth() { return width; }
-	int getHeight() { return height; }
+	void draw_texture(int texture, int x0, int y0, int w, int h);
+	int width() { return _width; }
+	int height() { return _height; }
 
 protected:
 	unsigned int frameBuffer;
-	int width;
-	int height;
+	int _width;
+	int _height;
 };
 
 #endif // GRAPPIX_BASIC_BUFFER_H

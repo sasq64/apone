@@ -5,12 +5,12 @@
 
 renderbuffer::renderbuffer(const bitmap &bm) {
 
-	width = bm.width();
-	height = bm.height();
+	_width = bm.width();
+	_height = bm.height();
 
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bm.data());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bm.data());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -19,8 +19,8 @@ renderbuffer::renderbuffer(const bitmap &bm) {
 
 renderbuffer::renderbuffer(int width, int height) {
 
-	this->width = width;
-	this->height = height;
+	_width = width;
+	_height = height;
 
 	// Create and bind a new framebuffer with emtpy attachment points (not yet useable)
 	//GLuint fbuf;

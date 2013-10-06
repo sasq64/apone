@@ -3,9 +3,14 @@
 #include <GL/glew.h>
 #include <GL/glfw.h>
 #include <stdio.h>
+#include <unordered_map>
 //#include <math.h>
 
 using namespace std;
+
+void debug_callback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, void* userParam) {
+	LOGD("GLDEBUG:%s", message);
+}
 
 void window::open() {
 
@@ -13,14 +18,14 @@ void window::open() {
 		return;
 
 	glfwInit();
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);
+//	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 	GLFWvidmode mode;
 	glfwGetDesktopMode(&mode);
-	width = mode.Width;// / 2;
-	height = mode.Height;// / 2;
-	int win = glfwOpenWindow(width, height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, GLFW_FULLSCREEN);
+	_width = mode.Width/ 2;
+	_height = mode.Height/ 2;
+	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, GLFW_WINDOW);
 	if(win) {
 	}
 	int rc = glewInit();
@@ -28,7 +33,13 @@ void window::open() {
 		LOGE("Glew error: %s", glewGetErrorString(rc));
 		exit(0);
 	}
+
+	glDebugMessageCallbackARB(debug_callback, nullptr);
+
 	glfwSwapInterval(1);
+
+	glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
+             GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -46,6 +57,9 @@ void window::open() {
 
 	frameBuffer = 0;
 };
+
+void window::vsync() {
+}
 
 void window::flip() {
 	if(bmCounter) {
@@ -69,6 +83,19 @@ void window::flip() {
 void window::benchmark() {
 	benchStart = chrono::high_resolution_clock::now();
 	bmCounter = 100;
+}
+
+unordered_map<int, int> window::translate = {
+	{ ENTER, GLFW_KEY_ENTER },
+	{ LEFT, GLFW_KEY_LEFT },
+	{ RIGHT, GLFW_KEY_RIGHT },
+	{ UP, GLFW_KEY_UP },
+	{ DOWN, GLFW_KEY_DOWN }
+};
+
+bool window::key_pressed(key k) {
+	auto glfwKey = translate[k];
+	return glfwGetKey(glfwKey) != 0;
 }
 
 window screen;

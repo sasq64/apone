@@ -6,6 +6,7 @@
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <chrono>
+#include <unordered_map>
 
 class window : public basic_buffer {
 public:
@@ -18,18 +19,30 @@ public:
 	}*/
 
 	void draw(int x, int y, renderbuffer &buffer) {
-		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.getWidth(), buffer.getHeight());
+		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.width(), buffer.height());
 	};
 
 	template <typename T> void draw(T pos, renderbuffer &buffer) {
-		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.getWidth(), buffer.getHeight());
+		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.width(), buffer.height());
 	};
 
 	void open();
 	void flip();
+	void vsync();
+
+	enum key {
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT,
+		ENTER,
+		SPACE
+	};
+
+	bool key_pressed(key k);
 
 	bool is_open() { return winOpen; }
-	std::pair<float, float> size() { return std::make_pair(width, height); }
+	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
 	constexpr static const double FPS = 1.0/60.0;
 
@@ -40,6 +53,8 @@ private:
 	bool winOpen;
 	uint bmCounter;
 	std::chrono::high_resolution_clock::time_point benchStart;
+
+	static std::unordered_map<int, int> translate;
 };
 
 extern window screen;

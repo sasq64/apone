@@ -42,6 +42,30 @@ static const char *vTexShader = R"(
 	}
 )";
 
+static const char *pFontShader = R"(
+	//precision mediump float;
+	uniform vec4 fColor;
+	uniform sampler2D sTexture;
+	varying vec2 UV;
+
+	void main() {	
+		gl_FragColor = vec4(fColor.rgb, texture2D(sTexture, UV).a);
+	}
+)";
+
+static const char *vFontShader = R"(
+	attribute vec4 vPosition;
+	attribute vec2 vUV;
+	uniform float fScale;
+
+	varying vec2 UV;
+
+	void main() {
+		gl_Position = vPosition * vec4(fScale, fScale, 1.0, 1.0); //vec4(1.0, 1.0, 1.0, 1.0);
+		UV = vUV * 1.0;
+	}
+)";
+
 GLuint loadShader(GLenum shaderType, const std::string &source) {
 	GLuint shader = glCreateShader(shaderType);
 	if(shader) {
@@ -106,6 +130,7 @@ GLuint get_program(program_name program) {
 		programs.resize(2);
 		programs[FLAT_PROGRAM] = createProgram(vShader, pShader);
 		programs[TEXTURED_PROGRAM] = createProgram(vTexShader, pTexShader);
+		programs[FONT_PROGRAM] = createProgram(vFontShader, pFontShader);
 	}
 	return programs[program];
 }
