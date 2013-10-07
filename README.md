@@ -42,3 +42,6 @@ BITMAP OPERATIONS
 * Make atlas
 
 
+
+
+text("blabla")

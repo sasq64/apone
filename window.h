@@ -26,7 +26,8 @@ public:
 		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.width(), buffer.height());
 	};
 
-	void open();
+	void open(bool fs);
+	void open(int w = 0, int h = 0, bool fs = true);
 	void flip();
 	void vsync();
 

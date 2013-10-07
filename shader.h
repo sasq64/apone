@@ -19,7 +19,8 @@ GLuint createProgram(const std::string &vertexSource, const std::string &fragmen
 enum program_name {
 	FLAT_PROGRAM,
 	TEXTURED_PROGRAM,
-	FONT_PROGRAM
+	FONT_PROGRAM,
+	FONT_PROGRAM_DF
 };
 
 GLuint get_program(program_name program);

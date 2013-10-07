@@ -1,7 +1,10 @@
 #ifndef GRAPPIX_BASIC_BUFFER_H
 #define GRAPPIX_BASIC_BUFFER_H
 
+#include <freetype-gl.h>
+
 #include <vector>
+#include <string>
 #include <stdint.h>
 
 class basic_buffer {
@@ -43,11 +46,20 @@ public:
 	float scale() {  return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
+	void make_font();
+	std::vector<uint> make_text(const std::string &text);
+	void render_text(int x, int y, std::vector<uint> vbuf, int tl, uint32_t color, float scale);
+	void text(int x, int y, const std::string &text, uint32_t color, float scale);
+
 protected:
 	unsigned int frameBuffer;
 	int _width;
 	int _height;
 	float globalScale;
+
+	texture_font_t *font;
+	texture_atlas_t *atlas;
+
 };
 
 #endif // GRAPPIX_BASIC_BUFFER_H

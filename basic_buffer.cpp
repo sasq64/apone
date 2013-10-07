@@ -11,7 +11,7 @@ using namespace std;
 void basic_buffer::clear() {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -95,13 +95,13 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 
 	//LOGD("POS %f %f", p[0], p[1]);
 	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
-	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
+	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform4f(sHandle, radius, radius, 0, 1);
+	glUniform2f(sHandle, radius, radius);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform4f(pHandle, x, y, 0, 1);
+	glUniform2f(pHandle, x, y);
 
 	//glVertexAttrib2f(posHandle, p[0], p[1]);
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, p);
@@ -153,6 +153,74 @@ void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h) {
 	//	glfwSwapBuffers();
 }
 
+
+struct GLObject {
+	GLuint vbo;
+	short iCount;
+	short vCount;
+	GLuint texture;
+
+	GLuint program;
+	enum {
+		POSITION,
+		SCALE,
+		ROTATION,
+		COLOR,
+		SCREEN_SCALE
+	};
+	vector<GLint> uniforms;
+};
+
+
+#if 0
+void draw(float x, float y, const GLObject &vbo) {
+
+	glUniform2f(uniforms[SCREEN_SCALE], 2.0 / _width, 2.0 / _height);
+	glUniform2f(uniforms[POSITION], x, y);
+	glUniform2f(uniforms[SCALE], globalScale, globalScale);
+	glUniform1f(uniforms[ROTATION], 0);
+	glUniform1f(uniforms[COLOR], 0);
+
+	for(const auto &a : attributes) {
+		int offset = a.second & 0xffffff;
+		int stride = a.second >> 8;
+		glVertexAttribPointer(a.first, 2, GL_FLOAT, GL_FALSE, offset, stride);
+		glEnableVertexAttribArray(a.first);
+	}
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, vCount);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+};
+
+GLObject basic_buffer::make_rectangle(float x, float y, float w, float h, uint32_t color) {
+	GLObject obj;
+
+	obj.program = get_program(FLAT_PROGRAM);
+
+	static vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
+	glGenBuffers(1, &obj.buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, obj.buffer);
+	glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+
+	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	obj.uniforms.push_back(make_pair(whHandle, vec3f(2.0 / _width, 2.0 / _height, 0)));
+
+	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
+
+	GLuint sHandle = glGetUniformLocation(program, "vScale");
+	glUniform4f(sHandle, globalScale * w/2, globalScale * h/2, 0, 1);
+
+	GLuint pHandle = glGetUniformLocation(program, "vPosition");
+	glUniform4f(pHandle, x + w/2, y + h/2, 0, 1);
+
+
+	return obj;
+};
+
+#endif
+GLint recBuf = -1;
+
 void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -166,25 +234,181 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color)
 	//vector<float> p {x, y+h, x+w, y+h, x, y, x+w, y};
 	vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
 
+	if(recBuf == -1) {
+		glGenBuffers(1, (GLuint*)&recBuf);
+		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, recBuf);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
+
 	float red = ((color>>16)&0xff) / 255.0;
 	float green = ((color>>8)&0xff) / 255.0;
 	float blue = (color&0xff) / 255.0;
 	glUniform4f(colorHandle, red, green, blue, 1.0);
 
 	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
-	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
+	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform4f(sHandle, globalScale * w/2, globalScale * h/2, 0, 1);
+	glUniform2f(sHandle, globalScale * w/2, globalScale * h/2);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform4f(pHandle, x + w/2, y + h/2, 0, 1);
+	glUniform2f(pHandle, x + w/2, y + h/2);
 
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//if(singleBuffer)
 	//	glfwSwapBuffers();
+}
+
+uint8_t *make_distance_map(uint8_t *img, int width, int height);
+
+void basic_buffer::make_font() {
+	atlas = texture_atlas_new(256, 256, 1 );
+
+
+	const wchar_t *text = L"@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+	font = texture_font_new(atlas, "fonts/ObelixPro.ttf", 32);
+	texture_font_load_glyphs(font, text);
+
+	uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
+	free(atlas->data);
+	atlas->data = data;
+  //  texture_atlas_upload( atlas );
+
+
+}
+
+//static float scale = 1.0;
+
+vector<GLuint> basic_buffer::make_text(const string &text) {
+
+	//auto tl = text.length();
+	//vector<GLfloat> p;
+	vector<GLfloat> verts;
+	vector<GLushort> indexes;
+
+	char lastChar = 0;
+	int i = 0;
+	float x = 0;
+	float y = 0;
+	for(auto c : text) {
+		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
+		//if( glyph == NULL )
+		if(lastChar)
+			x += texture_glyph_get_kerning(glyph, lastChar);
+		lastChar = c;
+
+		float x0  = x + glyph->offset_x;
+		float y0  = y + glyph->offset_y;
+		float x1  = x0 + glyph->width;
+		float y1  = y0 - glyph->height;
+
+		float s0 = glyph->s0;
+		float t0 = glyph->t0;
+		float s1 = glyph->s1;
+		float t1 = glyph->t1;
+
+		verts.push_back(x0);
+		verts.push_back(y1);
+		verts.push_back(s0);
+		verts.push_back(t0);
+		verts.push_back(x1);
+		verts.push_back(y1);
+		verts.push_back(s1);
+		verts.push_back(t0);
+		verts.push_back(x0);
+		verts.push_back(y0);
+		verts.push_back(s0);
+		verts.push_back(t1);
+		verts.push_back(x1);
+		verts.push_back(y0);
+		verts.push_back(s1);
+		verts.push_back(t1);
+
+		indexes.push_back(i);
+		indexes.push_back(i+1);
+		indexes.push_back(i+2);
+		indexes.push_back(i+1);
+		indexes.push_back(i+3);
+		indexes.push_back(i+2);
+		i += 4;
+
+		x += glyph->advance_x;
+
+		//break;
+	}
+
+	vector<GLuint> vbuf(2);
+	glGenBuffers(2, &vbuf[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbuf[0]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbuf[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size() * 2, &indexes[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, verts.size() * 4, &verts[0], GL_STATIC_DRAW);
+
+	return vbuf;
+}
+
+void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32_t color, float scale) {
+
+	//LOGD("[%f]", uvs);
+	//auto _width = screen.size().first;
+	//auto _height = screen.size().second;
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbuf[0]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbuf[1]);
+
+	auto program = get_program(FONT_PROGRAM_DF);
+	glUseProgram(program);
+
+	GLuint vertHandle = glGetAttribLocation(program, "vertex");
+	GLuint uvHandle = glGetAttribLocation(program, "vUV");
+
+	//uint32_t color = 0x40ff80;
+
+	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
+
+	GLuint posHandle = glGetUniformLocation(program, "vPosition");
+	GLuint scaleHandle = glGetUniformLocation(program, "vScale");
+	GLuint colorHandle = glGetUniformLocation(program, "fColor");
+	float red = ((color>>16)&0xff) / 255.0;
+	float green = ((color>>8)&0xff) / 255.0;
+	float blue = (color&0xff) / 255.0;
+	float alpha = ((color>>24)&0xff) / 255.0;
+	glUniform4f(colorHandle, red, green, blue, alpha);
+	glUniform2f(scaleHandle, scale, scale);
+	glUniform2f(posHandle, x, y);
+	//scale *= 1.001;
+
+	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, &verts[0]);
+	glVertexAttribPointer(vertHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
+	glEnableVertexAttribArray(vertHandle);
+	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, &verts[2]);
+	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
+	glEnableVertexAttribArray(uvHandle);
+	glBindTexture( GL_TEXTURE_2D, atlas->id );
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, &indexes[0]);
+	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
+}
+
+void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {
+	if(!atlas)
+		make_font();
+	auto buf = make_text(text);
+	render_text(x, y, buf, text.length(), col, scale);
+	glDeleteBuffers(2, &buf[0]);
 }

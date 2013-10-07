@@ -12,7 +12,11 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-void window::open() {
+void window::open(bool fs) {
+	open(0,0,true);
+}
+
+void window::open(int w, int h, bool fs) {
 
 	if(winOpen)
 		return;
@@ -23,9 +27,21 @@ void window::open() {
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 	GLFWvidmode mode;
 	glfwGetDesktopMode(&mode);
-	_width = mode.Width/ 2;
-	_height = mode.Height/ 2;
-	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, GLFW_WINDOW);
+	_width = w;
+	_height = h;
+	if(_width <= 0) {
+		_width = mode.Width;
+		if(!fs)
+			_width /= 2;
+	}
+	if(_height <= 0) {
+		_height = mode.Height;
+		if(!fs)
+			_height /= 2;
+	}
+
+
+	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
 	if(win) {
 	}
 	int rc = glewInit();
