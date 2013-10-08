@@ -85,6 +85,10 @@ else
     endif
 endif
 
+ifeq ($(HOST),android)
+CC := arm-linux-androideabi-clang
+CXX := arm-linux-androideabi-clang++
+endif
 
 
 ifndef CC

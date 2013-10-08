@@ -225,7 +225,7 @@ int PetsciiConsole::impl_handlekey() {
 	}
 	if(k >= 0x20 && (k <= 0x7f || k >= 0xa0)) {		
 		int k2 = petsciiTable[k-0x20];
-		LOGD("%02x became %04x (%c)", k, k2, k2);
+		//LOGD("%02x became %04x (%c)", k, k2, k2);
 		return k2;
 	}
 	return KEY_UNKNOWN;

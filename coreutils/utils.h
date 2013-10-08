@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include "file.h"
+#include "vec.h"
 
 #include <sys/stat.h>
 #include <stdint.h>
@@ -18,10 +19,10 @@
 #include <utility>
 #include <initializer_list>
 #include <stdexcept>
-#include <math.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+//#include <math.h>
+//#ifndef M_PI
+//#define M_PI 3.14159265358979323846
+//#endif
 
 //#include "utils/format.h"
 
@@ -96,101 +97,6 @@ std::string path_extention(const std::string &name);
 std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
 
-// Vectors
-
-template <class T> struct vec2 {
-	vec2() : x(0), y(0) {}
-	vec2(T x, T y) : x(x), y(y) {}
-	vec2(std::pair<T, T> pair) : x(pair.first), y(pair.second) {}
-
-	vec2(std::initializer_list<T> &il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-	}
-
-	vec2 operator+(const vec2 &v) const {
-		return vec2(x + v.x, y + v.y);
-	}
-
-	vec2 operator+(const T &i) const {
-		return vec2(x + i, y + i);
-	}
-
-	vec2 operator+(std::initializer_list<T> il) const {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		return vec2(x + xa, y + ya);
-	}
-
-	vec2 operator+=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		x += xa;
-		y += ya;
-		return *this;
-	}
-
-	T operator[](const int &i) {
-		switch(i) {
-		case 0:
-			return x;
-		case 1:
-			return y;
-		}
-		throw std::out_of_range("Only 0 or 1 are valid indexes");
-	}
-
-	vec2 operator-(const vec2 &v) const {
-		return vec2(x - v.x, y - v.y);
-	}
-
-	vec2 operator/(T n) const {
-		return vec2(x / n, y / n);
-	}
-
-	vec2 operator*(T n) const {
-		return vec2(x * n, y * n);
-	}
-
-	vec2 operator*(const vec2 &v) const {
-		return vec2(x * v.x, y * v.y);
-	}
-
-	T angle() {
-		T l = sqrt(x * x + y * y);
-		T a = acos(x / l);
-		if(y < 0) a = (M_PI - a) + M_PI;
-			return a;
-	}
-
-	T dist2() {
-		return x * x + y * y;
-	}
-
-	T dist() {
-		return sqrt(x * x + y * y);
-	}
-
-	T x;
-	T y;
-};
-
-typedef vec2<float> vec2f;
-typedef vec2<int> vec2i;
-
-template <typename T> vec2<T> cossin(const vec2<T> &v) {
-	return vec2<T>(cos(v.x), sin(v.y));
-}
-
-template <typename T> vec2<T> sin(const vec2<T> &v) {
-	return vec2<T>(sinf(v.x), sinf(v.y));
-}
 
 // SLICE
 
