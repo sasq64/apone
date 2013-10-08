@@ -13,7 +13,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 }
 
 void window::open(bool fs) {
-	open(0,0,true);
+	open(0,0,fs);
 }
 
 void window::open(int w, int h, bool fs) {

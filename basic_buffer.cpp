@@ -112,10 +112,15 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	//	glfwSwapBuffers();
 }
 
-void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h) {
+void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h, GLint program) {
 
-	static float uvs[8] = {0,1, 1,1, 0,0, 1,0};
+	//static float uvs[8] = {0,1, 1,1, 0,0, 1,0};
+	static float uvs[8] = {0,0, 1,0, 0,1, 1,1};
 
+	if(program < 0) {
+		program = get_program(TEXTURED_PROGRAM);
+		glUseProgram(program);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
@@ -124,8 +129,6 @@ void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h) {
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-	auto program = get_program(TEXTURED_PROGRAM);
-	glUseProgram(program);
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint uvHandle = glGetAttribLocation(program, "uv");
@@ -272,12 +275,12 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color)
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 void basic_buffer::make_font() {
-	atlas = texture_atlas_new(256, 256, 1 );
+	atlas = shared_ptr<texture_atlas_t>(texture_atlas_new(256, 256, 1 ));
 
 
 	const wchar_t *text = L"@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-	font = texture_font_new(atlas, "fonts/ObelixPro.ttf", 32);
-	texture_font_load_glyphs(font, text);
+	font = shared_ptr<texture_font_t>(texture_font_new(atlas.get(), "fonts/ObelixPro.ttf", 32));
+	texture_font_load_glyphs(font.get(), text);
 
 	uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
 	free(atlas->data);
@@ -301,7 +304,7 @@ vector<GLuint> basic_buffer::make_text(const string &text) {
 	float x = 0;
 	float y = 0;
 	for(auto c : text) {
-		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
+		texture_glyph_t *glyph = texture_font_get_glyph(font.get(), c);
 		//if( glyph == NULL )
 		if(lastChar)
 			x += texture_glyph_get_kerning(glyph, lastChar);

@@ -13,6 +13,14 @@ public:
 
 	unsigned int texture() { return texture_id; }
 
+	void draw(int x, int y, renderbuffer &buffer) {
+		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.width(), buffer.height());
+	};
+
+	template <typename T> void draw(T pos, renderbuffer &buffer) {
+		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.width(), buffer.height());
+	};
+
 private:
 	unsigned int texture_id;
 };

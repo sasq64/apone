@@ -12,7 +12,6 @@ class window : public basic_buffer {
 public:
 
 	window() : basic_buffer(), winOpen(false), bmCounter(0) {
-		open();
 	}
 	/*window(int width, int height) : basic_buffer(0, width, height), winOpen(false) {
 		open();

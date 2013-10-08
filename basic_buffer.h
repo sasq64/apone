@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <memory>
 
 class basic_buffer {
 public:
@@ -39,7 +40,7 @@ public:
 	void rectangle(float x, float y, float w, float h, uint32_t color);
 
 	void circle(int x, int y, float radius, uint32_t color);
-	void draw_texture(int texture, int x0, int y0, int w, int h);
+	void draw_texture(int texture, int x0, int y0, int w, int h, int program = -1);
 	int width() { return _width; }
 	int height() { return _height; }
 
@@ -57,8 +58,8 @@ protected:
 	int _height;
 	float globalScale;
 
-	texture_font_t *font;
-	texture_atlas_t *atlas;
+	std::shared_ptr<texture_font_t> font;
+	std::shared_ptr<texture_atlas_t> atlas;
 
 };
 

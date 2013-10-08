@@ -9,7 +9,7 @@ static const char *vShader = R"(
 	uniform vec2 vScreenScale;
 	uniform vec2 vScale;
 	uniform vec2 vPosition;
-	uniform float rotation;
+	//uniform float rotation;
 	void main() {
 		vec2 v = vertex * vScale + vPosition;
 		gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0, 1);
@@ -26,7 +26,7 @@ static const char *pShader = R"(
 
 static const char *pTexShader = R"(
 	//precision mediump float;
-	uniform vec4 fColor;
+	//uniform vec4 fColor;
 	uniform sampler2D sTexture;
 	varying vec2 UV;
 
@@ -95,9 +95,13 @@ static const char *pDFontShader = R"(
 
 	void main() {
 		vec4 color = texture2D(sTexture, UV);
+		vec4 color2 = texture2D(sTexture, UV * 0.9);
+
 		float dist  = color.a;
 		float width = fwidth(dist);
 		float alpha = smoothstep(glyph_center-width, glyph_center+width, dist);
+
+		gl_FragColor = vec4(fColor.rgb, fColor.a * alpha);
 
 		//float mu = smoothstep(outline_center-width, outline_center+width, dist);
 		//vec3 rgb = mix(outline_color, glyph_color, mu);
@@ -106,7 +110,6 @@ static const char *pDFontShader = R"(
 		//vec3 rgb = mix(glow_color, fColor.rgb, alpha);
 		//float mu = smoothstep(glyph_center, glow_center, sqrt(dist));
 		//gl_FragColor = vec4(rgb, max(alpha,mu));
-		gl_FragColor = vec4(fColor.rgb, fColor.a * alpha);
 
 	}
 )";
