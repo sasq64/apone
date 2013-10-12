@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include <GL/glew.h>
+#include "GL_Header.h"
 #include <GL/glfw.h>
 #include <stdio.h>
 #include <unordered_map>
@@ -36,6 +36,13 @@ void window::open(int w, int h, bool fs) {
 	glfwGetDesktopMode(&mode);
 	_width = w;
 	_height = h;
+
+	LOGD("Desktop is %dx%d", mode.Width, mode.Height);
+	//mode.Width = 1600;
+
+	if((float)mode.Width / (float)mode.Height > 2.2)
+		mode.Width /= 2;
+
 	if(_width <= 0) {
 		_width = mode.Width;
 		if(!fs)

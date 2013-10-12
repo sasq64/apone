@@ -1,6 +1,6 @@
 
 #include "renderbuffer.h"
-#include <GL/glew.h>
+#include "GL_Header.h"
 
 #include <coreutils/log.h>
 

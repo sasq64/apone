@@ -52,7 +52,7 @@ bitmap read_png_file(const std::string &file_name)
 	//auto color_type = png_get_color_type(png_ptr, info_ptr);
 	auto bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	if(info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
+	//if(info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
 		png_set_expand(png_ptr);
 
 	//auto number_of_passes = png_set_interlace_handling(png_ptr);

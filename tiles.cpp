@@ -150,10 +150,10 @@ private:
 
 int main() {
 	
-	screen.open(true);
+	screen.open(false);
 
 
-	auto bm = read_png_file("tiles.png");
+	auto bm = read_png_file("data/tiles.png");
 /*
 	uint32_t colors[4] = { 0xffffff00, 0xff0000ff, 0xffff0000, 0xff00ff00 };
 	bitmap bm(32,32);
@@ -178,7 +178,7 @@ int main() {
 		tiles[l] = l%100;
 
 
-	TileSet avatars(read_png_file("rpgtiles.png"), 24, 32);
+	TileSet avatars(read_png_file("data/rpgtiles.png"), 24, 32);
 
 	//for(int l=0; l<32; l++)
 	//	tiles[rand()%(32*32)] = 16*4;
@@ -210,7 +210,7 @@ int main() {
 	while(screen.is_open()) {
 		screen.clear();
 		tiles.render();
-		avatars.render_tile(0, screen, px++, py++, 4.0);
+		avatars.render_tile(0, screen, px+=0.51, py+=0.51, 4.0);
 		//screen.draw(0, 0, tx);
 		//screen.text(0, 0, "BALLS ON THE SCREEN!!", 0xc080c0ff, 36.0);
 		screen.flip();

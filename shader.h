@@ -1,7 +1,7 @@
 #ifndef GRAPPIX_SHADER_H
 #define GRAPPIX_SHADER_H
 
-#include <GL/glew.h>
+#include "GL_Header.h"
 #include <stdexcept>
 #include <string>
 

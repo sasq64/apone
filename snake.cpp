@@ -7,7 +7,7 @@ using namespace utils;
 
 int main() {
 
-	screen.open(true);
+	screen.open(1280, 720, false);
 
 	static const vector<vec2f> adds { {0,-1}, {1,0}, {0,1}, {-1,0} };
 	const int w = 32;
@@ -82,7 +82,7 @@ int main() {
 				}
 			}
 			i++;
-		}
+		} 
 		screen.text(10, 5, format("Score:%d", score), 0xff00ff00, 1.0);
 		if(gameOver) {
 			screen.text(scrollx-=5, screen.height()/2 - 50, "Game Over", 0x80c0ffc0, 10.0);

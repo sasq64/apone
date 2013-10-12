@@ -2,7 +2,7 @@
 #include "basic_buffer.h"
 #include "shader.h"
 
-#include <GL/glew.h>
+#include "GL_Header.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -29,7 +29,7 @@ void basic_buffer::line(float x0, float y0, float x1, float y1, uint32_t color) 
 
 	glUseProgram(program);
 
-	glEnable(GL_POINT_SMOOTH);
+	//glEnable(GL_POINT_SMOOTH);
 	//glPointSize(radius);
 	glLineWidth(14.0);
 
@@ -75,15 +75,15 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_POINT_SMOOTH);
-	glPointSize(radius);
+	//glEnable(GL_POINT_SMOOTH);
+	//glPointSize(radius);
 
 	float red = ((color>>16)&0xff) / 255.0;
 	float green = ((color>>8)&0xff) / 255.0;
 	float blue = (color&0xff) / 255.0;
 	glUniform4f(colorHandle, red, green, blue, 1.0);
 
-	int count = radius;
+	int count = radius*2;
 
 	float p[count*2];
 
@@ -401,6 +401,7 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	glBindBuffer(GL_ARRAY_BUFFER, vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbuf[1]);
 
+
 	auto program = get_program(FONT_PROGRAM_DF);
 	glUseProgram(program);
 
@@ -424,20 +425,27 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	glUniform2f(posHandle, x, y);
 	//scale *= 1.001;
 
-	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, &verts[0]);
+
 	glVertexAttribPointer(vertHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
 	glEnableVertexAttribArray(vertHandle);
-	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, &verts[2]);
 	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
 	glEnableVertexAttribArray(uvHandle);
+
 	glBindTexture( GL_TEXTURE_2D, atlas->id );
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-
 	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	//glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, &indexes[0]);
 	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
+
+	glDisableVertexAttribArray(uvHandle);
+	glDisableVertexAttribArray(vertHandle);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
 }
 
 void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {

@@ -45,8 +45,7 @@
 #  include <GL/glew.h>
 #  include <GL/wglew.h>
 #else
-#  include <GL/glew.h>
-#  include <GL/gl.h>
+#  include "GL_Header.h"
 #endif
 
 #endif /* OPEN_GL_H */
