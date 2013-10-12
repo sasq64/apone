@@ -25,7 +25,7 @@ void basic_buffer::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	auto program = get_program(FLAT_PROGRAM);
 
 	GLuint posHandle = glGetAttribLocation(program, "vPosition");
-	GLuint colorHandle = glGetUniformLocation(program, "fColor");
+	GLuint colorHandle = glGetUniformLocation(program, "vColor");
 
 	glUseProgram(program);
 
@@ -69,7 +69,7 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	auto program = get_program(FLAT_PROGRAM);
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
-	GLuint colorHandle = glGetUniformLocation(program, "fColor");
+	GLuint colorHandle = glGetUniformLocation(program, "vColor");
 
 	glUseProgram(program);
 
@@ -112,10 +112,13 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	//	glfwSwapBuffers();
 }
 
-void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h, GLint program) {
+void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) {
 
 	//static float uvs[8] = {0,1, 1,1, 0,0, 1,0};
-	static float uvs[8] = {0,0, 1,0, 0,1, 1,1};
+	static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
+
+	if(!uvs)
+		uvs = suvs;
 
 	if(program < 0) {
 		program = get_program(TEXTURED_PROGRAM);
@@ -128,7 +131,6 @@ void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h, GLint
 	//	glfwSwapBuffers();
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
-
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint uvHandle = glGetAttribLocation(program, "uv");
@@ -157,55 +159,87 @@ void basic_buffer::draw_texture(GLint texture, int x, int y, int w, int h, GLint
 }
 
 
-struct GLObject {
-	GLuint vbo;
-	short iCount;
-	short vCount;
-	GLuint texture;
 
-	GLuint program;
-	enum {
-		POSITION,
-		SCALE,
-		ROTATION,
-		COLOR,
-		SCREEN_SCALE
-	};
-	vector<GLint> uniforms;
-};
+void basic_buffer::draw_object(const gl_object &vbo, float x, float y, uint32_t color, float scale, float rotation) {
 
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glViewport(0, 0, _width, _height);
 
-#if 0
-void draw(float x, float y, const GLObject &vbo) {
+	GLuint u;
 
-	glUniform2f(uniforms[SCREEN_SCALE], 2.0 / _width, 2.0 / _height);
-	glUniform2f(uniforms[POSITION], x, y);
-	glUniform2f(uniforms[SCALE], globalScale, globalScale);
-	glUniform1f(uniforms[ROTATION], 0);
-	glUniform1f(uniforms[COLOR], 0);
+	glUseProgram(vbo.program);
 
-	for(const auto &a : attributes) {
-		int offset = a.second & 0xffffff;
-		int stride = a.second >> 8;
-		glVertexAttribPointer(a.first, 2, GL_FLOAT, GL_FALSE, offset, stride);
-		glEnableVertexAttribArray(a.first);
+	u = glGetUniformLocation(vbo.program, "vScreenScale");
+	glUniform2f(u, 2.0 / _width, 2.0 / _height);
+
+	u = glGetUniformLocation(vbo.program, "vPosition");
+	glUniform2f(u, x, y);
+
+	u = glGetUniformLocation(vbo.program, "vScale");
+	glUniform2f(u, globalScale * scale, globalScale * scale);
+
+	u = glGetUniformLocation(vbo.program, "fRotation");
+	glUniform1f(u, rotation);
+
+	float red = ((color>>16)&0xff) / 255.0;
+	float green = ((color>>8)&0xff) / 255.0;
+	float blue = (color&0xff) / 255.0;
+	float alpha = ((color>>24)&0xff) / 255.0;
+
+	u = glGetUniformLocation(vbo.program, "vColor");
+	glUniform4f(u, red, green, blue, alpha);
+
+	for(const auto &c : vbo.uniforms) {
+		switch(c.type) {
+		case 1:
+			glUniform1f(c.handle, c.f[0]);
+			break;
+		case 2:
+			glUniform2f(c.handle, c.f[0], c.f[1]);
+			break;
+		case 3:
+			glUniform3f(c.handle, c.f[0], c.f[1], c.f[2]);
+			break;
+		}
 	}
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, vCount);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo.vertexBuf);
+	if(vbo.iCount)
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.indexBuf);
+
+	for(const auto &a : vbo.attributes) {
+		uintptr_t p = a.offset;
+		glVertexAttribPointer(a.handle, 2, GL_FLOAT, GL_FALSE, a.stride, (void*)p);
+		glEnableVertexAttribArray(a.handle);
+	}
+
+	if(vbo.iCount)
+		glDrawElements(vbo.primitive, vbo.iCount, GL_UNSIGNED_SHORT, 0);
+	else
+		glDrawArrays(vbo.primitive, 0, vbo.vCount);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 };
 
-GLObject basic_buffer::make_rectangle(float x, float y, float w, float h, uint32_t color) {
-	GLObject obj;
 
+gl_object basic_buffer::make_rectangle(float w, float h) {
+	gl_object obj;
 	obj.program = get_program(FLAT_PROGRAM);
-
-	static vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
-	glGenBuffers(1, &obj.buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, obj.buffer);
+	w /= 2;
+	h /= 2;
+	vector<float> p {-w, h, w, h, -w, -h, w, -h};
+	glGenBuffers(1, &obj.vertexBuf);
+	glBindBuffer(GL_ARRAY_BUFFER, obj.vertexBuf);
 	glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+	obj.vCount = 4;
+	obj.iCount = 0;
+	obj.primitive = GL_TRIANGLE_STRIP;
+	GLuint posHandle = glGetAttribLocation(obj.program, "vertex");
+	obj.attributes.push_back(attribute(posHandle, 0, 0));
 
+/*
 	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
 	obj.uniforms.push_back(make_pair(whHandle, vec3f(2.0 / _width, 2.0 / _height, 0)));
 
@@ -216,15 +250,14 @@ GLObject basic_buffer::make_rectangle(float x, float y, float w, float h, uint32
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
 	glUniform4f(pHandle, x + w/2, y + h/2, 0, 1);
-
+*/
 
 	return obj;
 };
 
-#endif
 GLint recBuf = -1;
 
-void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color) {
+void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
@@ -232,7 +265,7 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color)
 	glUseProgram(program);
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
-	GLuint colorHandle = glGetUniformLocation(program, "fColor");
+	GLuint colorHandle = glGetUniformLocation(program, "vColor");
 
 	//vector<float> p {x, y+h, x+w, y+h, x, y, x+w, y};
 	vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
@@ -257,7 +290,7 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color)
 	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform2f(sHandle, globalScale * w/2, globalScale * h/2);
+	glUniform2f(sHandle, scale * globalScale * w/2, scale * globalScale * h/2);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
 	glUniform2f(pHandle, x + w/2, y + h/2);
@@ -274,20 +307,19 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color)
 
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
-void basic_buffer::make_font() {
+void basic_buffer::set_font(const string &ttfName, int size, int flags) {
+
 	atlas = shared_ptr<texture_atlas_t>(texture_atlas_new(256, 256, 1 ));
 
-
-	const wchar_t *text = L"@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-	font = shared_ptr<texture_font_t>(texture_font_new(atlas.get(), "fonts/ObelixPro.ttf", 32));
+	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+	font = shared_ptr<texture_font_t>(texture_font_new(atlas.get(), ttfName.c_str(), size));
 	texture_font_load_glyphs(font.get(), text);
 
-	uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
-	free(atlas->data);
-	atlas->data = data;
-  //  texture_atlas_upload( atlas );
-
-
+	if(flags & DISTANCE_MAP) {
+		uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
+		free(atlas->data);
+		atlas->data = data;
+	}
 }
 
 //static float scale = 1.0;
@@ -382,7 +414,7 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 
 	GLuint posHandle = glGetUniformLocation(program, "vPosition");
 	GLuint scaleHandle = glGetUniformLocation(program, "vScale");
-	GLuint colorHandle = glGetUniformLocation(program, "fColor");
+	GLuint colorHandle = glGetUniformLocation(program, "vColor");
 	float red = ((color>>16)&0xff) / 255.0;
 	float green = ((color>>8)&0xff) / 255.0;
 	float blue = (color&0xff) / 255.0;
@@ -410,7 +442,7 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 
 void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {
 	if(!atlas)
-		make_font();
+		set_font("fonts/ObelixPro.ttf", 32);
 	auto buf = make_text(text);
 	render_text(x, y, buf, text.length(), col, scale);
 	glDeleteBuffers(2, &buf[0]);

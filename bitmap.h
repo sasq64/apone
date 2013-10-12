@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 template <typename T = uint32_t> class basic_bitmap {
 public:
@@ -18,6 +19,8 @@ public:
 			p += pixel;
 		return rb;
 	}
+
+	
 
 	std::vector<basic_bitmap> split(int w, int h) {
 		std::vector<basic_bitmap> rv;
@@ -36,5 +39,8 @@ private:
 };
 
 typedef basic_bitmap<uint32_t> bitmap;
+
+bitmap read_png_file(const std::string &file_name);
+
 
 #endif // GRAPPIX_BITMAP_H

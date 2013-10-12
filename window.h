@@ -7,6 +7,7 @@
 #include <coreutils/utils.h>
 #include <chrono>
 #include <unordered_map>
+#include <deque>
 
 class window : public basic_buffer {
 public:
@@ -36,10 +37,12 @@ public:
 		LEFT,
 		RIGHT,
 		ENTER,
-		SPACE
+		SPACE,
+		NO_KEY = 256
 	};
 
 	bool key_pressed(key k);
+	key get_key();
 
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
@@ -47,6 +50,8 @@ public:
 	constexpr static const double FPS = 1.0/60.0;
 
 	void benchmark(); 
+
+	static std::deque<int> key_buffer;
 
 private:
 	int lastTime;

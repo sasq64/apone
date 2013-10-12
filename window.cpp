@@ -16,6 +16,13 @@ void window::open(bool fs) {
 	open(0,0,fs);
 }
 
+std::deque<int> window::key_buffer;
+
+static void key_fn(int key, int action) {
+	if(action == GLFW_PRESS)
+		window::key_buffer.push_back(key);
+}
+
 void window::open(int w, int h, bool fs) {
 
 	if(winOpen)
@@ -61,6 +68,12 @@ void window::open(int w, int h, bool fs) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	lastTime = -1;
 	winOpen = true;
+
+	glfwSetKeyCallback(key_fn);
+	/*[&](int key, int action) {
+		if(action == GLFW_PRESS)
+			key_buffer.push_back(key);
+	});*/
 
 	atexit([](){
 		while(true) {
@@ -113,5 +126,17 @@ bool window::key_pressed(key k) {
 	auto glfwKey = translate[k];
 	return glfwGetKey(glfwKey) != 0;
 }
+
+window::key window::get_key() {
+	if(key_buffer.size() > 0) {
+		auto k = key_buffer.front();
+		key_buffer.pop_front();
+		for(auto t : translate) {
+			if(t.second == k)
+				return (key)t.first;
+		}
+	}
+	return NO_KEY;
+};
 
 window screen;

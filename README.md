@@ -5,43 +5,40 @@ GRAPPIX
 * Allows for very simple programs
 * Inspired by 8 bit basic computers
 
-Used without other constructs, the line function
-draws directly to buffer 0 (swap, draw, swap back)
-line()
-gfx.line()
 
-When the screen has been flipped manually, double buffering
-is turned on and flip() needs to be called in a loop
+line(x...)
+ EQU
+x = make_line(x..)
+draw(x)
 
-gfx.flip()
+Where x is a VBO with data and program
 
-You can also change this manually
+Need to define x
 
-gfx.flags |= GFX:DOUBLE_BUFFER;
+All data required to render or build a VBO
+vertices, indexes, program, texture
 
+STEP 1:
+Define data so draw() is fast and simple
 
-main() {
+STEP 2:
+Generate object, but rendering effeciency is key.
 
-	for()
-		line()
-	return
-}
+Variables of a VBO
 
-	rendertarget rt(128, 128);
-	rt.circle(64, 64, 60, 0x000080);
-	rt.circle(92, 92, 32, 0x3030c0);
-	screen.draw(rt);
+Known uniforms: Allows you to scale, postion, colorize or rotate an unknown GL object
 
+Program: Reprogram a known object
+Attributes: Known object
 
-BITMAP OPERATIONS
------------------
+Texture: Unknown object.
 
-* Normal operators add, sub with contstants or other bitmaps
-* Split into many
-* Concatenate into one, with or without padding to largest
-* Make atlas
+TWO DISTINCT PARTS; KNOWN/UNKNOWN
 
+renderbuffer scroller(w,h);
+scroller.set_program(p)
 
+scroller.text("HELLO!")
 
+screen.draw(scroller)
 
-text("blabla")

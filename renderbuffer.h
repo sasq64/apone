@@ -6,6 +6,8 @@
 
 class renderbuffer : public basic_buffer {
 public:
+	renderbuffer() : texture_id(-1) {}
+
 	template <typename T> renderbuffer(T size) : renderbuffer(size[0], size[1]) {}
 	renderbuffer(int width, int height);
 

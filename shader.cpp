@@ -17,9 +17,9 @@ static const char *vShader = R"(
 )";
 
 static const char *pShader = R"(
-	uniform vec4 fColor;
+	uniform vec4 vColor;
 	void main() {	
-		gl_FragColor = fColor;	
+		gl_FragColor = vColor;	
 	}
 )";
 
@@ -82,7 +82,7 @@ static const char *vFontShader = R"(
 )";
 
 static const char *pDFontShader = R"(
-	uniform vec4 fColor;
+	uniform vec4 vColor;
 	uniform sampler2D sTexture;
 	varying vec2 UV;
 
@@ -95,13 +95,13 @@ static const char *pDFontShader = R"(
 
 	void main() {
 		vec4 color = texture2D(sTexture, UV);
-		vec4 color2 = texture2D(sTexture, UV * 0.9);
+		//vec4 color2 = texture2D(sTexture, UV * 0.9);
 
 		float dist  = color.a;
 		float width = fwidth(dist);
 		float alpha = smoothstep(glyph_center-width, glyph_center+width, dist);
 
-		gl_FragColor = vec4(fColor.rgb, fColor.a * alpha);
+		gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
 
 		//float mu = smoothstep(outline_center-width, outline_center+width, dist);
 		//vec3 rgb = mix(outline_color, glyph_color, mu);

@@ -2,11 +2,14 @@
 #include "renderbuffer.h"
 #include <GL/glew.h>
 
+#include <coreutils/log.h>
 
 renderbuffer::renderbuffer(const bitmap &bm) {
 
 	_width = bm.width();
 	_height = bm.height();
+
+	LOGD("%dx%d", _width, _height);
 
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
