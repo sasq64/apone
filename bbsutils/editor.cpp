@@ -186,7 +186,7 @@ FullEditor::FullEditor(Console &console) : console(console) {
 
 	console.fill(Console::BLUE, 0, 0, 0, 1);
 	console.put(1, 0, format("%02d/%02d", lineNo+1, lines.size()), Console::WHITE, Console::BLUE);
-	console.put(-10, 0, "F1 = Save", Console::WHITE, Console::BLUE);
+	console.put(-10, 0, "F7 = Save", Console::WHITE, Console::BLUE);
 	console.flush();
 }
 
@@ -209,6 +209,7 @@ void FullEditor::redraw(bool full, int cursor) {
 		// Scroll down
 		yscroll++;// = lineNo - height + 1;
 		console.fill(Console::BLUE, 0, 1, 0, 1);
+		console.put(-10, 0, "F7 = Save", Console::WHITE, Console::BLUE);
 		console.flush();
 		console.scrollScreen(1);
 		startLine = 0;

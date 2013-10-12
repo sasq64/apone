@@ -26,6 +26,15 @@
 
 TOP_MAKEFILE = $(firstword $(MAKEFILE_LIST))
 
+ifeq ($(HOST),android)
+ CC := arm-linux-androideabi-clang
+ CXX := arm-linux-androideabi-clang++
+ CFLAGS := $(CFLAGS) $(ANDROID_CFLAGS) -DANDROID
+ OBJS := $(OBJS) $(ANDROID_OBJS)
+ LIBS := $(LIBS) $(ANDROID_LIBS)
+ LDFLAGS := $(LDFLAGS) $(ANDROID_LDFLAGS)
+else
+
 ifeq ($(OS),Windows_NT)
 	MODULES := $(MODULES) $(WIN_MODULES)
 	OBJS := $(OBJS) $(WIN_OBJS)
@@ -85,10 +94,8 @@ else
     endif
 endif
 
-ifeq ($(HOST),android)
-CC := arm-linux-androideabi-clang
-CXX := arm-linux-androideabi-clang++
 endif
+
 
 
 ifndef CC
