@@ -1,0 +1,348 @@
+#include "window.h"
+
+#include <stdio.h>
+#include <unordered_map>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <cstdlib>
+#include <android_native_app_glue.h>
+
+
+using namespace std;
+
+
+class AndroidHost {
+public:
+	AndroidHost() {}
+
+	int32_t handleAndroidEvent(AInputEvent *event) {
+		int type = AInputEvent_getType(event);
+		//AInputE
+		if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+
+			//engine->animating = 1;
+			//AInputEvent_getType();
+
+			int n = AMotionEvent_getPointerCount(event);
+			int action = AMotionEvent_getAction(event);
+
+			int index = action >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+			int what = action & AMOTION_EVENT_ACTION_MASK;
+
+			
+			int id = AMotionEvent_getPointerId(event, index);
+			int x = AMotionEvent_getX(event, id);
+			int y = AMotionEvent_getY(event, id);
+
+			if(what == 6 || what == 1) {
+				//LOGI("%d UP", id);
+				//what = TouchEvent::UP;
+				//touchEvents.push(TouchEvent(what, id, x, y));
+			} else if(what == 0 || what == 5) {
+				//LOGI("%d DOWN", id);
+				//what = TouchEvent::DOWN;
+				//touchEvents.push(TouchEvent(what, id, x, y));
+			} else if(what == 2) {
+				//what = TouchEvent::MOVE;
+				//LOGI("%d MOVE: %d %d", index, x, y);
+				for(int i=0; i<n; i++) {
+					int x = AMotionEvent_getX(event, i);
+					int y = AMotionEvent_getY(event, i);
+					int id = AMotionEvent_getPointerId(event, i);
+
+					int xy = x | y<<16;
+
+					//if(pos[id] != xy) {
+					//	pos[id] = xy;
+						//LOGI("MOVE %d (%d): %d %d\n", i, id, x, y);
+					//	touchEvents.push(TouchEvent(what, id, x, y));
+					//}
+
+				}
+
+			}
+	/*
+			for(int i=0; i<n; i++) {
+
+				int x = AMotionEvent_getX(event, i);
+				int y = AMotionEvent_getY(event, i);
+				int id = AMotionEvent_getPointerId(event, i);
+				LOGI("%d: %d %d\n", id, x, y);
+				host->addMotionEvent(AndroidHostSystem::MotionEvent(id, x, y));
+			} */
+			return 1;
+		}
+		return 0;
+	}
+
+	int initScreen(ANativeWindow *nativeWindow) {
+
+		/*
+		 * Here specify the attributes of the desired configuration.
+		 * Below, we select an EGLConfig with at least 8 bits per color
+		 * component compatible with on-screen windows
+		 */
+		const EGLint attribs[] = {
+				//EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+				EGL_BLUE_SIZE, 8,
+				EGL_GREEN_SIZE, 8,
+				EGL_RED_SIZE, 8,
+				EGL_NONE
+		};
+
+		EGLint w, h, dummy, format;
+		EGLint numConfigs;
+		EGLConfig config;
+		EGLConfig configList[32];
+		EGLSurface surface;
+		EGLContext context;
+
+		EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+		EGLint m0;
+		EGLint m1;
+
+		eglInitialize(display, &m0, &m1);
+
+		LOGI("EGL v%d.%d", m0, m1);	
+
+		/* Here, the application chooses the configuration it desires. In this
+		 * sample, we have a very simplified selection process, where we pick
+		 * the first EGLConfig that matches our criteria */
+		eglGetConfigs(display, configList, 32, &numConfigs);
+
+		LOGI("Found %d matching configs", numConfigs);
+
+		for(int i=0; i<numConfigs; i++) {
+			EGLint conf, id, stype, redSize, caveat, sbuffers;
+			eglGetConfigAttrib(display, configList[i], EGL_CONFORMANT, &conf);
+			eglGetConfigAttrib(display, configList[i], EGL_CONFIG_ID, &id);
+			eglGetConfigAttrib(display, configList[i], EGL_SURFACE_TYPE, &stype);
+			eglGetConfigAttrib(display, configList[i], EGL_RED_SIZE, &redSize);
+			eglGetConfigAttrib(display, configList[i], EGL_CONFIG_CAVEAT, &caveat);
+			eglGetConfigAttrib(display, configList[i], EGL_SAMPLE_BUFFERS, &sbuffers);
+			
+			
+			LOGI("Config %d (%d) conformant %x RED %d caveat %x stype %x", i, id, conf, redSize, caveat, stype);
+
+			if((conf & EGL_OPENGL_ES2_BIT) && (stype & EGL_WINDOW_BIT)) {
+				config = configList[i];
+				if(sbuffers > 0) {
+					break;
+				}
+			}
+		}
+
+		/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+		 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
+		 * As soon as we picked a EGLConfig, we can safely reconfigure the
+		 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+		eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
+
+		LOGI("Native id %d", format);
+		ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, format);
+
+		surface = eglCreateWindowSurface(display, config, nativeWindow, NULL);
+
+		const EGLint attribs2[] = {
+			EGL_CONTEXT_CLIENT_VERSION, 2, 
+			EGL_NONE, EGL_NONE
+		};
+
+		LOGI("Surface %p", surface);
+
+		context = eglCreateContext(display, config, NULL, attribs2);
+
+		LOGI("Context %p", context);
+		if(!context) {
+			LOGI("NO CONTEXT!");
+			exit(0);
+		}
+
+
+		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
+			LOGI("Unable to eglMakeCurrent");
+			return -1;
+		}
+
+		eglQuerySurface(display, surface, EGL_WIDTH, &w);
+		eglQuerySurface(display, surface, EGL_HEIGHT, &h);
+
+		screenWidth = w;
+		screenHeight = h;
+		eglDisplay = display;
+		eglContext = context;
+		eglSurface = surface;
+
+		LOGI("Done");
+		return 0;
+	}
+
+	bool flip() {
+		//getEvent(nullptr);
+		if(focus && eglDisplay != EGL_NO_DISPLAY)
+			eglSwapBuffers(eglDisplay, eglSurface);
+		return (eglDisplay == EGL_NO_DISPLAY);
+	}
+
+	void closeWindow() {
+		if(eglDisplay != EGL_NO_DISPLAY) {
+			eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+			if(eglContext != EGL_NO_CONTEXT) {
+				eglDestroyContext(eglDisplay, eglContext);
+			}
+			if(eglSurface != EGL_NO_SURFACE) {
+				eglDestroySurface(eglDisplay, eglSurface);
+			}
+			eglTerminate(eglDisplay);
+		}
+		eglDisplay = EGL_NO_DISPLAY;
+		eglContext = EGL_NO_CONTEXT;
+		eglContext = EGL_NO_SURFACE;
+	}
+
+	void setFocus(bool focus) {
+		this->focus = focus;
+	}
+
+	bool getFocus() const { return focus; }
+
+
+protected:
+
+	bool focus;
+
+	std::string title;
+	//std::queue<TouchEvent> touchEvents;
+
+	struct android_app* app;
+
+	int screenWidth;
+	int screenHeight;
+
+	ANativeWindow *nativeWindow;
+
+	EGLConfig eglConfig;
+
+	EGLContext eglContext;
+	EGLDisplay eglDisplay;
+	EGLSurface eglSurface;
+
+	//std::vector<unsigned int> pos;
+
+	int program;
+
+	float ppmm;
+
+};
+
+static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
+	AndroidHost* host = static_cast<AndroidHost*>(app->userData);
+	return host->handleAndroidEvent(event);
+}
+
+/**
+ * Process the next main command.
+ */
+static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
+	//struct engine* engine = (struct engine*)app->userData;
+
+	AndroidHost *host = (AndroidHost*)app->userData;
+
+	LOGI("Got cmd %d", cmd);
+
+	switch (cmd) {
+		case APP_CMD_SAVE_STATE:
+			// The system has asked us to save our current state.  Do so.
+			//engine->app->savedState = malloc(sizeof(struct saved_state));
+			//*((struct saved_state*)engine->app->savedState) = engine->state;
+			//engine->app->savedStateSize = sizeof(struct saved_state);
+			break;
+		case APP_CMD_INIT_WINDOW:
+			// The window is being shown, get it ready.
+			LOGI("Init window");
+			if(app->window != NULL) {
+				host->initScreen(app->window);
+			}
+			break;
+		case APP_CMD_TERM_WINDOW:
+			LOGI("Terminating");
+			host->closeWindow();
+			exit(0);
+			break;
+		case APP_CMD_GAINED_FOCUS:
+			// Start rendering
+			host->setFocus(true);
+			break;
+		case APP_CMD_LOST_FOCUS:
+			// Stop rendering
+			host->setFocus(false);
+			break;
+		case APP_CMD_CONFIG_CHANGED:
+			// Resize here
+			break;
+	}
+}
+
+static AndroidHost host;
+
+extern int main(int argc, char **argv);
+void android_main(struct android_app* app) {
+	// Make sure glue isn't stripped.
+	app_dummy();
+	app->userData = &host;
+	app->onAppCmd = engine_handle_cmd;
+	app->onInputEvent = engine_handle_input;
+	main(0, nullptr);
+}
+
+
+void debug_callback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, void* userParam) {
+	LOGD("GLDEBUG:%s", message);
+}
+
+window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
+	frameBuffer = 0;
+}
+
+void window::open(bool fs) {
+	return;
+}
+
+void window::open(int w, int h, bool fs) {
+	return;
+};
+
+void window::vsync() {
+}
+
+void window::flip() {
+	host.flip();
+	//glfwSwapBuffers();
+	//if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
+	//	glfwCloseWindow();
+	//	winOpen = false;			
+	//}
+}
+
+void window::benchmark() {
+	benchStart = chrono::high_resolution_clock::now();
+	bmCounter = 100;
+}
+
+/*
+unordered_map<int, int> window::translate = {
+	{ ENTER, GLFW_KEY_ENTER },
+	{ LEFT, GLFW_KEY_LEFT },
+	{ RIGHT, GLFW_KEY_RIGHT },
+	{ UP, GLFW_KEY_UP },
+	{ DOWN, GLFW_KEY_DOWN }
+};*/
+
+bool window::key_pressed(key k) {
+	//auto glfwKey = translate[k];
+	return false;
+	//return glfwGetKey(glfwKey) != 0;
+}
+
+window screen;

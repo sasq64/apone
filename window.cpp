@@ -12,6 +12,9 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
+window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
+}
+
 void window::open(bool fs) {
 	open(0,0,fs);
 }

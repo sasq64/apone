@@ -12,11 +12,7 @@
 class window : public basic_buffer {
 public:
 
-	window() : basic_buffer(), winOpen(false), bmCounter(0) {
-	}
-	/*window(int width, int height) : basic_buffer(0, width, height), winOpen(false) {
-		open();
-	}*/
+	window();
 
 	void draw(int x, int y, renderbuffer &buffer) {
 		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.width(), buffer.height());
