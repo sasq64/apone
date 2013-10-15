@@ -7,13 +7,19 @@
 #include <cstdlib>
 #include <android_native_app_glue.h>
 
+#include <android/log.h>
+
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Grappix", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Grappix", __VA_ARGS__))
+
+
 
 using namespace std;
 
 
 class AndroidHost {
 public:
-	AndroidHost() {}
+	AndroidHost() : app(nullptr), nativeWindow(nullptr), focus(true) {}
 
 	int32_t handleAndroidEvent(AInputEvent *event) {
 		int type = AInputEvent_getType(event);
@@ -173,10 +179,39 @@ public:
 		eglDisplay = display;
 		eglContext = context;
 		eglSurface = surface;
+		this->nativeWindow = nativeWindow;
 
 		LOGI("Done");
 		return 0;
 	}
+
+	bool getEvent(void *tEvent) {
+
+		int ident;
+		int events;
+		struct android_poll_source* source;
+
+
+		if((ident = ALooper_pollAll(0, NULL, &events, (void**)&source)) >= 0) {
+			// Process this event.
+			if (source != NULL) {
+				source->process(app, source);
+			}
+			// Check if we are exiting.
+			if (app->destroyRequested != 0) {
+				closeWindow();
+				return false;
+			}
+		}
+/*
+		if(tEvent && !touchEvents.empty()) {
+			*tEvent = touchEvents.front();
+			touchEvents.pop();
+			return true;
+		}*/
+		return false;
+	}
+
 
 	bool flip() {
 		//getEvent(nullptr);
@@ -207,6 +242,11 @@ public:
 
 	bool getFocus() const { return focus; }
 
+	bool ready() { getEvent(nullptr); return nativeWindow != nullptr; }
+	int width() { return screenWidth; }
+	int height() { return screenHeight; }
+
+	struct android_app* app;
 
 protected:
 
@@ -215,7 +255,6 @@ protected:
 	std::string title;
 	//std::queue<TouchEvent> touchEvents;
 
-	struct android_app* app;
 
 	int screenWidth;
 	int screenHeight;
@@ -272,10 +311,12 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			break;
 		case APP_CMD_GAINED_FOCUS:
 			// Start rendering
+			LOGI("Got focus");
 			host->setFocus(true);
 			break;
 		case APP_CMD_LOST_FOCUS:
 			// Stop rendering
+			LOGI("Lost focus");
 			host->setFocus(false);
 			break;
 		case APP_CMD_CONFIG_CHANGED:
@@ -287,12 +328,18 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 static AndroidHost host;
 
 extern int main(int argc, char **argv);
+
 void android_main(struct android_app* app) {
 	// Make sure glue isn't stripped.
 	app_dummy();
+	LOGD("App started");
+	host.app = app;
 	app->userData = &host;
 	app->onAppCmd = engine_handle_cmd;
 	app->onInputEvent = engine_handle_input;
+	while(!host.ready()) {
+		usleep(500);
+	}
 	main(0, nullptr);
 }
 
@@ -306,10 +353,16 @@ window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
 }
 
 void window::open(bool fs) {
+	_width = host.width();
+	_height = host.height();
+	winOpen = true;
 	return;
 }
 
 void window::open(int w, int h, bool fs) {
+	_width = host.width();
+	_height = host.height();
+	winOpen = true;
 	return;
 };
 

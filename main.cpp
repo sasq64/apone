@@ -3,7 +3,9 @@
 using namespace utils;
 
 static const char *pSineShader = R"(
-	//precision mediump float;
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	uniform vec4 fColor;
 	uniform vec2 mosaic;
 	//const vec2 mosaic = vec2(100.0,100.0);
@@ -47,20 +49,29 @@ static const char *vSineShader = R"(
 )";
 
 int main() {
-	
+
+	LOGD("main");	
 	screen.open(true);
+	LOGD("Screen is open");
+
 	// Create our ball image
 	vec2f size {128, 128};
 	auto radius = size[0] / 2;
 	renderbuffer sprite(size);
+	usleep(100000);
+	LOGD("Clear");
 	sprite.clear();
+	LOGD("circle");
 	sprite.circle(size/2, radius, 0x000020); // Outline
 	sprite.circle(size/2, radius*0.90, 0x0000C0); // Main ball
 	sprite.circle(size/2 + vec2f{radius*0.15f, radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
 
+
+	LOGD("Creating renderbuffer");
 	renderbuffer scr(screen.width()+200, 400);
 	
 	GLuint program = createProgram(vSineShader, pSineShader);
+	LOGD("Shader created");
 	
 	// Loop and render ball worm
 	vec2f xy{0, 0};
@@ -74,11 +85,13 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 
+	LOGD("Looping");
 	while(screen.is_open()) {
 		scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
 		scr.text((xpos-=4), 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
 
+		LOGD("CLEAR");
 		screen.clear();
 		vec2f xy2 = xy += {0.01, 0.03};
 		for(int i=0; i<100; i++)
@@ -86,8 +99,9 @@ int main() {
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
-		glUniform1f(t, tstart+=0.04);
+		glUniform1f(t, tstart+=0.073);
 
+		LOGD("DRAW");
 		screen.draw_texture(scr.texture(), 0, 0, screen.width(), screen.height(), nullptr, program);
 
 		screen.flip();

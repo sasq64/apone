@@ -7,6 +7,21 @@
 
 template <typename T = uint32_t> class basic_bitmap {
 public:
+	basic_bitmap() : w(0), h(0) {}
+
+	basic_bitmap(basic_bitmap &&b) : pixels(std::move(b.pixels)), w(b.w), h(b.h) {}
+
+	basic_bitmap& operator=(const basic_bitmap &b) {
+		return *this;
+	}
+
+	basic_bitmap& operator=(const basic_bitmap &&b) {
+		pixels = std::move(b.pixels);
+		w = b.w;
+		h = b.h;
+		return *this;
+	}
+
 	basic_bitmap(int width, int height) : w(width), h(height) {
 		pixels.resize(width * height);
 	}

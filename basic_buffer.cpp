@@ -1,3 +1,4 @@
+#include <coreutils/log.h>
 
 #include "basic_buffer.h"
 #include "shader.h"
@@ -305,14 +306,22 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color,
 	//	glfwSwapBuffers();
 }
 
+#ifdef WITH_FREETYPE
+
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 void basic_buffer::set_font(const string &ttfName, int size, int flags) {
+
+	LOGD("Loading font");
+
 
 	atlas = shared_ptr<texture_atlas_t>(texture_atlas_new(256, 256, 1 ));
 
 	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 	font = shared_ptr<texture_font_t>(texture_font_new(atlas.get(), ttfName.c_str(), size));
+
+	LOGD("Result %p", font);
+
 	texture_font_load_glyphs(font.get(), text);
 
 	if(flags & DISTANCE_MAP) {
@@ -326,6 +335,8 @@ void basic_buffer::set_font(const string &ttfName, int size, int flags) {
 
 vector<GLuint> basic_buffer::make_text(const string &text) {
 
+	LOGD("Make text");
+
 	//auto tl = text.length();
 	//vector<GLfloat> p;
 	vector<GLfloat> verts;
@@ -337,6 +348,7 @@ vector<GLuint> basic_buffer::make_text(const string &text) {
 	float y = 0;
 	for(auto c : text) {
 		texture_glyph_t *glyph = texture_font_get_glyph(font.get(), c);
+		LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)
 			x += texture_glyph_get_kerning(glyph, lastChar);
@@ -398,11 +410,14 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	//auto _width = screen.size().first;
 	//auto _height = screen.size().second;
 
+	LOGD("Render text %d %d", vbuf[0], vbuf[1]);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbuf[1]);
 
 
 	auto program = get_program(FONT_PROGRAM_DF);
+	LOGD("Program %d", program);
 	glUseProgram(program);
 
 	GLuint vertHandle = glGetAttribLocation(program, "vertex");
@@ -439,6 +454,8 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	//glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, &indexes[0]);
 	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
 
+	LOGD("Drew %d\n", tl);
+
 	glDisableVertexAttribArray(uvHandle);
 	glDisableVertexAttribArray(vertHandle);
 
@@ -450,8 +467,19 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 
 void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {
 	if(!atlas)
+#ifdef ANDROID
+		set_font("/sdcard/ObelixPro.ttf", 32);
+#else
 		set_font("fonts/ObelixPro.ttf", 32);
+#endif
 	auto buf = make_text(text);
 	render_text(x, y, buf, text.length(), col, scale);
+
+	LOGD("Deleting buffers %d %d", buf[0], buf[1]);
+
 	glDeleteBuffers(2, &buf[0]);
+
+	LOGD("Done");
 }
+
+#endif

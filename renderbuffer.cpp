@@ -25,6 +25,8 @@ renderbuffer::renderbuffer(int width, int height) {
 	_width = width;
 	_height = height;
 
+	LOGD("1");
+
 	// Create and bind a new framebuffer with emtpy attachment points (not yet useable)
 	//GLuint fbuf;
 	glGenFramebuffers(1, &frameBuffer);
@@ -38,6 +40,7 @@ renderbuffer::renderbuffer(int width, int height) {
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	LOGD("texid %d", texture_id);
 
 	// Bind the texture to the COLOR_ATTACHMENT of our framebuffer. This would not work on the default (0) framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
@@ -50,5 +53,6 @@ if(status != GL_FRAMEBUFFER_COMPLETE) {
 	glfwSleep(100);
 }
 */
+	LOGD("CREATED");
 
 }

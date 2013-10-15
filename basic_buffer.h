@@ -1,7 +1,11 @@
 #ifndef GRAPPIX_BASIC_BUFFER_H
 #define GRAPPIX_BASIC_BUFFER_H
 
+#include "GL_Header.h"
+
+#ifdef WITH_FREETYPE
 #include <freetype-gl.h>
+#endif
 
 #include <vector>
 #include <string>
@@ -83,8 +87,13 @@ public:
 		DISTANCE_MAP = 1
 	};
 
+#ifdef WITH_FREETYPE
 	void set_font(const std::string &ttfName, int size = 32, int flags = DISTANCE_MAP);
 	void text(int x, int y, const std::string &text, uint32_t color, float scale);
+#else
+	void set_font(const std::string &ttfName, int size = 32, int flags = DISTANCE_MAP) {}
+	void text(int x, int y, const std::string &text, uint32_t color, float scale) {}
+#endif
 
 protected:
 	std::vector<uint> make_text(const std::string &text);
@@ -94,9 +103,10 @@ protected:
 	int _width;
 	int _height;
 	float globalScale;
-
+#ifdef WITH_FREETYPE
 	std::shared_ptr<texture_font_t> font;
 	std::shared_ptr<texture_atlas_t> atlas;
+#endif
 
 };
 

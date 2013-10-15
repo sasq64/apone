@@ -7,7 +7,7 @@ using namespace utils;
 
 int main() {
 
-	screen.open(1280, 720, false);
+	screen.open();//1280, 720, false);
 
 	static const vector<vec2f> adds { {0,-1}, {1,0}, {0,1}, {-1,0} };
 	const int w = 32;

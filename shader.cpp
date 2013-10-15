@@ -1,6 +1,7 @@
 #include "shader.h"
 
 #include <vector>
+#include <coreutils/log.h>
 
 using namespace std;
 
@@ -17,15 +18,20 @@ static const char *vShader = R"(
 )";
 
 static const char *pShader = R"(
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	uniform vec4 vColor;
-	void main() {	
+	void main() {
 		gl_FragColor = vColor;	
 	}
 )";
 
 
 static const char *pTexShader = R"(
-	//precision mediump float;
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	//uniform vec4 fColor;
 	uniform sampler2D sTexture;
 	varying vec2 UV;
@@ -54,7 +60,9 @@ static const char *vTexShader = R"(
 )";
 
 static const char *pFontShader = R"(
-	//precision mediump float;
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	uniform vec4 fColor;
 	uniform sampler2D sTexture;
 	varying vec2 UV;
@@ -65,6 +73,9 @@ static const char *pFontShader = R"(
 )";
 
 static const char *vFontShader = R"(
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	attribute vec2 vertex;
 	attribute vec2 vUV;
 
@@ -82,8 +93,13 @@ static const char *vFontShader = R"(
 )";
 
 static const char *pDFontShader = R"(
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	uniform vec4 vColor;
+	uniform vec2 vScale;
 	uniform sampler2D sTexture;
+	//uniform float smoothing;
 	varying vec2 UV;
 
 	vec3 glyph_color    = vec3(1.0,1.0,1.0);
@@ -94,12 +110,14 @@ static const char *pDFontShader = R"(
 	const float glow_center    = 1.25;
 
 	void main() {
-		vec4 color = texture2D(sTexture, UV);
-		//vec4 color2 = texture2D(sTexture, UV * 0.9);
-
-		float dist  = color.a;
+		float dist = texture2D(sTexture, UV).a;
+#ifdef GL_ES
+		float smoothing = 1.0 / (vScale.x * 16.0);
+		float alpha = smoothstep(glyph_center-smoothing, glyph_center+smoothing, dist);
+#else
 		float width = fwidth(dist);
 		float alpha = smoothstep(glyph_center-width, glyph_center+width, dist);
+#endif
 
 		gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
 
@@ -134,7 +152,9 @@ GLuint loadShader(GLenum shaderType, const std::string &source) {
 				msg = buf;
 				glDeleteShader(shader);
 				shader = 0;
+				LOGD("Shader failed msg: %s", msg);
 			}
+			LOGD("Shader fail:\n%s\n", source);
 			throw shader_exception(msg);
 		}
 	} else
@@ -165,6 +185,7 @@ GLuint createProgram(const string &vertexSource, const string &fragmentSource) {
 					msg = buf;
 				}
 			}
+			LOGD("Link failed\n%s\n", msg.c_str());
 			glDeleteProgram(program);
 			throw shader_exception(msg);
 		}
