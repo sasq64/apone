@@ -67,7 +67,9 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
 
+	LOGD("PROG");
 	auto program = get_program(FLAT_PROGRAM);
+	LOGD("DONE");
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint colorHandle = glGetUniformLocation(program, "vColor");
@@ -132,6 +134,7 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	//	glfwSwapBuffers();
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
+
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint uvHandle = glGetAttribLocation(program, "uv");
@@ -348,7 +351,7 @@ vector<GLuint> basic_buffer::make_text(const string &text) {
 	float y = 0;
 	for(auto c : text) {
 		texture_glyph_t *glyph = texture_font_get_glyph(font.get(), c);
-		LOGD("Glyph %p", glyph);
+		//LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)
 			x += texture_glyph_get_kerning(glyph, lastChar);

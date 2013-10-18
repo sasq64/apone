@@ -1,9 +1,14 @@
 #ifndef GRAPPIX_BITMAP_H
 #define GRAPPIX_BITMAP_H
 
+#include <coreutils/log.h>
+#include <coreutils/format.h>
+
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 
 template <typename T = uint32_t> class basic_bitmap {
 public:
@@ -25,7 +30,10 @@ public:
 	basic_bitmap(int width, int height) : w(width), h(height) {
 		pixels.resize(width * height);
 	}
-	T& operator[](const int &i) { return pixels[i]; }
+	T& operator[](const int &i) { 
+		return pixels[i];
+	}
+
 	T operator[](const int &i) const { return pixels[i]; }
 
 	basic_bitmap operator+(T &pixel) {
@@ -35,7 +43,23 @@ public:
 		return rb;
 	}
 
-	
+	void clear(uint32_t color = 0) {
+		if(!color)
+			memset(&pixels[0], 0, w*h*sizeof(T));
+		else {
+			for(int i=0; i<w*h; i++)
+				pixels[i] = color;
+		}
+	}
+
+	basic_bitmap cut(int x, int y, int ww, int hh) const {
+		basic_bitmap dest(ww, hh);
+		for(int yy=0; yy<hh; yy++)
+			for(int xx=0; xx<ww; xx++) {
+				dest[xx+yy*ww] = pixels[xx+x+(yy+y)*this->w];
+			}
+		return dest;
+	}
 
 	std::vector<basic_bitmap> split(int w, int h) {
 		std::vector<basic_bitmap> rv;
@@ -44,11 +68,23 @@ public:
 
 	const T* data() const { return &pixels[0]; }
 
+	const T* flipped() const {
+
+		int l = sizeof(T) * w;
+		flipPixels.resize(w*h);
+		for(int y=0; y<h; y++)
+			std::memcpy(&flipPixels[y*w], &pixels[(h-y-1)*w], l);
+		return &flipPixels[0];
+	}
+
+
 	int width() const { return w; }
 	int height() const { return h; }
 	int size() const { return w*h; }
 private:
 	std::vector<T> pixels;
+	mutable std::vector<T> flipPixels;
+	bool dirty;
 	int w;
 	int h;
 };

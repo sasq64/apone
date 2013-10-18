@@ -7,8 +7,8 @@ CXXFLAGS=-std=c++0x
 TARGET=grappix
 
 LINUX_LIBS := -lglfw -lGL -lGLEW
-OBJS := main.o shader.o basic_buffer.o renderbuffer.o
-#OBJS += image.o 
+OBJS := tiletest.o tiles.o shader.o basic_buffer.o renderbuffer.o
+OBJS += tween.o image.o 
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 MODULES := $(UTILS)/coreutils
 
@@ -33,7 +33,7 @@ ANDROID_OBJS := android/window_android.o android/android_native_app_glue.o
 ANDROID_CFLAGS := -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
 #ANDROID_LDFLAGS += -L.
 #-L$(ADK)/lib
-ANDROID_LIBS := $(ADK)/lib/libfreetype.a -llog -landroid -lEGL -lGLESv2
+ANDROID_LIBS := $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 # -lpng
 # -lpng -lfreetype
 

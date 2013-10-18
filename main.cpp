@@ -64,7 +64,7 @@ int main() {
 	LOGD("circle");
 	sprite.circle(size/2, radius, 0x000020); // Outline
 	sprite.circle(size/2, radius*0.90, 0x0000C0); // Main ball
-	sprite.circle(size/2 + vec2f{radius*0.15f, radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
+	sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
 
 
 	LOGD("Creating renderbuffer");
@@ -93,9 +93,12 @@ int main() {
 
 		LOGD("CLEAR");
 		screen.clear();
+
+
 		vec2f xy2 = xy += {0.01, 0.03};
 		for(int i=0; i<100; i++)
 			screen.draw((sin(xy2 += {0.156, 0.187}) + 1.0f) * scale, sprite);		
+
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");

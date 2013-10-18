@@ -55,6 +55,8 @@ private:
 	uint bmCounter;
 	std::chrono::high_resolution_clock::time_point benchStart;
 
+	std::chrono::high_resolution_clock::time_point startTime;
+
 	static std::unordered_map<int, int> translate;
 };
 

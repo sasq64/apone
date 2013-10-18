@@ -42,3 +42,35 @@ scroller.text("HELLO!")
 
 screen.draw(scroller)
 
+
+
+Tiles & Playfields
+
+
+TileArea ta(tileSet);
+
+ta[x+y*w] = 0;
+ta.render();
+
+class Tween {
+};
+
+PlayField pf(tileSet);
+	moveSprite(int no, function<vec2f(float t)>)
+
+pf.putSprite(0, x, y);
+pf.moveSpriteTo(0, x2, y2);
+pf.moveSprite(0, generator);
+
+pf.moveSprite(1, Tween({pos, 0}, {easeIn, true});
+
+pf.render();
+
+class TweenArg {
+TweenARg(string, T)
+}
+
+Tween(obj, time, vector<TweenArg> args)
+
+
+Tween(Sprite, t, vector<TweenArg<Sprite>> args)

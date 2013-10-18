@@ -1,4 +1,5 @@
 #include "window.h"
+#include "tween.h"
 
 #include "GL_Header.h"
 #include <GL/glfw.h>
@@ -94,6 +95,8 @@ void window::open(int w, int h, bool fs) {
 		}	
 	});
 
+	startTime = chrono::high_resolution_clock::now();
+
 	frameBuffer = 0;
 };
 
@@ -101,12 +104,12 @@ void window::vsync() {
 }
 
 void window::flip() {
+	auto t = chrono::high_resolution_clock::now();
 	if(bmCounter) {
 		bmCounter--;
 		if(!bmCounter) {
 			glfwCloseWindow();
 			winOpen = false;
-			auto t = chrono::high_resolution_clock::now();
 			auto ms = chrono::duration_cast<chrono::microseconds>(t - benchStart).count();
 			fprintf(stderr, "TIME: %ldus per frame\n", ms / 100);
 		}
@@ -117,6 +120,10 @@ void window::flip() {
 		glfwCloseWindow();
 		winOpen = false;			
 	}
+
+	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	tween::Tween::updateTweens(ms / 1000000.0f);
+
 }
 
 void window::benchmark() {

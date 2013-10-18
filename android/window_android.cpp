@@ -215,8 +215,11 @@ public:
 
 	bool flip() {
 		//getEvent(nullptr);
-		if(focus && eglDisplay != EGL_NO_DISPLAY)
+		if(focus && eglDisplay != EGL_NO_DISPLAY) {
 			eglSwapBuffers(eglDisplay, eglSurface);
+			eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &screenWidth);
+			eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &screenHeight);
+		}
 		return (eglDisplay == EGL_NO_DISPLAY);
 	}
 
@@ -340,7 +343,13 @@ void android_main(struct android_app* app) {
 	while(!host.ready()) {
 		usleep(500);
 	}
-	main(0, nullptr);
+	try {
+		main(0, nullptr);
+	} catch (std::exception &e) {
+		LOGD("Caught exception: %s", e.what());
+	}
+	LOGD("App ending!");
+
 }
 
 

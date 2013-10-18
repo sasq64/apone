@@ -2,6 +2,7 @@
 #include "renderbuffer.h"
 #include "window.h"
 #include "bitmap.h"
+#include "tiles.h"
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {
 	auto a0 = (col0>>24)&0xff;

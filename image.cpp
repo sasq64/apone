@@ -24,7 +24,7 @@ bitmap read_png_file(const std::string &file_name)
 	/* open file and test for it being a png */
 	FILE *fp = fopen(file_name.c_str(), "rb");
 	if(!fp)
-		throw image_exception(format("Could not openen %s", file_name));
+		throw image_exception(format("Could not open %s", file_name));
 	fread(header, 1, 8, fp);
 	if(png_sig_cmp(header, 0, 8))
 		throw image_exception(format("File %s is not a png file", file_name));
@@ -86,8 +86,8 @@ bitmap read_png_file(const std::string &file_name)
     }
 
 	for(int y=0; y<height; y++)
-		delete row_pointers[y];
-    delete row_pointers;
+		delete[] row_pointers[y];
+    delete[] row_pointers;
 
 	fclose(fp);
 
