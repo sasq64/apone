@@ -34,8 +34,20 @@ public:
 		RIGHT,
 		ENTER,
 		SPACE,
+		CLICK,
+		RIGHT_CLICK,
 		NO_KEY = 256
 	};
+
+	struct click {
+		int x;
+		int y;
+		int button;
+	};
+
+	click NO_CLICK;
+
+	click get_click();
 
 	bool key_pressed(key k);
 	key get_key();
@@ -48,6 +60,7 @@ public:
 	void benchmark(); 
 
 	static std::deque<int> key_buffer;
+	static std::deque<click> click_buffer;
 
 private:
 	int lastTime;

@@ -14,6 +14,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 }
 
 window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
+	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }
 
 void window::open(bool fs) {
@@ -21,10 +22,20 @@ void window::open(bool fs) {
 }
 
 std::deque<int> window::key_buffer;
+std::deque<window::click> window::click_buffer;
 
 static void key_fn(int key, int action) {
 	if(action == GLFW_PRESS)
 		window::key_buffer.push_back(key);
+}
+
+static void mouse_fn(int button, int action) {
+	if(action == GLFW_PRESS) {
+		window::click c;
+		glfwGetMousePos(&c.x, &c.y);
+		c.button = button;
+		window::click_buffer.push_back(c);
+	}
 }
 
 void window::open(int w, int h, bool fs) {
@@ -81,6 +92,7 @@ void window::open(int w, int h, bool fs) {
 	winOpen = true;
 
 	glfwSetKeyCallback(key_fn);
+	glfwSetMouseButtonCallback(mouse_fn);
 	/*[&](int key, int action) {
 		if(action == GLFW_PRESS)
 			key_buffer.push_back(key);
@@ -142,6 +154,15 @@ unordered_map<int, int> window::translate = {
 bool window::key_pressed(key k) {
 	auto glfwKey = translate[k];
 	return glfwGetKey(glfwKey) != 0;
+}
+
+window::click window::get_click() {
+	if(click_buffer.size() > 0) {
+		auto k = click_buffer.front();
+		click_buffer.pop_front();
+		return k;
+	}
+	return NO_CLICK;
 }
 
 window::key window::get_key() {

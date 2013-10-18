@@ -18,7 +18,7 @@ using namespace utils;
 int main() {
 
 	
-	screen.open(true);
+	screen.open(640, 450, false);
 	LOGD("Screen open");
 
 
@@ -83,7 +83,7 @@ int main() {
 
 	print("HELLO EVERYONE\nTIME TO PARTY");
 
-	tween::Tween::to( 3.0, { { layer.scrollx, 600 }, { layer.scrolly, 3400 } });
+	//tween::Tween::to( 3.0, { { layer.scrollx, 600 }, { layer.scrolly, 3400 } });
 
 	while(screen.is_open()) {
 		screen.clear();
@@ -98,6 +98,14 @@ int main() {
 		//	tiles.render_tile(i, screen, xy[i].x, xy[i].y, scale);
 		//}
 		//sprites.render(screen);
+
+		auto c = screen.get_click();
+		if(c.button >= 0) {
+			//LOGD("%d %d", c.x, c.y);
+			int x = c.x / (16*4);
+			int y = c.y / (16*4);
+			layer[x+y*128] = 5;
+		}
 
 		layer.render(screen);
 
