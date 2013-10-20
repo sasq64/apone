@@ -109,8 +109,6 @@ void TileLayer::render(basic_buffer &target) {
 	int xx = -(scrollx % tilew);
 	int yy = -(scrolly % tileh);
 
-	LOGD("%d,%d . %d,%d . %d,%d", scrollx, scrolly, sx, sy, tilew, tileh);
-
 	for(int y=sy; y<_height; y++) {
 		for(int x=sx; x<_width; x++) {
 			auto tileno = map[x+_width*y];

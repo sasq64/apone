@@ -1,10 +1,11 @@
 #include "window.h"
-
+#include "tween.h"
 #include <stdio.h>
 #include <unordered_map>
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <cstdlib>
+#include <chrono>
 #include <android_native_app_glue.h>
 
 #include <android/log.h>
@@ -220,6 +221,7 @@ public:
 			eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &screenWidth);
 			eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &screenHeight);
 		}
+
 		return (eglDisplay == EGL_NO_DISPLAY);
 	}
 
@@ -362,6 +364,7 @@ window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
 }
 
 void window::open(bool fs) {
+	startTime = chrono::high_resolution_clock::now();
 	_width = host.width();
 	_height = host.height();
 	winOpen = true;
@@ -369,6 +372,7 @@ void window::open(bool fs) {
 }
 
 void window::open(int w, int h, bool fs) {
+	startTime = chrono::high_resolution_clock::now();
 	_width = host.width();
 	_height = host.height();
 	winOpen = true;
@@ -380,6 +384,10 @@ void window::vsync() {
 
 void window::flip() {
 	host.flip();
+	auto t = chrono::high_resolution_clock::now();
+	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	tween::Tween::updateTweens(ms / 1000000.0f);
+
 	//glfwSwapBuffers();
 	//if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
 	//	glfwCloseWindow();

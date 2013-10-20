@@ -7,7 +7,7 @@ CXXFLAGS=-std=c++0x
 TARGET=grappix
 
 LINUX_LIBS := -lglfw -lGL -lGLEW
-OBJS := tiletest.o tiles.o shader.o basic_buffer.o renderbuffer.o
+OBJS := bobs.o tiles.o shader.o basic_buffer.o renderbuffer.o
 OBJS += tween.o image.o 
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 MODULES := $(UTILS)/coreutils

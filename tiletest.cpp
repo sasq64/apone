@@ -16,11 +16,9 @@ using namespace utils;
 
 
 int main() {
-
 	
 	screen.open(640, 450, false);
 	LOGD("Screen open");
-
 
 	TileSet font(16,24);
 	font.add_tiles(read_png_file(DATA_DIR "font.png"));
@@ -85,6 +83,8 @@ int main() {
 
 	//tween::Tween::to( 3.0, { { layer.scrollx, 600 }, { layer.scrolly, 3400 } });
 
+	vec2i scrollTarget {0,0};
+
 	while(screen.is_open()) {
 		screen.clear();
 		//tiles.render(screen);
@@ -98,7 +98,7 @@ int main() {
 		//	tiles.render_tile(i, screen, xy[i].x, xy[i].y, scale);
 		//}
 		//sprites.render(screen);
-
+/*
 		auto c = screen.get_click();
 		if(c.button >= 0) {
 			//LOGD("%d %d", c.x, c.y);
@@ -106,7 +106,12 @@ int main() {
 			int y = c.y / (16*4);
 			layer[x+y*128] = 5;
 		}
+*/
 
+		if(screen.key_pressed(window::RIGHT)) {
+			scrollTarget.x += 16;
+			tween::to(0.5, { { layer.scrollx, scrollTarget.x }, { layer.scrolly, scrollTarget.y } } );
+		}
 		layer.render(screen);
 
 		//font.render_tile(0,screen,10,10, 4.0);

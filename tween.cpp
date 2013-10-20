@@ -48,4 +48,9 @@ double easeInOutBack(double t,double b , double c) {
 std::vector<Tween> Tween::allTweens;
 double Tween::currentTime = 0;
 
+int to(float totalTime, const std::initializer_list<TweenAttr> &il) {
+	return Tween::to(totalTime, il);
+}
+
+
 }

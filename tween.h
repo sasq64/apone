@@ -115,6 +115,10 @@ public:
 		return allTweens.size()-1;
 	}
 
+	static void update(int t, float totalTime, const std::initializer_list<TweenAttr> &il) {
+		Tween &tween = allTweens[t];
+	}
+
 	template <class... T> static int to(float totalTime, T ... args) {
 		return toX(totalTime, { args... });
 	}
@@ -161,7 +165,7 @@ public:
 		}
 	}
 
-	bool update() { // t : 0 -> 1
+	bool step() { // t : 0 -> 1
 		int ended = 0;
 		for(auto &a : args) {
 			float t = (currentTime - startTime - a.delay) / totalTime;
@@ -206,7 +210,7 @@ public:
 		auto it = allTweens.begin();
 		//LOGD("We have %d tweens", allTweens.size());
 		while(it != allTweens.end()) {
-			if(!it->update()) {
+			if(!it->step()) {
 				LOGD("Tween ended");
 				if(it->onCompleteFunc)
 					it->onCompleteFunc();
@@ -231,6 +235,8 @@ public:
 	static double currentTime;
 	static std::vector<Tween> allTweens;
 };
+
+int to(float totalTime, const std::initializer_list<TweenAttr> &il);
 
 }
 
