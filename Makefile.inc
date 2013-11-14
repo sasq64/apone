@@ -33,6 +33,8 @@ ifeq ($(HOST),android)
  OBJS := $(OBJS) $(ANDROID_OBJS)
  LIBS := $(LIBS) $(ANDROID_LIBS)
  LDFLAGS := $(LDFLAGS) $(ANDROID_LDFLAGS)
+ EXT := .so
+ TARGET := lib$(TARGET)
 else
 
 ifeq ($(OS),Windows_NT)
@@ -139,10 +141,20 @@ MODULEOBJS += $(patsubst %.s,%.o, $(wildcard $(addsuffix /*.s, $(SRC_MODULES))))
 
 #OBJDIR := $(realpath $(OBJDIR))
 
+ifneq ($(HOST),)
+	OBJDIR := $(OBJDIR)$(HOST)/
+endif
+
 OBJFILES := $(addprefix $(OBJDIR),$(MODULEOBJS))
 #OBJDIR := $(OBJDIR)
 
-OBJS := $(addprefix $(SRCDIR), $(OBJS))
+ifneq ($(ACTIVEFILE),)
+ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
+MAINOBJ := $(patsubst %.cpp,%.o,$(ACTIVEFILE))
+endif
+endif
+
+OBJS := $(addprefix $(SRCDIR), $(MAINOBJ) $(OBJS))
 
 #OBJFILES += $(addprefix $(OBJDIR), $(subst ../,,$(OBJS)))
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
@@ -150,6 +162,15 @@ OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 DEPS := $(XDEPENDS) $(DEPS)
 
 start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(EXT)
+
+remove_target:
+	rm -f $(TARGETDIR)$(TARGET)$(EXT)
+
+relink: remove_target start_rule
+
+linkrun: remove_target run
+relink: remove_target start_rule
+
 
 -include $(OBJFILES:.o=.d)
 
@@ -215,7 +236,7 @@ $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
 $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
+	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
 
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)

@@ -236,11 +236,11 @@ void Console::flush(bool restoreCursor) {
 	auto saveX = curX;
 	auto saveY = curY;
 
-	//int saveFg = fgColor;
-	//int saveBg = bgColor;
+	int saveFg = fgColor;
+	int saveBg = bgColor;
 
-	auto curFg = fgColor;
-	auto curBg = bgColor;
+	//auto curFg = fgColor;
+	//auto curBg = bgColor;
 
 	// TODO: Try this from clean oldGrid and clear before if more effecient
 
@@ -252,18 +252,26 @@ void Console::flush(bool restoreCursor) {
 				if(curY != y or curX != x) {
 					impl_gotoxy(x, y);
 				}
-				if(t1.fg != curFg || t1.bg != curBg) {
+				if(t1.fg != fgColor || t1.bg != bgColor) {
 					impl_color(t1.fg, t1.bg);
-					curFg = t1.fg;
-					curBg = t1.bg;
+					fgColor = t1.fg;
+					bgColor = t1.bg;
 				}
 				putChar(t1.c);
 				t0 = t1;
 			}
+			/*if(outBuffer.size() > 0) {
+				terminal.write(outBuffer, outBuffer.size());
+				outBuffer.resize(0);
+				utils::sleepms(20);
+			}*/
+
 		}
 	}
 
-	if(curFg != fgColor || curBg != bgColor) {
+	if(saveFg != fgColor || saveBg != bgColor) {
+		fgColor = saveFg;
+		bgColor = saveBg;
 		if(fgColor >= 0 && bgColor >= 0) {
 			LOGD("Restoring color to %d %d", fgColor, bgColor);
 			impl_color(fgColor, bgColor);

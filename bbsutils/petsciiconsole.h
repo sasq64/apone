@@ -48,6 +48,9 @@ protected:
 	virtual bool impl_scroll_screen(int dy) override;
 
 	std::unordered_map<int, int> unicodeToPetscii; 
+
+	int lastBg;
+	int lastFg;
 };
 
 }

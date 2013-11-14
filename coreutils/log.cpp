@@ -6,6 +6,15 @@
 #include <ctime>
 #include <unordered_map>
 
+static std::string logSource = "Grappix";
+
+#ifdef ANDROID
+
+#include <android/log.h>
+#define LOG_PUTS(x) ((void)__android_log_print(ANDROID_LOG_INFO, logSource.c_str(), "%s", x))
+
+#else
+
 #ifdef LOG_INCLUDE
 #include LOG_INCLUDE
 #endif
@@ -14,6 +23,7 @@
 #define LOG_PUTS(x) (fwrite(x, 1, strlen(x), stdout), putchar(10))
 #endif
 
+#endif
 namespace logging {
 
 using namespace std;

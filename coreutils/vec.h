@@ -92,7 +92,7 @@ template <class T> struct vec2 {
 		return *this;
 	}
 
-	T operator[](const int &i) {
+	T operator[](const int &i) const {
 		return data[i];
 		//throw std::out_of_range("Only 0 or 1 are valid indexes");
 	}
@@ -118,14 +118,14 @@ template <class T> struct vec2 {
 
 	union
 	{
-		float data[2]; /**< All components at once     */
+		T data[2]; /**< All components at once     */
 		struct {
-	        float x;   /**< Alias for first component  */
-	        float y;   /**< Alias for second component */
+	        T x;   /**< Alias for first component  */
+	        T y;   /**< Alias for second component */
 	    };
 		struct {
-	        float s;   /**< Alias for first component  */
-	        float t;   /**< Alias for second component */
+	        T s;   /**< Alias for first component  */
+	        T t;   /**< Alias for second component */
 	    };
 	};
 };

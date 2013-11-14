@@ -97,7 +97,7 @@ void PetsciiConsole::putChar(Char c) {
 			outBuffer.push_back(INS);
 			outBuffer.push_back(c & 0xff);
 		}
-	} else {		
+	} else {	
 		if(c == '\"' && curX == 38) c = 0xa9; // NOTE: No fix, just avoids a bigger mess.
 
 		outBuffer.push_back(c & 0xff);		
@@ -141,17 +141,21 @@ void PetsciiConsole::impl_clear() {
 
 void PetsciiConsole::impl_gotoxy(int x, int y) {
 
+
 	int dx = curX-x;
 	if(dx < 0) dx = -dx;
 	int dy = curY-y;
 	if(dy < 0) dy = -dy;
 
-	if(x + y < dx + dy) {
+	LOGD("Gotoxy from %d %d to %d %d (%d %d)", curX, curY, x, y, dx, dy);
+
+	if(y < dy) {
 		outBuffer.push_back(HOME);
 		curX = curY = 0;
 		dx = x;
 		dy = y;
 	}
+
 
 	// dx dy is the distance to move the cursor
 
@@ -162,6 +166,7 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 		} else
 			curY++;	
 		outBuffer.push_back(SHIFT_RETURN);
+		LOGD("RET in %d, color", curY, fgColor, bgColor);
 		if(bgColor != BLACK) {
 			outBuffer.push_back(RVS_ON);
 			//curFg = curBg;

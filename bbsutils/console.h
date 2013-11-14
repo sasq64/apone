@@ -191,6 +191,10 @@ public:
 	int getFg() const { return fgColor; }
 	int getBg() const { return bgColor; }
 
+	void rawPut(Char c) {
+		outBuffer.push_back(c & 0xff);
+	}
+
 protected:
 
 	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
