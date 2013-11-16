@@ -289,20 +289,16 @@ string TelnetServer::Session::getLine() throw(disconnect_excpetion) {
 
 }
 
-int TelnetServer::Session::getWidth() const  { 
-	return winWidth;
-}
-int TelnetServer::Session::getHeight() const  {
-	return winHeight;
-}
-std::string TelnetServer::Session::getTermType() const  { 
+void TelnetServer::Session::waitExplored() const {
+	if(termExplored)
+		return;
 	chrono::milliseconds ms { 100 };
 	int delay = 20;
 	while(true) {
 		if(disconnected)
 			throw disconnect_excpetion{};
 		if(termExplored)
-			return terminalType;
+			return;
 		inMutex.lock();
 		inMutex.unlock();
 		this_thread::sleep_for(ms);
@@ -310,6 +306,19 @@ std::string TelnetServer::Session::getTermType() const  {
 			termExplored = true;
 		}
 	}
+}
+
+int TelnetServer::Session::getWidth() const  { 
+	waitExplored();
+	return winWidth;
+}
+int TelnetServer::Session::getHeight() const  {
+	waitExplored();
+	return winHeight;
+}
+std::string TelnetServer::Session::getTermType() const  { 
+	waitExplored();
+	return terminalType;
 }
 
 void TelnetServer::Session::disconnect() {

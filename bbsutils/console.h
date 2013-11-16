@@ -129,6 +129,8 @@ public:
 	};
 
 	Console(Terminal &terminal) : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40), height(25), curX(0), curY(0) {
+		grid.resize(width*height);
+		oldGrid.resize(width*height);
 		terminal.open();
 	}
 

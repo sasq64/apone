@@ -147,6 +147,8 @@ public:
 
 		void setOption(int opt, int val);
 		void handleOptionData();
+		void waitExplored() const;
+
 	};
 
 	// TELNETSERVER

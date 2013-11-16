@@ -147,15 +147,12 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 	int dy = curY-y;
 	if(dy < 0) dy = -dy;
 
-	LOGD("Gotoxy from %d %d to %d %d (%d %d)", curX, curY, x, y, dx, dy);
-
 	if(y < dy) {
 		outBuffer.push_back(HOME);
 		curX = curY = 0;
 		dx = x;
 		dy = y;
 	}
-
 
 	// dx dy is the distance to move the cursor
 
@@ -166,11 +163,8 @@ void PetsciiConsole::impl_gotoxy(int x, int y) {
 		} else
 			curY++;	
 		outBuffer.push_back(SHIFT_RETURN);
-		LOGD("RET in %d, color", curY, fgColor, bgColor);
 		if(bgColor != BLACK) {
 			outBuffer.push_back(RVS_ON);
-			//curFg = curBg;
-			//curBg = BLACK;
 		}
 		curX = 0;
 		if(40 - x < dx && curY > 0) {
