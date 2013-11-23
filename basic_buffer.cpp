@@ -60,6 +60,8 @@ void basic_buffer::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	//	glfwSwapBuffers();
 }
 
+static GLint circleBuf = -1;
+
 void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 
 	//if(singleBuffer)
@@ -71,6 +73,20 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint colorHandle = glGetUniformLocation(program, "vColor");
+
+	int count = 64;
+
+	if(circleBuf == -1) {
+		vector<float> p(count*2);
+		for(int i=0; i<count; i++) {
+			p[i*2] = cos(i*M_PI*2/count);
+			p[i*2+1] = sin(i*M_PI*2/count);
+		}
+		glGenBuffers(1, (GLuint*)&circleBuf);
+		glBindBuffer(GL_ARRAY_BUFFER, circleBuf);
+		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+	} else
+		glBindBuffer(GL_ARRAY_BUFFER, circleBuf);
 
 	glUseProgram(program);
 
@@ -84,15 +100,6 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	float blue = (color&0xff) / 255.0;
 	glUniform4f(colorHandle, red, green, blue, 1.0);
 
-	int count = radius*2;
-
-	float p[count*2];
-
-
-	for(int i=0; i<count; i++) {
-		p[i*2] = cos(i*M_PI*2/count);
-		p[i*2+1] = sin(i*M_PI*2/count);
-	}
 
 	//LOGD("POS %f %f", p[0], p[1]);
 	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
@@ -105,21 +112,41 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	glUniform2f(pHandle, x * globalScale, y * globalScale);
 
 	//glVertexAttrib2f(posHandle, p[0], p[1]);
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, p);
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//if(singleBuffer)
 	//	glfwSwapBuffers();
 }
 
+GLint recBuf = -1;
+
+
 void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) const {
-
 	//static float suvs[8] = {0,1, 1,1, 0,0, 1,0};
-	static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
+	//static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
 
-	if(!uvs)
-		uvs = suvs;
+	//if(!uvs)
+	//	uvs = suvs;
+
+
+	if(recBuf == -1) {
+		vector<float> p {
+			-1, 1, 0, 0,
+			1, 1, 1, 0,
+			-1, -1, 0, 1,
+			1, -1, 1, 1,
+		};
+		glGenBuffers(1, (GLuint*)&recBuf);
+		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+	} else
+		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
 
 	if(program < 0) {
 		program = get_program(TEXTURED_PROGRAM);
@@ -149,10 +176,16 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
 	glUniform4f(pHandle, x + w/2, (y + h/2), 0, 1);
 
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
+
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
 	glEnableVertexAttribArray(posHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
+	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
 	glEnableVertexAttribArray(uvHandle);
+
+	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
+	//glEnableVertexAttribArray(posHandle);
+	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
+	//glEnableVertexAttribArray(uvHandle);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -160,7 +193,7 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	//	glfwSwapBuffers();
 }
 
-
+#if 0
 
 void basic_buffer::draw_object(const gl_object &vbo, float x, float y, uint32_t color, float scale, float rotation) {
 
@@ -257,7 +290,7 @@ gl_object basic_buffer::make_rectangle(float w, float h) {
 	return obj;
 };
 
-GLint recBuf = -1;
+#endif
 
 void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
 
@@ -270,17 +303,21 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color,
 	GLuint colorHandle = glGetUniformLocation(program, "vColor");
 
 	//vector<float> p {x, y+h, x+w, y+h, x, y, x+w, y};
-	vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
 
 	if(recBuf == -1) {
+		vector<float> p {
+			-1, 1, 0, 0,
+			1, 1, 1, 0,
+			-1, -1, 0, 1,
+			1, -1, 1, 1,
+		};
 		glGenBuffers(1, (GLuint*)&recBuf);
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
 		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, recBuf);
+	} else
+		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
 
 	float red = ((color>>16)&0xff) / 255.0;
@@ -297,7 +334,7 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color,
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
 	glUniform2f(pHandle, (x + w/2) * globalScale, ((y + h/2)) * globalScale);
 
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
 	glEnableVertexAttribArray(posHandle);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -500,7 +537,7 @@ void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, flo
 	//LOGD("Deleting buffers %d %d", buf[0], buf[1]);
 	//glDeleteBuffers(2, &buf[0]);
 
-	LOGD("Done");
+	//LOGD("Done");
 }
-
+ 
 #endif

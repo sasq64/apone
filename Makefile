@@ -5,20 +5,8 @@ OBJDIR := obj/
 
 TARGET=grappix
 
-CFLAGS := -g -Wall -O0 -I. -I$(UTILS)
-# -Ifreetype-gl -DWITH_FREETYPE
+CFLAGS := -Wall -O2 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
 CXXFLAGS=-std=c++0x
-
-ifneq ($(EMSCRIPTEN),)
-OBJDIR := obj/em/
-EXT := .html
-CFLAGS += -s FULL_ES2=1 -DGL_ES
-LDFLAGS += -s FULL_ES2=1
-else
-CC=ccache clang -Qunused-arguments
-CXX=ccache clang++ -Qunused-arguments
-endif
-
 
 #MAINOBJ := main.o
 #ifneq ($(TOCOMPILE),)
@@ -26,13 +14,12 @@ endif
 #endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAINOBJ := simple.o
-
+MAINOBJ := main.o
 
 LINUX_LIBS := -lglfw -lGL -lGLEW
 OBJS := tiles.o shader.o basic_buffer.o texture.o
 OBJS += tween.o image.o 
-#OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
+OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 MODULES := $(UTILS)/coreutils
 
 SHADERS := $(patsubst %.glsl,%.o, $(wildcard shaders/*.glsl))
@@ -42,10 +29,25 @@ XXD := xxd
 OBJS += $(SHADERS)
 
 LINUX_OBJS := window.o
+
+EMROOT=/home/sasq/emscripten
+
+ifneq ($(EMSCRIPTEN),)
+OBJDIR := obj/em/
+EXT := .html
+CFLAGS += -DGL_ES
+CFLAGS += -I$(EMROOT)/freetype/include
+LDFLAGS += -L$(EMROOT)/freetype --preload-file data --preload-file fonts
+LIBS += -lfreetype -lz
+#LDFLAGS += -s FULL_ES2=1
+else
 LINUX_CFLAGS += `freetype-config --cflags`
 LINUX_LIBS += `freetype-config --libs`
 LINUX_CFLAGS += `libpng-config --cflags`
 LINUX_LIBS += `libpng-config --libs`
+CC=ccache clang -Qunused-arguments
+CXX=ccache clang++ -Qunused-arguments
+endif
 
 #LINUX_CC=ccache clang -Qunused-arguments
 #LINUX_CXX=ccache clang++ -Qunused-arguments

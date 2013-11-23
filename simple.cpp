@@ -3,7 +3,7 @@
 int cxx = 0;
 
 int main() {
-	screen.open();
+	screen.open(false);
 
 	//texture t(load_png("data/font.png"));
 	//texture t2(t.width(), t.height());

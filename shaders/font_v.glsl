@@ -1,3 +1,6 @@
+#ifdef GL_ES
+	precision mediump float;
+#endif
 	attribute vec4 vertex;
 	attribute vec2 uv;
 

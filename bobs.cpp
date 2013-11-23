@@ -5,50 +5,49 @@ using namespace utils;
 #include "emscripten.h"
 #endif
 
-static std::function<void(void)> mainLoop;
+class App {
+public:
+	App() : size {64, 64}, radius {size[0]/2}, sprite {size}, xy {0, 0}, xpos { screen.width() } {
+		LOGD("Creating sprite");
+		sprite.clear();
+		sprite.circle(size/2, radius, 0x000020); // Outline
+		sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball
+		sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
+	};
+
+	void update() {
+
+		auto sz = vec2f(screen.size());
+		auto scale = sz / 2.3;
+
+		screen.clear();
+		//screen.circle(80,80,10,0xff00ffff);
+		vec2f xy2 = xy += {0.01, 0.03};
+		for(int i=0; i<100; i++)
+			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
+		screen.text(xpos-=2, (sin(xy2.y)+1)*(sz.y-150)/2.0, "BALLS ON THE SCREEN!! A WEIRD WONDERFUL MACHINE!", 0x8080c0ff, 6.0);
+		screen.flip();
+	}
+
+	vec2f size;
+	float radius;
+	texture sprite;
+	vec2f xy;
+	//vec2f scale;
+	int xpos;
+};
 
 void runMainLoop() {
-	mainLoop();
+	static App app;
+	app.update();
 }
 
 int main() {
 	
 	LOGD("Main started");
-	screen.open(true);
+	screen.open(640, 480, false);
 	LOGD("Screen open");
-
-	// Create our ball image
-	vec2f size {128, 128};
-	auto radius = size[0] / 2;
-	texture sprite(size);
-	sprite.clear();
-	sprite.circle(size/2, radius, 0x000020); // Outline
-	sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball
-	sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
-
-	vec2f xy{0, 0};
-	auto scale = vec2f(screen.size()) / 2.3;
-	int xpos = screen.width();
-
-	mainLoop = [&]() {
-		LOGD("Main loop");
-		screen.clear();
-		screen.circle(80,80,10,0xff00ffff);
-		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<100; i++)
-			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
-		//screen.text(xpos-=8, (sin(xy2.y)+1)*320, "BALLS ON THE SCREEN!!", 0x8080c0ff, 10.0);
-		screen.flip();
-	};
-
-#ifdef EMSCRIPTEN
-	emscripten_set_main_loop(runMainLoop, 30, false);
-#else
-	// Loop and render ball worm
-	while(screen.is_open()) {
-		mainLoop();
-	}
-#endif
+	screen.renderLoop(runMainLoop);
 	LOGD("Progam done");
 	return 0;
 }

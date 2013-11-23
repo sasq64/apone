@@ -56,12 +56,15 @@ public:
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
-
 	void renderLoop(std::function<void()> f);
 
 	constexpr static const double FPS = 1.0/60.0;
 
 	void benchmark(); 
+	void resize(int w, int h) {
+		_width = w;
+		_height = h;
+	}
 
 	static std::deque<int> key_buffer;
 	static std::deque<click> click_buffer;

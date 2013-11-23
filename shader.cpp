@@ -237,7 +237,7 @@ GLuint get_program(program_name program) {
 		programs[FLAT_PROGRAM] = createProgram(shaders_plain_v_glsl, shaders_plain_v_glsl_len, shaders_plain_f_glsl,shaders_plain_f_glsl_len);
 		programs[TEXTURED_PROGRAM] = createProgram(shaders_texture_v_glsl, shaders_texture_v_glsl_len, shaders_texture_f_glsl, shaders_texture_v_glsl_len);
 		programs[FONT_PROGRAM] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_font_f_glsl, shaders_font_f_glsl_len);
-		//programs[FONT_PROGRAM_DF] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_fontdf_f_glsl, shaders_fontdf_f_glsl_len);
+		programs[FONT_PROGRAM_DF] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_fontdf_f_glsl, shaders_fontdf_f_glsl_len);
 	}
 	return programs[program];
 }

@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <memory>
 
+/*
 struct attribute {
 	attribute(GLuint handle, uint16_t offset, uint16_t stride) : handle(handle), offset(offset), stride(stride) {}
 	GLuint handle;
@@ -39,7 +40,7 @@ struct gl_object {
 	std::vector<attribute> attributes;
 	std::vector<uniform> uniforms;
 
-};
+}; */
 
 class basic_buffer {
 public:
@@ -48,8 +49,8 @@ public:
 	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0) {
 	}
 
-	void draw_object(const gl_object &vbo, float x, float y, uint32_t color = 0xffffffff, float scale = 1.0f, float rotation = 0.0f);
-	gl_object make_rectangle(float w, float h);
+	//void draw_object(const gl_object &vbo, float x, float y, uint32_t color = 0xffffffff, float scale = 1.0f, float rotation = 0.0f);
+	//gl_object make_rectangle(float w, float h);
 
 	template <typename T> void line(T p0, T p1, uint32_t color) {
 		line(p0[0], p0[1], p1[0], p1[1], color);
@@ -81,12 +82,12 @@ public:
 		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height(), nullptr, -1);
 	}
 
-	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, float *uvs = nullptr, int program = -1) const {
-		draw_texture(t.id(), pos[0], pos[1], w, h, uvs, program);
+	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, int program = -1) const {
+		draw_texture(t.id(), pos[0], pos[1], w, h, nullptr, program);
 	}
 
-	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const {
-		draw_texture(t.id(), x0, y0, w, h, uvs, program);
+	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, int program = -1) const {
+		draw_texture(t.id(), x0, y0, w, h, nullptr, program);
 	}
 
 	template <typename T> void draw(const T &t, float x0, float y0) const {

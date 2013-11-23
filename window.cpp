@@ -42,6 +42,11 @@ static void mouse_fn(int button, int action) {
 	}
 }
 
+static void resize_fn(int w, int h) {
+	LOGD("Size now %d %d", w, h);
+	screen.resize(w, h);
+};
+
 void window::open(int w, int h, bool fs) {
 
 	if(winOpen)
@@ -49,6 +54,7 @@ void window::open(int w, int h, bool fs) {
 
 	LOGD("glfwInit");
 	glfwInit();
+	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 #ifdef EMSCRIPTEN
 	_width = 640;
 	_height = 480;
@@ -58,7 +64,6 @@ void window::open(int w, int h, bool fs) {
 #else
 	_width = w;
 	_height = h;
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 	GLFWvidmode mode;
@@ -82,7 +87,7 @@ void window::open(int w, int h, bool fs) {
 	}
 #endif
 
-	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 0, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
 	LOGD("%dx%d win -> %d", _width, _height, win);
 	if(win) {
 	}
@@ -112,6 +117,9 @@ void window::open(int w, int h, bool fs) {
 
 	glfwSetKeyCallback(key_fn);
 	glfwSetMouseButtonCallback(mouse_fn);
+#ifndef EMSCRIPTEN
+	glfwSetWindowSizeCallback(resize_fn);
+#endif
 
 	atexit([](){
 		while(true) {
@@ -128,14 +136,16 @@ void window::open(int w, int h, bool fs) {
 
 static function<void()> renderLoopFunction;
 
+#ifdef EMSCRIPTEN
 static void runMainLoop() {
 	renderLoopFunction();
 }
+#endif
 
 void window::renderLoop(function<void()> f) {
 	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
-	emscripten_set_main_loop(runMainLoop, 30, false);
+	emscripten_set_main_loop(runMainLoop, 60, false);
 #else
 	// Loop and render ball worm
 	while(screen.is_open()) {
@@ -167,7 +177,10 @@ void window::flip() {
 
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 	tween::Tween::updateTweens(ms / 1000000.0f);
-
+#ifdef EMSCRIPTEN
+	int fs;
+	emscripten_get_canvas_size(&_width, &_height, &fs);
+#endif
 }
 
 void window::benchmark() {

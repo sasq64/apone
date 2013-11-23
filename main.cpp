@@ -48,72 +48,64 @@ static const char *vSineShader = R"(
 	}
 )";
 
-class shader {
-};
+struct App {
 
-class program {
-};
+	texture sprite;
+	vec2f xy;
+	int xpos;
+	texture scr;
+	GLuint program;
+	float tstart;
 
-int main() {
+	App() : sprite {96, 96}, xy {0, 0}, xpos { screen.width() + 400 }, scr {screen.width()+200, 400}, tstart {0} {
 
-	LOGD("main");	
-	screen.open(true);
-	LOGD("Screen is open");
+		// Create our ball image
+		float radius = sprite.width() / 2;
+		vec2f center { sprite.width() / 2.0f, sprite.height() / 2.0f };
 
-	// Create our ball image
-	vec2f size {128, 128};
-	auto radius = size[0] / 2;
-	texture sprite(size);
-	usleep(100000);
-	LOGD("Clear");
-	sprite.clear();
-	LOGD("circle");
-	sprite.circle(size/2, radius, 0x000020); // Outline
-	sprite.circle(size/2, radius*0.90, 0x0000C0); // Main ball
-	sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
+		LOGD("Clear");
+		sprite.clear();
+		LOGD("circle");
+		sprite.circle(center, radius, 0x000020); // Outline
+		sprite.circle(center, radius*0.90, 0x0000C0); // Main ball
+		sprite.circle(center + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
+		
+		program = createProgram(vSineShader, pSineShader);
+		LOGD("Shader created");
+	}
 
-
-	LOGD("Creating texture");
-	texture scr(screen.width()+200, 400);
-	
-	GLuint program = createProgram(vSineShader, pSineShader);
-	LOGD("Shader created");
-	
-	// Loop and render ball worm
-	vec2f xy{0, 0};
-	auto scale = vec2f(screen.size()) / 2.3;
-	int xpos = screen.width() + 400;
-	float tstart = 0;
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-
-	LOGD("Looping");
-	while(screen.is_open()) {
+	void update() {
+		auto scale = vec2f(screen.size()) / 2.3;
 		scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
 		scr.text((xpos-=4), 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
 
-		LOGD("CLEAR");
 		screen.clear();
 
-
 		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<300; i++)
-			screen.draw(sprite, (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale);		
+		for(int i=0; i<100; i++)
+			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
 
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
 		glUniform1f(t, tstart+=0.073);
 
-		LOGD("DRAW");
 		screen.draw_texture(scr.id(), 0, 0, screen.width(), screen.height(), nullptr, program);
-
 		screen.flip();
 	}
+
+};
+
+void runMainLoop() {
+	static App app;
+	app.update();
+}
+
+int main() {
+	LOGD("main");	
+	screen.open(800, 600, false);
+	LOGD("Screen is open");
+	screen.renderLoop(runMainLoop);
 	return 0;
 }
