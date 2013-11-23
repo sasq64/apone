@@ -241,6 +241,9 @@ $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)
 
+$(TARGETDIR)$(TARGET).html: $(OBJFILES) $(DEPS)
+	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).html
+
 clean:
 	rm -rf $(OBJDIR) $(TARGET)$(EXT)
 	

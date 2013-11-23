@@ -144,6 +144,11 @@ public:
 	virtual void put(int x, int y, const std::wstring &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, Char c, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
+	template <class... A> void write(const std::string &fmt, A... args) {
+		std::string s = utils::format(fmt, args...);
+		write(s);
+	}
+
 	virtual void setColor(int fg, int bg = BLACK);
 	virtual void resize(int w, int h);
 	virtual void flush(bool restoreCursor = true);
