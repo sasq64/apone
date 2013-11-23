@@ -1,5 +1,5 @@
 #include "shader.h"
-#include "renderbuffer.h"
+#include "texture.h"
 #include "window.h"
 #include "bitmap.h"
 #include "tiles.h"

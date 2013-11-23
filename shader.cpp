@@ -5,6 +5,23 @@
 
 using namespace std;
 
+extern unsigned char shaders_plain_v_glsl[];
+extern unsigned char shaders_plain_f_glsl[];
+extern unsigned char shaders_texture_v_glsl[];
+extern unsigned char shaders_texture_f_glsl[];
+extern unsigned char shaders_font_v_glsl[];
+extern unsigned char shaders_font_f_glsl[];
+extern unsigned char shaders_fontdf_f_glsl[];
+
+extern int shaders_plain_v_glsl_len;
+extern int shaders_plain_f_glsl_len;
+extern int shaders_texture_v_glsl_len;
+extern int shaders_texture_f_glsl_len;
+extern int shaders_font_v_glsl_len;
+extern int shaders_font_f_glsl_len;
+extern int shaders_fontdf_f_glsl_len;
+
+/*
 static const char *vShader = R"(
 	attribute vec2 vertex;
 	uniform vec2 vScreenScale;
@@ -76,19 +93,19 @@ static const char *vFontShader = R"(
 #ifdef GL_ES
 	precision mediump float;
 #endif
-	attribute vec2 vertex;
-	attribute vec2 vUV;
+	attribute vec4 vertex;
+	attribute vec2 uv;
 
-	uniform vec2 vPosition;
-	uniform vec2 vScale;
-	uniform vec2 vScreenScale;
+	uniform vec4 vPosition;
+	uniform vec4 vScale;
+	uniform vec4 vScreenScale;
 
 	varying vec2 UV;
 
 	void main() {
-		vec2 v = vertex * vScale + vPosition;
+		vec4 v = vertex * vScale + vPosition;
 		gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0, 1);
-		UV = vUV;
+		UV = uv;
 	}
 )";
 
@@ -97,7 +114,7 @@ static const char *pDFontShader = R"(
 	precision mediump float;
 #endif
 	uniform vec4 vColor;
-	uniform vec2 vScale;
+	uniform vec4 vScale;
 	uniform sampler2D sTexture;
 	//uniform float smoothing;
 	varying vec2 UV;
@@ -119,7 +136,8 @@ static const char *pDFontShader = R"(
 		float alpha = smoothstep(glyph_center-width, glyph_center+width, dist);
 #endif
 
-		gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
+		//gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
+		gl_FragColor = vec4(1,1,1, alpha);
 
 		//float mu = smoothstep(outline_center-width, outline_center+width, dist);
 		//vec3 rgb = mix(outline_color, glyph_color, mu);
@@ -131,9 +149,10 @@ static const char *pDFontShader = R"(
 
 	}
 )";
-
+*/
 
 GLuint loadShader(GLenum shaderType, const std::string &source) {
+	LOGD("Compiling shader");
 	GLuint shader = glCreateShader(shaderType);
 	if(shader) {
 		const char *sources[1];
@@ -162,6 +181,19 @@ GLuint loadShader(GLenum shaderType, const std::string &source) {
 
 	return shader;
 }
+
+#include <cstring>
+
+GLuint createProgram(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) {
+	char vsource[vlen+1];
+	memcpy(vsource, vertexSource, vlen);
+	vsource[vlen] = 0;
+	char fsource[flen+1];
+	memcpy(fsource, fragmentSource, flen);
+	fsource[flen] = 0;
+	return createProgram(vsource, fsource);
+}
+
 
 GLuint createProgram(const string &vertexSource, const string &fragmentSource) {
 	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSource);
@@ -198,10 +230,14 @@ GLuint get_program(program_name program) {
 	static vector<GLuint> programs;
 	if(programs.size() == 0) {
 		programs.resize(4);
-		programs[FLAT_PROGRAM] = createProgram(vShader, pShader);
-		programs[TEXTURED_PROGRAM] = createProgram(vTexShader, pTexShader);
-		programs[FONT_PROGRAM] = createProgram(vFontShader, pFontShader);
-		programs[FONT_PROGRAM_DF] = createProgram(vFontShader, pDFontShader);
+		//programs[FLAT_PROGRAM] = createProgram(vShader, pShader);
+		//programs[TEXTURED_PROGRAM] = createProgram(vTexShader, pTexShader);
+		//programs[FONT_PROGRAM] = createProgram(vFontShader, pFontShader);
+		//programs[FONT_PROGRAM_DF] = createProgram(vFontShader, pDFontShader);
+		programs[FLAT_PROGRAM] = createProgram(shaders_plain_v_glsl, shaders_plain_v_glsl_len, shaders_plain_f_glsl,shaders_plain_f_glsl_len);
+		programs[TEXTURED_PROGRAM] = createProgram(shaders_texture_v_glsl, shaders_texture_v_glsl_len, shaders_texture_f_glsl, shaders_texture_v_glsl_len);
+		programs[FONT_PROGRAM] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_font_f_glsl, shaders_font_f_glsl_len);
+		//programs[FONT_PROGRAM_DF] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_fontdf_f_glsl, shaders_fontdf_f_glsl_len);
 	}
 	return programs[program];
 }

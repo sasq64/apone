@@ -35,7 +35,7 @@ Texture: Unknown object.
 
 TWO DISTINCT PARTS; KNOWN/UNKNOWN
 
-renderbuffer scroller(w,h);
+texture scroller(w,h);
 scroller.set_program(p)
 
 scroller.text("HELLO!")
@@ -74,3 +74,35 @@ Tween(obj, time, vector<TweenArg> args)
 
 
 Tween(Sprite, t, vector<TweenArg<Sprite>> args)
+
+
+STATE
+Texture
+Program
+ uniforms
+
+draw(texture, x = 0, y = 0, w = -1, h = -1)
+draw(state...
+draw(program...
+
+Shapes are predefined, we assume almost alwasy rectangle. Lines and circles have no extra state (textures, program) normally.
+
+draw({ "techStart", 2.0 }, techProgram);
+screen.draw(...)
+texture blurTarget;
+blurTarget.draw(...)
+
+
+
+
+VBLCACHE
+Check every vblank
+
+cache.add(something, T)
+T cache.get<T>(something)
+cache.update() // Anything not touched since last update is removed
+
+
+
+
+

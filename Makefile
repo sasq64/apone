@@ -1,16 +1,45 @@
 
 UTILS=../utils
 
-OBJDIR=obj/
-CFLAGS := -g -Wall -O0 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
-CXXFLAGS=-std=c++0x
+OBJDIR := obj/
+
 TARGET=grappix
 
+CFLAGS := -g -Wall -O0 -I. -I$(UTILS)
+# -Ifreetype-gl -DWITH_FREETYPE
+CXXFLAGS=-std=c++0x
+
+ifneq ($(EMSCRIPTEN),)
+OBJDIR := obj/em/
+EXT := .html
+CFLAGS += -s FULL_ES2=1 -DGL_ES
+LDFLAGS += -s FULL_ES2=1
+else
+CC=ccache clang -Qunused-arguments
+CXX=ccache clang++ -Qunused-arguments
+endif
+
+
+#MAINOBJ := main.o
+#ifneq ($(TOCOMPILE),)
+#MAINOBJ := $(patsubst %.cpp,%.o,$(TOCOMPILE))
+#endif
+
+MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
+MAINOBJ := simple.o
+
+
 LINUX_LIBS := -lglfw -lGL -lGLEW
-OBJS := bobs.o tiles.o shader.o basic_buffer.o renderbuffer.o
+OBJS := tiles.o shader.o basic_buffer.o texture.o
 OBJS += tween.o image.o 
-OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
+#OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 MODULES := $(UTILS)/coreutils
+
+SHADERS := $(patsubst %.glsl,%.o, $(wildcard shaders/*.glsl))
+#SHADERS := $(addprefix $(OBJDIR),$(SHADERS))
+CGC := cgc
+XXD := xxd
+OBJS += $(SHADERS)
 
 LINUX_OBJS := window.o
 LINUX_CFLAGS += `freetype-config --cflags`
@@ -18,8 +47,10 @@ LINUX_LIBS += `freetype-config --libs`
 LINUX_CFLAGS += `libpng-config --cflags`
 LINUX_LIBS += `libpng-config --libs`
 
-LINUX_CC=ccache clang -Qunused-arguments
-LINUX_CXX=ccache clang++ -Qunused-arguments
+#LINUX_CC=ccache clang -Qunused-arguments
+#LINUX_CXX=ccache clang++ -Qunused-arguments
+#CXX=em++
+#CC=emcc
 
 ADK=/opt/arm-linux-androideabi
 SDK=/opt/android-sdk-linux
@@ -38,6 +69,25 @@ ANDROID_LIBS := $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid
 # -lpng -lfreetype
 
 all : start_rule
+
+$(OBJDIR)%_v.o: %_v.glsl
+	@mkdir -p $(@D)
+	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
+	$(XXD) -i $< $@.cpp
+	$(CXX) -c $@.cpp -o $@
+	rm $@.cpp
+
+$(OBJDIR)%_f.o: %_f.glsl
+	@mkdir -p $(@D)
+	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
+	$(XXD) -i $< $@.cpp
+	$(CXX) -c $@.cpp -o $@
+	rm $@.cpp
+
+.PHONY : shaders
+
+shaders: $(SHADERS)
+	echo $(SHADERS)
 
 apkg :
 	$(SDK)/build-tools/18.1.0/aapt package -f -M AndroidManifest.xml -S res -I $(SDK)/platforms/$(APP_PLATFORM)/android.jar -F temp.apk --generate-dependencies

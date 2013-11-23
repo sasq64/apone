@@ -1,26 +1,27 @@
 #ifndef GRAPPIX_WINDOW_H
 #define GRAPPIX_WINDOW_H
 
-#include "renderbuffer.h"
+#include "texture.h"
 
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <chrono>
 #include <unordered_map>
 #include <deque>
+#include <functional>
 
 class window : public basic_buffer {
 public:
 
 	window();
 
-	void draw(int x, int y, renderbuffer &buffer) {
-		basic_buffer::draw_texture(buffer.texture(), x, y, buffer.width(), buffer.height());
-	};
+	//void draw(int x, int y, texture &buffer) {
+	//	basic_buffer::draw_texture(buffer.id(), x, y, buffer.width(), buffer.height());
+	//};
 
-	template <typename T> void draw(T pos, renderbuffer &buffer) {
-		basic_buffer::draw_texture(buffer.texture(), pos[0], pos[1], buffer.width(), buffer.height());
-	};
+	//template <typename T> void draw(T pos, texture &buffer) {
+	//	basic_buffer::draw_texture(buffer.id(), pos[0], pos[1], buffer.width(), buffer.height());
+	//};
 
 	void open(bool fs);
 	void open(int w = 0, int h = 0, bool fs = true);
@@ -55,6 +56,9 @@ public:
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
+
+	void renderLoop(std::function<void()> f);
+
 	constexpr static const double FPS = 1.0/60.0;
 
 	void benchmark(); 
@@ -65,7 +69,7 @@ public:
 private:
 	int lastTime;
 	bool winOpen;
-	uint bmCounter;
+	unsigned int bmCounter;
 	std::chrono::high_resolution_clock::time_point benchStart;
 
 	std::chrono::high_resolution_clock::time_point startTime;

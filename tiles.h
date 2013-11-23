@@ -1,7 +1,7 @@
 #ifndef TILES_H
 #define TILES_H
 
-#include "renderbuffer.h"
+#include "texture.h"
 #include "bitmap.h"
 
 #include <vector>
@@ -18,7 +18,7 @@ struct TileSet {
 	int tileh;
 	int widthInTiles;
 	int heightInTiles;
-	renderbuffer texture;
+	texture texture;
 };
 
 

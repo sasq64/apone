@@ -15,7 +15,7 @@ int main() {
 	vector<int> playField(w*h);
 
 	int score = 0;
-	vec2f pos = {5,5}; // Initial positio of snake
+	vec2f pos = {5,5}; // Initial position of snake
 	int dir = 2; // Initial direction of snake
 	int speed = 50; // Initial speed of snake
 	int delay = speed;
@@ -39,9 +39,7 @@ int main() {
 				// Move snake forward
 				pos += adds[dir];
 				// Check collision with walls or self
-				if(pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h || playField[pos.x + pos.y * w] > 0) {
-					gameOver = true;
-				}
+				gameOver = (pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h || playField[pos.x + pos.y * w] > 0);
 				// Grow snake
 				snakeLen += 4;
 				// Check apple

@@ -17,7 +17,7 @@ private:
 };
 
 
-bitmap read_png_file(const std::string &file_name)
+bitmap load_png(const std::string &file_name)
 {
 	unsigned char header[8];    // 8 is the maximum size that can be checked
 

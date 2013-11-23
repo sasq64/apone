@@ -14,7 +14,7 @@ TileSet::TileSet(int tilew, int tileh) : tilew(tilew), tileh(tileh), texture(256
 	widthInTiles = 256 / tilew;
 	heightInTiles = 256 / tileh;
 
-	glBindTexture(GL_TEXTURE_2D, texture.texture());
+	glBindTexture(GL_TEXTURE_2D, texture.id());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -29,7 +29,7 @@ int TileSet::add_tiles(const bitmap &bm) {
 	int x = 0;
 	int y = 0;
 
-	glBindTexture(GL_TEXTURE_2D, texture.texture());
+	glBindTexture(GL_TEXTURE_2D, texture.id());
 
 	while(true) {
 
@@ -56,7 +56,7 @@ int TileSet::add_tiles(const bitmap &bm) {
 	//this->tilew = tilew;
 	//this->tileh = tileh;
 	//tileset = TileSet(bm, tilew, tileh);
-	//texture = renderbuffer(bm);
+	//texture = texture(bm);
 	//widthInTiles = bm.width() / tilew;
 	//heightInTiles = bm.height() / tileh;
 	//this->tilew = tilew;
@@ -91,7 +91,7 @@ void TileSet::render_tile(int tileno, basic_buffer &target, float x, float y, do
 	uvs.push_back(s1);
 	uvs.push_back(t1);
 	
-	target.draw_texture(texture.texture(), x, y, stw, sth, &uvs[0]);
+	target.draw_texture(texture.id(), x, y, stw, sth, &uvs[0]);
 }
 
 
@@ -129,7 +129,7 @@ int TileLayer::add_tiles(bitmap &bm, int tilew, int tileh) {
 	this->tilew = tilew;
 	this->tileh = tileh;
 	tileset = TileSet(bm, tilew, tileh);
-	//texture = renderbuffer(bm);
+	//texture = texture(bm);
 	//widthInTiles = bm.width() / tilew;
 	//heightInTiles = bm.height() / tileh;
 	//this->tilew = tilew;

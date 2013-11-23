@@ -21,7 +21,7 @@ int main() {
 	LOGD("Screen open");
 
 	TileSet font(16,24);
-	font.add_tiles(read_png_file(DATA_DIR "font.png"));
+	font.add_tiles(load_png(DATA_DIR "font.png"));
 	bitmap space(16,24);
 	space.clear();
 	font.add_tiles(space);
@@ -56,7 +56,7 @@ int main() {
 	};
 
 
-	auto bm = read_png_file(DATA_DIR "tiles.png");
+	auto bm = load_png(DATA_DIR "tiles.png");
 	LOGD("PNG LOADED");
 
 	TileSet tiles(16,16);
@@ -74,7 +74,7 @@ int main() {
 
 	LOGD("SPRITE");
 	TileSet avatars(24, 32);
-	avatars.add_tiles(read_png_file(DATA_DIR "rpgtiles.png"));
+	avatars.add_tiles(load_png(DATA_DIR "rpgtiles.png"));
 	SpriteLayer sprites(avatars);
 	sprites.addSprite(0, 100, 100, 4.0);
 	sprites.addSprite(1, 150, 100, 4.0);
@@ -92,7 +92,7 @@ int main() {
 		//LOGD("Draw sprite");
 		//screen.draw(0,0,sprite);
 
-		//screen.draw_texture(tiles.texture.texture(), 0, 0, 256, 256);
+		//screen.draw_texture(tiles.texture.id(), 0, 0, 256, 256);
 		////tiles.render_tile(15, screen, s.x, s.y, scale);
 		//for(int i=0; i<256; i++) {
 		//	tiles.render_tile(i, screen, xy[i].x, xy[i].y, scale);
@@ -129,7 +129,7 @@ int main() {
 	// Create our ball image
 	vec2f size {128, 128};
 	auto radius = size[0] / 2;
-	renderbuffer sprite(size);
+	texture sprite(size);
 	sprite.clear();
 	sprite.circle(size/2, radius, 0x000020); // Outline
 	sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball
@@ -184,7 +184,7 @@ int main() {
 */
 
 	/*
-	renderbuffer tx(bm);
+	texture tx(bm);
 	LOGD("TOILES");
 
 	TileArea tiles(32, 32);
@@ -195,7 +195,7 @@ int main() {
 
 	LOGD("AVATARS");
 
-	TileSet avatars(read_png_file(DATA_DIR "rpgtiles.png"), 24, 32);
+	TileSet avatars(load_png(DATA_DIR "rpgtiles.png"), 24, 32);
 */
 	//for(int l=0; l<32; l++)
 	//	tiles[rand()%(32*32)] = 16*4;

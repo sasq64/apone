@@ -1,10 +1,21 @@
 #include <grappix.h>
+
+int cxx = 0;
+
 int main() {
 	screen.open();
-	int x = 0;
-	while(screen.is_open()) {
-		screen.circle(x += 4, 250, 100, 0xffff00ff);
+
+	//texture t(load_png("data/font.png"));
+	//texture t2(t.width(), t.height());
+	//t2.draw(t, 0, 0);
+
+	//while(screen.is_open()) {
+	screen.renderLoop([&]() {
+		//static int cxx = 0;
+		screen.circle(cxx += 4, 100, 100, 0xff0000ff);
+		//screen.draw(t, 10, 10);
+		//screen.draw(t2, 30, 410);
 		screen.flip();
-	}
+	});
 	return 0;
 }

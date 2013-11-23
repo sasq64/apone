@@ -5,7 +5,11 @@
 #include <GL/glfw.h>
 #include <stdio.h>
 #include <unordered_map>
+#include <functional>
 //#include <math.h>
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 using namespace std;
 
@@ -43,14 +47,22 @@ void window::open(int w, int h, bool fs) {
 	if(winOpen)
 		return;
 
+	LOGD("glfwInit");
 	glfwInit();
+#ifdef EMSCRIPTEN
+	_width = 640;
+	_height = 480;
+	fs = false;
+	GLFWvidmode mode;
+	mode.RedBits = mode.GreenBits = mode.BlueBits = 8;
+#else
+	_width = w;
+	_height = h;
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 	GLFWvidmode mode;
 	glfwGetDesktopMode(&mode);
-	_width = w;
-	_height = h;
 
 	LOGD("Desktop is %dx%d", mode.Width, mode.Height);
 	//mode.Width = 1600;
@@ -68,35 +80,38 @@ void window::open(int w, int h, bool fs) {
 		if(!fs)
 			_height /= 2;
 	}
-
+#endif
 
 	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 0, 0, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	LOGD("%dx%d win -> %d", _width, _height, win);
 	if(win) {
 	}
+
+//#ifdef USE_GLEW
+#ifndef EMSCRIPTEN
 	int rc = glewInit();
 	if(rc) {
 		LOGE("Glew error: %s", glewGetErrorString(rc));
 		exit(0);
 	}
-
 	glDebugMessageCallbackARB(debug_callback, nullptr);
+#endif
 
 	glfwSwapInterval(1);
 
-	glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
-             GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
+
+	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
+     //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	lastTime = -1;
 	winOpen = true;
 
+	LOGD("Callbacks");
+
 	glfwSetKeyCallback(key_fn);
 	glfwSetMouseButtonCallback(mouse_fn);
-	/*[&](int key, int action) {
-		if(action == GLFW_PRESS)
-			key_buffer.push_back(key);
-	});*/
 
 	atexit([](){
 		while(true) {
@@ -108,16 +123,33 @@ void window::open(int w, int h, bool fs) {
 	});
 
 	startTime = chrono::high_resolution_clock::now();
-
 	frameBuffer = 0;
 };
+
+static function<void()> renderLoopFunction;
+
+static void runMainLoop() {
+	renderLoopFunction();
+}
+
+void window::renderLoop(function<void()> f) {
+	renderLoopFunction = f;
+#ifdef EMSCRIPTEN
+	emscripten_set_main_loop(runMainLoop, 30, false);
+#else
+	// Loop and render ball worm
+	while(screen.is_open()) {
+		renderLoopFunction();
+	}
+#endif
+}
 
 void window::vsync() {
 }
 
 void window::flip() {
 	auto t = chrono::high_resolution_clock::now();
-	if(bmCounter) {
+	/*if(bmCounter) {
 		bmCounter--;
 		if(!bmCounter) {
 			glfwCloseWindow();
@@ -126,7 +158,7 @@ void window::flip() {
 			fprintf(stderr, "TIME: %ldus per frame\n", ms / 100);
 		}
 		return;
-	}
+	}*/
 	glfwSwapBuffers();
 	if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
 		glfwCloseWindow();

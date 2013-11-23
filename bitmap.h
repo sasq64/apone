@@ -91,7 +91,7 @@ private:
 
 typedef basic_bitmap<uint32_t> bitmap;
 
-bitmap read_png_file(const std::string &file_name);
+bitmap load_png(const std::string &file_name);
 
 
 #endif // GRAPPIX_BITMAP_H

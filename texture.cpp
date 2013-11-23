@@ -1,10 +1,10 @@
 
-#include "renderbuffer.h"
+#include "texture.h"
 #include "GL_Header.h"
 
 #include <coreutils/log.h>
 
-renderbuffer::renderbuffer(const bitmap &bm) {
+texture::texture(const bitmap &bm) {
 
 	_width = bm.width();
 	_height = bm.height();
@@ -20,7 +20,7 @@ renderbuffer::renderbuffer(const bitmap &bm) {
 }
 
 
-renderbuffer::renderbuffer(int width, int height) {
+texture::texture(int width, int height) {
 
 	_width = width;
 	_height = height;

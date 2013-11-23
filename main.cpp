@@ -48,6 +48,12 @@ static const char *vSineShader = R"(
 	}
 )";
 
+class shader {
+};
+
+class program {
+};
+
 int main() {
 
 	LOGD("main");	
@@ -57,7 +63,7 @@ int main() {
 	// Create our ball image
 	vec2f size {128, 128};
 	auto radius = size[0] / 2;
-	renderbuffer sprite(size);
+	texture sprite(size);
 	usleep(100000);
 	LOGD("Clear");
 	sprite.clear();
@@ -67,8 +73,8 @@ int main() {
 	sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
 
 
-	LOGD("Creating renderbuffer");
-	renderbuffer scr(screen.width()+200, 400);
+	LOGD("Creating texture");
+	texture scr(screen.width()+200, 400);
 	
 	GLuint program = createProgram(vSineShader, pSineShader);
 	LOGD("Shader created");
@@ -96,8 +102,8 @@ int main() {
 
 
 		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<100; i++)
-			screen.draw((sin(xy2 += {0.156, 0.187}) + 1.0f) * scale, sprite);		
+		for(int i=0; i<300; i++)
+			screen.draw(sprite, (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale);		
 
 
 		glUseProgram(program);
@@ -105,7 +111,7 @@ int main() {
 		glUniform1f(t, tstart+=0.073);
 
 		LOGD("DRAW");
-		screen.draw_texture(scr.texture(), 0, 0, screen.width(), screen.height(), nullptr, program);
+		screen.draw_texture(scr.id(), 0, 0, screen.width(), screen.height(), nullptr, program);
 
 		screen.flip();
 	}

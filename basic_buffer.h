@@ -20,7 +20,7 @@ struct attribute {
 };
 
 struct uniform {
-	uniform(GLuint handle, float f) : handle(handle), type(1), f{f,0,0,0} {}
+	uniform(GLuint handle, float af) : handle(handle), type(1), f{af,0,0,0} {}
 	GLuint handle;
 	int type;
 	float f[4];
@@ -76,11 +76,28 @@ public:
 	void rectangle(float x, float y, float w, float h, uint32_t color, float scale = 1.0);
 
 	void circle(int x, int y, float radius, uint32_t color);
-	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1);
-	int width() { return _width; }
-	int height() { return _height; }
 
-	float scale() {  return globalScale; }
+	template <typename T, typename V> void draw(const T &t, const V &pos) const {
+		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height(), nullptr, -1);
+	}
+
+	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, float *uvs = nullptr, int program = -1) const {
+		draw_texture(t.id(), pos[0], pos[1], w, h, uvs, program);
+	}
+
+	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const {
+		draw_texture(t.id(), x0, y0, w, h, uvs, program);
+	}
+
+	template <typename T> void draw(const T &t, float x0, float y0) const {
+		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, -1);
+	}
+
+	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const;
+	int width() const { return _width; }
+	int height() const { return _height; }
+
+	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
 	enum {
@@ -96,8 +113,8 @@ public:
 #endif
 
 protected:
-	std::vector<uint> make_text(const std::string &text);
-	void render_text(int x, int y, std::vector<uint> vbuf, int tl, uint32_t color, float scale);
+	std::vector<unsigned int> make_text(const std::string &text);
+	void render_text(int x, int y, std::vector<unsigned int> vbuf, int tl, uint32_t color, float scale);
 
 	unsigned int frameBuffer;
 	int _width;

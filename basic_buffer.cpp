@@ -67,9 +67,7 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
 
-	LOGD("PROG");
 	auto program = get_program(FLAT_PROGRAM);
-	LOGD("DONE");
 
 	GLuint posHandle = glGetAttribLocation(program, "vertex");
 	GLuint colorHandle = glGetUniformLocation(program, "vColor");
@@ -101,10 +99,10 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform2f(sHandle, radius, radius);
+	glUniform2f(sHandle, radius * globalScale, radius * globalScale);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform2f(pHandle, x, y);
+	glUniform2f(pHandle, x * globalScale, y * globalScale);
 
 	//glVertexAttrib2f(posHandle, p[0], p[1]);
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, p);
@@ -115,9 +113,9 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 	//	glfwSwapBuffers();
 }
 
-void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) {
+void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) const {
 
-	//static float uvs[8] = {0,1, 1,1, 0,0, 1,0};
+	//static float suvs[8] = {0,1, 1,1, 0,0, 1,0};
 	static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
 
 	if(!uvs)
@@ -125,8 +123,8 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 
 	if(program < 0) {
 		program = get_program(TEXTURED_PROGRAM);
-		glUseProgram(program);
 	}
+	glUseProgram(program);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
@@ -149,7 +147,7 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	glUniform4f(sHandle, globalScale * w/2, globalScale * h/2, 0, 1);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform4f(pHandle, x + w/2, y + h/2, 0, 1);
+	glUniform4f(pHandle, x + w/2, (y + h/2), 0, 1);
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
 	glEnableVertexAttribArray(posHandle);
@@ -297,7 +295,7 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color,
 	glUniform2f(sHandle, scale * globalScale * w/2, scale * globalScale * h/2);
 
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform2f(pHandle, x + w/2, y + h/2);
+	glUniform2f(pHandle, (x + w/2) * globalScale, ((y + h/2)) * globalScale);
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
@@ -413,23 +411,23 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	//auto _width = screen.size().first;
 	//auto _height = screen.size().second;
 
-	LOGD("Render text %d %d", vbuf[0], vbuf[1]);
+	//LOGD("Render text %d %d", vbuf[0], vbuf[1]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbuf[1]);
 
 
 	auto program = get_program(FONT_PROGRAM_DF);
-	LOGD("Program %d", program);
+	//LOGD("Program %d", program);
 	glUseProgram(program);
 
 	GLuint vertHandle = glGetAttribLocation(program, "vertex");
-	GLuint uvHandle = glGetAttribLocation(program, "vUV");
+	GLuint uvHandle = glGetAttribLocation(program, "uv");
 
 	//uint32_t color = 0x40ff80;
 
 	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
-	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
+	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
 
 	GLuint posHandle = glGetUniformLocation(program, "vPosition");
 	GLuint scaleHandle = glGetUniformLocation(program, "vScale");
@@ -439,8 +437,8 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	float blue = (color&0xff) / 255.0;
 	float alpha = ((color>>24)&0xff) / 255.0;
 	glUniform4f(colorHandle, red, green, blue, alpha);
-	glUniform2f(scaleHandle, scale, scale);
-	glUniform2f(posHandle, x, y);
+	glUniform4f(scaleHandle, scale, scale, 0, 1);
+	glUniform4f(posHandle, x, y, 0, 1);
 	//scale *= 1.001;
 
 
@@ -457,7 +455,7 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	//glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, &indexes[0]);
 	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
 
-	LOGD("Drew %d\n", tl);
+	//LOGD("Drew %d\n", tl);
 
 	glDisableVertexAttribArray(uvHandle);
 	glDisableVertexAttribArray(vertHandle);
@@ -468,6 +466,22 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 
 }
 
+#include <unordered_map>
+
+template <typename T, typename V> class VBLCache {
+public:
+	void put(const T &id, const V &value) {
+		map[id] = value;
+	}
+	V get(const T &id) {
+		return map[id];
+	}
+private:
+	std::unordered_map<T, V> map;
+};
+
+VBLCache<std::string, std::vector<unsigned int>> cache;
+
 void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {
 	if(!atlas)
 #ifdef ANDROID
@@ -475,12 +489,16 @@ void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, flo
 #else
 		set_font("fonts/ObelixPro.ttf", 32);
 #endif
-	auto buf = make_text(text);
+
+	auto buf = cache.get(text);
+	if(buf.size() == 0) {
+		buf = make_text(text);
+		cache.put(text, buf);
+	}
 	render_text(x, y, buf, text.length(), col, scale);
 
-	LOGD("Deleting buffers %d %d", buf[0], buf[1]);
-
-	glDeleteBuffers(2, &buf[0]);
+	//LOGD("Deleting buffers %d %d", buf[0], buf[1]);
+	//glDeleteBuffers(2, &buf[0]);
 
 	LOGD("Done");
 }
