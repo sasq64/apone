@@ -63,13 +63,11 @@ struct App {
 		float radius = sprite.width() / 2;
 		vec2f center { sprite.width() / 2.0f, sprite.height() / 2.0f };
 
-		LOGD("Clear");
 		sprite.clear();
-		LOGD("circle");
 		sprite.circle(center, radius, 0x000020); // Outline
 		sprite.circle(center, radius*0.90, 0x0000C0); // Main ball
 		sprite.circle(center + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
-		
+
 		program = createProgram(vSineShader, pSineShader);
 		LOGD("Shader created");
 	}
@@ -79,17 +77,18 @@ struct App {
 		scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
 		scr.text((xpos-=4), 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
+		if(xpos < -2400)
+			xpos = screen.width() + 200;
 
 		screen.clear();
 
 		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<100; i++)
-			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
-
+		//for(int i=0; i<100; i++)
+		//	screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
-		glUniform1f(t, tstart+=0.073);
+		glUniform1f(t, tstart += 0.073);
 
 		screen.draw_texture(scr.id(), 0, 0, screen.width(), screen.height(), nullptr, program);
 		screen.flip();

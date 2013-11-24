@@ -395,6 +395,16 @@ void window::flip() {
 	//}
 }
 
+static function<void()> renderLoopFunction;
+
+void window::renderLoop(function<void()> f) {
+	renderLoopFunction = f;
+	// Loop and render ball worm
+	while(screen.is_open()) {
+		renderLoopFunction();
+	}
+}
+
 void window::benchmark() {
 	benchStart = chrono::high_resolution_clock::now();
 	bmCounter = 100;

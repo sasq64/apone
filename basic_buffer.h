@@ -45,8 +45,15 @@ struct gl_object {
 class basic_buffer {
 public:
 
-	basic_buffer() : frameBuffer(0), _width(0), _height(0), globalScale(1.0) {}
-	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0) {
+	basic_buffer() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {}
+	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr) {
+	}
+
+	~basic_buffer() {
+		if(font)
+			texture_font_delete(font);
+		if(atlas)
+			texture_atlas_delete(atlas);
 	}
 
 	//void draw_object(const gl_object &vbo, float x, float y, uint32_t color = 0xffffffff, float scale = 1.0f, float rotation = 0.0f);
@@ -122,8 +129,8 @@ protected:
 	int _height;
 	float globalScale;
 #ifdef WITH_FREETYPE
-	std::shared_ptr<texture_font_t> font;
-	std::shared_ptr<texture_atlas_t> atlas;
+	texture_font_t *font;
+	texture_atlas_t *atlas;
 #endif
 
 };

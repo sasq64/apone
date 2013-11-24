@@ -56,8 +56,10 @@ void window::open(int w, int h, bool fs) {
 	glfwInit();
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 #ifdef EMSCRIPTEN
-	_width = 640;
-	_height = 480;
+	if(w < 0) w = 640;
+	if(h < 480) h = 480;
+	_width = w;
+	_height = h;
 	fs = false;
 	GLFWvidmode mode;
 	mode.RedBits = mode.GreenBits = mode.BlueBits = 8;

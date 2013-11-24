@@ -22,22 +22,19 @@ OBJS += tween.o image.o
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 MODULES := $(UTILS)/coreutils
 
-SHADERS := $(patsubst %.glsl,%.o, $(wildcard shaders/*.glsl))
+SHADERS=$(patsubst %.glsl,%.o, $(wildcard shaders/*.glsl))
 #SHADERS := $(addprefix $(OBJDIR),$(SHADERS))
-CGC := cgc
-XXD := xxd
+#CGC := cgc
+#XXD := xxd
 OBJS += $(SHADERS)
 
 LINUX_OBJS := window.o
 
-EMROOT=/home/sasq/emscripten
+EMROOT=/opt/emscripten
 
 ifneq ($(EMSCRIPTEN),)
-OBJDIR := obj/em/
-EXT := .html
-CFLAGS += -DGL_ES
-CFLAGS += -I$(EMROOT)/freetype/include
-LDFLAGS += -L$(EMROOT)/freetype --preload-file data --preload-file fonts
+CFLAGS += -I$(EMROOT)/system/include/freetype2
+LDFLAGS += --preload-file data --preload-file fonts
 LIBS += -lfreetype -lz
 #LDFLAGS += -s FULL_ES2=1
 else
@@ -71,20 +68,6 @@ ANDROID_LIBS := $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid
 # -lpng -lfreetype
 
 all : start_rule
-
-$(OBJDIR)%_v.o: %_v.glsl
-	@mkdir -p $(@D)
-	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
-	$(XXD) -i $< $@.cpp
-	$(CXX) -c $@.cpp -o $@
-	rm $@.cpp
-
-$(OBJDIR)%_f.o: %_f.glsl
-	@mkdir -p $(@D)
-	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
-	$(XXD) -i $< $@.cpp
-	$(CXX) -c $@.cpp -o $@
-	rm $@.cpp
 
 .PHONY : shaders
 

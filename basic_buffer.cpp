@@ -353,14 +353,14 @@ void basic_buffer::set_font(const string &ttfName, int size, int flags) {
 	LOGD("Loading font");
 
 
-	atlas = shared_ptr<texture_atlas_t>(texture_atlas_new(256, 256, 1 ));
+	atlas = texture_atlas_new(256, 256, 1 );
 
 	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-	font = shared_ptr<texture_font_t>(texture_font_new(atlas.get(), ttfName.c_str(), size));
+	font = texture_font_new(atlas, ttfName.c_str(), size);
 
 	LOGD("Result %p", font);
 
-	texture_font_load_glyphs(font.get(), text);
+	texture_font_load_glyphs(font, text);
 
 	if(flags & DISTANCE_MAP) {
 		uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
@@ -385,7 +385,7 @@ vector<GLuint> basic_buffer::make_text(const string &text) {
 	float x = 0;
 	float y = 0;
 	for(auto c : text) {
-		texture_glyph_t *glyph = texture_font_get_glyph(font.get(), c);
+		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
 		//LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)
