@@ -20,7 +20,10 @@
 # System specific (CXX, CC, CFLAGS, MODULES, LIBS, LDFLAGS);
 #    LINUX_??? := (Linux specfic variables)
 #    WIN_??? := (Window specific variables)
+#    PC_??? := Linux
 #    PI_??? := (Raspberry PI specfic variables)
+#    ANDROID_
+#    EM_
 #
 ########################################################################################
 
@@ -98,6 +101,12 @@ endif
 
 endif
 
+ifndef CGC
+CGC := cgc
+endif
+ifndef XXD
+XXD := xxd
+endif
 
 
 ifndef CC
@@ -141,17 +150,25 @@ MODULEOBJS += $(patsubst %.s,%.o, $(wildcard $(addsuffix /*.s, $(SRC_MODULES))))
 
 #OBJDIR := $(realpath $(OBJDIR))
 
-ifneq ($(HOST),)
-	OBJDIR := $(OBJDIR)$(HOST)/
+ifneq ($(EMSCRIPTEN),)
+HOST := emscripten
+EXT := .html
+CFLAGS += -DGL_ES
 endif
+
+ifeq ($(HOST),)
+HOST=default
+endif
+
+OBJDIR := $(OBJDIR)$(HOST)/
 
 OBJFILES := $(addprefix $(OBJDIR),$(MODULEOBJS))
 #OBJDIR := $(OBJDIR)
 
 ifneq ($(ACTIVEFILE),)
-ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
-MAINOBJ := $(patsubst %.cpp,%.o,$(ACTIVEFILE))
-endif
+ ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
+  MAINOBJ := $(patsubst %.cpp,%.o,$(ACTIVEFILE))
+ endif
 endif
 
 OBJS := $(addprefix $(SRCDIR), $(MAINOBJ) $(OBJS))
@@ -203,6 +220,20 @@ $(OBJDIR)%.o: %.s
 $(OBJDIR)%.d: %.c
 	@mkdir -p $(@D)
 	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
+
+$(OBJDIR)%_v.o: %_v.glsl
+	@mkdir -p $(@D)
+	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
+	$(XXD) -i $< $@.cpp
+	$(CXX) -c $@.cpp -o $@
+	rm $@.cpp
+
+$(OBJDIR)%_f.o: %_f.glsl
+	@mkdir -p $(@D)
+	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
+	$(XXD) -i $< $@.cpp
+	$(CXX) -c $@.cpp -o $@
+	rm $@.cpp
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
