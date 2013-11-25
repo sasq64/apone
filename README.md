@@ -23,3 +23,19 @@ the module directories you want to use. If you are using Makefiles, the easiest 
 
 If you do not wish to use *Makefile.inc* you need to either copy the modules into your source directory, or
 set up appropriate build rules that can build from the modules source files into your own object directory.
+
+Makefile.inc new proposal
+=========================
+
+include setup.mk
+
+Investigates environment and set up default settings
+
+Input variable, defaults to current system (linux or windows). Set to cross compile.
+HOST = android | emscripten | raspberrypi | linux | windows
+
+CC = correct compiler for host
+CXX =
+CFLAGS = Defines for host (-DRASPERRYPI etc)
+OBJDIR = obj/$HOST
+

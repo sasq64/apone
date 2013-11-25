@@ -4,6 +4,9 @@ CXXFLAGS :=
 OBJS :=
 MODULES :=
 LIBS :=
+LDFLAGS :=
+TARGET :=
+OBJDIR := obj
 
 ifeq ($(CC),cc)
 CC = gcc
@@ -53,12 +56,14 @@ ifeq ($(HOST),android)
 	PREFIX=arm-linux-androideabi-
 	TARGET_PRE=lib
 	TARGET_EXT=.so
- 	CFLAGS := $(CFLAGS) -DANDROID
+ 	CFLAGS += -DANDROID
+    LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
+
 else ifeq ($(HOST),emscripten)
 	CC = emcc
 	CXX = em++
  	TARGET_EXT = .html
- 	CFLAGS += -DGL_ES
+ 	CFLAGS += -DGL_ES -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
 	CFLAGS += -DRASPBERRYPI
 endif
@@ -77,6 +82,11 @@ endif
 
 CC := $(PREFIX)$(CC)$(C_VERSION)
 CXX := $(PREFIX)$(CXX)$(C_VERSION)
+
+#ifneq ($(USE_CCACHE),)
+#CC := ccache $(CC)
+#CXX := ccache $(CXX)
+#endif
 
 LD := $(CXX)
 

@@ -31,10 +31,12 @@ OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 
 DEPS := $(XDEPENDS) $(DEPS)
 
-start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET_PRE)$(TARGET)$(TARGET_EXT)
+TARGET := $(TARGET_PRE)$(TARGET)
+
+start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
 
 remove_target:
-	rm -f $(TARGETDIR)$(TARGET_PRE)$(TARGET)$(TARGET_EXT)
+	rm -f $(TARGETDIR)$(TARGET)$(TARGET_EXT)
 
 relink: remove_target start_rule
 
@@ -120,7 +122,7 @@ $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
 $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
+	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
 
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)
@@ -129,64 +131,14 @@ $(TARGETDIR)$(TARGET).html: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).html
 
 clean:
-	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET_PRE)$(TARGET)$(TARGET_EXT)
+	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
 	
 cleandep:
 	rm -f $(OBJFILES:.o=.d)
 
 superclean:
-	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET_PRE)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(MODULES)) *.elf *~
+	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(MODULES)) *.elf *~
 
 run: start_rule
-	$(CURDIR)/$(TARGET_PRE)$(TARGET)$(TARGET_EXT)
-
-#
-##
-### Nintendo DS Rules
-##
-#
-
-%.gbfs:
-	gbfs $@ data/*
-
-
-$(TARGETDIR)$(TARGET).ds.gba: $(TARGETDIR)$(TARGET).nds
-	dsbuild $< -o $@.tmp
-	padbin 256 $@.tmp
-	cat $@.tmp $(TARGETDIR)$(TARGET).gbfs > $(TARGETDIR)$(TARGET).ds.gba
-
-
-# $(TARGETDIR)$(TARGET).nds : $(TARGETDIR)$(TARGET).bin $(TARGETDIR)$(TARGET)7.bin
-#	ndstool  -9 $(TARGETDIR)$(TARGET).bin -7 $(TARGETDIR)$(TARGET)7.bin -c $@
-
-#ifdef ARM7BIN
-# NDSTFLAGS += -7 $(ARM7BIN)
-#endif
-
-$(TARGETDIR)$(TARGET).nds: $(TARGETDIR)$(TARGET).bin
-	ndstool $(NDSTFLAGS) -9 $(TARGETDIR)$(TARGET).bin -c $@
-	
-
-toflash: $(TARGETDIR)$(TARGET).nds
-	mount /mnt/cflash
-	cp $(TARGETDIR)$(TARGET).nds /mnt/cflash/_boot_mp.nds
-	umount /mnt/cflash
-
-togbfs: $(TARGETDIR)$(TARGET).nds
-	cp $(TARGETDIR)$(TARGET).nds $(TARGETDIR)$(TARGET)_temp.nds
-	padbin 1024 $(TARGETDIR)$(TARGET)_temp.nds
-	cat $(TARGETDIR)$(TARGET)_temp.nds $(TARGETDIR)$(TARGET).gbfs > $(TARGETDIR)$(TARGET).nds
-
-#
-##
-### PSP Rules
-##
-#
-
-$(TARGETDIR)$(TARGET).pbp: $(TARGETDIR)$(TARGET).elf
-	psp-fixup-imports $<
-	mksfo $(PSP_APPNAME) PARAM.SFO
-	psp-strip $< -o $<.strip
-	pack-pbp $@ PARAM.SFO NULL  NULL NULL NULL NULL $<.strip NULL
-	rm $<.strip
+	$(CURDIR)/$(TARGET)$(TARGET_EXT)
 

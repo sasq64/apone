@@ -92,7 +92,7 @@ template <class T> struct vec2 {
 		return *this;
 	}
 
-	T operator[](const int &i) const {
+	T& operator[](const int &i) const {
 		return data[i];
 		//throw std::out_of_range("Only 0 or 1 are valid indexes");
 	}
