@@ -101,6 +101,7 @@ public:
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, -1);
 	}
 
+	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const;
 	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const;
 	int width() const { return _width; }
 	int height() const { return _height; }

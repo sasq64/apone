@@ -57,7 +57,7 @@ struct App {
 	GLuint program;
 	float tstart;
 
-	App() : sprite {96, 96}, xy {0, 0}, xpos { screen.width() + 400 }, scr {screen.width()+200, 400}, tstart {0} {
+	App() : sprite {64, 64}, xy {0, 0}, xpos { screen.width() + 400 }, scr {screen.width()+200, 400}, tstart {0} {
 
 		// Create our ball image
 		float radius = sprite.width() / 2;
@@ -73,24 +73,29 @@ struct App {
 	}
 
 	void update() {
-		auto scale = vec2f(screen.size()) / 2.3;
-		scr.clear();
-		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
-		scr.text((xpos-=4), 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
+		int count = 1500;
+		static std::vector<vec2f> v(count);
+		auto scale = vec2f(screen.size()) / 2.2;
 		if(xpos < -2400)
 			xpos = screen.width() + 200;
+
+		scr.clear();
+		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
+		scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
 
 		screen.clear();
 
 		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<100; i++)
-			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
+		for(int i=0; i<count; i++)
+			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
+			//screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);	
+		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
 		glUniform1f(t, tstart += 0.073);
 
-		screen.draw_texture(scr.id(), 0, 0, screen.width(), screen.height(), nullptr, program);
+		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
 		screen.flip();
 	}
 

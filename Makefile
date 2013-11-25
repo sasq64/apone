@@ -1,6 +1,7 @@
 UTILS=../utils
 CXX=clang++
 CC=clang
+USE_CCACHE=1
 
 include $(UTILS)/config.mk
 
@@ -9,18 +10,18 @@ TARGET := grappix
 CFLAGS += -Wall -O2 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
 CXXFLAGS += -std=c++0x
 
-
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
   SDK=/opt/android-sdk-linux
   APP_PLATFORM=android-10
 
-  LDFLAGS += -fPIC -Wl,-soname,lib$(TARGET).so -Wl,-shared --sysroot=/opt/android-ndk-r9/platforms/android-14/arch-arm -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
+  LDFLAGS += --sysroot=/opt/android-ndk-r9/platforms/android-14/arch-arm
   OBJS += android/window_android.o android/android_native_app_glue.o
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  CFLAGS += -I$(EMSCRIPTEN)/freetype/include
+  #CFLAGS += -I$(EMSCRIPTEN)/freetype/include
+  CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2
   LDFLAGS += -L$(EMSCRIPTEN)/freetype --preload-file data --preload-file fonts
   LIBS += -lfreetype -lz -lglfw -lGL
   OBJS += window.o

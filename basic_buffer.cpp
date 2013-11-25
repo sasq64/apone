@@ -193,6 +193,120 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	//	glfwSwapBuffers();
 }
 
+GLint multiBuf[2] = {-1, -1};
+
+
+void basic_buffer::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const {
+
+	if(multiBuf[0] == -1) {
+		glGenBuffers(2, (GLuint*)multiBuf);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
+		vector<uint16_t> indexes;//(count*6);
+		int i=0;
+		for(int j=0; j<count; j++) {
+			indexes.push_back(i);
+			indexes.push_back(i+1);
+			indexes.push_back(i+2);
+			indexes.push_back(i+1);
+			indexes.push_back(i+3);
+			indexes.push_back(i+2);
+			i += 4;
+		}
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size() * 2, &indexes[0], GL_STATIC_DRAW);
+
+
+		vector<float> coords;//(count*16);
+		coords.reserve(count*8);
+		for(int j=0; j<count; j++) {
+			coords.push_back(0);
+			coords.push_back(0);
+			coords.push_back(1);
+			coords.push_back(0);
+			coords.push_back(0);
+			coords.push_back(1);
+			coords.push_back(1);
+			coords.push_back(1);
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
+		glBufferData(GL_ARRAY_BUFFER, coords.size() * 4 * 2, &coords[0], GL_DYNAMIC_DRAW);
+	} else
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
+
+	vector<float> coords;//(count*16);
+	coords.reserve(count*8);
+	for(int j=0; j<count; j++) {
+		float x = *points++;
+		float y = *points++;
+		coords.push_back(x);
+		coords.push_back(y+h);
+		coords.push_back(x+w);
+		coords.push_back(y+h);
+		coords.push_back(x);
+		coords.push_back(y);
+		coords.push_back(x+w);
+		coords.push_back(y);
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
+	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, coords.size() * 4, &coords[0]);
+
+
+	if(program < 0) {
+		program = get_program(TEXTURED_PROGRAM);
+	}
+	glUseProgram(program);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glViewport(0,0,_width,_height);
+	//if(singleBuffer)
+	//	glfwSwapBuffers();
+	if(texture >= 0)
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+
+	GLuint posHandle = glGetAttribLocation(program, "vertex");
+	GLuint uvHandle = glGetAttribLocation(program, "uv");
+	//GLuint colorHandle = glGetUniformLocation(textureProgram, "fColor");
+
+	//vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
+
+	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
+
+	GLuint sHandle = glGetUniformLocation(program, "vScale");
+	glUniform4f(sHandle, globalScale, globalScale, 0, 1);
+
+	GLuint pHandle = glGetUniformLocation(program, "vPosition");
+	glUniform4f(pHandle, 0, 0, 0, 1);
+
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4));
+	glEnableVertexAttribArray(posHandle);
+	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(uvHandle);
+
+ 	//static float uva[8] = {0.0,0.0, 1.0,0.0, 0.0,1.0, 1.0,1.0};
+ 	//GLuint uvsHandle = glGetUniformLocation(program, "uvs");
+ 	//glUniform1fv(uvsHandle, 8, uva);
+
+	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
+	//glEnableVertexAttribArray(posHandle);
+	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
+	//glEnableVertexAttribArray(uvHandle);
+
+	//glDrawArrays(GL_TRIANGLES, 0, count*4);
+	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
+
+	glDisableVertexAttribArray(uvHandle);
+	glDisableVertexAttribArray(posHandle);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	//if(singleBuffer)
+	//	glfwSwapBuffers();
+}
+
 #if 0
 
 void basic_buffer::draw_object(const gl_object &vbo, float x, float y, uint32_t color, float scale, float rotation) {
@@ -352,7 +466,6 @@ void basic_buffer::set_font(const string &ttfName, int size, int flags) {
 
 	LOGD("Loading font");
 
-
 	atlas = texture_atlas_new(256, 256, 1 );
 
 	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
@@ -488,8 +601,6 @@ void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, &indexes[0]);
 	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
 
 	//LOGD("Drew %d\n", tl);
