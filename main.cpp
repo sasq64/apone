@@ -83,8 +83,8 @@ struct App {
 		screen.clear();
 
 		vec2f xy2 = xy += {0.01, 0.03};
-		//for(int i=0; i<100; i++)
-		//	screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
+		for(int i=0; i<100; i++)
+			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
