@@ -57,7 +57,7 @@ struct App {
 	GLuint program;
 	float tstart;
 
-	App() : sprite {64, 64}, xy {0, 0}, xpos { screen.width() + 400 }, scr {screen.width()+200, 400}, tstart {0} {
+	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0} {
 
 		// Create our ball image
 		float radius = sprite.width() / 2;

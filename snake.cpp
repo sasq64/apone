@@ -4,30 +4,46 @@
 using namespace std;
 using namespace utils;
 
-int main() {
+struct App {
 
-	// Open fullscreen window
-	screen.open(true);
-	
-	const int w = 32, h = 18; // Size of playfield
-	static const vec2i pfpos { 50, 50 }; // Position on screen
-	vec2i tileSize = (vec2i(screen.size()) - vec2i{100,100}) / vec2i{w,h};
-	vector<int> playField(w*h);
+		const int w = 32;
+		const int h = 18; // Size of playfield
+		const vec2i pfpos { 50, 50 }; // Position on screen
+		vec2i tileSize = (vec2i(screen.size()) - vec2i{100,100}) / vec2i{w,h};
+		vector<int> playField;
 
-	int score = 0;
-	vec2f pos = {5,5}; // Initial position of snake
-	int dir = 2; // Initial direction of snake
-	int speed = 50; // Initial speed of snake
-	int delay = speed;
-	int snakeLen = 100; // Inital length of snake
-	bool gameOver = false;
-	int scrollx = screen.width(); // Game over scroller start position
+		int score;
+		int hiscore;
+		vec2f pos; // position of snake
+		int dir; // direction of snake
+		int speed; // speed of snake
+		int delay = speed;
+		int snakeLen = 100; // length of snake
+		bool gameOver = false;
+		int scrollx = screen.width(); // Game over scroller position
 
-	// Create initial apple
-	srand(clock());
-	playField[rand() % (w*h)] = -1; 
 
-	while(screen.is_open()) {
+	App() : playField (w*h) {	
+		hiscore = 0;
+		start();
+	}
+
+	void start() {
+		score = 0;
+		pos = {5,5};
+		dir = 2; 
+		speed = 50;
+		delay = speed;
+		snakeLen = 100;
+		gameOver = false;
+		scrollx = screen.width();
+		srand(clock());
+		memset(&playField[0], 0, sizeof(int) * w * h);
+		// Create initial apple
+		playField[rand() % (w*h)] = -1;
+	}
+
+	void update() {
 		// Logic
 		if(!gameOver) {
 			if((delay-=4) <= 0) {
@@ -59,6 +75,11 @@ int main() {
 				playField[pos.x + pos.y * w] = 1;
 				delay += speed;
 			}
+		} else {
+			auto k = screen.get_key();
+			if(k == window::SPACE || k == window::ENTER) {
+				start();
+			}
 		}
 
 		// Rendering
@@ -80,10 +101,24 @@ int main() {
 			i++;
 		} 
 		screen.text(10, 5, format("Score:%d", score), 0xff00ff00, 1.0);
+		screen.text(screen.width()-200, 5, format("Hicore:%d", hiscore), 0xff00ff00, 1.0);
 		if(gameOver) {
 			screen.text(scrollx-=5, screen.height()/2 - 50, "Game Over", 0x80c0ffc0, 10.0);
+			if(score > hiscore)
+				hiscore = score;
 		}
 		screen.flip();
 	}
+};
+
+void runMainLoop() {
+	static App app;
+	app.update();
+}
+
+int main() {
+	screen.open(800, 450, false);
+	LOGD("Screen open");
+	screen.renderLoop(runMainLoop);
 	return 0;
 }

@@ -192,6 +192,7 @@ void window::benchmark() {
 
 unordered_map<int, int> window::translate = {
 	{ ENTER, GLFW_KEY_ENTER },
+	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
 	{ RIGHT, GLFW_KEY_RIGHT },
 	{ UP, GLFW_KEY_UP },

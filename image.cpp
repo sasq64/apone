@@ -1,6 +1,5 @@
 #include "bitmap.h"
 #include <coreutils/format.h>
-#include <png.h>
 
 #include <stdexcept>
 #include <string>
@@ -16,9 +15,22 @@ private:
 	std::string msg;
 };
 
+#ifdef EMSCRIPTEN
 
-bitmap load_png(const std::string &file_name)
-{
+#include <SDL/SDL_image.h>
+
+bitmap load_png(const std::string &file_name) {
+	SDL_Surface* s = IMG_Load(file_name.c_str());
+	if(!s)
+		throw image_exception(format("Could not load %s", file_name));
+	return bitmap(s->w, s->h, s->pixels);
+}
+
+#else
+
+#include <png.h>
+
+bitmap load_png(const std::string &file_name) {
 	unsigned char header[8];    // 8 is the maximum size that can be checked
 
 	/* open file and test for it being a png */
@@ -93,3 +105,5 @@ bitmap load_png(const std::string &file_name)
 
 	return bm;
 }
+
+#endif

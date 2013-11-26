@@ -1,8 +1,7 @@
 #ifndef GRAPPIX_BITMAP_H
 #define GRAPPIX_BITMAP_H
 
-#include <coreutils/log.h>
-#include <coreutils/format.h>
+//#include <coreutils/log.h>
 
 #include <cstdint>
 #include <vector>
@@ -30,6 +29,12 @@ public:
 	basic_bitmap(int width, int height) : w(width), h(height) {
 		pixels.resize(width * height);
 	}
+
+	basic_bitmap(int width, int height, void *px) : w(width), h(height) {
+		pixels.resize(width * height);
+		memcpy(&pixels[0], px, sizeof(T) * width * height);
+	}
+
 	T& operator[](const int &i) { 
 		return pixels[i];
 	}

@@ -20,10 +20,11 @@ ifeq ($(HOST),android)
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  #CFLAGS += -I$(EMSCRIPTEN)/freetype/include
-  CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2
-  LDFLAGS += -L$(EMSCRIPTEN)/freetype --preload-file data --preload-file fonts
-  LIBS += -lfreetype -lz -lglfw -lGL
+  CFLAGS += -Ifreetype/include -s ASM_JS=1
+  #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
+  LDFLAGS += -Lfreetype --preload-file data --preload-file fonts
+  LIBS += -lfreetype 
+  #-lSDL -lz -lglfw -lGL
   OBJS += window.o
 else
   CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
@@ -32,7 +33,7 @@ else
 endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAINOBJ := main.o
+MAINOBJ := snake.o
 
 OBJS += tiles.o shader.o basic_buffer.o texture.o tween.o image.o
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o

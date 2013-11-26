@@ -129,24 +129,24 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 	//static float suvs[8] = {0,1, 1,1, 0,0, 1,0};
 	//static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
 
-	//if(!uvs)
-	//	uvs = suvs;
-
-
 	if(recBuf == -1) {
 		vector<float> p {
 			-1, 1, 0, 0,
 			1, 1, 1, 0,
 			-1, -1, 0, 1,
 			1, -1, 1, 1,
+			0,0,0,0,0,0,0,0
 		};
 		glGenBuffers(1, (GLuint*)&recBuf);
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
 		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
-	} else
+	} else {
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
+	}
+	if(uvs)
+		glBufferSubData(GL_ARRAY_BUFFER, 16 * 4, 8*4, uvs);
 
 	if(program < 0) {
 		program = get_program(TEXTURED_PROGRAM);
@@ -179,7 +179,10 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
 	glEnableVertexAttribArray(posHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
+	if(uvs)
+		glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(16*4));
+	else
+		glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
 	glEnableVertexAttribArray(uvHandle);
 
 	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
