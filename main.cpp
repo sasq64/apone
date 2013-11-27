@@ -73,7 +73,7 @@ struct App {
 	}
 
 	void update() {
-		int count = 1500;
+		int count = 500;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
 		if(xpos < -2400)

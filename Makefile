@@ -33,7 +33,7 @@ else
 endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAINOBJ := snake.o
+MAINOBJ := main.o
 
 OBJS += tiles.o shader.o basic_buffer.o texture.o tween.o image.o
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o

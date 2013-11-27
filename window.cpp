@@ -25,6 +25,8 @@ void window::open(bool fs) {
 	open(0,0,fs);
 }
 
+window::click window::NO_CLICK = { -1, -1, -1};
+
 std::deque<int> window::key_buffer;
 std::deque<window::click> window::click_buffer;
 

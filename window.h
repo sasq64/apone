@@ -41,12 +41,14 @@ public:
 	};
 
 	struct click {
+		bool operator==(const click &c) { return c.x == x && c.y == y && c.button == c.button; }
+		bool operator!=(const click &c) { return !(*this == c); }
 		int x;
 		int y;
 		int button;
 	};
 
-	click NO_CLICK;
+	static click NO_CLICK;
 
 	click get_click();
 

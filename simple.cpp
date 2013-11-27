@@ -5,17 +5,16 @@ int cxx = 0;
 int main() {
 	screen.open(false);
 
-	//texture t(load_png("data/font.png"));
-	//texture t2(t.width(), t.height());
-	//t2.draw(t, 0, 0);
+	texture t(load_png("data/font.png"));
+	texture t2  = t;//t.width(), t.height());
+	t2.draw(t, 0, 0);
 
-	//while(screen.is_open()) {
-	screen.renderLoop([&]() {
+	while(screen.is_open()) {
 		//static int cxx = 0;
 		screen.circle(cxx += 4, 100, 100, 0xff0000ff);
-		//screen.draw(t, 10, 10);
-		//screen.draw(t2, 30, 410);
+		screen.draw(t, 10, 10);
+		screen.draw(t2, 30, 410);
 		screen.flip();
-	});
+	}
 	return 0;
 }

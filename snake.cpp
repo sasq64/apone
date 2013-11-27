@@ -52,6 +52,11 @@ struct App {
 				auto k = screen.get_key();
 				if(k == window::LEFT) dir = (dir+3) % 4;
 				else if(k == window::RIGHT) dir = (dir+1) % 4;
+				auto m = screen.get_click();
+				if(m != window::NO_CLICK) {
+					if(m.x < screen.width()/2) dir = (dir+3) % 4;
+					else dir = (dir+1) % 4;
+				}
 				// Move snake forward
 				pos += adds[dir];
 				// Check collision with walls or self
