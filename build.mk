@@ -92,7 +92,7 @@ $(OBJDIR)%_f.o: %_f.glsl
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
-	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

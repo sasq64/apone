@@ -90,7 +90,9 @@ CXX := $(PREFIX)$(CXX)$(C_VERSION)
 
 LD := $(CXX)
 
+ifeq ($(AR),)
 AR := ar
+endif
 AS := $(PREFIX)as
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMP := $(PREFIX)objdump

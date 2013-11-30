@@ -79,6 +79,7 @@ std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
 
 void sleepms(uint ms);
+uint64_t getms();
 void makedir(const std::string &name);
 void makedirs(const std::string &name);
 

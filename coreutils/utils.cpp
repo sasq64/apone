@@ -11,7 +11,11 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <sys/time.h>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 namespace utils {
 
 using namespace std;
@@ -98,6 +102,16 @@ void sleepms(uint ms) {
 	Sleep(ms);
 #else
 	usleep(ms*1000);
+#endif
+}
+
+uint64_t getms() {
+#ifdef EMSCRIPTEN
+	return (uint64_t)emscripten_get_now();
+#else
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000000 + tv.tv_usec) / 1000;
 #endif
 }
 
