@@ -28,7 +28,7 @@ else ifeq ($(HOST),emscripten)
   CFLAGS += -Ifreetype/include -s ASM_JS=1
   #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
   LDFLAGS += -Lfreetype --preload-file data --preload-file fonts
-  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin -L$(CHIPM)/src/plugins/ModPlugin 
+  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432
   LIBS += -lfreetype 
   #-lSDL -lz -lglfw -lGL
   OBJS += window.o

@@ -60,17 +60,17 @@ static const char *vSineShader = R"(
 	}
 )";
 
-static const int bufSize = 65536;
+static const int bufSize = 65536*2;
 
 static void fill_audio(void *udata, Uint8 *stream, int len) {
 	
 	static vector<int16_t> buffer(bufSize);
 	ChipPlayer *player = static_cast<ChipPlayer*>(udata);
 	//LOGD("Getting %d samples from %p", len, player);
-	//float now = emscripten_get_now();
+	auto now = getms();//emscripten_get_now();
 	int rc = player->getSamples(&buffer[0], len/2);
-	//float t = emscripten_get_now() - now;
-	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
+	auto t = getms() - now;
+	LOGD("Sound CPU %dms for %d samples ie %dms", t, len, len / 4.0 / 44.1);  
 	//LOGD("Got %d samples", rc);
 	//SDL_MixAudio(stream, reinterpret_cast<Uint8*>(&buffer[0]), rc*2, SDL_MIX_MAXVOLUME);
 	memcpy(stream, &buffer[0], rc*2);
