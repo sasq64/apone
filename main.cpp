@@ -1,6 +1,18 @@
+
+#include "ModPlugin.h"
+#include "VicePlugin.h"
+#include "ChipPlugin.h"
+#include "ChipPlayer.h"
+
 #include <grappix.h>
+#include <SDL/SDL.h>
+
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 using namespace utils;
+using namespace std;
 
 static const char *pSineShader = R"(
 #ifdef GL_ES
@@ -48,6 +60,23 @@ static const char *vSineShader = R"(
 	}
 )";
 
+static const int bufSize = 65536;
+
+static void fill_audio(void *udata, Uint8 *stream, int len) {
+	
+	static vector<int16_t> buffer(bufSize);
+	ChipPlayer *player = static_cast<ChipPlayer*>(udata);
+	//LOGD("Getting %d samples from %p", len, player);
+	//float now = emscripten_get_now();
+	int rc = player->getSamples(&buffer[0], len/2);
+	//float t = emscripten_get_now() - now;
+	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
+	//LOGD("Got %d samples", rc);
+	//SDL_MixAudio(stream, reinterpret_cast<Uint8*>(&buffer[0]), rc*2, SDL_MIX_MAXVOLUME);
+	memcpy(stream, &buffer[0], rc*2);
+	//LOGD("Returning");
+}
+
 struct App {
 
 	texture sprite;
@@ -56,8 +85,39 @@ struct App {
 	texture scr;
 	GLuint program;
 	float tstart;
+	ModPlugin *modPlugin;
+	VicePlugin *vicePlugin;
+	ChipPlayer *player;
+ 	SDL_AudioSpec wanted;
 
 	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0} {
+
+		//emscripten_async_wget("http://swimsuitboys.com/droidsound/dl/C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", "Ace.sid",
+		//	onLoad, onError);
+
+		//modPlugin = new ModPlugin();
+		//player = modPlugin->fromFile("data/test.mod");
+		//vicePlugin = make_unique<VicePlugin>(std::string("data/c64"));
+		vicePlugin = new VicePlugin("data/c64");
+		player = vicePlugin->fromFile("data/test.sid");
+		//player = modPlugin->fromFile("data/test.mod");
+
+		LOGD("Player is %p", player);
+
+	    // Set the audio format
+	    wanted.freq = 44100;
+	    wanted.format = AUDIO_S16;
+	    wanted.channels = 2;    // 1 = mono, 2 = stereo
+	    wanted.samples = bufSize/2;  // Good low-latency value for callback
+	    wanted.callback = fill_audio;
+	    wanted.userdata = player;
+
+	    // Open the audio device, forcing the desired format
+	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
+	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+	    }
+	    SDL_PauseAudio(0);
+
 
 		// Create our ball image
 		float radius = sprite.width() / 2;
@@ -79,23 +139,23 @@ struct App {
 		if(xpos < -2400)
 			xpos = screen.width() + 200;
 
-		scr.clear();
+		//scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
-		scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
+		//scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
 
 		screen.clear();
 
-		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<count; i++)
-			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
+		//vec2f xy2 = xy += {0.01, 0.03};
+		//for(int i=0; i<count; i++)
+		//	v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
 			//screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);	
-		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
+		//screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
 		glUniform1f(t, tstart += 0.073);
 
-		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
+		//screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
 		screen.flip();
 	}
 
@@ -110,6 +170,7 @@ int main() {
 	LOGD("main");	
 	screen.open(800, 600, false);
 	LOGD("Screen is open");
+
 	screen.renderLoop(runMainLoop);
 	return 0;
 }

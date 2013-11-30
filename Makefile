@@ -10,6 +10,11 @@ TARGET := grappix
 CFLAGS += -Wall -O2 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
 CXXFLAGS += -std=c++0x
 
+CHIPM=../chipmachine
+
+LIBS += -lviceplugin
+CFLAGS += -I$(CHIPM)/src -I$(CHIPM)/src/plugins/ModPlugin -I$(CHIPM)/src/plugins/VicePlugin
+
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
   SDK=/opt/android-sdk-linux
@@ -23,13 +28,15 @@ else ifeq ($(HOST),emscripten)
   CFLAGS += -Ifreetype/include -s ASM_JS=1
   #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
   LDFLAGS += -Lfreetype --preload-file data --preload-file fonts
+  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin -L$(CHIPM)/src/plugins/ModPlugin 
   LIBS += -lfreetype 
   #-lSDL -lz -lglfw -lGL
   OBJS += window.o
 else
   CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
-  LIBS += `freetype-config --libs` `libpng-config --libs` -lglfw -lGL -lGLEW
+  LIBS += `freetype-config --libs` `libpng-config --libs` -lSDL -lglfw -lGL -lGLEW
   OBJS += window.o
+  LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
