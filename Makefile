@@ -12,7 +12,6 @@ CXXFLAGS += -std=c++0x
 
 CHIPM=../chipmachine
 
-LIBS += -lviceplugin
 CFLAGS += -I$(CHIPM)/src -I$(CHIPM)/src/plugins/ModPlugin -I$(CHIPM)/src/plugins/VicePlugin
 
 ifeq ($(HOST),android)
@@ -25,22 +24,24 @@ ifeq ($(HOST),android)
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  CFLAGS += -Ifreetype/include -s ASM_JS=1
+  CFLAGS += -Ifreetype/include
   #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
-  LDFLAGS += -Lfreetype --preload-file data --preload-file fonts
-  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432
+  LDFLAGS += -Lfreetype --preload-file data
+  # --preload-file fonts -s OUTLINING_LIMIT=50000
+  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432
   LIBS += -lfreetype 
   #-lSDL -lz -lglfw -lGL
   OBJS += window.o
 else
   CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
   LIBS += `freetype-config --libs` `libpng-config --libs` -lSDL -lglfw -lGL -lGLEW
+  LIBS += -lviceplugin
   OBJS += window.o
   LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
-MAIN_FILES = main.cpp snake.cpp tiletest.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAINOBJ := main.o
+MAIN_FILES = main.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
+MAINOBJ := sidplayer.o
 
 OBJS += tiles.o shader.o basic_buffer.o texture.o tween.o image.o
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o

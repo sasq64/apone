@@ -223,6 +223,7 @@ window::key window::get_key() {
 			if(t.second == k)
 				return (key)t.first;
 		}
+		return (key)k;
 	}
 	return NO_KEY;
 };

@@ -1,5 +1,6 @@
 #include <coreutils/log.h>
 #include "tiles.h"
+#include "shader.h"
 
 #include <vector>
 
@@ -42,7 +43,7 @@ int TileSet::add_tiles(const bitmap &bm) {
 				break;
 		}
 
-		LOGD("Adding tile to %d %d %dx%d", x, y, tilew, tileh);
+		//LOGD("Adding tile to %d %d %dx%d", x, y, tilew, tileh);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, bmTile.flipped());
 		x += tilew;
 		if(x+tilew > texture.width()) {
@@ -95,24 +96,173 @@ void TileSet::render_tile(int tileno, basic_buffer &target, float x, float y, do
 }
 
 
-TileLayer::TileLayer(int w, int h, int pw, int ph, TileSet &ts) : scrollx(0), scrolly(0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), map(w*h) {}
+TileLayer::TileLayer(int w, int h, int pw, int ph, TileSet &ts) : 
+	scrollx(0), scrolly(0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), scale(1.0), map(w*h) {}
 
-void TileLayer::render(basic_buffer &target) {
-	float s = 4.0;
+static int multiBuf[2] = {-1, -1};
+
+void TileLayer::render2(basic_buffer &target, float x0, float y0) {
+
+	float s = 2.0;
+	int tw = tileset.tilew*s;
+	int th = tileset.tileh*s;
+
+	int pixw = pixelWidth;// + tw;
+	int pixh = pixelHeight;// + th;
+
+	int count = (pixw / tw) * (pixh / th);
+
+	if(multiBuf[0] == -1) {
+		glGenBuffers(2, (GLuint*)multiBuf);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
+		vector<uint16_t> indexes;//(count*6);
+		int i=0;
+		for(int j=0; j<count; j++) {
+			indexes.push_back(i);
+			indexes.push_back(i+1);
+			indexes.push_back(i+2);
+			indexes.push_back(i+1);
+			indexes.push_back(i+3);
+			indexes.push_back(i+2);
+			i += 4;
+		}
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes.size() * 2, &indexes[0], GL_STATIC_DRAW);
+
+		vector<float> coords;//(count*16);
+		coords.reserve(count*16);
+
+		int x = 0;
+		int y = 0;
+		while(y < pixh) {
+			while(x < pixw) {
+				coords.push_back(x);
+				coords.push_back(y+th);
+				coords.push_back(x+tw);
+				coords.push_back(y+th);
+				coords.push_back(x);
+				coords.push_back(y);
+				coords.push_back(x+tw);
+				coords.push_back(y);
+				x += tw;
+			}
+			y += th;
+			x = 0;
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
+		glBufferData(GL_ARRAY_BUFFER, coords.size() * 4 * 2, &coords[0], GL_DYNAMIC_DRAW);
+	} else
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
+
+	vector<float> uvs;//(count*16);
+	uvs.reserve(count*8);
+
+	//int sx = scrollx / tileset.tilew;
+	//int sy = scrolly / tileset.tileh;
+	//int xx = -(scrollx % tileset.tilew) + x0;
+	//int yy = -(scrolly % tileset.tileh) + y0;
+
+	double pw = 1.0f/tileset.texture.width();
+	double ph = 1.0f/tileset.texture.height();
+
+	double fs = pw/(s*s);//pw/10000.0;
+	double ft = ph/(s*s);//pw/10000.0;
+
+	for(int i=0; i<count; i++) {
+		auto tileno = map[i];
+		auto tx = tileno % tileset.widthInTiles;
+		auto ty = tileno / tileset.widthInTiles;
+
+		double s0 = tx*pw*tileset.tilew + fs;
+		double t0 = ty*ph*tileset.tileh + ft;
+		double s1 = s0 + pw*tileset.tilew - fs*2;
+		double t1 = t0 + ph*tileset.tileh - ft*2;
+
+		uvs.push_back(s0);
+		uvs.push_back(t0);
+		uvs.push_back(s1);
+		uvs.push_back(t0);
+		uvs.push_back(s0);
+		uvs.push_back(t1);
+		uvs.push_back(s1);
+		uvs.push_back(t1);			
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
+	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, uvs.size() * 4, &uvs[0]);
+
+
+	GLuint program = get_program(TEXTURED_PROGRAM);
+	glUseProgram(program);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
+	glViewport(0,0,target.width(), target.height());
+	//if(singleBuffer)
+	//	glfwSwapBuffers();
+	//if(texture >= 0)
+	glBindTexture(GL_TEXTURE_2D, tileset.texture.id());
+
+	GLuint posHandle = glGetAttribLocation(program, "vertex");
+	GLuint uvHandle = glGetAttribLocation(program, "uv");
+	//GLuint colorHandle = glGetUniformLocation(textureProgram, "fColor");
+
+	//vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
+
+	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	glUniform4f(whHandle, 2.0 / target.width(), 2.0 / target.height(), 0, 1);
+
+	GLuint sHandle = glGetUniformLocation(program, "vScale");
+	float globalScale = 1.0;
+	glUniform4f(sHandle, globalScale, globalScale, 0, 1);
+
+	GLuint pHandle = glGetUniformLocation(program, "vPosition");
+	glUniform4f(pHandle, 0, 0, 0, 1);
+
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(posHandle);
+	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4));
+	glEnableVertexAttribArray(uvHandle);
+
+ 	//static float uva[8] = {0.0,0.0, 1.0,0.0, 0.0,1.0, 1.0,1.0};
+ 	//GLuint uvsHandle = glGetUniformLocation(program, "uvs");
+ 	//glUniform1fv(uvsHandle, 8, uva);
+
+	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
+	//glEnableVertexAttribArray(posHandle);
+	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
+	//glEnableVertexAttribArray(uvHandle);
+
+	//glDrawArrays(GL_TRIANGLES, 0, count*4);
+	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
+
+	glDisableVertexAttribArray(uvHandle);
+	glDisableVertexAttribArray(posHandle);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	//if(singleBuffer)
+	//	glfwSwapBuffers();
+}
+
+
+void TileLayer::render(basic_buffer &target, int x0, int y0) {
+	//float s = zoom;
 	//int s = 1;
 
-	int tilew = tileset.tilew*s;
-	int tileh = tileset.tileh*s;
+	int tilew = tileset.tilew*scale;
+	int tileh = tileset.tileh*scale;
 
 	int sx = scrollx / tilew;
 	int sy = scrolly / tileh;
-	int xx = -(scrollx % tilew);
-	int yy = -(scrolly % tileh);
+	int xx = -(scrollx % tilew) + x0;
+	int yy = -(scrolly % tileh) + y0;
 
 	for(int y=sy; y<_height; y++) {
 		for(int x=sx; x<_width; x++) {
 			auto tileno = map[x+_width*y];
-			tileset.render_tile(tileno, target, xx, yy, s);
+			tileset.render_tile(tileno, target, xx, yy, scale);
 			//LOGD("Tile %d at %d,%d", tileno, xx, yy);
 			xx += tilew;
 			if(xx > pixelWidth)

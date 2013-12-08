@@ -105,6 +105,7 @@ public:
 	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const;
 	int width() const { return _width; }
 	int height() const { return _height; }
+	GLuint buffer() const { return frameBuffer; }
 
 	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }

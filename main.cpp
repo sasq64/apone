@@ -60,22 +60,7 @@ static const char *vSineShader = R"(
 	}
 )";
 
-static const int bufSize = 65536*2;
-
-static void fill_audio(void *udata, Uint8 *stream, int len) {
-	
-	static vector<int16_t> buffer(bufSize);
-	ChipPlayer *player = static_cast<ChipPlayer*>(udata);
-	//LOGD("Getting %d samples from %p", len, player);
-	auto now = getms();//emscripten_get_now();
-	int rc = player->getSamples(&buffer[0], len/2);
-	auto t = getms() - now;
-	LOGD("Sound CPU %dms for %d samples ie %dms", t, len, len / 4.0 / 44.1);  
-	//LOGD("Got %d samples", rc);
-	//SDL_MixAudio(stream, reinterpret_cast<Uint8*>(&buffer[0]), rc*2, SDL_MIX_MAXVOLUME);
-	memcpy(stream, &buffer[0], rc*2);
-	//LOGD("Returning");
-}
+static const int bufSize = 65536;
 
 struct App {
 
@@ -90,33 +75,35 @@ struct App {
 	ChipPlayer *player;
  	SDL_AudioSpec wanted;
 
-	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0} {
+	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr) {
 
-		//emscripten_async_wget("http://swimsuitboys.com/droidsound/dl/C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", "Ace.sid",
+		//emscripten_async_wget("C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", "Ace.sid",
+		//	onLoad, onError);
+		//emscripten_async_wget_data("http://swimsuitboys.com/droidsound/dl/C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", (void*)"Ace.sid",
 		//	onLoad, onError);
 
 		//modPlugin = new ModPlugin();
 		//player = modPlugin->fromFile("data/test.mod");
 		//vicePlugin = make_unique<VicePlugin>(std::string("data/c64"));
 		vicePlugin = new VicePlugin("data/c64");
-		player = vicePlugin->fromFile("data/test.sid");
+		//player = vicePlugin->fromFile("data/test.sid");
 		//player = modPlugin->fromFile("data/test.mod");
 
-		LOGD("Player is %p", player);
+		//LOGD("Player is %p", player);
 
 	    // Set the audio format
 	    wanted.freq = 44100;
 	    wanted.format = AUDIO_S16;
 	    wanted.channels = 2;    // 1 = mono, 2 = stereo
-	    wanted.samples = bufSize/2;  // Good low-latency value for callback
-	    wanted.callback = fill_audio;
-	    wanted.userdata = player;
+	    wanted.samples = (bufSize/2);
+	    wanted.callback = App::fill_audio;
+	    wanted.userdata = this;
 
 	    // Open the audio device, forcing the desired format
 	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
 	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+	        exit(0);
 	    }
-	    SDL_PauseAudio(0);
 
 
 		// Create our ball image
@@ -159,7 +146,44 @@ struct App {
 		screen.flip();
 	}
 
+	static void onLoad(void *arg, const char *name);
+	static void onError(void *arg, int code);
+	static void fill_audio(void *udata, Uint8 *stream, int len);
 };
+
+
+void App::fill_audio(void *udata, Uint8 *stream, int len) {
+	
+	static vector<int16_t> buffer(bufSize);
+	App *app = static_cast<App*>(udata);
+	//float now = emscripten_get_now();
+	int rc = 0;
+	if(app->player) {
+		auto now = getms();//emscripten_get_now();
+		rc = app->player->getSamples(&buffer[0], len/2);
+		auto t = getms() - now;
+		LOGD("Sound CPU %dms for %d samples ie %dms", t, len, len / 4.0 / 44.1);  
+		memcpy(stream, &buffer[0], rc*2);
+	} else {
+		memset(stream, 0, len);
+	}
+	//float t = emscripten_get_now() - now;
+	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
+	//LOGD("Returning");
+}
+
+void App::onLoad(void *arg, const char *name) {
+	LOGD("### Got %s", name);
+	App *app = (App*)arg;
+	if(app->player)
+		delete app->player;
+	app->player = app->vicePlugin->fromFile(name);
+}
+
+void App::onError(void *arg, int code) {
+	LOGD("Failed");
+}
+
 
 void runMainLoop() {
 	static App app;

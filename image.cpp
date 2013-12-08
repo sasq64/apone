@@ -1,4 +1,5 @@
 #include "bitmap.h"
+#include <coreutils/log.h>
 #include <coreutils/format.h>
 
 #include <stdexcept>
@@ -70,6 +71,7 @@ bitmap load_png(const std::string &file_name) {
 	//auto number_of_passes = png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
+	LOGD("%d %d %d", width, height, bit_depth);
 
 	/* read file */
 	if(setjmp(png_jmpbuf(png_ptr)))
@@ -87,7 +89,7 @@ bitmap load_png(const std::string &file_name) {
 		row_pointers[y] = new png_byte [rowbytes];
 
 	png_read_image(png_ptr, row_pointers);
-	//png_set_expand(png_ptr);
+	png_set_expand(png_ptr);
 	//png_set_strip_16(png_ptr);
 
 	bitmap bm(width, height);

@@ -25,10 +25,13 @@ struct TileSet {
 class TileLayer {
 public:
 	TileLayer(int w, int h, int pw, int ph, TileSet &ts);
-	void render(basic_buffer &target);
+	void render(basic_buffer &target, int x = 0, int y = 0);
+	void render2(basic_buffer &target, float x = 0, float y = 0);
 
-	float scale() { return s; }
-	float scale(float s) { this->s = s; return s; }
+	//float scale() { return s; }
+	//float scale(float s) { this->s = s; return s; }
+	int width() const { return _width; }
+	int height() const { return _height; }
 
 	uint32_t &operator[](uint32_t i) {
 		return map[i];
@@ -37,6 +40,7 @@ public:
 	// Pixel offset into tiles
 	int scrollx;
 	int scrolly;
+	float scale;
 
 private:
 
@@ -49,7 +53,6 @@ private:
 	int pixelWidth;
 	int pixelHeight;
 
-	float s;
 	std::vector<uint32_t> map;
 };
 
