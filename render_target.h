@@ -42,14 +42,14 @@ struct gl_object {
 
 }; */
 
-class basic_buffer {
+class RenderTarget {
 public:
 
-	basic_buffer() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {}
-	basic_buffer(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr) {
+	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {}
+	RenderTarget(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr) {
 	}
 
-	~basic_buffer() {
+	~RenderTarget() {
 		if(font)
 			texture_font_delete(font);
 		if(atlas)

@@ -19,18 +19,20 @@ using namespace std;
 static const int bufSize = 8192;
 static double percent = 50;
 
+#ifdef EMSCRIPTEN
 static const char *itoa(int l) {
 	static char t[12];
 	sprintf(t, "%d", l);
 	return t;
 }
+#endif
 
 struct App {
 
-	texture sprite;
+	Texture sprite;
 	vec2f xy;
 	int xpos;
-	texture scr;
+	Texture scr;
 	GLuint program;
 	float tstart;
 	ModPlugin *modPlugin;
@@ -138,7 +140,7 @@ struct App {
 		print(format("%03d%", (int)percent), 36, 0);
 		tiles.render2(screen);
 		screen.flip();
-		if(screen.get_key() == window::ENTER || screen.get_key() == window::SPACE) {
+		if(screen.get_key() == Window::ENTER || screen.get_key() == Window::SPACE) {
 			SDL_PauseAudio(audio ? 1 : 0);
 			audio = !audio;
 		}

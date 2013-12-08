@@ -50,10 +50,10 @@ struct App {
 				// Change direction depending on key
 				static const vector<vec2f> adds { {0,-1}, {1,0}, {0,1}, {-1,0} };
 				auto k = screen.get_key();
-				if(k == window::LEFT) dir = (dir+3) % 4;
-				else if(k == window::RIGHT) dir = (dir+1) % 4;
+				if(k == Window::LEFT) dir = (dir+3) % 4;
+				else if(k == Window::RIGHT) dir = (dir+1) % 4;
 				auto m = screen.get_click();
-				if(m != window::NO_CLICK) {
+				if(m != Window::NO_CLICK) {
 					if(m.x < screen.width()/2) dir = (dir+3) % 4;
 					else dir = (dir+1) % 4;
 				}
@@ -82,7 +82,7 @@ struct App {
 			}
 		} else {
 			auto k = screen.get_key();
-			if(k == window::SPACE || k == window::ENTER) {
+			if(k == Window::SPACE || k == Window::ENTER) {
 				start();
 			}
 		}

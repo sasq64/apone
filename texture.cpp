@@ -1,10 +1,10 @@
+#include "GL_Header.h"
 
 #include "texture.h"
-#include "GL_Header.h"
 
 #include <coreutils/log.h>
 
-texture::texture(const bitmap &bm) {
+Texture::Texture(const bitmap &bm) {
 
 	_width = bm.width();
 	_height = bm.height();
@@ -22,7 +22,7 @@ texture::texture(const bitmap &bm) {
 }
 
 
-texture::texture(int width, int height) {
+Texture::Texture(int width, int height) {
 
 	_width = width;
 	_height = height;
@@ -34,7 +34,7 @@ texture::texture(int width, int height) {
 	glGenFramebuffers(1, &frameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
-	// Create an empty texture with no filtering
+	// Create an empty Texture with no filtering
 	//GLuint renderedTexture;
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -46,7 +46,7 @@ texture::texture(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
 	LOGD("texid %d", texture_id);
 
-	// Bind the texture to the COLOR_ATTACHMENT of our framebuffer. This would not work on the default (0) framebuffer
+	// Bind the Texture to the COLOR_ATTACHMENT of our framebuffer. This would not work on the default (0) framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
 	//glBindFramebuffer(GL_FRAMEBUFFER, old_fbo);
 	//glBindFramebuffer(GL_FRAMEBUFFER, fbuf);

@@ -359,7 +359,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
+window::window() : RenderTarget(), winOpen(false), bmCounter(0) {
 	frameBuffer = 0;
 }
 

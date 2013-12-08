@@ -10,18 +10,10 @@
 #include <deque>
 #include <functional>
 
-class window : public basic_buffer {
+class Window : public RenderTarget {
 public:
 
-	window();
-
-	//void draw(int x, int y, texture &buffer) {
-	//	basic_buffer::draw_texture(buffer.id(), x, y, buffer.width(), buffer.height());
-	//};
-
-	//template <typename T> void draw(T pos, texture &buffer) {
-	//	basic_buffer::draw_texture(buffer.id(), pos[0], pos[1], buffer.width(), buffer.height());
-	//};
+	Window();
 
 	void open(bool fs);
 	void open(int w = 0, int h = 0, bool fs = true);
@@ -82,6 +74,6 @@ private:
 	static std::unordered_map<int, int> translate;
 };
 
-extern window screen;
+extern Window screen;
 
 #endif // GRAPPIX_WINDOW_H

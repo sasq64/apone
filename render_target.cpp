@@ -1,6 +1,6 @@
 #include <coreutils/log.h>
 
-#include "basic_buffer.h"
+#include "render_target.h"
 #include "shader.h"
 
 #include "GL_Header.h"
@@ -9,14 +9,14 @@
 
 #include <vector>
 using namespace std;
-void basic_buffer::clear() {
+void RenderTarget::clear() {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void basic_buffer::line(float x0, float y0, float x1, float y1, uint32_t color) {
+void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) {
 
 	//if(singleBuffer)
 	//	glfwSwapBuffers();
@@ -62,7 +62,7 @@ void basic_buffer::line(float x0, float y0, float x1, float y1, uint32_t color) 
 
 static GLint circleBuf = -1;
 
-void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
+void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 
 	//if(singleBuffer)
 	//	glfwSwapBuffers();
@@ -125,7 +125,7 @@ void basic_buffer::circle(int x, int y, float radius, uint32_t color) {
 GLint recBuf = -1;
 
 
-void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) const {
+void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, GLint program) const {
 	//static float suvs[8] = {0,1, 1,1, 0,0, 1,0};
 	//static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
 
@@ -199,7 +199,7 @@ void basic_buffer::draw_texture(GLint texture, float x, float y, float w, float 
 GLint multiBuf[2] = {-1, -1};
 
 
-void basic_buffer::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const {
+void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const {
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);
@@ -312,7 +312,7 @@ void basic_buffer::draw_texture(GLint texture, float *points, int count, float w
 
 #if 0
 
-void basic_buffer::draw_object(const gl_object &vbo, float x, float y, uint32_t color, float scale, float rotation) {
+void RenderTarget::draw_object(const gl_object &vbo, float x, float y, uint32_t color, float scale, float rotation) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0, 0, _width, _height);
@@ -376,7 +376,7 @@ void basic_buffer::draw_object(const gl_object &vbo, float x, float y, uint32_t 
 };
 
 
-gl_object basic_buffer::make_rectangle(float w, float h) {
+gl_object RenderTarget::make_rectangle(float w, float h) {
 	gl_object obj;
 	obj.program = get_program(FLAT_PROGRAM);
 	w /= 2;
@@ -409,7 +409,7 @@ gl_object basic_buffer::make_rectangle(float w, float h) {
 
 #endif
 
-void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
+void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
@@ -465,7 +465,7 @@ void basic_buffer::rectangle(float x, float y, float w, float h, uint32_t color,
 
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
-void basic_buffer::set_font(const string &ttfName, int size, int flags) {
+void RenderTarget::set_font(const string &ttfName, int size, int flags) {
 
 	LOGD("Loading font");
 
@@ -487,7 +487,7 @@ void basic_buffer::set_font(const string &ttfName, int size, int flags) {
 
 //static float scale = 1.0;
 
-vector<GLuint> basic_buffer::make_text(const string &text) {
+vector<GLuint> RenderTarget::make_text(const string &text) {
 
 	LOGD("Make text");
 
@@ -558,7 +558,7 @@ vector<GLuint> basic_buffer::make_text(const string &text) {
 	return vbuf;
 }
 
-void basic_buffer::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32_t color, float scale) {
+void RenderTarget::render_text(int x, int y, vector<GLuint> vbuf, int tl, uint32_t color, float scale) {
 
 	//LOGD("[%f]", uvs);
 	//auto _width = screen.size().first;
@@ -633,7 +633,7 @@ private:
 
 VBLCache<std::string, std::vector<unsigned int>> cache;
 
-void basic_buffer::text(int x, int y, const std::string &text, uint32_t col, float scale) {
+void RenderTarget::text(int x, int y, const std::string &text, uint32_t col, float scale) {
 	if(!atlas)
 #ifdef ANDROID
 		set_font("/sdcard/ObelixPro.ttf", 32);

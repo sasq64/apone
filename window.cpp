@@ -17,30 +17,30 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-window::window() : basic_buffer(), winOpen(false), bmCounter(0) {
+Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }
 
-void window::open(bool fs) {
+void Window::open(bool fs) {
 	open(0,0,fs);
 }
 
-window::click window::NO_CLICK = { -1, -1, -1};
+Window::click Window::NO_CLICK = { -1, -1, -1};
 
-std::deque<int> window::key_buffer;
-std::deque<window::click> window::click_buffer;
+std::deque<int> Window::key_buffer;
+std::deque<Window::click> Window::click_buffer;
 
 static void key_fn(int key, int action) {
 	if(action == GLFW_PRESS)
-		window::key_buffer.push_back(key);
+		Window::key_buffer.push_back(key);
 }
 
 static void mouse_fn(int button, int action) {
 	if(action == GLFW_PRESS) {
-		window::click c;
+		Window::click c;
 		glfwGetMousePos(&c.x, &c.y);
 		c.button = button;
-		window::click_buffer.push_back(c);
+		Window::click_buffer.push_back(c);
 	}
 }
 
@@ -49,7 +49,7 @@ static void resize_fn(int w, int h) {
 	screen.resize(w, h);
 };
 
-void window::open(int w, int h, bool fs) {
+void Window::open(int w, int h, bool fs) {
 
 	if(winOpen)
 		return;
@@ -146,7 +146,7 @@ static void runMainLoop() {
 }
 #endif
 
-void window::renderLoop(function<void()> f) {
+void Window::renderLoop(function<void()> f) {
 	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
 	emscripten_set_main_loop(runMainLoop, 60, false);
@@ -158,10 +158,10 @@ void window::renderLoop(function<void()> f) {
 #endif
 }
 
-void window::vsync() {
+void Window::vsync() {
 }
 
-void window::flip() {
+void Window::flip() {
 	auto t = chrono::high_resolution_clock::now();
 	/*if(bmCounter) {
 		bmCounter--;
@@ -187,12 +187,12 @@ void window::flip() {
 #endif
 }
 
-void window::benchmark() {
+void Window::benchmark() {
 	benchStart = chrono::high_resolution_clock::now();
 	bmCounter = 100;
 }
 
-unordered_map<int, int> window::translate = {
+unordered_map<int, int> Window::translate = {
 	{ ENTER, GLFW_KEY_ENTER },
 	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
@@ -201,12 +201,12 @@ unordered_map<int, int> window::translate = {
 	{ DOWN, GLFW_KEY_DOWN }
 };
 
-bool window::key_pressed(key k) {
+bool Window::key_pressed(key k) {
 	auto glfwKey = translate[k];
 	return glfwGetKey(glfwKey) != 0;
 }
 
-window::click window::get_click() {
+Window::click Window::get_click() {
 	if(click_buffer.size() > 0) {
 		auto k = click_buffer.front();
 		click_buffer.pop_front();
@@ -215,7 +215,7 @@ window::click window::get_click() {
 	return NO_CLICK;
 }
 
-window::key window::get_key() {
+Window::key Window::get_key() {
 	if(key_buffer.size() > 0) {
 		auto k = key_buffer.front();
 		key_buffer.pop_front();
@@ -228,4 +228,4 @@ window::key window::get_key() {
 	return NO_KEY;
 };
 
-window screen;
+Window screen;

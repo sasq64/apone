@@ -55,7 +55,7 @@ struct App {
 
 		screen.clear();
 
-		if(screen.key_pressed(window::RIGHT)) {
+		if(screen.key_pressed(Window::RIGHT)) {
 			scrollTarget.x += 16;
 			tween::to(0.5, { { layer.scrollx, scrollTarget.x }, { layer.scrolly, scrollTarget.y } } );
 		}
@@ -65,7 +65,7 @@ struct App {
 			tween::to(0.5, {{ layer.scale, (float)(key - '1') + 1.0f }});
 
 		auto click = screen.get_click();
-		if(click != window::NO_CLICK) {
+		if(click != Window::NO_CLICK) {
 			scrollTarget.x = layer.scrollx + click.x - screen.width()/2;
 			scrollTarget.y = layer.scrolly + click.y - screen.height()/2;
 			tween::to(0.5, { { layer.scrollx, scrollTarget.x }, { layer.scrolly, scrollTarget.y } } );

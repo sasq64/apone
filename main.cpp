@@ -64,10 +64,10 @@ static const int bufSize = 65536;
 
 struct App {
 
-	texture sprite;
+	Texture sprite;
 	vec2f xy;
 	int xpos;
-	texture scr;
+	Texture scr;
 	GLuint program;
 	float tstart;
 	ModPlugin *modPlugin;

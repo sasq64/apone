@@ -2,6 +2,7 @@
 #include "texture.h"
 #include "window.h"
 #include "bitmap.h"
+#include "image.h"
 #include "tiles.h"
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {

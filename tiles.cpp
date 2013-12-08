@@ -65,7 +65,7 @@ int TileSet::add_tiles(const bitmap &bm) {
 	return 0;
 }
 
-void TileSet::render_tile(int tileno, basic_buffer &target, float x, float y, double s) {
+void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, double s) {
 	auto tx = tileno % widthInTiles;
 	auto ty = tileno / widthInTiles;
 
@@ -97,11 +97,11 @@ void TileSet::render_tile(int tileno, basic_buffer &target, float x, float y, do
 
 
 TileLayer::TileLayer(int w, int h, int pw, int ph, TileSet &ts) : 
-	scrollx(0), scrolly(0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), scale(1.0), map(w*h) {}
+	scrollx(0), scrolly(0), scale(1.0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), map(w*h) {}
 
 static int multiBuf[2] = {-1, -1};
 
-void TileLayer::render2(basic_buffer &target, float x0, float y0) {
+void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 
 	float s = 2.0;
 	int tw = tileset.tilew*s;
@@ -221,7 +221,7 @@ void TileLayer::render2(basic_buffer &target, float x0, float y0) {
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4));
+	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4L));
 	glEnableVertexAttribArray(uvHandle);
 
  	//static float uva[8] = {0.0,0.0, 1.0,0.0, 0.0,1.0, 1.0,1.0};
@@ -247,7 +247,7 @@ void TileLayer::render2(basic_buffer &target, float x0, float y0) {
 }
 
 
-void TileLayer::render(basic_buffer &target, int x0, int y0) {
+void TileLayer::render(RenderTarget &target, int x0, int y0) {
 	//float s = zoom;
 	//int s = 1;
 

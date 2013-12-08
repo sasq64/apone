@@ -43,7 +43,7 @@ endif
 MAIN_FILES = main.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
 MAINOBJ := sidplayer.o
 
-OBJS += tiles.o shader.o basic_buffer.o texture.o tween.o image.o
+OBJS += tiles.o shader.o render_target.o texture.o tween.o image.o
 OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
 
 MODULES += $(UTILS)/coreutils

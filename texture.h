@@ -1,26 +1,32 @@
 #ifndef GRAPPIX_TEXTURE_H
 #define GRAPPIX_TEXTURE_H
 
-#include "basic_buffer.h"
+#include "render_target.h"
 #include "bitmap.h"
 
-class texture : public basic_buffer {
+class Texture : public RenderTarget {
 public:
-	texture() : texture_id(-1) {}
+	Texture() : texture_id(-1) {}
 
-	template <typename T> texture(T size) : texture(size[0], size[1]) {}
-	texture(int width, int height);
+	template <typename T> Texture(T size) : Texture(size[0], size[1]) {}
+	Texture(int width, int height);
 
-	texture(const bitmap &bm);
+	Texture(const bitmap &bm);
+
+	Texture clone() {
+		Texture t  = Texture(width(), height());
+		t.draw(*this, 0, 0);
+		return t;
+	}
 
 	unsigned int id() const { return texture_id; }
 /*
-	void draw(int x, int y, texture &buffer) {
-		basic_buffer::draw_texture(buffer.id(), x, y, buffer.width(), buffer.height());
+	void draw(int x, int y, Texture &buffer) {
+		RenderTarget::draw_texture(buffer.id(), x, y, buffer.width(), buffer.height());
 	};
 
-	template <typename T> void draw(T pos, texture &buffer) {
-		basic_buffer::draw_texture(buffer.id(), pos[0], pos[1], buffer.width(), buffer.height());
+	template <typename T> void draw(T pos, Texture &buffer) {
+		RenderTarget::draw_Texture(buffer.id(), pos[0], pos[1], buffer.width(), buffer.height());
 	};
 */
 private:

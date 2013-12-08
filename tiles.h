@@ -12,21 +12,21 @@ struct TileSet {
 	TileSet(int tilew, int tileh);
 	int add_tiles(const bitmap &bm);
 
-	void render_tile(int tileno, basic_buffer &target, float x, float y, double s);
+	void render_tile(int tileno, RenderTarget &target, float x, float y, double s);
 
 	int tilew;
 	int tileh;
 	int widthInTiles;
 	int heightInTiles;
-	texture texture;
+	Texture texture;
 };
 
 
 class TileLayer {
 public:
 	TileLayer(int w, int h, int pw, int ph, TileSet &ts);
-	void render(basic_buffer &target, int x = 0, int y = 0);
-	void render2(basic_buffer &target, float x = 0, float y = 0);
+	void render(RenderTarget &target, int x = 0, int y = 0);
+	void render2(RenderTarget &target, float x = 0, float y = 0);
 
 	//float scale() { return s; }
 	//float scale(float s) { this->s = s; return s; }
@@ -75,7 +75,7 @@ public:
 
 	Sprite &sprite(int i) { return sprites[i]; }
 
-	void render(basic_buffer &target) {
+	void render(RenderTarget &target) {
 		for(auto &s : sprites) {
 			tileSet.render_tile(s.tileno, target, s.x, s.y, s.scale);
 		}

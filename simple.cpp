@@ -5,9 +5,8 @@ int cxx = 0;
 int main() {
 	screen.open(false);
 
-	texture t(load_png("data/font.png"));
-	texture t2  = t;//t.width(), t.height());
-	t2.draw(t, 0, 0);
+	Texture t(load_png("data/font.png"));
+	Texture t2 = t.clone();
 
 	while(screen.is_open()) {
 		//static int cxx = 0;

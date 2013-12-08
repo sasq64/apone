@@ -31,7 +31,7 @@ public:
 
 	vec2f size;
 	float radius;
-	texture sprite;
+	Texture sprite;
 	vec2f xy;
 	//vec2f scale;
 	int xpos;

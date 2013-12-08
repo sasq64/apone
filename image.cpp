@@ -1,20 +1,13 @@
-#include "bitmap.h"
+#include "image.h"
+
 #include <coreutils/log.h>
 #include <coreutils/format.h>
 
-#include <stdexcept>
 #include <string>
 
 using namespace std;
 using namespace utils;
 
-class image_exception : public std::exception {
-public:
-	image_exception(const std::string &msg) : msg(msg) {}
-	virtual const char *what() const throw() { return msg.c_str(); }
-private:
-	std::string msg;
-};
 
 #ifdef EMSCRIPTEN
 
