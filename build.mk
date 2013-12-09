@@ -1,45 +1,26 @@
-
-#INCLUDES := $(addprefix $(SRCDIR), $(INCLUDES))
-#SRC_INCLUDES := $(addprefix -I,$(INCLUDES))
-
-CFLAGS += $(addprefix -I$(SRCDIR), $(INCLUDES))
-CXXFLAGS := $(CXXFLAGS) $(CFLAGS)
-
-# LOCAL_FILES - Source files realtive to current directory + SRCDIR
-# FILES - Source files with path
-
-FULL_FILES := $(addprefix $(SRCDIR), $(LOCAL_FILES))
-FILES := $(realpath $(FILES) $(FULL_FILES))
-
-# FILES - Now full path of all source files
-
-# Create corresponding list of OBJS
-
-PATTERNS := .cpp .cxx .cc .c .s .glsl
-OBJS := $(foreach PAT,$(PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),$(FILES))) )
-
-SRC_MODULES := $(realpath $(MODULES))
-MODULEOBJS := $(foreach PAT,$(PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(SRC_MODULES)))) )
-
-OBJDIR := $(OBJDIR)$(HOST)/
-
-OBJFILES := $(addprefix $(OBJDIR),$(MODULEOBJS))
-
-ifneq ($(ACTIVEFILE),)
- ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
-  MAIN_FILE := $(ACTIVEFILE)
- endif
+# Reset default src patterns if empty
+ifeq ($(SRC_PATTERNS),)
+SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 endif
 
-#OBJS := $(addprefix $(SRCDIR), $(MAINOBJ) $(OBJS))
 
-#OBJFILES += $(addprefix $(OBJDIR), $(subst ../,,$(OBJS)))
+CFLAGS += $(addprefix -I, $(INCLUDES))
+CXXFLAGS := $(CXXFLAGS) $(CFLAGS)
+
+# LOCAL_FILES <= Source files relative to current directory + SRCDIR
+# FILES <= Source files with exact path
+FILES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_FILES)))
+# FILES <= Now full path of all source files
+
+# Create corresponding list of OBJS from FILES
+OBJS := $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),$(FILES))) )
+
+# Also add all source files inside MODULES directories
+RP_MODULES := $(realpath $(MODULES))
+OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(RP_MODULES)))) )
+
+OBJDIR := $(OBJDIR)$(HOST)/
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
-
-
-
-
-DEPS := $(XDEPENDS) $(DEPS)
 
 TARGET := $(TARGET_PRE)$(TARGET)
 
@@ -49,10 +30,7 @@ remove_target:
 	rm -f $(TARGETDIR)$(TARGET)$(TARGET_EXT)
 
 relink: remove_target start_rule
-
 linkrun: remove_target run
-relink: remove_target start_rule
-
 
 -include $(OBJFILES:.o=.d)
 
@@ -90,17 +68,17 @@ $(OBJDIR)%_v.o: %_v.glsl
 	@mkdir -p $(@D)
 	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
 	@mkdir -p .shader
-	@cp $< .shader/$(notdir $<)
-	@$(XXD) -i .shader/$(notdir $<) .shader/$(notdir $<).cpp
-	@$(CXX) -O2 -c .shader/$(notdir $<).cpp -o $@
+	@cp $< .shader/$(<F)
+	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
+	@$(CXX) -O2 -c .shader/$(<F).cpp -o $@
 
 $(OBJDIR)%_f.o: %_f.glsl
 	@mkdir -p $(@D)
 	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
 	@mkdir -p .shader
-	@cp $< .shader/$(notdir $<)
-	@$(XXD) -i .shader/$(notdir $<) .shader/$(notdir $<).cpp
-	@$(CXX) -O2 -c .shader/$(notdir $<).cpp -o $@
+	@cp $< .shader/$(<F)
+	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
+	@$(CXX) -O2 -c .shader/$(<F).cpp -o $@
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)

@@ -8,6 +8,8 @@ LDFLAGS :=
 TARGET :=
 OBJDIR := obj
 
+SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
+
 ifeq ($(CC),cc)
 CC = gcc
 endif
