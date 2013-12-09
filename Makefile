@@ -34,6 +34,7 @@ else ifeq ($(HOST),emscripten)
   LIBS += -lfreetype
   #-lSDL -lz -lglfw -lGL
   LOCAL_FILES += window.cpp
+  TARGETDIR := html/
 else
   CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
   LIBS += `freetype-config --libs` `libpng-config --libs` -lSDL -lglfw -lGL -lGLEW
@@ -43,9 +44,16 @@ else
 endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAIN_DEFAULT := simple.cpp
+MAIN_FILE := simple.cpp
 
-LOCAL_FILES += main.cpp tiles.cpp shader.cpp render_target.cpp texture.cpp tween.cpp image.cpp color.cpp
+ifneq ($(ACTIVEFILE),)
+ ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
+  MAIN_FILE := $(ACTIVEFILE)
+ endif
+endif
+
+
+LOCAL_FILES += $(MAIN_FILE) tiles.cpp shader.cpp render_target.cpp texture.cpp tween.cpp image.cpp color.cpp
 LOCAL_FILES += distancefield.cpp freetype-gl/texture-atlas.c freetype-gl/texture-font.c freetype-gl/vector.c freetype-gl/edtaa3func.c
 LOCAL_FILES += $(wildcard shaders/*.glsl)
 

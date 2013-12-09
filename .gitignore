@@ -1,0 +1,10 @@
+*.a
+*.so
+obj/
+html/
+node_modules/
+*~
+_cache
+cachegrind.*
+*.sublime-*
+.tags*
