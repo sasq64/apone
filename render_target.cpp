@@ -283,7 +283,7 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	GLuint pHandle = glGetUniformLocation(program, "vPosition");
 	glUniform4f(pHandle, 0, 0, 0, 1);
 
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4));
+	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4L));
 	glEnableVertexAttribArray(posHandle);
 	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(uvHandle);
@@ -638,7 +638,7 @@ void RenderTarget::text(int x, int y, const std::string &text, uint32_t col, flo
 #ifdef ANDROID
 		set_font("/sdcard/ObelixPro.ttf", 32);
 #else
-		set_font("fonts/ObelixPro.ttf", 32);
+		set_font("data/ObelixPro.ttf", 32);
 #endif
 
 	auto buf = cache.get(text);

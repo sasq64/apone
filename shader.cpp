@@ -5,21 +5,21 @@
 
 using namespace std;
 
-extern unsigned char shaders_plain_v_glsl[];
-extern unsigned char shaders_plain_f_glsl[];
-extern unsigned char shaders_texture_v_glsl[];
-extern unsigned char shaders_texture_f_glsl[];
-extern unsigned char shaders_font_v_glsl[];
-extern unsigned char shaders_font_f_glsl[];
-extern unsigned char shaders_fontdf_f_glsl[];
+extern unsigned char _shader_plain_v_glsl[];
+extern unsigned char _shader_plain_f_glsl[];
+extern unsigned char _shader_texture_v_glsl[];
+extern unsigned char _shader_texture_f_glsl[];
+extern unsigned char _shader_font_v_glsl[];
+extern unsigned char _shader_font_f_glsl[];
+extern unsigned char _shader_fontdf_f_glsl[];
 
-extern int shaders_plain_v_glsl_len;
-extern int shaders_plain_f_glsl_len;
-extern int shaders_texture_v_glsl_len;
-extern int shaders_texture_f_glsl_len;
-extern int shaders_font_v_glsl_len;
-extern int shaders_font_f_glsl_len;
-extern int shaders_fontdf_f_glsl_len;
+extern int _shader_plain_v_glsl_len;
+extern int _shader_plain_f_glsl_len;
+extern int _shader_texture_v_glsl_len;
+extern int _shader_texture_f_glsl_len;
+extern int _shader_font_v_glsl_len;
+extern int _shader_font_f_glsl_len;
+extern int _shader_fontdf_f_glsl_len;
 
 /*
 static const char *vShader = R"(
@@ -234,11 +234,16 @@ GLuint get_program(program_name program) {
 		//programs[TEXTURED_PROGRAM] = createProgram(vTexShader, pTexShader);
 		//programs[FONT_PROGRAM] = createProgram(vFontShader, pFontShader);
 		//programs[FONT_PROGRAM_DF] = createProgram(vFontShader, pDFontShader);
-		programs[FLAT_PROGRAM] = createProgram(shaders_plain_v_glsl, shaders_plain_v_glsl_len, shaders_plain_f_glsl,shaders_plain_f_glsl_len);
-		programs[TEXTURED_PROGRAM] = createProgram(shaders_texture_v_glsl, shaders_texture_v_glsl_len, shaders_texture_f_glsl, shaders_texture_v_glsl_len);
-		programs[FONT_PROGRAM] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_font_f_glsl, shaders_font_f_glsl_len);
-		programs[FONT_PROGRAM_DF] = createProgram(shaders_font_v_glsl, shaders_font_v_glsl_len, shaders_fontdf_f_glsl, shaders_fontdf_f_glsl_len);
+		programs[FLAT_PROGRAM] = createProgram(_shader_plain_v_glsl, _shader_plain_v_glsl_len, _shader_plain_f_glsl,_shader_plain_f_glsl_len);
+		programs[TEXTURED_PROGRAM] = createProgram(_shader_texture_v_glsl, _shader_texture_v_glsl_len, _shader_texture_f_glsl, _shader_texture_v_glsl_len);
+		programs[FONT_PROGRAM] = createProgram(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_font_f_glsl, _shader_font_f_glsl_len);
+		programs[FONT_PROGRAM_DF] = createProgram(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_fontdf_f_glsl, _shader_fontdf_f_glsl_len);
 	}
 	return programs[program];
+}
+
+Program get_program_obj(program_name program) {
+	auto p = get_program(program);
+	return Program(p);
 }
 

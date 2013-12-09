@@ -130,6 +130,7 @@ protected:
 	int _width;
 	int _height;
 	float globalScale;
+
 #ifdef WITH_FREETYPE
 	texture_font_t *font;
 	texture_atlas_t *atlas;

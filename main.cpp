@@ -1,6 +1,5 @@
 
 #include "ModPlugin.h"
-#include "VicePlugin.h"
 #include "ChipPlugin.h"
 #include "ChipPlayer.h"
 
@@ -71,25 +70,15 @@ struct App {
 	GLuint program;
 	float tstart;
 	ModPlugin *modPlugin;
-	VicePlugin *vicePlugin;
 	ChipPlayer *player;
  	SDL_AudioSpec wanted;
 
 	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr) {
 
-		//emscripten_async_wget("C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", "Ace.sid",
-		//	onLoad, onError);
-		//emscripten_async_wget_data("http://swimsuitboys.com/droidsound/dl/C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", (void*)"Ace.sid",
-		//	onLoad, onError);
+		modPlugin = new ModPlugin();
+		player = modPlugin->fromFile("data/test.mod");
 
-		//modPlugin = new ModPlugin();
-		//player = modPlugin->fromFile("data/test.mod");
-		//vicePlugin = make_unique<VicePlugin>(std::string("data/c64"));
-		vicePlugin = new VicePlugin("data/c64");
-		//player = vicePlugin->fromFile("data/test.sid");
-		//player = modPlugin->fromFile("data/test.mod");
-
-		//LOGD("Player is %p", player);
+		LOGD("Player is %p", player);
 
 	    // Set the audio format
 	    wanted.freq = 44100;
@@ -104,7 +93,7 @@ struct App {
 	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
 	        exit(0);
 	    }
-
+		SDL_PauseAudio(0);
 
 		// Create our ball image
 		float radius = sprite.width() / 2;
@@ -126,23 +115,23 @@ struct App {
 		if(xpos < -2400)
 			xpos = screen.width() + 200;
 
-		//scr.clear();
+		scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
-		//scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
+		scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
 
 		screen.clear();
 
-		//vec2f xy2 = xy += {0.01, 0.03};
-		//for(int i=0; i<count; i++)
-		//	v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
+		vec2f xy2 = xy += {0.01, 0.03};
+		for(int i=0; i<count; i++)
+			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
 			//screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);	
-		//screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
+		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
 
 		glUseProgram(program);
 		GLuint t = glGetUniformLocation(program, "techstart");
 		glUniform1f(t, tstart += 0.073);
 
-		//screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
+		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
 		screen.flip();
 	}
 
@@ -171,19 +160,6 @@ void App::fill_audio(void *udata, Uint8 *stream, int len) {
 	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
 	//LOGD("Returning");
 }
-
-void App::onLoad(void *arg, const char *name) {
-	LOGD("### Got %s", name);
-	App *app = (App*)arg;
-	if(app->player)
-		delete app->player;
-	app->player = app->vicePlugin->fromFile(name);
-}
-
-void App::onError(void *arg, int code) {
-	LOGD("Failed");
-}
-
 
 void runMainLoop() {
 	static App app;

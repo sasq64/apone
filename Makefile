@@ -14,13 +14,15 @@ CHIPM=../chipmachine
 
 CFLAGS += -I$(CHIPM)/src -I$(CHIPM)/src/plugins/ModPlugin -I$(CHIPM)/src/plugins/VicePlugin
 
+include $(UTILS)/coreutils/module.mk
+
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
   SDK=/opt/android-sdk-linux
   APP_PLATFORM=android-10
 
   LDFLAGS += --sysroot=/opt/android-ndk-r9/platforms/android-14/arch-arm
-  OBJS += android/window_android.o android/android_native_app_glue.o
+  LOCAL_FILES += android/window_android.cpp android/android_native_app_glue.c
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
@@ -29,25 +31,24 @@ else ifeq ($(HOST),emscripten)
   LDFLAGS += -Lfreetype --preload-file data
   # --preload-file fonts -s OUTLINING_LIMIT=50000
   LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432
-  LIBS += -lfreetype 
+  LIBS += -lfreetype
   #-lSDL -lz -lglfw -lGL
-  OBJS += window.o
+  LOCAL_FILES += window.cpp
 else
   CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
   LIBS += `freetype-config --libs` `libpng-config --libs` -lSDL -lglfw -lGL -lGLEW
-  LIBS += -lviceplugin
-  OBJS += window.o
+  LIBS += -lviceplugin -lmodplugin
+  LOCAL_FILES += window.cpp
   LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
 MAIN_FILES = main.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAINOBJ := sidplayer.o
+MAIN_DEFAULT := simple.cpp
 
-OBJS += tiles.o shader.o render_target.o texture.o tween.o image.o
-OBJS += distancefield.o freetype-gl/texture-atlas.o freetype-gl/texture-font.o freetype-gl/vector.o freetype-gl/edtaa3func.o
+LOCAL_FILES += main.cpp tiles.cpp shader.cpp render_target.cpp texture.cpp tween.cpp image.cpp color.cpp
+LOCAL_FILES += distancefield.cpp freetype-gl/texture-atlas.c freetype-gl/texture-font.c freetype-gl/vector.c freetype-gl/edtaa3func.c
+LOCAL_FILES += $(wildcard shaders/*.glsl)
 
-MODULES += $(UTILS)/coreutils
-SHADERS = $(patsubst %.glsl,%.o, $(wildcard shaders/*.glsl))
-OBJS += $(SHADERS)
+
 
 include $(UTILS)/build.mk

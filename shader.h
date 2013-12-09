@@ -31,6 +31,8 @@ public:
 		program = createProgram(vertexSource, fragmentSource);
 	}
 
+	Program(GLuint p) : program(p) {}
+
 	GLuint getAttribLocation(const std::string &name) {
 		GLuint a;
 		if(attributes.count(name) == 0) {
@@ -60,5 +62,8 @@ private:
 };
 
 GLuint get_program(program_name program);
+
+Program get_program_obj(program_name program);
+
 
 #endif // GRAPPIX_SHADER_H
