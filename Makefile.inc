@@ -152,7 +152,7 @@ MODULEOBJS += $(patsubst %.s,%.o, $(wildcard $(addsuffix /*.s, $(SRC_MODULES))))
 
 ifneq ($(EMSCRIPTEN),)
 HOST := emscripten
-EXT := .html
+#EXT := .html
 CFLAGS += -DGL_ES
 endif
 

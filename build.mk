@@ -1,18 +1,25 @@
 
-INCLUDES := $(addprefix $(SRCDIR), $(INCLUDES))
+#INCLUDES := $(addprefix $(SRCDIR), $(INCLUDES))
+#SRC_INCLUDES := $(addprefix -I,$(INCLUDES))
 
-SRC_INCLUDES := $(addprefix -I,$(INCLUDES))
-CFLAGS += $(SRC_INCLUDES)
-
-SRC_MODULES := $(realpath $(MODULES))
-
+CFLAGS += $(addprefix -I$(SRCDIR), $(INCLUDES))
 CXXFLAGS := $(CXXFLAGS) $(CFLAGS)
 
-MODULEOBJS := $(patsubst %.cpp,%.o, $(wildcard $(addsuffix /*.cpp, $(SRC_MODULES))))
-MODULEOBJS += $(patsubst %.cxx,%.o, $(wildcard $(addsuffix /*.cxx, $(SRC_MODULES))))
-MODULEOBJS += $(patsubst %.cc,%.o, $(wildcard $(addsuffix /*.cc, $(SRC_MODULES))))
-MODULEOBJS += $(patsubst %.c,%.o, $(wildcard $(addsuffix /*.c, $(SRC_MODULES))))
-MODULEOBJS += $(patsubst %.s,%.o, $(wildcard $(addsuffix /*.s, $(SRC_MODULES))))
+# LOCAL_FILES - Source files realtive to current directory + SRCDIR
+# FILES - Source files with path
+
+FULL_FILES := $(addprefix $(SRCDIR), $(LOCAL_FILES))
+FILES := $(realpath $(FILES) $(FULL_FILES))
+
+# FILES - Now full path of all source files
+
+# Create corresponding list of OBJS
+
+PATTERNS := .cpp .cxx .cc .c .s .glsl
+OBJS := $(foreach PAT,$(PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),$(FILES))) )
+
+SRC_MODULES := $(realpath $(MODULES))
+MODULEOBJS := $(foreach PAT,$(PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(SRC_MODULES)))) )
 
 OBJDIR := $(OBJDIR)$(HOST)/
 
@@ -20,14 +27,17 @@ OBJFILES := $(addprefix $(OBJDIR),$(MODULEOBJS))
 
 ifneq ($(ACTIVEFILE),)
  ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
-  MAINOBJ := $(patsubst %.cpp,%.o,$(ACTIVEFILE))
+  MAIN_FILE := $(ACTIVEFILE)
  endif
 endif
 
-OBJS := $(addprefix $(SRCDIR), $(MAINOBJ) $(OBJS))
+#OBJS := $(addprefix $(SRCDIR), $(MAINOBJ) $(OBJS))
 
 #OBJFILES += $(addprefix $(OBJDIR), $(subst ../,,$(OBJS)))
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
+
+
+
 
 DEPS := $(XDEPENDS) $(DEPS)
 
@@ -79,16 +89,18 @@ $(OBJDIR)%.d: %.c
 $(OBJDIR)%_v.o: %_v.glsl
 	@mkdir -p $(@D)
 	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
-	$(XXD) -i $< $@.cpp
-	$(CXX) -c $@.cpp -o $@
-	rm $@.cpp
+	@mkdir -p .shader
+	@cp $< .shader/$(notdir $<)
+	@$(XXD) -i .shader/$(notdir $<) .shader/$(notdir $<).cpp
+	@$(CXX) -O2 -c .shader/$(notdir $<).cpp -o $@
 
 $(OBJDIR)%_f.o: %_f.glsl
 	@mkdir -p $(@D)
 	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
-	$(XXD) -i $< $@.cpp
-	$(CXX) -c $@.cpp -o $@
-	rm $@.cpp
+	@mkdir -p .shader
+	@cp $< .shader/$(notdir $<)
+	@$(XXD) -i .shader/$(notdir $<) .shader/$(notdir $<).cpp
+	@$(CXX) -O2 -c .shader/$(notdir $<).cpp -o $@
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
@@ -128,7 +140,10 @@ $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)
 
 $(TARGETDIR)$(TARGET).html: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).html
+	$(LD) -O2 $(LDFLAGS) $(LIBS) $(OBJFILES) -o $(TARGETDIR)$(TARGET).html
+
+$(TARGETDIR)$(TARGET).js: $(OBJFILES) $(DEPS)
+	$(LD) -O2 $(LDFLAGS) $(LIBS) $(OBJFILES) -o $(TARGETDIR)$(TARGET).js
 
 clean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT)

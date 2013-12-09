@@ -55,6 +55,11 @@ std::vector<T> split(const T &s, const T &delim = T(" ")) {
 
 	return args;
 }
+template <typename T>
+std::vector<T> split(const T &s, const char *delim) {
+	return split(s, std::string(delim));
+}
+
 
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const V &separator) {
