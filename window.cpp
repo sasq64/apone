@@ -17,7 +17,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
+Window::Window() : RenderTarget(true), winOpen(false), bmCounter(0) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }
 
@@ -105,6 +105,8 @@ void Window::open(int w, int h, bool fs) {
 	}
 	glDebugMessageCallbackARB(debug_callback, nullptr);
 #endif
+
+	initPrograms();
 
 	glfwSwapInterval(1);
 

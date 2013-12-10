@@ -28,10 +28,27 @@ enum program_name {
 class Program {
 public:
 	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource) {
-		program = createProgram(vertexSource, fragmentSource);
+		createProgram();
 	}
 
 	Program(GLuint p) : program(p) {}
+
+	Program() : program(0xffffffff) {}
+
+	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen) {
+		createProgram();
+	}
+
+	Program clone() {
+		return Program(vSource, fSource);
+	}
+
+	void createProgram();
+
+	void setFragmentSource(const std::string &source) {
+		fSource = source;
+		createProgram();
+	}
 
 	GLuint getAttribLocation(const std::string &name) {
 		GLuint a;
@@ -53,17 +70,44 @@ public:
 		}
 		return u;
 	}
+
+	void setUniform(const std::string &name, float f0) {
+		auto h = getUniformLocation(name);
+		glUniform1f(h, f0);
+	}
+
+	void setUniform(const std::string &name, float f0, float f1) {
+		auto h = getUniformLocation(name);
+		glUniform2f(h, f0, f1);
+	}
+
+	void setUniform(const std::string &name, float f0, float f1, float f2) {
+		auto h = getUniformLocation(name);
+		glUniform3f(h, f0, f1, f2);
+	}
+
+	void setUniform(const std::string &name, float f0, float f1, float f2, float f3) {
+		auto h = getUniformLocation(name);
+		glUniform4f(h, f0, f1, f2, f3);
+	}
+
+	void use() { glUseProgram(program); }
+
+	GLuint id() { return program; }
+
 private:
 	std::unordered_map<std::string, GLuint> uniforms;
 	std::unordered_map<std::string, GLuint> attributes;
-	GLuint program;
+	GLint program;
+	GLint vertexShader;
+	GLint pixelShader;
 	std::string vSource;
 	std::string fSource;
 };
 
-GLuint get_program(program_name program);
+Program& get_program(program_name program);
 
-Program get_program_obj(program_name program);
+//Program get_program_obj(program_name program);
 
 
 #endif // GRAPPIX_SHADER_H

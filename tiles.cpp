@@ -193,8 +193,9 @@ void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, uvs.size() * 4, &uvs[0]);
 
 
-	GLuint program = get_program(TEXTURED_PROGRAM);
-	glUseProgram(program);
+	auto program = get_program(TEXTURED_PROGRAM);
+	//glUseProgram(program);
+	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
 	glViewport(0,0,target.width(), target.height());
@@ -203,20 +204,20 @@ void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 	//if(texture >= 0)
 	glBindTexture(GL_TEXTURE_2D, tileset.texture.id());
 
-	GLuint posHandle = glGetAttribLocation(program, "vertex");
-	GLuint uvHandle = glGetAttribLocation(program, "uv");
+	GLuint posHandle = glGetAttribLocation(program.id(), "vertex");
+	GLuint uvHandle = glGetAttribLocation(program.id(), "uv");
 	//GLuint colorHandle = glGetUniformLocation(textureProgram, "fColor");
 
 	//vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
 
-	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	GLuint whHandle = glGetUniformLocation(program.id(), "vScreenScale");
 	glUniform4f(whHandle, 2.0 / target.width(), 2.0 / target.height(), 0, 1);
 
-	GLuint sHandle = glGetUniformLocation(program, "vScale");
+	GLuint sHandle = glGetUniformLocation(program.id(), "vScale");
 	float globalScale = 1.0;
 	glUniform4f(sHandle, globalScale, globalScale, 0, 1);
 
-	GLuint pHandle = glGetUniformLocation(program, "vPosition");
+	GLuint pHandle = glGetUniformLocation(program.id(), "vPosition");
 	glUniform4f(pHandle, 0, 0, 0, 1);
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);

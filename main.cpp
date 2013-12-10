@@ -13,13 +13,10 @@
 using namespace utils;
 using namespace std;
 
-static const char *pSineShader = R"(
+static const string pSineShader = R"(
 #ifdef GL_ES
 	precision mediump float;
 #endif
-	uniform vec4 fColor;
-	uniform vec2 mosaic;
-	//const vec2 mosaic = vec2(100.0,100.0);
 	uniform sampler2D sTexture;
 	uniform float techstart;
 
@@ -29,33 +26,10 @@ static const char *pSineShader = R"(
 	varying vec2 UV;
 
 	void main() {
-		//vec2 uv = vec2(UV.x - sin(gl_FragCoord.y / 10.0 + techstart) * 0.004, UV.y);
-
 		float uvy = UV.y * 1.8 - 0.2 - sin(gl_FragCoord.x / 350.0 + techstart) * 0.5;
-
 		float f = gl_FragCoord.y / 400.0;
 		vec4 rgb = mix(color0, color1, f);
-
-		//uv = floor(uv * mosaic) / mosaic ;//vec2(ceil(uv.x * 50.0)/50.0, ceil(uv.y * 50.0)/50.0);
 		gl_FragColor = rgb * texture2D(sTexture, vec2(UV.x, uvy));
-	}
-)";
-
-
-static const char *vSineShader = R"(
-	attribute vec4 vertex;
-	attribute vec2 uv;
-
-	varying vec2 UV;
-
-	uniform vec4 vScreenScale;
-	uniform vec4 vScale;
-	uniform vec4 vPosition;
-
-	void main() {
-		vec4 v = vertex * vScale + vPosition;
-		gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0, 1);
-		UV = uv;
 	}
 )";
 
@@ -67,7 +41,7 @@ struct App {
 	vec2f xy;
 	int xpos;
 	Texture scr;
-	GLuint program;
+	Program program;
 	float tstart;
 	ModPlugin *modPlugin;
 	ChipPlayer *player;
@@ -77,8 +51,6 @@ struct App {
 
 		modPlugin = new ModPlugin();
 		player = modPlugin->fromFile("data/test.mod");
-
-		LOGD("Player is %p", player);
 
 	    // Set the audio format
 	    wanted.freq = 44100;
@@ -104,8 +76,8 @@ struct App {
 		sprite.circle(center, radius*0.90, 0x0000C0); // Main ball
 		sprite.circle(center + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
 
-		program = createProgram(vSineShader, pSineShader);
-		LOGD("Shader created");
+		program = get_program(TEXTURED_PROGRAM).clone();
+		program.setFragmentSource(pSineShader);
 	}
 
 	void update() {
@@ -123,15 +95,14 @@ struct App {
 
 		vec2f xy2 = xy += {0.01, 0.03};
 		for(int i=0; i<count; i++)
-			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
-			//screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);	
-		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
+			//v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
+			screen.draw(sprite, (sin(xy2 += {0.126 * 0.5, 0.079 * 0.5}) + 1.0f) * scale);	
+		//screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
 
-		glUseProgram(program);
-		GLuint t = glGetUniformLocation(program, "techstart");
-		glUniform1f(t, tstart += 0.073);
+		program.use();
+		program.setUniform("techstart", tstart += 0.073);
 
-		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
+		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program.id());
 		screen.flip();
 	}
 

@@ -3,6 +3,8 @@
 
 #include "GL_Header.h"
 
+#include "shader.h"
+
 #ifdef WITH_FREETYPE
 #include <freetype-gl.h>
 #endif
@@ -11,6 +13,7 @@
 #include <string>
 #include <stdint.h>
 #include <memory>
+
 
 /*
 struct attribute {
@@ -45,10 +48,25 @@ struct gl_object {
 class RenderTarget {
 public:
 
-	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {}
-	RenderTarget(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr) {
+
+	RenderTarget(bool fromWindow) : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {
 	}
 
+	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr), 
+		flatProgram { get_program(FLAT_PROGRAM) },
+		texturedProgram { get_program(TEXTURED_PROGRAM) } {		
+	}
+
+	void initPrograms() {
+		flatProgram = get_program(FLAT_PROGRAM);
+		texturedProgram = get_program(TEXTURED_PROGRAM);
+	}
+/*
+	RenderTarget(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr),
+	flatProgram { get_program_obj(FLAT_PROGRAM) },
+	texturedProgram { get_program_obj(TEXTURED_PROGRAM) } {		
+	}
+*/
 	~RenderTarget() {
 		if(font)
 			texture_font_delete(font);
@@ -66,7 +84,7 @@ public:
 	void line(const std::vector<int> &p0, const std::vector<int> &p1, uint32_t color) {
 		line(p0[0], p0[1], p1[0], p1[1], color);
 	}
-	void clear();
+	void clear(uint32_t color = 0);
 	void line(float x0, float y0, float x1, float y1, uint32_t color);
 
 	template <typename T> void circle(T xy, float radius, uint32_t color) {
@@ -131,10 +149,14 @@ protected:
 	int _height;
 	float globalScale;
 
+
 #ifdef WITH_FREETYPE
 	texture_font_t *font;
 	texture_atlas_t *atlas;
 #endif
+
+	Program flatProgram;
+	Program texturedProgram;
 
 };
 
