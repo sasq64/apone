@@ -65,7 +65,8 @@ else ifeq ($(HOST),emscripten)
 	CC = emcc
 	CXX = em++
  	TARGET_EXT = .html
- 	CFLAGS += -DGL_ES -Wno-warn-absolute-paths
+ 	CFLAGS += -DGL_ES
+ 	COMP_CFLAGS += -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
 	CFLAGS += -DRASPBERRYPI
 endif

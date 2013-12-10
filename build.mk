@@ -3,10 +3,9 @@ ifeq ($(SRC_PATTERNS),)
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 endif
 
-
 CFLAGS += $(addprefix -I, $(INCLUDES))
-CXXFLAGS := $(CXXFLAGS) $(CFLAGS)
-
+CXXFLAGS += $(CFLAGS)
+COMP_CXXFLAGS += $(COMP_CFLAGS)
 # LOCAL_FILES <= Source files relative to current directory + SRCDIR
 # FILES <= Source files with exact path
 FILES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_FILES)))
@@ -19,7 +18,8 @@ OBJS := $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),
 RP_MODULES := $(realpath $(MODULES))
 OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(RP_MODULES)))) )
 
-OBJDIR := $(OBJDIR)$(HOST)/
+# Since all paths in OBJS are absolute, we dont add a slash after OBJDIR
+OBJDIR := $(OBJDIR)$(HOST)
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 
 TARGET := $(TARGET_PRE)$(TARGET)
@@ -38,19 +38,19 @@ linkrun: remove_target run
 
 $(OBJDIR)%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c -MMD $(CFLAGS) $< -o $@
+	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -c -MMD $(CXXFLAGS) $< -o $@
+	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cc
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cxx
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.S
 	@mkdir -p $(@D)
@@ -59,10 +59,6 @@ $(OBJDIR)%.o: %.S
 $(OBJDIR)%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
-
-$(OBJDIR)%.d: %.c
-	@mkdir -p $(@D)
-	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
 
 $(OBJDIR)%_v.o: %_v.glsl
 	@mkdir -p $(@D)
@@ -80,7 +76,15 @@ $(OBJDIR)%_f.o: %_f.glsl
 	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
 	@$(CXX) -O2 -c .shader/$(<F).cpp -o $@
 
+$(OBJDIR)%.d: %.c
+	@mkdir -p $(@D)
+	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
+
 $(OBJDIR)%.d: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+
+$(OBJDIR)%.d: %.cc
 	@mkdir -p $(@D)
 	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
