@@ -44,10 +44,12 @@ static void mouse_fn(int button, int action) {
 	}
 }
 
+#ifndef EMSCRIPTEN
 static void resize_fn(int w, int h) {
 	LOGD("Size now %d %d", w, h);
 	screen.resize(w, h);
 };
+#endif
 
 void Window::open(int w, int h, bool fs) {
 

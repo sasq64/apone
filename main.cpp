@@ -1,6 +1,5 @@
 
 #include "ModPlugin.h"
-#include "ChipPlugin.h"
 #include "ChipPlayer.h"
 
 #include <grappix.h>
@@ -18,7 +17,7 @@ static const string pSineShader = R"(
 	precision mediump float;
 #endif
 	uniform sampler2D sTexture;
-	uniform float techstart;
+	uniform float sinepos;
 
 	const vec4 color0 = vec4(0.0, 1.0, 0.0, 1.0);
 	const vec4 color1 = vec4(1.0, 0.3, 0.3, 1.0);
@@ -26,7 +25,7 @@ static const string pSineShader = R"(
 	varying vec2 UV;
 
 	void main() {
-		float uvy = UV.y * 1.8 - 0.2 - sin(gl_FragCoord.x / 350.0 + techstart) * 0.5;
+		float uvy = UV.y * 1.8 - 0.2 - sin(gl_FragCoord.x / 350.0 + sinepos) * 0.5;
 		float f = gl_FragCoord.y / 400.0;
 		vec4 rgb = mix(color0, color1, f);
 		gl_FragColor = rgb * texture2D(sTexture, vec2(UV.x, uvy));
@@ -42,25 +41,17 @@ struct App {
 	int xpos;
 	Texture scr;
 	Program program;
-	float tstart;
+	float sinepos;
 	ModPlugin *modPlugin;
 	ChipPlayer *player;
- 	SDL_AudioSpec wanted;
 
-	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr) {
+	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, sinepos {0}, player(nullptr) {
 
 		modPlugin = new ModPlugin();
 		player = modPlugin->fromFile("data/test.mod");
 
-	    // Set the audio format
-	    wanted.freq = 44100;
-	    wanted.format = AUDIO_S16;
-	    wanted.channels = 2;    // 1 = mono, 2 = stereo
-	    wanted.samples = (bufSize/2);
-	    wanted.callback = App::fill_audio;
-	    wanted.userdata = this;
-
 	    // Open the audio device, forcing the desired format
+		SDL_AudioSpec wanted = { 44100, AUDIO_S16, 2, 0, bufSize/2, 0, 0, fill_audio, this };
 	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
 	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
 	        exit(0);
@@ -100,7 +91,7 @@ struct App {
 		//screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
 
 		program.use();
-		program.setUniform("techstart", tstart += 0.073);
+		program.setUniform("sinepos", sinepos += 0.073);
 
 		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program.id());
 		screen.flip();
@@ -112,24 +103,16 @@ struct App {
 };
 
 
-void App::fill_audio(void *udata, Uint8 *stream, int len) {
-	
+void App::fill_audio(void *udata, Uint8 *stream, int len) {	
 	static vector<int16_t> buffer(bufSize);
 	App *app = static_cast<App*>(udata);
-	//float now = emscripten_get_now();
 	int rc = 0;
 	if(app->player) {
-		auto now = getms();//emscripten_get_now();
 		rc = app->player->getSamples(&buffer[0], len/2);
-		auto t = getms() - now;
-		LOGD("Sound CPU %dms for %d samples ie %dms", t, len, len / 4.0 / 44.1);  
 		memcpy(stream, &buffer[0], rc*2);
 	} else {
 		memset(stream, 0, len);
 	}
-	//float t = emscripten_get_now() - now;
-	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
-	//LOGD("Returning");
 }
 
 void runMainLoop() {
@@ -138,10 +121,8 @@ void runMainLoop() {
 }
 
 int main() {
-	LOGD("main");	
 	screen.open(800, 600, false);
 	LOGD("Screen is open");
-
 	screen.renderLoop(runMainLoop);
 	return 0;
 }
