@@ -61,9 +61,6 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	glDrawArrays(GL_LINES, 0, 2);
 	//p[0] = p[1] = 0;
 	//glDrawArrays(GL_LINE_STRIP, 0, points.size());
-
-	//if(singleBuffer)
-	//	glfwSwapBuffers();
 }
 
 
@@ -153,7 +150,7 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const {
+void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, Program &program) const {
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);
@@ -208,11 +205,10 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, coords.size() * 4, &coords[0]);
 
+	if(program == NO_PROGRAM)
+		program = get_program(TEXTURED_PROGRAM);
 
-	if(program < 0) {
-		program = get_program(TEXTURED_PROGRAM).id();
-	}
-	glUseProgram(program);
+	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
@@ -221,46 +217,22 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 
-	GLuint posHandle = glGetAttribLocation(program, "vertex");
-	GLuint uvHandle = glGetAttribLocation(program, "uv");
-	//GLuint colorHandle = glGetUniformLocation(textureProgram, "fColor");
 
-	//vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
+	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height, 0, 1);
+	program.setUniform("vScale", globalScale, globalScale, 0, 1);
+	program.setUniform("vPosition", 0, 0, 0, 1);
 
-	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
-	glUniform4f(whHandle, 2.0 / _width, 2.0 / _height, 0, 1);
+	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
+	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform4f(sHandle, globalScale, globalScale, 0, 1);
-
-	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform4f(pHandle, 0, 0, 0, 1);
-
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4L));
-	glEnableVertexAttribArray(posHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(uvHandle);
-
- 	//static float uva[8] = {0.0,0.0, 1.0,0.0, 0.0,1.0, 1.0,1.0};
- 	//GLuint uvsHandle = glGetUniformLocation(program, "uvs");
- 	//glUniform1fv(uvsHandle, 8, uva);
-
-	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
-	//glEnableVertexAttribArray(posHandle);
-	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
-	//glEnableVertexAttribArray(uvHandle);
-
-	//glDrawArrays(GL_TRIANGLES, 0, count*4);
 	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
 
-	glDisableVertexAttribArray(uvHandle);
-	glDisableVertexAttribArray(posHandle);
+	//glDisableVertexAttribArray(uvHandle);
+	//glDisableVertexAttribArray(posHandle);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	//if(singleBuffer)
-	//	glfwSwapBuffers();
 }
 
 void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
@@ -311,15 +283,13 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//if(singleBuffer)
-	//	glfwSwapBuffers();
 }
 
-void RenderTarget::set_font(const std::string &ttfFile, float size) {
-	font = make_shared<Font>(ttfFile, size);
+void RenderTarget::text(Font &font, const std::string &text, int x, int y, uint32_t col, float scale) {
+	font.render_text(*this, text, x, y, col, scale);
 }
 
-void RenderTarget::text(int x, int y, const std::string &text, uint32_t col, float scale) {
+void RenderTarget::text(const std::string &text, int x, int y, uint32_t col, float scale) {
 
 	if(!font)
 		font = make_shared<Font>();//"data/Vera.ttf", 16);

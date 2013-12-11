@@ -70,8 +70,10 @@ TextBuf Font::make_text2(const string &text) {
                 break;
             }
         }
-        if(!glyph)
+        if(!glyph) { 
+   			x += 8.0;
             continue;
+        }
 
 		//texture_glyph_t *glyph = texture_font_get_glyph(font, c);
 		//LOGD("Glyph %p", glyph);
@@ -88,6 +90,8 @@ TextBuf Font::make_text2(const string &text) {
 		float t0 = glyph->t0;
 		float s1 = glyph->s1;
 		float t1 = glyph->t1;
+
+		x += glyph->advance_x;
 
 		verts.push_back(x0);
 		verts.push_back(y1);
@@ -113,15 +117,13 @@ TextBuf Font::make_text2(const string &text) {
 		indexes.push_back(i+3);
 		indexes.push_back(i+2);
 		i += 4;
-
-		x += glyph->advance_x;
-
 		//break;
 	}
 
 	TextBuf tbuf;
 	//vector<GLuint> vbuf(2);
 	tbuf.text = text;
+	tbuf.size = i/4;
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tbuf.vbuf[1]);
@@ -199,6 +201,7 @@ TextBuf Font::make_text(const string &text) {
 	TextBuf tbuf;
 	//vector<GLuint> vbuf(2);
 	tbuf.text = text;
+	tbuf.size = i/4;
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tbuf.vbuf[1]);
@@ -254,8 +257,8 @@ void Font::render_text(RenderTarget &target, const TextBuf &text, int x, int y, 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	int tl = text.text.length();
-	glDrawElements(GL_TRIANGLES, 6*tl, GL_UNSIGNED_SHORT, 0);
+	//int tl = text.text.length();
+	glDrawElements(GL_TRIANGLES, 6*text.size, GL_UNSIGNED_SHORT, 0);
 
 	//LOGD("Drew %d\n", tl);
 

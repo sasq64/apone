@@ -6,6 +6,7 @@
 #include "texture-atlas.h"
 class RenderTarget;
 
+#include <string>
 #include <vector>
 #include <unordered_map>
 
@@ -24,6 +25,7 @@ private:
 
 struct TextBuf {
 	TextBuf() : vbuf(2) {}
+	int size;
 	std::vector<GLuint> vbuf;
 	std::string text;
 };

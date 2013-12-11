@@ -80,7 +80,7 @@ struct App {
 		layer.scrolly += 0.1;
 
 		layer.render(screen);
-		screen.text(0,0,format("x:%d", layer.scrollx), 0xffffffff, 1.0);
+		screen.text(format("x:%d", (int)layer.scrollx), 0,-10,0xffffffff, 2.0);
 		screen.flip();
 	}
 };

@@ -7,7 +7,7 @@ include $(UTILS)/config.mk
 
 OBJDIR := obj/
 TARGET := grappix
-CFLAGS += -Wall -g -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
+CFLAGS += -Wall -O2 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
 CXXFLAGS += -std=c++0x
 
 CHIPM=../chipmachine
@@ -30,7 +30,9 @@ else ifeq ($(HOST),emscripten)
   #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
   LDFLAGS += -Lfreetype --preload-file data
   # --preload-file fonts -s OUTLINING_LIMIT=50000
-  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432 -s DISABLE_EXCEPTION_CATCHING=0
+  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin
+  # -s TOTAL_MEMORY=33554432
+  # -s DISABLE_EXCEPTION_CATCHING=0
   LIBS += -lfreetype
   #-lSDL -lz -lglfw -lGL
   LOCAL_FILES += window.cpp

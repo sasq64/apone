@@ -5,10 +5,6 @@
 #include <grappix.h>
 #include <SDL/SDL.h>
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#endif
-
 using namespace utils;
 using namespace std;
 
@@ -44,13 +40,15 @@ struct App {
 	float sinepos;
 	ModPlugin *modPlugin;
 	ChipPlayer *player;
+	Font font;
 
-	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, sinepos {0}, player(nullptr) {
+	App() : sprite {96, 96}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, sinepos {0}, player(nullptr) {
 
 		modPlugin = new ModPlugin();
 		player = modPlugin->fromFile("data/test.mod");
 
-		scr.set_font("data/ObelixPro.ttf", 24);
+		//scr.set_font("data/ObelixPro.ttf", 24, 0);
+		font = Font("data/ObelixPro.ttf", 24);
 
 	    // Open the audio device, forcing the desired format
 		SDL_AudioSpec wanted = { 44100, AUDIO_S16, 2, 0, bufSize/2, 0, 0, fill_audio, this };
@@ -74,23 +72,23 @@ struct App {
 	}
 
 	void update() {
-		int count = 500;
+		int count = 600;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
 		if(xpos < -2400)
 			xpos = screen.width() + 200;
 
 		scr.clear();
-		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
-		scr.text(xpos-=4, 10, "Balls ON THE SCREEN!!", 0xe080c0ff, zoom);
+		float zoom = 15;//(sin(xpos/235.0)+4.0)*1.5;
+		scr.text(font, "Balls ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, zoom);
 
 		screen.clear();
 
 		vec2f xy2 = xy += {0.01, 0.03};
 		for(int i=0; i<count; i++)
-			//v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
-			screen.draw(sprite, (sin(xy2 += {0.126 * 0.5, 0.079 * 0.5}) + 1.0f) * scale);	
-		//screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height(), nullptr, -1);
+			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
+			//screen.draw(sprite, (sin(xy2 += {0.126 * 0.5, 0.079 * 0.5}) + 1.0f) * scale);	
+		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
 
 		program.use();
 		program.setUniform("sinepos", sinepos += 0.073);
@@ -123,7 +121,7 @@ void runMainLoop() {
 }
 
 int main() {
-	screen.open(800, 600, false);
+	screen.open(true);//800, 600, false);
 	LOGD("Screen is open");
 	screen.renderLoop(runMainLoop);
 	return 0;

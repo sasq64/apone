@@ -116,8 +116,8 @@ public:
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, NO_PROGRAM);
 	}
 
-	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program = -1) const;
-	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
+	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
+	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
 	int width() const { return _width; }
 	int height() const { return _height; }
 	GLuint buffer() const { return frameBuffer; }
@@ -125,8 +125,8 @@ public:
 	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
-	void set_font(const std::string &ttfFile, float size);
-	void text(int x, int y, const std::string &text, uint32_t color, float scale);
+	void text(const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0);
+	void text(Font &font, const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0);
 
 	static Program NO_PROGRAM;
 

@@ -10,8 +10,8 @@
 
 #include <android/log.h>
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Grappix", __VA_ARGS__))
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Grappix", __VA_ARGS__))
+//#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Grappix", __VA_ARGS__))
+//#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Grappix", __VA_ARGS__))
 
 
 
