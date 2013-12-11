@@ -27,16 +27,20 @@ enum program_name {
 
 class Program {
 public:
-	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource) {
+	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource), program(-1), vertexShader(-1), pixelShader(-1) {
 		createProgram();
 	}
 
-	Program(GLuint p) : program(p) {}
+	Program(GLuint p) : program(p), vertexShader(-1), pixelShader(-1) {}
 
-	Program() : program(0xffffffff) {}
+	Program() : program(-1), vertexShader(-1), pixelShader(-1) {}
 
-	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen) {
+	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen), program(-1), vertexShader(-1), pixelShader(-1) {
 		createProgram();
+	}
+
+	bool operator==(const Program &p) {
+		return p.program == program;
 	}
 
 	Program clone() {
@@ -91,6 +95,18 @@ public:
 		glUniform4f(h, f0, f1, f2, f3);
 	}
 
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) {
+		GLuint h = glGetAttribLocation(program, name.c_str());
+		glVertexAttribPointer(h, size, type, normalized, stride, ptr);
+		glEnableVertexAttribArray(h);
+	}
+
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) {
+		GLuint h = glGetAttribLocation(program, name.c_str());
+		glVertexAttribPointer(h, size, type, normalized, stride, reinterpret_cast<const GLvoid*>(offset));
+		glEnableVertexAttribArray(h);
+	}
+
 	void use() { glUseProgram(program); }
 
 	GLuint id() { return program; }
@@ -98,11 +114,12 @@ public:
 private:
 	std::unordered_map<std::string, GLuint> uniforms;
 	std::unordered_map<std::string, GLuint> attributes;
+	std::string vSource;
+	std::string fSource;
+
 	GLint program;
 	GLint vertexShader;
 	GLint pixelShader;
-	std::string vSource;
-	std::string fSource;
 };
 
 Program& get_program(program_name program);

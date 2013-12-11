@@ -359,11 +359,11 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-window::window() : RenderTarget(), winOpen(false), bmCounter(0) {
+Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
 	frameBuffer = 0;
 }
 
-void window::open(bool fs) {
+void Window::open(bool fs) {
 	startTime = chrono::high_resolution_clock::now();
 	_width = host.width();
 	_height = host.height();
@@ -371,7 +371,7 @@ void window::open(bool fs) {
 	return;
 }
 
-void window::open(int w, int h, bool fs) {
+void Window::open(int w, int h, bool fs) {
 	startTime = chrono::high_resolution_clock::now();
 	_width = host.width();
 	_height = host.height();
@@ -379,10 +379,10 @@ void window::open(int w, int h, bool fs) {
 	return;
 };
 
-void window::vsync() {
+void Window::vsync() {
 }
 
-void window::flip() {
+void Window::flip() {
 	host.flip();
 	auto t = chrono::high_resolution_clock::now();
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
@@ -397,7 +397,7 @@ void window::flip() {
 
 static function<void()> renderLoopFunction;
 
-void window::renderLoop(function<void()> f) {
+void Window::renderLoop(function<void()> f) {
 	renderLoopFunction = f;
 	// Loop and render ball worm
 	while(screen.is_open()) {
@@ -405,13 +405,13 @@ void window::renderLoop(function<void()> f) {
 	}
 }
 
-void window::benchmark() {
+void Window::benchmark() {
 	benchStart = chrono::high_resolution_clock::now();
 	bmCounter = 100;
 }
 
 /*
-unordered_map<int, int> window::translate = {
+unordered_map<int, int> Window::translate = {
 	{ ENTER, GLFW_KEY_ENTER },
 	{ LEFT, GLFW_KEY_LEFT },
 	{ RIGHT, GLFW_KEY_RIGHT },
@@ -419,10 +419,10 @@ unordered_map<int, int> window::translate = {
 	{ DOWN, GLFW_KEY_DOWN }
 };*/
 
-bool window::key_pressed(key k) {
+bool Window::key_pressed(key k) {
 	//auto glfwKey = translate[k];
 	return false;
 	//return glfwGetKey(glfwKey) != 0;
 }
 
-window screen;
+Window screen;

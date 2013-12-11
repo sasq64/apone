@@ -4,6 +4,7 @@
 #include "GL_Header.h"
 
 #include "shader.h"
+#include "font.h"
 
 #ifdef WITH_FREETYPE
 #include <freetype-gl.h>
@@ -49,10 +50,10 @@ class RenderTarget {
 public:
 
 
-	RenderTarget(bool fromWindow) : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr) {
+	RenderTarget(bool fromWindow) : frameBuffer(0), _width(0), _height(0), globalScale(1.0)  {
 	}
 
-	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), font(nullptr), atlas(nullptr), 
+	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), 
 		flatProgram { get_program(FLAT_PROGRAM) },
 		texturedProgram { get_program(TEXTURED_PROGRAM) } {		
 	}
@@ -68,10 +69,6 @@ public:
 	}
 */
 	~RenderTarget() {
-		if(font)
-			texture_font_delete(font);
-		if(atlas)
-			texture_atlas_delete(atlas);
 	}
 
 	//void draw_object(const gl_object &vbo, float x, float y, uint32_t color = 0xffffffff, float scale = 1.0f, float rotation = 0.0f);
@@ -104,23 +101,23 @@ public:
 	void circle(int x, int y, float radius, uint32_t color);
 
 	template <typename T, typename V> void draw(const T &t, const V &pos) const {
-		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height(), nullptr, -1);
+		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height(), nullptr, NO_PROGRAM);
 	}
 
-	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, int program = -1) const {
+	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, Program &program = NO_PROGRAM) const {
 		draw_texture(t.id(), pos[0], pos[1], w, h, nullptr, program);
 	}
 
-	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, int program = -1) const {
+	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, Program &program = NO_PROGRAM) const {
 		draw_texture(t.id(), x0, y0, w, h, nullptr, program);
 	}
 
 	template <typename T> void draw(const T &t, float x0, float y0) const {
-		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, -1);
+		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, NO_PROGRAM);
 	}
 
-	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program) const;
-	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, int program = -1) const;
+	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, GLint program = -1) const;
+	void draw_texture(int texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
 	int width() const { return _width; }
 	int height() const { return _height; }
 	GLuint buffer() const { return frameBuffer; }
@@ -128,36 +125,25 @@ public:
 	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
-	enum {
-		DISTANCE_MAP = 1
-	};
-
-#ifdef WITH_FREETYPE
-	void set_font(const std::string &ttfName, int size = 32, int flags = DISTANCE_MAP);
+	void set_font(const std::string &ttfFile, float size);
 	void text(int x, int y, const std::string &text, uint32_t color, float scale);
-#else
-	void set_font(const std::string &ttfName, int size = 32, int flags = DISTANCE_MAP) {}
-	void text(int x, int y, const std::string &text, uint32_t color, float scale) {}
-#endif
+
+	static Program NO_PROGRAM;
 
 protected:
-	std::vector<unsigned int> make_text(const std::string &text);
-	void render_text(int x, int y, std::vector<unsigned int> vbuf, int tl, uint32_t color, float scale);
-
 	unsigned int frameBuffer;
 	int _width;
 	int _height;
 	float globalScale;
 
-
-#ifdef WITH_FREETYPE
-	texture_font_t *font;
-	texture_atlas_t *atlas;
-#endif
+	std::shared_ptr<Font> font;
 
 	Program flatProgram;
 	Program texturedProgram;
 
+	static GLint circleBuf;
+	static GLint recBuf;
+	static GLint multiBuf[2];
 };
 
 #endif // GRAPPIX_BASIC_BUFFER_H

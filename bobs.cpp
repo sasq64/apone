@@ -25,7 +25,7 @@ public:
 		vec2f xy2 = xy += {0.01, 0.03};
 		for(int i=0; i<100; i++)
 			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
-		screen.text(xpos-=2, (sin(xy2.y)+1)*(sz.y-150)/2.0, "BALLS ON THE SCREEN!! A WEIRD WONDERFUL MACHINE!", 0x8080c0ff, 6.0);
+		screen.text(xpos-=2, 0.0, "Balls ON THE SCREEN!! A WEIRD WONDERFUL MACHINE!", 0xffffffff, 2.0);
 		screen.flip();
 	}
 

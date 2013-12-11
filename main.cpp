@@ -50,6 +50,8 @@ struct App {
 		modPlugin = new ModPlugin();
 		player = modPlugin->fromFile("data/test.mod");
 
+		scr.set_font("data/ObelixPro.ttf", 24);
+
 	    // Open the audio device, forcing the desired format
 		SDL_AudioSpec wanted = { 44100, AUDIO_S16, 2, 0, bufSize/2, 0, 0, fill_audio, this };
 	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
@@ -80,7 +82,7 @@ struct App {
 
 		scr.clear();
 		float zoom = 7;//(sin(xpos/235.0)+4.0)*1.5;
-		scr.text(xpos-=4, 20, "BALLS ON THE SCREEN!!", 0xe080c0ff, zoom);
+		scr.text(xpos-=4, 10, "Balls ON THE SCREEN!!", 0xe080c0ff, zoom);
 
 		screen.clear();
 
@@ -93,7 +95,7 @@ struct App {
 		program.use();
 		program.setUniform("sinepos", sinepos += 0.073);
 
-		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program.id());
+		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
 		screen.flip();
 	}
 

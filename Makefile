@@ -7,7 +7,7 @@ include $(UTILS)/config.mk
 
 OBJDIR := obj/
 TARGET := grappix
-CFLAGS += -Wall -O2 -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
+CFLAGS += -Wall -g -I. -I$(UTILS) -Ifreetype-gl -DWITH_FREETYPE
 CXXFLAGS += -std=c++0x
 
 CHIPM=../chipmachine
@@ -30,7 +30,7 @@ else ifeq ($(HOST),emscripten)
   #CFLAGS += -I$(EMSCRIPTEN)/system/include/freetype2 -s ASM_JS=1
   LDFLAGS += -Lfreetype --preload-file data
   # --preload-file fonts -s OUTLINING_LIMIT=50000
-  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432
+  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin -s TOTAL_MEMORY=33554432 -s DISABLE_EXCEPTION_CATCHING=0
   LIBS += -lfreetype
   #-lSDL -lz -lglfw -lGL
   LOCAL_FILES += window.cpp
@@ -43,9 +43,9 @@ else
   LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
+## Hack that lets us run the currently open file from Sublime if it is one of the main files
 MAIN_FILES = main.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
-MAIN_FILE := simple.cpp
-
+MAIN_FILE := bobs.cpp
 ifneq ($(ACTIVEFILE),)
  ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
   MAIN_FILE := $(ACTIVEFILE)
@@ -53,7 +53,7 @@ ifneq ($(ACTIVEFILE),)
 endif
 
 
-LOCAL_FILES += $(MAIN_FILE) tiles.cpp shader.cpp render_target.cpp texture.cpp tween.cpp image.cpp color.cpp
+LOCAL_FILES += $(MAIN_FILE) tiles.cpp shader.cpp font.cpp render_target.cpp texture.cpp tween.cpp image.cpp color.cpp
 LOCAL_FILES += distancefield.cpp freetype-gl/texture-atlas.c freetype-gl/texture-font.c freetype-gl/vector.c freetype-gl/edtaa3func.c
 LOCAL_FILES += $(wildcard shaders/*.glsl)
 

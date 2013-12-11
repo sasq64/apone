@@ -19,9 +19,9 @@ struct App {
 
 	TileSet tiles;
 	TileLayer layer;
-	vec2i scrollTarget {0,0};
+	vec2f scrollTarget {0,0};
 
-	App() : tiles(16,16), layer(128, 128, 800, 450, tiles) {
+	App() : tiles(16,16), layer(128, 128, 800, 480, tiles) {
 	
 		auto bm = load_png(DATA_DIR "tiles.png");
 		LOGD("PNG LOADED");
@@ -41,7 +41,11 @@ struct App {
 
 		LOGD("SPRITE");
 		TileSet avatars(24, 32);
-		avatars.add_tiles(load_png(DATA_DIR "rpgtiles.png"));
+		try {
+			avatars.add_tiles(load_png(DATA_DIR "rpgtiles.png"));
+		} catch (tile_exception &e) {
+			LOGD("Tiles wont fit!");
+		}
 		SpriteLayer sprites(avatars);
 		sprites.addSprite(0, 100, 100, 4.0);
 		sprites.addSprite(1, 150, 100, 4.0);
@@ -50,6 +54,7 @@ struct App {
 
 		
 	}
+
 
 	void update() {
 
@@ -71,7 +76,11 @@ struct App {
 			tween::to(0.5, { { layer.scrollx, scrollTarget.x }, { layer.scrolly, scrollTarget.y } } );
 		}
 
+		layer.scrollx += 0.1;
+		layer.scrolly += 0.1;
+
 		layer.render(screen);
+		screen.text(0,0,format("x:%d", layer.scrollx), 0xffffffff, 1.0);
 		screen.flip();
 	}
 };
@@ -82,7 +91,7 @@ void runMainLoop() {
 }
 
 int main() {
-	screen.open(640, 450, false);
+	screen.open(800, 480, false);
 	LOGD("Screen open");
 	screen.renderLoop(runMainLoop);
 	return 0;

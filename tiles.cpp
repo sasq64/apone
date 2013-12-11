@@ -2,6 +2,7 @@
 #include "tiles.h"
 #include "shader.h"
 
+#include <cmath>
 #include <vector>
 
 using namespace std;
@@ -49,19 +50,11 @@ int TileSet::add_tiles(const bitmap &bm) {
 		if(x+tilew > texture.width()) {
 			x = 0;
 			y += tileh;
-			if(y + tileh > texture.height()) // TEXTURE FULL!
-				break;
+			if(y + tileh > texture.height())
+				throw tile_exception("Texture full");
 		}
 	}
 
-	//this->tilew = tilew;
-	//this->tileh = tileh;
-	//tileset = TileSet(bm, tilew, tileh);
-	//texture = texture(bm);
-	//widthInTiles = bm.width() / tilew;
-	//heightInTiles = bm.height() / tileh;
-	//this->tilew = tilew;
-	//this->tileh = tileh;
 	return 0;
 }
 
@@ -99,18 +92,19 @@ void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, do
 TileLayer::TileLayer(int w, int h, int pw, int ph, TileSet &ts) : 
 	scrollx(0), scrolly(0), scale(1.0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), map(w*h) {}
 
-static int multiBuf[2] = {-1, -1};
-
-void TileLayer::render2(RenderTarget &target, float x0, float y0) {
+void TileLayer::render(RenderTarget &target, float x0, float y0) {
 
 	float s = 2.0;
 	int tw = tileset.tilew*s;
 	int th = tileset.tileh*s;
 
-	int pixw = pixelWidth;// + tw;
-	int pixh = pixelHeight;// + th;
+	//int pixw = pixelWidth;
+	//int pixh = pixelHeight;
 
-	int count = (pixw / tw) * (pixh / th);
+	int areaw = pixelWidth / tw + 1;
+	int areah = pixelHeight / th + 1;
+
+	int count = areaw*areah;
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);
@@ -133,8 +127,8 @@ void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 
 		int x = 0;
 		int y = 0;
-		while(y < pixh) {
-			while(x < pixw) {
+		for(int iy=0; iy<areah; iy++) {
+			for(int ix=0; ix<areaw; ix++) {
 				coords.push_back(x);
 				coords.push_back(y+th);
 				coords.push_back(x+tw);
@@ -157,10 +151,12 @@ void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 	vector<float> uvs;//(count*16);
 	uvs.reserve(count*8);
 
-	//int sx = scrollx / tileset.tilew;
-	//int sy = scrolly / tileset.tileh;
-	//int xx = -(scrollx % tileset.tilew) + x0;
-	//int yy = -(scrolly % tileset.tileh) + y0;
+	int sx = scrollx / tileset.tilew;
+	int sy = scrolly / tileset.tileh;
+	float xx = fmod(scrollx, tileset.tilew);
+	float yy = fmod(scrolly, tileset.tileh);
+	if(xx < 0) xx += tileset.tilew;
+	if(yy < 0) yy += tileset.tileh;
 
 	double pw = 1.0f/tileset.texture.width();
 	double ph = 1.0f/tileset.texture.height();
@@ -168,113 +164,60 @@ void TileLayer::render2(RenderTarget &target, float x0, float y0) {
 	double fs = pw/(s*s);//pw/10000.0;
 	double ft = ph/(s*s);//pw/10000.0;
 
-	for(int i=0; i<count; i++) {
-		auto tileno = map[i];
-		auto tx = tileno % tileset.widthInTiles;
-		auto ty = tileno / tileset.widthInTiles;
+	for(int iy=0; iy<areah; iy++) {
+		for(int ix=0; ix<areaw; ix++) {
+			int xp = (ix+sx) % _width;
+			if(xp < 0) xp += _width;
+			int yp = (iy+sy) % _height;
+			if(yp < 0) yp += _height;
+			auto tileno = map[xp+yp*_width];
+			auto tx = tileno % tileset.widthInTiles;
+			auto ty = tileno / tileset.widthInTiles;
 
-		double s0 = tx*pw*tileset.tilew + fs;
-		double t0 = ty*ph*tileset.tileh + ft;
-		double s1 = s0 + pw*tileset.tilew - fs*2;
-		double t1 = t0 + ph*tileset.tileh - ft*2;
+			double s0 = tx*pw*tileset.tilew + fs;
+			double t0 = ty*ph*tileset.tileh + ft;
+			double s1 = s0 + pw*tileset.tilew - fs*2;
+			double t1 = t0 + ph*tileset.tileh - ft*2;
 
-		uvs.push_back(s0);
-		uvs.push_back(t0);
-		uvs.push_back(s1);
-		uvs.push_back(t0);
-		uvs.push_back(s0);
-		uvs.push_back(t1);
-		uvs.push_back(s1);
-		uvs.push_back(t1);			
+			uvs.push_back(s0);
+			uvs.push_back(t0);
+			uvs.push_back(s1);
+			uvs.push_back(t0);
+			uvs.push_back(s0);
+			uvs.push_back(t1);
+			uvs.push_back(s1);
+			uvs.push_back(t1);			
+		}
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
-	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, uvs.size() * 4, &uvs[0]);
 
-
-	auto program = get_program(TEXTURED_PROGRAM);
-	//glUseProgram(program);
+	auto &program = get_program(TEXTURED_PROGRAM);
 	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
 	glViewport(0,0,target.width(), target.height());
-	//if(singleBuffer)
-	//	glfwSwapBuffers();
-	//if(texture >= 0)
 	glBindTexture(GL_TEXTURE_2D, tileset.texture.id());
 
-	GLuint posHandle = glGetAttribLocation(program.id(), "vertex");
-	GLuint uvHandle = glGetAttribLocation(program.id(), "uv");
-	//GLuint colorHandle = glGetUniformLocation(textureProgram, "fColor");
+	program.setUniform("vScreenScale", 2.0 / target.width(), 2.0 / target.height(), 0, 1);
+	program.setUniform("vScale", 1.0, 1.0, 0, 1);
+	program.setUniform("vPosition", -xx * s, -yy * s, 0, 1);
 
-	//vector<float> p {-1, 1, 1, 1, -1, -1, 1, -1};
+	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, 0);
+	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 
-	GLuint whHandle = glGetUniformLocation(program.id(), "vScreenScale");
-	glUniform4f(whHandle, 2.0 / target.width(), 2.0 / target.height(), 0, 1);
-
-	GLuint sHandle = glGetUniformLocation(program.id(), "vScale");
-	float globalScale = 1.0;
-	glUniform4f(sHandle, globalScale, globalScale, 0, 1);
-
-	GLuint pHandle = glGetUniformLocation(program.id(), "vPosition");
-	glUniform4f(pHandle, 0, 0, 0, 1);
-
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(posHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, (void*)(count*8*4L));
-	glEnableVertexAttribArray(uvHandle);
-
- 	//static float uva[8] = {0.0,0.0, 1.0,0.0, 0.0,1.0, 1.0,1.0};
- 	//GLuint uvsHandle = glGetUniformLocation(program, "uvs");
- 	//glUniform1fv(uvsHandle, 8, uva);
-
-	//glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, &p[0]);
-	//glEnableVertexAttribArray(posHandle);
-	//glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 0, uvs);
-	//glEnableVertexAttribArray(uvHandle);
-
-	//glDrawArrays(GL_TRIANGLES, 0, count*4);
 	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
 
-	glDisableVertexAttribArray(uvHandle);
-	glDisableVertexAttribArray(posHandle);
+	//glDisableVertexAttribArray(uvHandle);
+	//glDisableVertexAttribArray(posHandle);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	//if(singleBuffer)
-	//	glfwSwapBuffers();
 }
 
 
-void TileLayer::render(RenderTarget &target, int x0, int y0) {
-	//float s = zoom;
-	//int s = 1;
-
-	int tilew = tileset.tilew*scale;
-	int tileh = tileset.tileh*scale;
-
-	int sx = scrollx / tilew;
-	int sy = scrolly / tileh;
-	int xx = -(scrollx % tilew) + x0;
-	int yy = -(scrolly % tileh) + y0;
-
-	for(int y=sy; y<_height; y++) {
-		for(int x=sx; x<_width; x++) {
-			auto tileno = map[x+_width*y];
-			tileset.render_tile(tileno, target, xx, yy, scale);
-			//LOGD("Tile %d at %d,%d", tileno, xx, yy);
-			xx += tilew;
-			if(xx > pixelWidth)
-				break;
-		}
-		yy += tileh;
-		xx = -(scrollx % tilew);
-		if(yy > pixelHeight)
-			break;
-	}
-}
 /*
 int TileLayer::add_tiles(bitmap &bm, int tilew, int tileh) {
 	this->tilew = tilew;

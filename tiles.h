@@ -6,6 +6,14 @@
 
 #include <vector>
 
+class tile_exception : public std::exception {
+public:
+	tile_exception(const std::string &msg) : msg(msg) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
+};
+
 struct TileSet {
 
 	TileSet();
@@ -25,8 +33,7 @@ struct TileSet {
 class TileLayer {
 public:
 	TileLayer(int w, int h, int pw, int ph, TileSet &ts);
-	void render(RenderTarget &target, int x = 0, int y = 0);
-	void render2(RenderTarget &target, float x = 0, float y = 0);
+	void render(RenderTarget &target, float x = 0, float y = 0);
 
 	//float scale() { return s; }
 	//float scale(float s) { this->s = s; return s; }
@@ -38,8 +45,8 @@ public:
 	}
 
 	// Pixel offset into tiles
-	int scrollx;
-	int scrolly;
+	float scrollx;
+	float scrolly;
 	float scale;
 
 private:
@@ -54,6 +61,8 @@ private:
 	int pixelHeight;
 
 	std::vector<uint32_t> map;
+
+	int multiBuf[2] = {-1, -1};
 };
 
 struct Sprite {
