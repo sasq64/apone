@@ -6,7 +6,7 @@
 
 #include "Fifo.h"
 
-#include <grappix.h>
+#include <grappix/grappix.h>
 #include <SDL/SDL.h>
 
 #ifdef EMSCRIPTEN
@@ -15,6 +15,7 @@
 
 using namespace utils;
 using namespace std;
+using namespace grappix;
 
 static const int bufSize = 8192;
 static double percent = 50;
@@ -124,7 +125,7 @@ struct App {
 //		emscripten_async_wget2("C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid", "Ace.sid", "GET", nullptr, (void*)this,
 //			App::onLoad, App::onError, nullptr);
 #else
-		player = vicePlugin->fromFile("C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid");
+		player = vicePlugin->fromFile("html/C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid");
 		print(player->getMeta("title"), 0, 0);
 		print(player->getMeta("composer"), 0, 1);
 		print(player->getMeta("copyright"), 0, 2);
@@ -138,7 +139,7 @@ struct App {
 	void update() {
 		screen.clear();
 		print(format("%03d%", (int)percent), 36, 0);
-		tiles.render2(screen);
+		tiles.render(screen);
 		screen.flip();
 		if(screen.get_key() == Window::ENTER || screen.get_key() == Window::SPACE) {
 			SDL_PauseAudio(audio ? 1 : 0);

@@ -15,6 +15,8 @@
 #include <stdint.h>
 #include <memory>
 
+namespace grappix {
+
 
 /*
 struct attribute {
@@ -53,14 +55,10 @@ public:
 	RenderTarget(bool fromWindow) : frameBuffer(0), _width(0), _height(0), globalScale(1.0)  {
 	}
 
-	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0), 
-		flatProgram { get_program(FLAT_PROGRAM) },
-		texturedProgram { get_program(TEXTURED_PROGRAM) } {		
+	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0) {		
 	}
 
 	void initPrograms() {
-		flatProgram = get_program(FLAT_PROGRAM);
-		texturedProgram = get_program(TEXTURED_PROGRAM);
 	}
 /*
 	RenderTarget(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr),
@@ -101,23 +99,27 @@ public:
 	void circle(int x, int y, float radius, uint32_t color);
 
 	template <typename T, typename V> void draw(const T &t, const V &pos) const {
-		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height(), nullptr, NO_PROGRAM);
+		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height());
 	}
 
-	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, Program &program = NO_PROGRAM) const {
+	template <typename T, typename V> void draw(const T &t, const V &pos, float w, float h, Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), pos[0], pos[1], w, h, nullptr, program);
 	}
 
-	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, Program &program = NO_PROGRAM) const {
+	template <typename T> void draw(const T &t, float x0, float y0, float w, float h, Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, w, h, nullptr, program);
 	}
 
-	template <typename T> void draw(const T &t, float x0, float y0) const {
-		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, NO_PROGRAM);
+	template <typename T> void draw(const T &t, float x0 = 0, float y0 = 0, Program &program = get_program(TEXTURED_PROGRAM) ) const {
+		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, program);
 	}
 
-	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
-	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = NO_PROGRAM) const;
+	//template <typename T> void draw(const T &t, float x0 = 0, float y0 = 0) const {
+	//	draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, NO_PROGRAM);
+	//}
+
+	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, Program &program = get_program(TEXTURED_PROGRAM) ) const;
+	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = get_program(TEXTURED_PROGRAM) ) const;
 	int width() const { return _width; }
 	int height() const { return _height; }
 	GLuint buffer() const { return frameBuffer; }
@@ -125,10 +127,10 @@ public:
 	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
-	void text(const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0);
-	void text(Font &font, const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0);
+	void text(const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
+	void text(const Font &font, const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 
-	static Program NO_PROGRAM;
+	//static Program NO_PROGRAM;
 
 protected:
 	unsigned int frameBuffer;
@@ -136,14 +138,12 @@ protected:
 	int _height;
 	float globalScale;
 
-	std::shared_ptr<Font> font;
-
-	Program flatProgram;
-	Program texturedProgram;
+	mutable std::shared_ptr<Font> font;
 
 	static GLint circleBuf;
 	static GLint recBuf;
 	static GLint multiBuf[2];
 };
 
+}
 #endif // GRAPPIX_BASIC_BUFFER_H

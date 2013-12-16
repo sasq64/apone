@@ -1,5 +1,6 @@
 #include "shader.h"
 
+#include <cstring>
 #include <vector>
 #include <coreutils/log.h>
 
@@ -20,6 +21,8 @@ extern int _shader_texture_f_glsl_len;
 extern int _shader_font_v_glsl_len;
 extern int _shader_font_f_glsl_len;
 extern int _shader_fontdf_f_glsl_len;
+
+namespace grappix {
 
 /*
 static const char *vShader = R"(
@@ -182,8 +185,6 @@ GLuint loadShader(GLenum shaderType, const std::string &source) {
 	return shader;
 }
 
-#include <cstring>
-
 GLuint createProgram(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) {
 	char vsource[vlen+1];
 	memcpy(vsource, vertexSource, vlen);
@@ -229,6 +230,7 @@ GLuint createProgram(const string &vertexSource, const string &fragmentSource) {
 Program& get_program(program_name program) {
 	static vector<Program> programs;
 	if(programs.size() == 0) {
+		//LOGD("RESIZE");
 		programs.resize(4);
 		//programs[FLAT_PROGRAM] = createProgram(vShader, pShader);
 		//programs[TEXTURED_PROGRAM] = createProgram(vTexShader, pTexShader);
@@ -239,6 +241,8 @@ Program& get_program(program_name program) {
 		programs[FONT_PROGRAM] = Program(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_font_f_glsl, _shader_font_f_glsl_len);
 		programs[FONT_PROGRAM_DF] = Program(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_fontdf_f_glsl, _shader_fontdf_f_glsl_len);
 	}
+	//LOGD("returning %p", &programs[program]);
+
 	return programs[program];
 }
 
@@ -289,3 +293,4 @@ Program get_program_obj(program_name program) {
 	return Program(p);
 }*/
 
+}

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+namespace grappix {
+
 class tile_exception : public std::exception {
 public:
 	tile_exception(const std::string &msg) : msg(msg) {}
@@ -107,5 +109,5 @@ private:
 	TileSet tileSet;
 };
 
-
+}
 #endif // TILES_H

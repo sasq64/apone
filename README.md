@@ -106,3 +106,6 @@ cache.update() // Anything not touched since last update is removed
 
 
 
+TODO
+
+Grappix as a module

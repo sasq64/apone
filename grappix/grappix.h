@@ -5,7 +5,7 @@
 #include "image.h"
 #include "tiles.h"
 #include "color.h"
-
+#include "tween.h"
 
 /*
 template <typename T> T mapTo(T p, T view) {

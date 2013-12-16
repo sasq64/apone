@@ -15,10 +15,12 @@
 #include <vector>
 using namespace std;
 
+namespace grappix {
+
 GLint RenderTarget::circleBuf = -1;
 GLint RenderTarget::recBuf = -1;
 GLint RenderTarget::multiBuf[2] = {-1, -1};
-Program RenderTarget::NO_PROGRAM(-1);
+//Program RenderTarget::NO_PROGRAM(-1);
 
 void RenderTarget::clear(uint32_t color) {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -33,7 +35,7 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
 
-	auto program = get_program(FLAT_PROGRAM);
+	auto &program = get_program(FLAT_PROGRAM);
 
 	GLuint posHandle = program.getAttribLocation("vPosition");
 	GLuint colorHandle = program.getUniformLocation("vColor");
@@ -126,9 +128,7 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	if(uvs)
 		glBufferSubData(GL_ARRAY_BUFFER, 16 * 4, 8*4, uvs);
 
-	if(program == NO_PROGRAM)
-		program = get_program(TEXTURED_PROGRAM);
-
+	//LOGD("Prog %p %d", &program, program.id());
 	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -148,6 +148,7 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 		program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//LOGD("yy %d", program.attributes.size());
 }
 
 void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, Program &program) const {
@@ -205,8 +206,8 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, coords.size() * 4, &coords[0]);
 
-	if(program == NO_PROGRAM)
-		program = get_program(TEXTURED_PROGRAM);
+	//if(program == NO_PROGRAM)
+	//program = get_program(TEXTURED_PROGRAM);
 
 	program.use();
 
@@ -285,13 +286,16 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderTarget::text(Font &font, const std::string &text, int x, int y, uint32_t col, float scale) {
+void RenderTarget::text(const Font &font, const std::string &text, int x, int y, uint32_t col, float scale) const {
 	font.render_text(*this, text, x, y, col, scale);
 }
 
-void RenderTarget::text(const std::string &text, int x, int y, uint32_t col, float scale) {
+void RenderTarget::text(const std::string &text, int x, int y, uint32_t col, float scale) const {
 
 	if(!font)
-		font = make_shared<Font>();//"data/Vera.ttf", 16);
+		font = make_shared<Font>(true);//"data/Vera.ttf", 16);
+
 	font->render_text(*this, text, x, y, col, scale);
+}
+
 }

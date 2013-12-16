@@ -4,6 +4,8 @@
 #include "bitmap.h"
 #include <stdexcept>
 
+namespace grappix {
+
 class image_exception : public std::exception {
 public:
 	image_exception(const std::string &msg) : msg(msg) {}
@@ -13,5 +15,7 @@ private:
 };
 
 bitmap load_png(const std::string &file_name);
+
+}
 
 #endif // IMAGE_H

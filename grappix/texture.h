@@ -4,33 +4,45 @@
 #include "render_target.h"
 #include "bitmap.h"
 
+#include <memory>
+
+namespace grappix {
+
 class Texture : public RenderTarget {
 public:
-	Texture() : texture_id(-1) {}
+
+	enum Format {
+		ALPHA8 = 1,
+		RGB16,
+		RGB24,
+		RGBA32
+	};
+
+	Texture() {}
 
 	template <typename T> Texture(T size) : Texture(size[0], size[1]) {}
-	Texture(int width, int height);
-
+	Texture(int width, int height, Format fmt = RGBA32);
 	Texture(const bitmap &bm);
-
-	Texture clone() {
-		Texture t  = Texture(width(), height());
-		t.draw(*this, 0, 0);
-		return t;
-	}
-
-	unsigned int id() const { return texture_id; }
-/*
-	void draw(int x, int y, Texture &buffer) {
-		RenderTarget::draw_texture(buffer.id(), x, y, buffer.width(), buffer.height());
-	};
-
-	template <typename T> void draw(T pos, Texture &buffer) {
-		RenderTarget::draw_Texture(buffer.id(), pos[0], pos[1], buffer.width(), buffer.height());
-	};
-*/
+	Texture(uint8_t *data, int w, int h);
+	unsigned int id() const { return tref->id; }
 private:
-	unsigned int texture_id;
+
+	struct texref {
+		texref() {
+			LOGD("GEN");
+			glGenTextures(1, &id);
+		}
+		texref(GLuint id) : id(id) {}
+		~texref() {
+			LOGD("DEL");
+			glDeleteTextures(1, &id);
+		}
+		GLuint id;
+	};
+
+	std::shared_ptr<texref> tref;
 };
+
+}
 
 #endif // GRAPPIX_TEXTURE_H

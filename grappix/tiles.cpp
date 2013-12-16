@@ -10,6 +10,8 @@ using namespace std;
 
 //static double s = 2.0;
 
+namespace grappix {
+
 TileSet::TileSet() {}
 
 TileSet::TileSet(int tilew, int tileh) : tilew(tilew), tileh(tileh), texture(256, 256) {
@@ -231,3 +233,4 @@ int TileLayer::add_tiles(bitmap &bm, int tilew, int tileh) {
 	return 0;
 }
 */
+}

@@ -2,9 +2,12 @@
 #define GRAPPIX_SHADER_H
 
 #include "GL_Header.h"
+#include <coreutils/log.h>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+
+namespace grappix {
 
 class shader_exception : public std::exception {
 public:
@@ -27,16 +30,40 @@ enum program_name {
 
 class Program {
 public:
-	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource), program(-1), vertexShader(-1), pixelShader(-1) {
+	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource), program(-3), vertexShader(-1), pixelShader(-1) {
 		createProgram();
 	}
 
-	Program(GLuint p) : program(p), vertexShader(-1), pixelShader(-1) {}
+	Program(GLint p) : program(p), vertexShader(-1), pixelShader(-1) { LOGD("PPPP %d", p);}
 
-	Program() : program(-1), vertexShader(-1), pixelShader(-1) {}
+	Program() : program(-2), vertexShader(-1), pixelShader(-1) {}
 
-	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen), program(-1), vertexShader(-1), pixelShader(-1) {
+	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen), program(-4), vertexShader(-1), pixelShader(-1) {
 		createProgram();
+	}
+
+	/* Program& operator=(const Program &p) {
+		uniforms.clear();
+		attributes.clear();
+		program = p.program;
+		vSource = p.vSource;
+		fSource = p.fSource;
+		pixelShader = p.pixelShader;
+		vertexShader = p.vertexShader;
+		return *this;
+	}
+
+	Program(const Program &p) {
+		program = p.program;
+		vSource = p.vSource;
+		fSource = p.fSource;
+		pixelShader = p.pixelShader;
+		vertexShader = p.vertexShader;
+	} */
+
+	~Program() {
+		program = -5;
+		LOGD("Destroy");
 	}
 
 	bool operator==(const Program &p) {
@@ -96,22 +123,22 @@ public:
 	}
 
 	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) {
-		GLuint h = glGetAttribLocation(program, name.c_str());
+		GLuint h = getAttribLocation(name);
 		glVertexAttribPointer(h, size, type, normalized, stride, ptr);
 		glEnableVertexAttribArray(h);
 	}
 
 	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) {
-		GLuint h = glGetAttribLocation(program, name.c_str());
+		GLuint h = getAttribLocation(name);
 		glVertexAttribPointer(h, size, type, normalized, stride, reinterpret_cast<const GLvoid*>(offset));
 		glEnableVertexAttribArray(h);
 	}
 
 	void use() { glUseProgram(program); }
 
-	GLuint id() { return program; }
+	GLint id() { return program; }
 
-private:
+//private:
 	std::unordered_map<std::string, GLuint> uniforms;
 	std::unordered_map<std::string, GLuint> attributes;
 	std::string vSource;
@@ -125,6 +152,6 @@ private:
 Program& get_program(program_name program);
 
 //Program get_program_obj(program_name program);
+}
 
-
-#endif // GRAPPIX_SHADER_H
+#endif // GRAPPIX_SHADER_Hh

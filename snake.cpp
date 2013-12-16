@@ -1,8 +1,9 @@
-#include <grappix.h>
+#include <grappix/grappix.h>
 #include <vector>
 
 using namespace std;
 using namespace utils;
+using namespace grappix;
 
 struct App {
 
@@ -105,10 +106,10 @@ struct App {
 			}
 			i++;
 		} 
-		screen.text(10, 5, format("Score:%d", score), 0xff00ff00, 1.0);
-		screen.text(screen.width()-200, 5, format("Hicore:%d", hiscore), 0xff00ff00, 1.0);
+		screen.text(format("Score:%d", score), 40, 0, 0xff00ff00, 1.4);
+		screen.text(format("Hicore:%d", hiscore), screen.width()-200, 5, 0xff00ff00, 1.0);
 		if(gameOver) {
-			screen.text(scrollx-=5, screen.height()/2 - 50, "Game Over", 0x80c0ffc0, 10.0);
+			screen.text("Game Over", scrollx-=5, 0, 0x80c0ffc0, 20.0);
 			if(score > hiscore)
 				hiscore = score;
 		}
@@ -124,6 +125,6 @@ void runMainLoop() {
 int main() {
 	screen.open(800, 450, false);
 	LOGD("Screen open");
-	screen.renderLoop(runMainLoop);
+	screen.render_loop(runMainLoop);
 	return 0;
 }

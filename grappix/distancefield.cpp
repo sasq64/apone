@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace grappix {
+
 uint8_t *make_distance_map(uint8_t *img, int width, int height )
 {
     short * xdist = (short *)  malloc( width * height * sizeof(short) );
@@ -68,4 +70,6 @@ uint8_t *make_distance_map(uint8_t *img, int width, int height )
     free( outside );
     free( inside );
     return out;
+}
+
 }

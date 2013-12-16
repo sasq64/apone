@@ -10,6 +10,8 @@
 #include <deque>
 #include <functional>
 
+namespace grappix {
+
 class Window : public RenderTarget {
 public:
 
@@ -50,7 +52,8 @@ public:
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
-	void renderLoop(std::function<void()> f);
+	void render_loop(std::function<void()> f);
+	void render_loop(std::function<void(uint32_t)> f);
 
 	constexpr static const double FPS = 1.0/60.0;
 
@@ -64,7 +67,8 @@ public:
 	static std::deque<click> click_buffer;
 
 private:
-	int lastTime;
+	int64_t lastTime;
+	float fps;
 	bool winOpen;
 	unsigned int bmCounter;
 	std::chrono::high_resolution_clock::time_point benchStart;
@@ -75,5 +79,6 @@ private:
 };
 
 extern Window screen;
+}
 
 #endif // GRAPPIX_WINDOW_H

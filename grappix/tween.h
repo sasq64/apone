@@ -6,6 +6,7 @@
 #include <functional>
 #include <vector>
 
+namespace grappix {
 
 namespace tween {
 
@@ -239,6 +240,6 @@ public:
 int to(float totalTime, const std::initializer_list<TweenAttr> &il);
 
 }
-
+}
 
 #endif // TWEEN_H

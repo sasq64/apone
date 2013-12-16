@@ -14,41 +14,42 @@
 #include <vector>
 using namespace std;
 
+namespace grappix {
+
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
-Font::Font() : font(nullptr), atlas(nullptr) {
-	atlas = new texture_atlas_t();
-	atlas->width = static_font.tex_width;
-	atlas->height = static_font.tex_height;
-	atlas->id = 0;
-	atlas->data = static_font.tex_data;
-    texture_atlas_upload(atlas);
+Font::Font(bool stfont) {
+	ref = make_shared<FontRef>(0, 0, "", 0.0);
+	ref->atlas = new texture_atlas_t();
+	ref->atlas->width = static_font.tex_width;
+	ref->atlas->height = static_font.tex_height;
+	ref->atlas->id = 0;
+	ref->atlas->data = static_font.tex_data;
+    texture_atlas_upload(ref->atlas);
     LOGD("Static font created");
 }
 
+
+
 Font::Font(const string &ttfName, int size, int flags) {
 
-	atlas = texture_atlas_new(256, 256, 1 );
+	ref = make_shared<FontRef>(256, 256, ttfName, size);
 
 	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-	font = texture_font_new(atlas, ttfName.c_str(), size);
-
-	LOGD("Result %p", font);
-
-	texture_font_load_glyphs(font, text);
+	texture_font_load_glyphs(ref->font, text);
 
 	if(flags & DISTANCE_MAP) {
-		uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
+		uint8_t *data = make_distance_map(ref->atlas->data, ref->atlas->width, ref->atlas->height);
 		LOGD("Distance map created");
-		free(atlas->data);
-		atlas->data = data;
+		free(ref->atlas->data);
+		ref->atlas->data = data;
 	}
-    texture_atlas_upload(atlas);
+    texture_atlas_upload(ref->atlas);
 }
 
 //static float scale = 1.0;
 
-TextBuf Font::make_text2(const string &text) {
+TextBuf Font::make_text2(const string &text) const {
 
 	LOGD("Make text2");
 
@@ -133,9 +134,9 @@ TextBuf Font::make_text2(const string &text) {
 	return tbuf;
 }
 
-TextBuf Font::make_text(const string &text) {
+TextBuf Font::make_text(const string &text) const {
 
-	if(!font)
+	if(!ref->font)
 		return make_text2(text);
 
 	LOGD("Make text");
@@ -150,7 +151,7 @@ TextBuf Font::make_text(const string &text) {
 	float x = 0;
 	float y = 0;
 	for(auto c : text) {
-		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
+		texture_glyph_t *glyph = texture_font_get_glyph(ref->font, c);
 		//LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)
@@ -158,7 +159,7 @@ TextBuf Font::make_text(const string &text) {
 		lastChar = c;
 
 		float x0  = x + glyph->offset_x;
-		float y0  = y + font->height;//gl;//+ glyph->offset_y;
+		float y0  = y + ref->font->height;//gl;//+ glyph->offset_y;
 		float x1  = x0 + glyph->width;
 		float y1  = y0 - glyph->offset_y;
 		//LOGD("%d %d", glyph->height, glyph->offset_y);
@@ -211,7 +212,7 @@ TextBuf Font::make_text(const string &text) {
 	return tbuf;
 }
 
-void Font::render_text(RenderTarget &target, const TextBuf &text, int x, int y, uint32_t color, float scale) {
+void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, int y, uint32_t color, float scale) const {
 
 	//LOGD("[%f]", uvs);
 	//auto _width = screen.size().first;
@@ -253,7 +254,7 @@ void Font::render_text(RenderTarget &target, const TextBuf &text, int x, int y, 
 	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
 	glEnableVertexAttribArray(uvHandle);
 
-	glBindTexture( GL_TEXTURE_2D, atlas->id );
+	glBindTexture( GL_TEXTURE_2D, ref->atlas->id );
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -269,7 +270,7 @@ void Font::render_text(RenderTarget &target, const TextBuf &text, int x, int y, 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Font::render_text(RenderTarget &target, const std::string &text, int x, int y, uint32_t col, float scale) {
+void Font::render_text(const RenderTarget &target, const std::string &text, int x, int y, uint32_t col, float scale) const {
 
 	auto buf = cache.get(text);
 	if(buf.text == "") {
@@ -279,5 +280,4 @@ void Font::render_text(RenderTarget &target, const std::string &text, int x, int
 	render_text(target, buf, x, y, col, scale);
 }
 
-
-
+}

@@ -8,6 +8,7 @@
 using namespace std;
 using namespace utils;
 
+namespace grappix {
 
 #ifdef EMSCRIPTEN
 
@@ -102,3 +103,4 @@ bitmap load_png(const std::string &file_name) {
 }
 
 #endif
+}

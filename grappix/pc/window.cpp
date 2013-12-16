@@ -1,7 +1,7 @@
-#include "window.h"
-#include "tween.h"
+#include "../window.h"
+#include "../tween.h"
 
-#include "GL_Header.h"
+#include "../GL_Header.h"
 #include <GL/glfw.h>
 #include <stdio.h>
 #include <unordered_map>
@@ -13,6 +13,7 @@
 
 using namespace std;
 
+namespace grappix {
 void debug_callback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, void* userParam) {
 	LOGD("GLDEBUG:%s", message);
 }
@@ -51,6 +52,9 @@ static void resize_fn(int w, int h) {
 };
 #endif
 
+static function<void()> renderLoopFunction;
+static function<void(uint32_t)> renderLoopFunction2;
+
 void Window::open(int w, int h, bool fs) {
 
 	if(winOpen)
@@ -58,7 +62,7 @@ void Window::open(int w, int h, bool fs) {
 
 	LOGD("glfwInit");
 	glfwInit();
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
+	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 #ifdef EMSCRIPTEN
 	if(w < 0) w = 640;
 	if(h < 480) h = 480;
@@ -128,45 +132,92 @@ void Window::open(int w, int h, bool fs) {
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(resize_fn);
 #endif
-
+/*
 	atexit([](){
-		while(true) {
-			//glfwSleep(100);
-			glfwSwapBuffers();
-			if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
-				break;
-		}	
-	});
 
+		if(renderLoopFunction) {
+			while(screen.is_open()) {
+				renderLoopFunction();
+			}
+		} else {
+			while(true) {
+				//glfwSleep(100);
+				glfwSwapBuffers();
+				if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
+					break;
+			}	
+		}
+	});
+*/
 	startTime = chrono::high_resolution_clock::now();
 	frameBuffer = 0;
 };
 
-static function<void()> renderLoopFunction;
-
 #ifdef EMSCRIPTEN
+static uint64_t lastMs = 0;
 static void runMainLoop() {
-	renderLoopFunction();
+	auto ms = utils::getms();
+	uint32_t rate = ms - lastMs;
+	lastMs = ms;
+	if(renderLoopFunction)
+		renderLoopFunction();
+	else
+		renderLoopFunction2(rate);
 }
 #endif
 
-void Window::renderLoop(function<void()> f) {
+void Window::render_loop(function<void()> f) {
 	renderLoopFunction = f;
+#ifdef EMSCRIPTEN
+	lastMs = utils::getms();
+	emscripten_set_main_loop(runMainLoop, 60, false);
+#else
+	//while(screen.is_open()) {
+	//	renderLoopFunction();
+	//}
+	atexit([](){
+		while(screen.is_open()) {
+			renderLoopFunction();
+		}
+	});
+
+#endif
+}
+
+void Window::render_loop(function<void(uint32_t)> f) {
+	renderLoopFunction2 = f;
 #ifdef EMSCRIPTEN
 	emscripten_set_main_loop(runMainLoop, 60, false);
 #else
-	// Loop and render ball worm
-	while(screen.is_open()) {
-		renderLoopFunction();
-	}
+	//while(screen.is_open()) {
+	//	renderLoopFunction();
+	//}
+	atexit([](){
+		auto lastMs = utils::getms();
+		while(screen.is_open()) {
+			auto ms = utils::getms();
+			uint32_t rate = ms - lastMs;
+			lastMs = ms;
+			renderLoopFunction2(rate);
+		}
+	});
+
 #endif
 }
 
 void Window::vsync() {
 }
 
+//static uint64_t lastTime;
+
 void Window::flip() {
 	auto t = chrono::high_resolution_clock::now();
+	auto tm = utils::getms();
+	auto d = tm - lastTime;
+	if(d > 0)
+		fps = fps * 0.8 + (1000 / d) * 0.2;
+	lastTime = tm;
+	text(utils::format("%d", (int)fps), 0,0);
 	/*if(bmCounter) {
 		bmCounter--;
 		if(!bmCounter) {
@@ -233,3 +284,5 @@ Window::key Window::get_key() {
 };
 
 Window screen;
+
+}

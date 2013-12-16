@@ -1,5 +1,7 @@
 #include "color.h"
 
+namespace grappix {
+
 Color<float> make_color(uint32_t color) {
 	Color<float> c;
 	c.red = ((color>>16)&0xff) / 255.0;
@@ -25,4 +27,6 @@ uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {
 	g0 = g0*alpha+g1*(1.0-alpha);
 	b0 = b0*alpha+b1*(1.0-alpha);
 	return (a0<<24) | (r0<<16) | (g0<<8) | b0;
+}
+
 }

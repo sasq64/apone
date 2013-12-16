@@ -1,53 +1,35 @@
-#include <grappix.h>
+#include <grappix/grappix.h>
+
 using namespace utils;
-
-#ifdef EMSCRIPTEN
-#include "emscripten.h"
-#endif
-
-class App {
-public:
-	App() : size {64, 64}, radius {size[0]/2}, sprite {size}, xy {0, 0}, xpos { screen.width() } {
-		LOGD("Creating sprite");
-		sprite.clear();
-		sprite.circle(size/2, radius, 0x000020); // Outline
-		sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball
-		sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
-	};
-
-	void update() {
-
-		auto sz = vec2f(screen.size());
-		auto scale = sz / 2.3;
-
-		screen.clear();
-		//screen.circle(80,80,10,0xff00ffff);
-		vec2f xy2 = xy += {0.01, 0.03};
-		for(int i=0; i<100; i++)
-			screen.draw(sprite, (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale);		
-		screen.text("Balls ON THE SCREEN!! A WEIRD WONDERFUL MACHINE!", xpos-=2, 150.0, 0xffffffff, 12.0);
-		screen.flip();
-	}
-
-	vec2f size;
-	float radius;
-	Texture sprite;
-	vec2f xy;
-	//vec2f scale;
-	int xpos;
-};
-
-void runMainLoop() {
-	static App app;
-	app.update();
-}
+using namespace grappix;
 
 int main() {
-	
-	LOGD("Main started");
+
 	screen.open(640, 480, false);
 	LOGD("Screen open");
-	screen.renderLoop(runMainLoop);
-	LOGD("Progam done");
+
+	float radius = 32;
+	vec2f size {radius*2, radius*2};
+	Texture sprite { size };
+
+	sprite.clear();
+	sprite.circle(size/2, radius, 0x000020); // Outline
+	sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball
+	sprite.circle(size/2 + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
+	vec2f xy {0, 0};
+	float textx = screen.width();
+	const int count = 100;
+	float zoom = 1.0;
+	screen.render_loop([=](uint32_t d) mutable {
+		static std::vector<vec2f> v(count);
+		auto scale = vec2f(screen.size()) / 2.3;
+		screen.clear();
+		vec2f xy2 = xy += {0.001f * d, 0.003f * d};
+		for(int i=0; i<count; i++)
+			v[i] = (sin(xy2 += {0.156, 0.187}) + 1.0f) * scale;
+		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
+		screen.text("Balls on the screen!! A Weird Wonderful Machine!", textx-=(d/4.0), -zoom*8, 0xffffffff, zoom *= 1.005);
+		screen.flip();
+	});
 	return 0;
 }

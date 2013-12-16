@@ -3,6 +3,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+namespace grappix {
+
 namespace tween {
 
 double linear(double t, double s, double delta) {
@@ -52,5 +54,5 @@ int to(float totalTime, const std::initializer_list<TweenAttr> &il) {
 	return Tween::to(totalTime, il);
 }
 
-
+}
 }

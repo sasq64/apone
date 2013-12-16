@@ -1,8 +1,10 @@
-#include <grappix.h>
+#include <grappix/grappix.h>
 #include <coreutils/vec.h>
 #include <vector>
+
 using namespace std;
 using namespace utils;
+using namespace grappix;
 
 #ifdef ANDROID
 #define DATA_DIR "/sdcard/"
@@ -10,18 +12,16 @@ using namespace utils;
 #define DATA_DIR "data/"
 #endif
 
-#include "tween.h"
-
-//using namespace tween;
-
-
 struct App {
 
 	TileSet tiles;
 	TileLayer layer;
+	TileSet avatars;
+	SpriteLayer sprites;
+
 	vec2f scrollTarget {0,0};
 
-	App() : tiles(16,16), layer(128, 128, 800, 480, tiles) {
+	App() : tiles(16,16), layer(128, 128, 800, 480, tiles), avatars(24, 32), sprites(avatars) {
 	
 		auto bm = load_png(DATA_DIR "tiles.png");
 		LOGD("PNG LOADED");
@@ -40,18 +40,17 @@ struct App {
 		}
 
 		LOGD("SPRITE");
-		TileSet avatars(24, 32);
 		try {
 			avatars.add_tiles(load_png(DATA_DIR "rpgtiles.png"));
 		} catch (tile_exception &e) {
 			LOGD("Tiles wont fit!");
 		}
-		SpriteLayer sprites(avatars);
-		sprites.addSprite(0, 100, 100, 4.0);
-		sprites.addSprite(1, 150, 100, 4.0);
+		sprites.addSprite(0, 100, 100, 2.0);
+		sprites.addSprite(1, 150, 100, 2.0);
 
 		//tween::Tween::to( 3.0, { { layer.scrollx, 600 }, { layer.scrolly, 3400 } });
 
+		tween::to(1.0, { { sprites[1].x, 300 } });
 		
 	}
 
@@ -80,6 +79,7 @@ struct App {
 		layer.scrolly += 0.1;
 
 		layer.render(screen);
+		sprites.render(screen);
 		screen.text(format("x:%d", (int)layer.scrollx), 0,-10,0xffffffff, 2.0);
 		screen.flip();
 	}
@@ -93,6 +93,6 @@ void runMainLoop() {
 int main() {
 	screen.open(800, 480, false);
 	LOGD("Screen open");
-	screen.renderLoop(runMainLoop);
+	screen.render_loop(runMainLoop);
 	return 0;
 }
