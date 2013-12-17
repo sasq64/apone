@@ -38,7 +38,8 @@ class Font {
 public:
 
 	enum {
-		DISTANCE_MAP = 1
+		DISTANCE_MAP = 1,
+		UPPER_CASE = 2
 	};
 	Font() {};
 	Font(bool s);

@@ -10,7 +10,7 @@ using namespace grappix;
 using namespace utils;
 using namespace std;
 
-static const string pSineShader = R"(
+static const string sineShaderF = R"(
 #ifdef GL_ES
 	precision mediump float;
 #endif
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 	shared_ptr<ModPlugin> modPlugin;
 	shared_ptr<ChipPlayer> player;
 #endif
-	Font font = Font("data/ObelixPro.ttf", 24);
+	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE);
 
 #ifdef MUSIC
 	modPlugin = make_shared<ModPlugin>();
@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
     } else
 		SDL_PauseAudio(0);
-
 #endif
 
 	// Create our ball image
@@ -85,31 +84,27 @@ int main(int argc, char **argv) {
 	sprite.circle(center + vec2f{radius*0.15f, -radius*0.15f}, radius * 0.6, 0x0040FF); // Hilight
 
 	program = get_program(TEXTURED_PROGRAM).clone();
-	program.setFragmentSource(pSineShader);
+	program.setFragmentSource(sineShaderF);
 
 	screen.render_loop([=](uint32_t delta) mutable {
 		(void)player.get();
-		int count = 500;
+		int count = 250;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
-		if(xpos < -2400)
+		if(xpos < -3600)
 			xpos = screen.width() + 200;
-
-		scr.clear();
-		float zoom = 15;//(sin(xpos/235.0)+4.0)*1.5;
-		scr.text(font, "Balls ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, zoom);
-
+		// Balls
 		screen.clear();
-
 		vec2f xy2 = xy += {0.001f * 0.6f * delta, 0.003f * 0.7f * delta};
 		for(int i=0; i<count; i++)
-			v[i] = (sin(xy2 += {0.156 * 0.3, 0.187 * 0.3}) + 1.0f) * scale;
-			//screen.draw(sprite, (sin(xy2 += {0.126 * 0.5, 0.079 * 0.5}) + 1.0f) * scale);	
+			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
-
+		// Scroller
+		scr.clear();
+		scr.text(font, "BALLS ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, 15.0);
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
-		screen.draw_texture(scr.id(), 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
+		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), program);
 		screen.flip();
 	});
 	return 0;

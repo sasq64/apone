@@ -31,11 +31,17 @@ Font::Font(bool stfont) {
 
 
 
+const static wchar_t *fontLetters = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
+
 Font::Font(const string &ttfName, int size, int flags) {
 
-	ref = make_shared<FontRef>(256, 256, ttfName, size);
+	ref = make_shared<FontRef>(128, 128, ttfName, size);
 
-	const wchar_t *text = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+	auto text = fontLetters;
+	if(flags & UPPER_CASE)
+		text = fontLettersUpper;
+
 	texture_font_load_glyphs(ref->font, text);
 
 	if(flags & DISTANCE_MAP) {
