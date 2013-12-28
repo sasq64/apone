@@ -8,6 +8,7 @@ CXXFLAGS += $(CFLAGS)
 COMP_CXXFLAGS += $(COMP_CFLAGS)
 # LOCAL_FILES <= Source files relative to current directory + SRCDIR
 # FILES <= Source files with exact path
+FILES := $(realpath $(FILES))
 FILES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_FILES)))
 # FILES <= Now full path of all source files
 
@@ -102,6 +103,7 @@ $(TARGETDIR):
 
 $(TARGETDIR)$(TARGET).a: $(TARGETDIR) $(OBJFILES) $(DEPS)
 	$(AR) r $(TARGETDIR)$(TARGET).a $(OBJFILES)
+	#$(RANLIB) $(TARGETDIR)$(TARGET).a
 	 
 $(TARGETDIR)$(TARGET).elf: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).elf

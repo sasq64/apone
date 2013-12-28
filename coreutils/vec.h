@@ -27,6 +27,10 @@ template <class T> struct vec2 {
 		y = *it;
 	}
 
+	bool operator==(const vec2 &other) const {
+		return other.x == x && other.y == y;
+	}
+
 	vec2 operator+(const vec2 &v) const {
 		return vec2(x + v.x, y + v.y);
 	}
@@ -118,14 +122,14 @@ template <class T> struct vec2 {
 
 	union
 	{
-		T data[2]; /**< All components at once     */
+		T data[2];
 		struct {
-	        T x;   /**< Alias for first component  */
-	        T y;   /**< Alias for second component */
+	        T x;
+	        T y;
 	    };
 		struct {
-	        T s;   /**< Alias for first component  */
-	        T t;   /**< Alias for second component */
+	        T s;
+	        T t;
 	    };
 	};
 };
@@ -251,35 +255,160 @@ template <class T> struct vec3 {
 
 	union
 	{
-		float data[3]; /**< All components at once     */
+		float data[3];
 		struct {
-	        float x;   /**< Alias for first component  */
-	        float y;   /**< Alias for second component */
+	        float x;
+	        float y;
 	        float z;
 	    };
 		struct {
-	        float s;   /**< Alias for first component  */
-	        float t;   /**< Alias for second component */
+	        float s;
+	        float t;
 	        float u;
 	    };
 		struct {
-	        float r;   /**< Alias for first component  */
-	        float g;   /**< Alias for second component */
+	        float r;
+	        float g;
 	        float b;
 	    };
 	};
 };
-
-typedef vec3<float> vec3f;
-typedef vec3<int> vec3i;
 
 
 template <typename T> vec3<T> sin(const vec3<T> &v) {
 	return vec3<T>(sinf(v.x), sinf(v.y), sin(v.z));
 }
 
+typedef vec3<float> vec3f;
+typedef vec3<int> vec3i;
 
+template <class T> struct vec4 {
+	// Constructors
 
+	vec4() : x(0), y(0), z(0), w(0) {}
+	vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+	vec4(std::initializer_list<T> &il) {
+		auto it = il.begin();
+		x = *it;
+		++it;
+		y = *it;
+		++it;
+		z = *it;
+		++it;
+		w = *it;
+	}
+
+	vec4 operator+(const vec4 &v) const {
+		return vec4(x + v.x, y + v.y, z + v.z, w + v.w);
+	}
+
+	vec4 operator+(const T &i) const {
+		return vec4(x + i, y + i, z + i, w + i);
+	}
+
+	vec4 operator-(const vec4 &v) const {
+		return vec4(x - v.x, y - v.y, z - v.z, w - v.w);
+	}
+
+	vec4 operator-(const T &i) const {
+		return vec4(x - i, y - i, z - i, w - i);
+	}
+
+	vec4 operator*(const vec4 &v) const {
+		return vec4(x * v.x, y * v.y, z * v.z, w * v.w);
+	}
+
+	vec4 operator*(T n) const {
+		return vec4(x * n, y * n, z * n, w * n);
+	}
+
+	vec4 operator/(const vec4 &v) const {
+		return vec4(x / v.x, y / v.y, z / v.z, w / v.w);
+	}
+
+	vec4 operator/(T n) const {
+		return vec4(x / n, y / n, z / n, w / n);
+	}
+
+	vec4 operator+=(const vec4 &v) {
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		w += v.w;
+		return *this;
+	}
+
+	vec4 operator+=(std::initializer_list<T> il) {
+		auto it = il.begin();
+		auto xa = *it;
+		++it;
+		auto ya = *it;
+		++it;
+		auto za = *it;
+		++it;
+		auto wa = *it;
+		x += xa;
+		y += ya;
+		z += za;
+		w += wa;
+		return *this;
+	}
+
+	vec4 operator-=(const vec4 &v) {
+		x -= v.x;
+		y -= v.y;
+		z -= v.z;
+		w -= v.w;
+		return *this;
+	}
+
+	vec4 operator-=(std::initializer_list<T> il) {
+		auto it = il.begin();
+		auto xa = *it;
+		++it;
+		auto ya = *it;
+		++it;
+		auto za = *it;
+		++it;
+		auto wa = *it;
+		x -= xa;
+		y -= ya;
+		z -= za;
+		w -= wa;
+		return *this;
+	}
+
+	T operator[](const int &i) {
+		return data[i];
+		//throw std::out_of_range("Only 0 or 1 are valid indexes");
+	}
+
+	union
+	{
+		float data[4];
+		struct {
+	        float x;  
+	        float y;  
+	        float z;
+	        float w;
+	    };
+		struct {
+	        float s;  
+	        float t;  
+	        float u;
+	        float q;
+	    };
+		struct {
+	        float r;  
+	        float g;  
+	        float b;
+	        float a;
+	    };
+	};
+};
+
+typedef vec4<float> vec4f;
+typedef vec4<int> vec4i;
 
 }
 

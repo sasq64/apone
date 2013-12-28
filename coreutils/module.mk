@@ -1,2 +1,7 @@
+ifeq ($(COREUTILS_INCLUDED),)
+COREUTILS_INCLUDED = 1
+
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 MODULES += $(THIS_DIR)
+
+endif

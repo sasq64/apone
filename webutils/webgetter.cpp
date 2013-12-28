@@ -51,6 +51,8 @@ void WebGetter::Job::urlGet(string url) {
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 		rc = curl_easy_perform(curl);
 		LOGD("Curl returned %d", rc);
+		if(file)
+			file->close();
 	} else {
 		LOGD("Getting %s from cache", target);
 	}
@@ -102,5 +104,5 @@ WebGetter::WebGetter(const string &workDir) : workDir(workDir) {
 
 
 WebGetter::Job* WebGetter::getURL(const string &url) {
-	return new Job(url, workDir);
+	return new Job(baseURL + url, workDir);
 }

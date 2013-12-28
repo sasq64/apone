@@ -48,7 +48,7 @@ std::vector<T> split(const T &s, const T &delim = T(" ")) {
 			args.push_back(s.substr(pos));
 			break;
 		}
-		LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
+		//LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
 		args.push_back(s.substr(pos, newpos-pos));
 		pos = newpos + l;
 	}

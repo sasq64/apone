@@ -6,6 +6,7 @@ MODULES :=
 LIBS :=
 LDFLAGS :=
 TARGET :=
+FILES :=
 OBJDIR := obj
 
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
@@ -96,6 +97,7 @@ LD := $(CXX)
 ifeq ($(AR),)
 AR := ar
 endif
+RANLIB=ranlib
 AS := $(PREFIX)as
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMP := $(PREFIX)objdump
