@@ -10,14 +10,12 @@ OBJDIR := obj/
 TARGET := demo
 CFLAGS += -Wall -O2 -I. -I$(UTILS)
 CXXFLAGS += -std=c++0x
-LDFLAGS += -g
 CHIPM=../chipmachine
 
-CFLAGS += -I$(CHIPM)/src -I$(CHIPM)/src/plugins/ModPlugin -I$(CHIPM)/src/plugins/VicePlugin
-
 include $(UTILS)/coreutils/module.mk
+include $(UTILS)/webutils/module.mk
 include $(GRAPPIX)/module.mk
-
+include $(CHIPM)/src/plugins/ModPlugin/module.mk
 
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
@@ -29,19 +27,21 @@ ifeq ($(HOST),android)
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  LDFLAGS += --preload-file data
+  LDFLAGS += --preload-file data/ObelixPro.ttf --preload-file data/test.mod -s TOTAL_MEMORY=67108864
   # --preload-file fonts -s OUTLINING_LIMIT=50000
-  # -s TOTAL_MEMORY=33554432
+  # 
   # -s DISABLE_EXCEPTION_CATCHING=0
-  LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin/em
+#LDFLAGS += -g -s OUTLINING_LIMIT=30000
+  #LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin/em
+  LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_set_searchstring', '_play_index']"
   TARGETDIR := html/
 else
-  LIBS += -lviceplugin -lmodplugin
-  LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
+  #LIBS += -lviceplugin -lmodplugin
+  #LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
 ## Hack that lets us run the currently open file from Sublime if it is one of the main files
-MAIN_FILES = sidplayer.cpp demo.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
+MAIN_FILES = demo.cpp snake.cpp tiletest2.cpp bobs.cpp simple.cpp blur.cpp map.cpp
 MAIN_FILE := demo.cpp
 ifneq ($(ACTIVEFILE),)
  ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
@@ -49,8 +49,9 @@ ifneq ($(ACTIVEFILE),)
  endif
 endif
 
-LIBS += -lmodplugin
-
+#FILES += $(CHIPM)/src/sqlite3/sqlite3.c $(CHIPM)/src/SongDb.cpp $(CHIPM)/src/SearchIndex.cpp
+#LIBS += -ldl
+#O2
 CFLAGS += -Iflatland -DMUSIC
 LOCAL_FILES += $(MAIN_FILE)
 # flatland/Primitive.cpp

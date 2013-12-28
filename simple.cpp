@@ -13,11 +13,11 @@ int main() {
 		Texture t(bm);
 
 		screen.render_loop([=]() {
-			LOGD("Loop");
 			screen.clear();
 			screen.draw(t);
 			screen.circle(cxx += 4, 200, 180, 0xff0000ff);
 			screen.text(font, "Circle",screen.width()-120,screen.height()-50,0xffffffff, 2.0);
+			screen.line(10,10,500,40,0xff00ff00);
 			screen.flip();
 		});
 	}

@@ -41,6 +41,15 @@ public:
 	//float scale(float s) { this->s = s; return s; }
 	int width() const { return _width; }
 	int height() const { return _height; }
+	int size() const { return _width * _height;  }
+
+	void fill(int tileno = 0, int x = 0, int y = 0, int w = 0, int h = 0) {
+		if(w == 0) w = _width - x;
+		if(h == 0) h = _height -y;
+		for(int xx = 0; xx < w; xx++)
+			for(int yy = 0; yy < h; yy++)
+				map[xx+x+(yy+y)*_width] = tileno;
+	}
 
 	uint32_t &operator[](uint32_t i) {
 		return map[i];

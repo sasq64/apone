@@ -18,7 +18,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-Window::Window() : RenderTarget(true), winOpen(false), bmCounter(0) {
+Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }
 
@@ -62,10 +62,9 @@ void Window::open(int w, int h, bool fs) {
 
 	LOGD("glfwInit");
 	glfwInit();
-	//glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 #ifdef EMSCRIPTEN
 	if(w < 0) w = 640;
-	if(h < 480) h = 480;
+	if(h < 0) h = 480;
 	_width = w;
 	_height = h;
 	fs = false;
@@ -74,6 +73,7 @@ void Window::open(int w, int h, bool fs) {
 #else
 	_width = w;
 	_height = h;
+	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
 	GLFWvidmode mode;
@@ -102,7 +102,6 @@ void Window::open(int w, int h, bool fs) {
 	if(win) {
 	}
 
-//#ifdef USE_GLEW
 #ifndef EMSCRIPTEN
 	int rc = glewInit();
 	if(rc) {
@@ -112,7 +111,7 @@ void Window::open(int w, int h, bool fs) {
 	glDebugMessageCallbackARB(debug_callback, nullptr);
 #endif
 
-	initPrograms();
+	//initPrograms();
 
 	glfwSwapInterval(1);
 
@@ -125,30 +124,12 @@ void Window::open(int w, int h, bool fs) {
 	lastTime = -1;
 	winOpen = true;
 
-	LOGD("Callbacks");
-
 	glfwSetKeyCallback(key_fn);
 	glfwSetMouseButtonCallback(mouse_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(resize_fn);
 #endif
-/*
-	atexit([](){
 
-		if(renderLoopFunction) {
-			while(screen.is_open()) {
-				renderLoopFunction();
-			}
-		} else {
-			while(true) {
-				//glfwSleep(100);
-				glfwSwapBuffers();
-				if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED))
-					break;
-			}	
-		}
-	});
-*/
 	startTime = chrono::high_resolution_clock::now();
 	frameBuffer = 0;
 };
@@ -166,11 +147,11 @@ static void runMainLoop() {
 }
 #endif
 
-void Window::render_loop(function<void()> f) {
+void Window::render_loop(function<void()> f, int fps) {
 	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
 	lastMs = utils::getms();
-	emscripten_set_main_loop(runMainLoop, 60, false);
+	emscripten_set_main_loop(runMainLoop, fps, false);
 #else
 	//while(screen.is_open()) {
 	//	renderLoopFunction();
@@ -184,10 +165,10 @@ void Window::render_loop(function<void()> f) {
 #endif
 }
 
-void Window::render_loop(function<void(uint32_t)> f) {
+void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction2 = f;
 #ifdef EMSCRIPTEN
-	emscripten_set_main_loop(runMainLoop, 60, false);
+	emscripten_set_main_loop(runMainLoop, fps, false);
 #else
 	//while(screen.is_open()) {
 	//	renderLoopFunction();
@@ -212,12 +193,14 @@ void Window::vsync() {
 
 void Window::flip() {
 	auto t = chrono::high_resolution_clock::now();
+#ifdef FPS_COUNTER
 	auto tm = utils::getms();
 	auto d = tm - lastTime;
 	if(d > 0)
 		fps = fps * 0.8 + (1000 / d) * 0.2;
 	lastTime = tm;
 	text(utils::format("%d", (int)fps), 0,0);
+#endif
 	/*if(bmCounter) {
 		bmCounter--;
 		if(!bmCounter) {
@@ -248,12 +231,17 @@ void Window::benchmark() {
 }
 
 unordered_map<int, int> Window::translate = {
+	{ F1, GLFW_KEY_F1 },
+	{ BACKSPACE, GLFW_KEY_BACKSPACE },
 	{ ENTER, GLFW_KEY_ENTER },
+	{ ESCAPE, GLFW_KEY_ESC },
 	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
 	{ RIGHT, GLFW_KEY_RIGHT },
 	{ UP, GLFW_KEY_UP },
-	{ DOWN, GLFW_KEY_DOWN }
+	{ DOWN, GLFW_KEY_DOWN },
+	{ PAGEUP, GLFW_KEY_PAGEUP },
+	{ PAGEDOWN, GLFW_KEY_PAGEDOWN }
 };
 
 bool Window::key_pressed(key k) {
@@ -278,6 +266,7 @@ Window::key Window::get_key() {
 			if(t.second == k)
 				return (key)t.first;
 		}
+		LOGD("%d", (key)k);
 		return (key)k;
 	}
 	return NO_KEY;

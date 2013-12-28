@@ -150,8 +150,8 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	} else
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
 
-	vector<float> uvs;//(count*16);
-	uvs.reserve(count*8);
+	vector<float> uvs(count*8);
+	//uvs.resiz(count*8);
 
 	int sx = scrollx / tileset.tilew;
 	int sy = scrolly / tileset.tileh;
@@ -163,9 +163,9 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	double pw = 1.0f/tileset.texture.width();
 	double ph = 1.0f/tileset.texture.height();
 
-	double fs = pw/(s*s);//pw/10000.0;
-	double ft = ph/(s*s);//pw/10000.0;
-
+	double fs = 0;//pw/(s*s);//pw/10000.0;
+	double ft = 0;//ph/(s*s);//pw/10000.0;
+	int i = 0;
 	for(int iy=0; iy<areah; iy++) {
 		for(int ix=0; ix<areaw; ix++) {
 			int xp = (ix+sx) % _width;
@@ -181,14 +181,22 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 			double s1 = s0 + pw*tileset.tilew - fs*2;
 			double t1 = t0 + ph*tileset.tileh - ft*2;
 
-			uvs.push_back(s0);
-			uvs.push_back(t0);
-			uvs.push_back(s1);
-			uvs.push_back(t0);
-			uvs.push_back(s0);
-			uvs.push_back(t1);
-			uvs.push_back(s1);
-			uvs.push_back(t1);			
+			uvs[i++] = s0;
+			uvs[i++] = t0;
+			uvs[i++] = s1;
+			uvs[i++] = t0;
+			uvs[i++] = s0;
+			uvs[i++] = t1;
+			uvs[i++] = s1;
+			uvs[i++] = t1;
+			//uvs.push_back(s0);
+			//uvs.push_back(t0);
+			//uvs.push_back(s1);
+			//uvs.push_back(t0);
+			//uvs.push_back(s0);
+			//uvs.push_back(t1);
+			//uvs.push_back(s1);
+			//uvs.push_back(t1);			
 		}
 	}
 

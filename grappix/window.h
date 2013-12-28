@@ -23,15 +23,20 @@ public:
 	void vsync();
 
 	enum key {
-		UP,
+		SPACE = 0x20,
+		UP = 0x100,
 		DOWN,
 		LEFT,
 		RIGHT,
 		ENTER,
-		SPACE,
+		ESCAPE,
+		BACKSPACE,
+		PAGEUP,
+		PAGEDOWN,
+		F1,
 		CLICK,
 		RIGHT_CLICK,
-		NO_KEY = 256
+		NO_KEY = 0xffff
 	};
 
 	struct click {
@@ -52,8 +57,8 @@ public:
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
-	void render_loop(std::function<void()> f);
-	void render_loop(std::function<void(uint32_t)> f);
+	void render_loop(std::function<void()> f, int fps = 60);
+	void render_loop(std::function<void(uint32_t)> f, int fps = 60);
 
 	constexpr static const double FPS = 1.0/60.0;
 

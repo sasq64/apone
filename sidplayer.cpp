@@ -1,13 +1,17 @@
 
-#include "ModPlugin.h"
+//#include "ModPlugin.h"
 #include "VicePlugin.h"
 #include "ChipPlugin.h"
 #include "ChipPlayer.h"
 
-#include "Fifo.h"
+#include "SongDb.h"
 
+//#include "Fifo.h"
+#include <mutex>
+#include <webutils/webgetter.h>
 #include <grappix/grappix.h>
 #include <SDL/SDL.h>
+#include <algorithm>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -17,8 +21,29 @@ using namespace utils;
 using namespace std;
 using namespace grappix;
 
-static const int bufSize = 8192;
-static double percent = 50;
+static const int bufSize = 32768;
+static double percent = 20;
+
+string setSearchString;
+bool newSS = false;
+
+int playIndex = -1;
+extern "C" {
+
+void play_index(int i) {
+	playIndex = i;
+}
+
+void set_searchstring(char *s) {
+	setSearchString = s;
+	newSS = true;
+}
+
+}
+
+//extern "C" {
+//extern unsigned int opcode_stats[256];
+//};
 
 #ifdef EMSCRIPTEN
 static const char *itoa(int l) {
@@ -36,23 +61,37 @@ struct App {
 	Texture scr;
 	GLuint program;
 	float tstart;
-	ModPlugin *modPlugin;
+	//ModPlugin *modPlugin;
 	ChipPlayer *player;
  	SDL_AudioSpec wanted;
 	TileSet font;
 	TileLayer tiles;
-#ifdef EMSCRIPTEN
-	worker_handle worker;
-#else
-	VicePlugin *vicePlugin;
-#endif
+	unique_ptr<VicePlugin> vicePlugin;
 	int asciiToCbm[256];
-	Fifo fifo;
-	//int inProgress;
-	bool delay;
+	//Fifo fifo;
+	WebGetter webGetter;
+	unique_ptr<WebGetter::Job> sidJob;
+	SongDatabase db;
+	IncrementalQuery query;
 
+	~App() {
+		SDL_PauseAudio(1);
+		int i = 0;
+		//for(auto &r : opcode_stats)
+		//	r = (r << 8) | i++;
+		//std::sort(begin(opcode_stats), end(opcode_stats));
+		//i = 0;
+		//for(const auto &r : opcode_stats)
+		//	printf("%02x : %d\n", r&0xff, r>>8);
+	}
 
-	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr), font(8,8), tiles(40,25,640,400, font), fifo(512*1024), delay(false) { //inProgress(9999999) {
+	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr), font(8,8), tiles(40,25,16*40,16*25, font),
+	/*fifo(512*1024),*/ webGetter("files"), db { "data/hvsc.db" } { //inProgress(9999999) {
+
+		db.generateIndex();
+#ifndef EMSCRIPTEN
+		webGetter.setBaseURL("http://localhost:8000/");
+#endif
 
 		for(int i=0; i<256; i++) {
 			if(i < 0x20)
@@ -71,40 +110,16 @@ struct App {
 				asciiToCbm[i] = 0;
 		}
 
+		vicePlugin = make_unique<VicePlugin>("data/c64");
 
-		//emscripten_async_wget("C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", "Ace.sid",
-		//	onLoad, onError);
-		//emscripten_async_wget_data("http://swimsuitboys.com/droidsound/dl/C64Music/MUSICIANS/H/Hubbard_Rob/ACE_II.sid", (void*)"Ace.sid",
-		//	onLoad, onError);
-
-		//modPlugin = new ModPlugin();
-		//player = modPlugin->fromFile("data/test.mod");
-		//vicePlugin = make_unique<VicePlugin>(std::string("data/c64"));
-		//vicePlugin = new VicePlugin("data/c64");
-		//player = vicePlugin->fromFile("data/test.sid");
-		//player = modPlugin->fromFile("data/test.mod");
-#ifdef EMSCRIPTEN
-		worker = emscripten_create_worker("viceplugin.js");
-		char data[8192+8192+4096];
-		FILE *fp = fopen("data/c64/kernal", "rb");
-		fread(&data[0], 1, 8192, fp);
-		fclose(fp);
-		fp = fopen("data/c64/basic", "rb");
-		fread(&data[8192], 1, 8192, fp);
-		fclose(fp);
-		fp = fopen("data/c64/chargen", "rb");
-		fread(&data[8192*2], 1, 4096, fp);
-		fclose(fp);
-		emscripten_call_worker(worker, "init_sid", data, sizeof(data), init_callback, this);
-#else
-		vicePlugin = new VicePlugin("data/c64");
-		//player = vicePlugin->fromFile("data/test.sid");
-#endif
-		//LOGD("Player is %p", player);
-		auto bm = load_png("data/c64.png");
+		auto bm = load_png("data/c64/c64.png");
+		for(int i=0; i<bm.size(); i++) {
+			if(bm[i])
+				bm[i] = 0xffb55E6C;
+		}
 		fflush(stdout);
 		font.add_tiles(bm);
-		for(int i=0; i<40*25; i++)
+		for(int i=0; i<tiles.size(); i++)
 			tiles[i] = 0x20;
 
 	    // Set the audio format
@@ -120,36 +135,223 @@ struct App {
 	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
 	        exit(0);
 	    }
-
-#ifdef EMSCRIPTEN
-//		emscripten_async_wget2("C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid", "Ace.sid", "GET", nullptr, (void*)this,
-//			App::onLoad, App::onError, nullptr);
-#else
-		player = vicePlugin->fromFile("html/C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid");
-		print(player->getMeta("title"), 0, 0);
-		print(player->getMeta("composer"), 0, 1);
-		print(player->getMeta("copyright"), 0, 2);
-#endif
 	    SDL_PauseAudio(0);
+		//player = vicePlugin->fromFile("data/test.sid");
+	    sidJob = unique_ptr<WebGetter::Job>(webGetter.getURL("C64Music/MUSICIANS/G/Galway_Martin/Ocean_Loader_2.sid"));
+	   	query = db.find();
+
+		print("@", 0, 4);
 
 	}
 
+	mutex m;
 	bool audio = true;
+	int cursorx = 1;
+	int marker = -1;
+	int lastMarker = -1;
+	int toPlay = -1;
+	int currentSong = -1;
+	int maxSongs = 0;
+	int lastSong = -1;
+	int scrollpos = 0;
+	int delay = 0;
 
-	void update() {
-		screen.clear();
-		print(format("%03d%", (int)percent), 36, 0);
+	void update(int d) {
+
+		if(newSS) {
+			query.setString(setSearchString);
+			newSS = false;
+		}
+
+		if(playIndex >= 0) {
+			toPlay = playIndex;
+			playIndex = -1;
+		}
+
+		if(sidJob && sidJob->isDone()) {
+		    //SDL_PauseAudio(1);
+			tiles.fill(0x20, 0, 0, 0, 3);
+#ifndef EMSCRIPTEN
+			m.lock();
+#endif
+			if(player)
+				delete player;
+			player = vicePlugin->fromFile(sidJob->getFile());
+			print(player->getMeta("title"), 0, 0);
+			print(player->getMeta("composer"), 0, 1);
+			print(player->getMeta("copyright"), 0, 2);
+			maxSongs = player->getMetaInt("songs");
+			lastSong = -1;
+			currentSong = player->getMetaInt("startsong");
+#ifndef EMSCRIPTEN
+			m.unlock();
+#endif
+			//SDL_PauseAudio(0);
+		    //delete sidJob;
+		    sidJob = nullptr;
+		}
+
+		auto k = screen.get_key();
+		bool updateResult = query.newResult();
+		if(updateResult) {
+			marker = scrollpos = 0;
+		}
+
+		if(delay) {
+			if(delay == 1) {
+				if(screen.key_pressed(Window::UP))
+					marker--;
+				else if(screen.key_pressed(Window::DOWN))
+					marker++;
+				else
+					delay = 0;
+			}
+			else delay--;
+		} 
+
+
+		if(k != Window::NO_KEY) {
+			LOGD("Pressed 0x%02x", k);
+			switch(k) {
+			case 0x08:
+			case Window::BACKSPACE:
+				query.removeLast();
+				updateResult = true;
+				break;
+			case Window::ESCAPE:
+			case Window::F1:
+			case 255:
+				query.clear();
+				updateResult = true;
+				break;
+			case Window::UP:
+				if(!delay) {
+					marker--;
+					delay = 4;
+				}
+				break;
+			case Window::DOWN:
+				if(!delay) {
+					marker++;
+					delay = 4;
+				}
+				break;
+			case Window::PAGEUP:
+				marker-=(tiles.height()-5);
+				break;
+			case Window::PAGEDOWN:
+				marker+=(tiles.height()-5);
+				break;
+			case Window::LEFT:
+				if(currentSong > 0)
+					player->seekTo(--currentSong);
+				break;
+			case Window::RIGHT:
+				if(currentSong+1 < maxSongs)
+					player->seekTo(++currentSong);
+				break;
+			case Window::ENTER:
+			case 0x0d:
+			case 0x0a:
+				toPlay = marker;
+				break;
+			default:
+				break;
+			}
+
+			if(k < 0x100) {
+				if(isalnum(k) || k == ' ') {
+					query.addLetter(tolower(k));
+					updateResult = true;
+				}
+			}
+			//if(k == Window::ENTER || k == Window::SPACE) {
+			//	SDL_PauseAudio(audio ? 1 : 0);
+			//	audio = !audio;
+			//}
+		}
+		int h = tiles.height()-5;
+
+		if(marker < 0)
+			marker = 0;
+		if(marker >= query.numHits())
+			marker = query.numHits()-1;
+		//if(marker >= tiles.height())
+		//	marker = tiles.height()-1;
+
+		while(marker >= scrollpos + h) {
+			scrollpos++;
+			updateResult = true;
+		}
+		while(marker > 0  && marker < scrollpos) {
+			scrollpos--;
+			updateResult = true;
+		}
+
+		if(updateResult) {
+			tiles.fill(0x20, 1, 4, 0, 1);
+			print(query.getString(), 1, 4);
+			tiles.fill(0X20, 1, 5);
+			const auto &results = query.getResult(scrollpos, h);
+			LOGD("%d %d -> %d", scrollpos, h, results.size());
+			int i=0;
+			for(const auto &r : results) {
+				auto p = split(r, "\t");
+				if(p.size() < 3) {
+					LOGD("Illegal result line '%s' -> [%s]", r, p);
+				} else {
+					int index = atoi(p[2].c_str());
+					int fmt = db.getFormat(index);
+					//int color = Console::WHITE;
+					print(format("%s / %s", p[0], p[1]), 1, i+5);
+					//console.put(1, i+3, utf8_encode(format("%s - %s", p[1], p[0])), color);
+				}
+				i++;
+				//if(i >= h-3)
+				//	break;
+			}
+		}
+
+		if(currentSong != lastSong) {
+			print(format("SONG %02d/%02d", currentSong+1, maxSongs), tiles.width()-10, 0);
+			lastSong = currentSong;
+		}
+
+		if(toPlay >= 0) {
+			string r = query.getFull(toPlay);
+			toPlay = -1;
+			LOGD("RESULT: %s", r);
+			auto p  = utils::split(r, "\t");
+			for(size_t i = 0; i<p[2].length(); i++) {
+				if(p[2][i] == '\\')
+					p[2][i] = '/';
+			}
+			LOGD("Playing '%s'", p[2]);
+			sidJob = unique_ptr<WebGetter::Job>(webGetter.getURL(p[2])); //  + 
+		}
+
+
+		if(marker != lastMarker) {
+			if(lastMarker >= 0)
+				print(" ", 0, lastMarker);
+			if(marker >=0 )
+				print(">", 0, marker+5-scrollpos);
+			lastMarker = marker+5-scrollpos;
+		}
+
+		screen.clear(0x352879);
+		print(format("%03d%", (int)percent), 36, 2);
 		tiles.render(screen);
 		screen.flip();
-		if(screen.get_key() == Window::ENTER || screen.get_key() == Window::SPACE) {
-			SDL_PauseAudio(audio ? 1 : 0);
-			audio = !audio;
-		}
 	}
 
 	void print(const std::string &text, int x, int y) {
 		int i = x + y * tiles.width();
+		int maxi = (y+1) * tiles.width();
+		int total = tiles.width() * tiles.height();
 		for(const auto &c : text) {
+			if(i >= maxi || i >= total)
+				break;
 			tiles[i++] = asciiToCbm[c & 0xff];
 		}
 	}
@@ -157,109 +359,35 @@ struct App {
 	static void onLoad(void *arg, const char *name);
 	static void onError(void *arg, int code);
 	static void fill_audio(void *udata, Uint8 *stream, int len);
-	static void init_callback(char *data, int size, void *arg);
-	static void load_callback(char *data, int size, void *arg);
-	static void play_callback(char *data, int size, void *arg);
 };
-
-#ifdef EMSCRIPTEN
-void App::init_callback(char *data, int size, void *arg) {
-	LOGD("Init result %s", data);
-	emscripten_async_wget2("C64Music/MUSICIANS/F/Fanta/Natural_Wonders_2.sid", "Ace.sid", "GET", nullptr, (void*)arg,
-		App::onLoad, App::onError, nullptr);
-}
-
-void App::load_callback(char *data, int size, void *arg) {
-	LOGD("Loaded %s", data);
-	App *app = static_cast<App*>(arg);
-	//char t[12];
-	//sprintf(t, "%d", app->fifo.size()/2);
-	const char *t = itoa(app->fifo.size()/2);
-	emscripten_call_worker(app->worker, "play_sid_song", t, strlen(t)+1, play_callback, app);
-	//app->inProgress = 0;//app->fifo.size()/2;
-}
-
-void App::play_callback(char *data, int size, void *arg) {
-	App *app = static_cast<App*>(arg);
-	LOGD("Got %d bytes samples", size);
-	app->fifo.putBytes(data, size);
-
-	int left = app->fifo.size() - app->fifo.filled();
-	if(left > 128*1024) {
-		const char *t = itoa(128*1024);
-		emscripten_call_worker(app->worker, "play_sid_song", t, strlen(t)+1, play_callback, app);
-	} else {
-		app->delay = true;
-		LOGD("Buffer full");
-	}
-}
-
-void App::onLoad(void *arg, const char *name) {
-	LOGD("### Got %s", name);
-	App *app = (App*)arg;
-	/*if(app->player)
-		delete app->player;
-	app->player = app->vicePlugin->fromFile(name);
-	app->print(app->player->getMeta("title"), 0, 0);
-	app->print(app->player->getMeta("composer"), 0, 1);
-	app->print(app->player->getMeta("copyright"), 0, 2);*/
-	char temp[64*1024];
-	FILE *fp = fopen(name, "rb");
-	int size = fread(temp, 1, sizeof(temp), fp);
-	fclose(fp);
-
-	LOGD("Read %d bytes sid", size);
-
-	emscripten_call_worker(app->worker, "load_sid_song", temp, size, load_callback, app);
-}
-
-void App::onError(void *arg, int code) {
-	LOGD("Failed");
-}
-
-#endif
 
 void App::fill_audio(void *udata, Uint8 *stream, int len) {
 	App *app = static_cast<App*>(udata);
-#ifdef EMSCRIPTEN
-	if(app->fifo.filled() > len)
-		app->fifo.getBytes((char*)stream, len);
-	else {
-		memset(stream, 0, len);
-	}
-
-	int left = app->fifo.size() - app->fifo.filled();
-	LOGD("Filled %d", app->fifo.filled());
-	if(app->delay && left > 128*1024) {
-		const char *t = itoa(128*1024);
-		emscripten_call_worker(app->worker, "play_sid_song", t, strlen(t)+1, play_callback, app);
-		app->delay = false;
-	}
-
-#else
-	static vector<int16_t> buffer(bufSize);
+	//static vector<int16_t> buffer(bufSize);
 	//float now = emscripten_get_now();
 	int rc = 0;
 	if(app->player) {
+#ifndef EMSCRIPTEN
+		app->m.lock();
+#endif
 		auto now = getms();//emscripten_get_now();
-		rc = app->player->getSamples(&buffer[0], len/2);
+		rc = app->player->getSamples((int16_t*)stream, len/2);
 		auto t = getms() - now;
+#ifndef EMSCRIPTEN
+		app->m.unlock();
+#endif
 		double p = (t * 100) / (len / 4.0 / 44.1);
-		percent = percent * 0.95 + p * 0.05;
+		percent = percent * 0.8 + p * 0.2;
 		//LOGD("Sound CPU %dms for %d samples ie %d%%", t, len, (t * 100) / (len / 4.0 / 44.1));  
-		memcpy(stream, &buffer[0], rc*2);
+		//memcpy(stream, &buffer[0], rc*2);
 	} else {
 		memset(stream, 0, len);
 	}
-	//float t = emscripten_get_now() - now;
-	//LOGD("Sound CPU %fms for %d samples ie %fms", t, len, len / 4.0 / 44.1);  
-	//LOGD("Returning");
-#endif
 }
 
-void runMainLoop() {
+void runMainLoop(int d) {
 	static App app;
-	app.update();
+	app.update(d);
 }
 
 int main() {
@@ -267,6 +395,6 @@ int main() {
 	screen.open(640, 400, false);
 	LOGD("Screen is open");
 
-	screen.renderLoop(runMainLoop);
+	screen.render_loop(runMainLoop, 20);
 	return 0;
 }

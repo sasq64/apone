@@ -52,20 +52,8 @@ class RenderTarget {
 public:
 
 
-	RenderTarget(bool fromWindow) : frameBuffer(0), _width(0), _height(0), globalScale(1.0)  {
-	}
-
 	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0) {		
 	}
-
-	void initPrograms() {
-	}
-/*
-	RenderTarget(unsigned int buffer, int width, int height) : frameBuffer(buffer), _width(width), _height(height), globalScale(1.0), font(nullptr), atlas(nullptr),
-	flatProgram { get_program_obj(FLAT_PROGRAM) },
-	texturedProgram { get_program_obj(TEXTURED_PROGRAM) } {		
-	}
-*/
 	~RenderTarget() {
 	}
 

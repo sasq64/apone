@@ -36,16 +36,18 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	glViewport(0,0,_width,_height);
 
 	auto &program = get_program(FLAT_PROGRAM);
-
-	GLuint posHandle = program.getAttribLocation("vPosition");
-	GLuint colorHandle = program.getUniformLocation("vColor");
-
 	program.use();
 
-	glLineWidth(14.0);
+	GLuint posHandle = program.getAttribLocation("vertex");
+
+	glLineWidth(2.0);
 
 	auto c = make_color(color);
-	glUniform4f(colorHandle, c.red, c.green, c.blue, 1.0);
+	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
+
+	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
+	program.setUniform("vScale", globalScale, globalScale);
+	program.setUniform("vPosition", 0, 0);
 
 	float p[4];
 
@@ -53,10 +55,6 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	p[1] = y0;//1.0 - (y0 * 2.0 / _height);
 	p[2] = x1;//(x1 * 2.0 / _width) - 1.0;
 	p[3] = y1;//1.0 - (y1 * 2.0 / _height);
-
-	//glVertexAttrib2f(posHandle, p[0], p[1]);
-	GLuint whHandle = program.getUniformLocation("vScreenScale");
-	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
 
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, p);
 	glEnableVertexAttribArray(posHandle);
@@ -101,13 +99,11 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, count);
-
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(posHandle);
 }
 
 void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, Program &program) const {
-	//static float suvs[8] = {0,1, 1,1, 0,0, 1,0};
-	//static float suvs[8] = {0,0, 1,0, 0,1, 1,1};
 
 	if(recBuf == -1) {
 		static vector<float> p {
@@ -119,8 +115,6 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 		};
 		glGenBuffers(1, (GLuint*)&recBuf);
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 	} else {
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
@@ -128,7 +122,6 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	if(uvs)
 		glBufferSubData(GL_ARRAY_BUFFER, 16 * 4, 8*4, uvs);
 
-	//LOGD("Prog %p %d", &program, program.id());
 	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -148,7 +141,6 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 		program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	//LOGD("yy %d", program.attributes.size());
 }
 
 void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, Program &program) const {
@@ -206,9 +198,6 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	//glBufferData(GL_ARRAY_BUFFER, coords.size() * 4, &coords[0], GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, coords.size() * 4, &coords[0]);
 
-	//if(program == NO_PROGRAM)
-	//program = get_program(TEXTURED_PROGRAM);
-
 	program.use();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -240,13 +229,8 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
-	auto program = get_program(FLAT_PROGRAM).id();
-	glUseProgram(program);
-
-	GLuint posHandle = glGetAttribLocation(program, "vertex");
-	GLuint colorHandle = glGetUniformLocation(program, "vColor");
-
-	//vector<float> p {x, y+h, x+w, y+h, x, y, x+w, y};
+	auto &program = get_program(FLAT_PROGRAM);
+	program.use();
 
 	if(recBuf == -1) {
 		vector<float> p {
@@ -257,29 +241,19 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 		};
 		glGenBuffers(1, (GLuint*)&recBuf);
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
 	} else
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, recBuf+1);
 
-	float red = ((color>>16)&0xff) / 255.0;
-	float green = ((color>>8)&0xff) / 255.0;
-	float blue = (color&0xff) / 255.0;
-	glUniform4f(colorHandle, red, green, blue, 1.0);
+	auto c = make_color(color);
+	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
 
-	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
-	glUniform2f(whHandle, 2.0 / _width, 2.0 / _height);
+	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
+	//program.setUniform("vScale", scale * globalScale, scale * globalScale);
+	program.setUniform("vScale", scale * globalScale * w/2, scale * globalScale * h/2);
+	program.setUniform("vPosition", (x + w/2) * globalScale, ((y + h/2)) * globalScale);
 
-	GLuint sHandle = glGetUniformLocation(program, "vScale");
-	glUniform2f(sHandle, scale * globalScale * w/2, scale * globalScale * h/2);
-
-	GLuint pHandle = glGetUniformLocation(program, "vPosition");
-	glUniform2f(pHandle, (x + w/2) * globalScale, ((y + h/2)) * globalScale);
-
-	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
-	glEnableVertexAttribArray(posHandle);
+	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
