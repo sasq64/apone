@@ -3,7 +3,11 @@ ifeq ($(SRC_PATTERNS),)
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 endif
 
-CFLAGS += $(addprefix -I, $(INCLUDES))
+ifeq ($(HOST),emscripten)
+LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
+endif
+
+CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
 CXXFLAGS += $(CFLAGS)
 COMP_CXXFLAGS += $(COMP_CFLAGS)
 # LOCAL_FILES <= Source files relative to current directory + SRCDIR

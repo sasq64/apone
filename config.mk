@@ -7,7 +7,8 @@ LIBS :=
 LDFLAGS :=
 TARGET :=
 FILES :=
-OBJDIR := obj
+INCLUDES :=
+OBJDIR := obj/
 
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 
