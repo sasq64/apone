@@ -4,15 +4,12 @@ CXX=clang++
 CC=clang
 
 include $(UTILS)/config.mk
-
-OBJDIR := obj/
-TARGET := simple
-CFLAGS += -Wall -O2 -I. -I$(UTILS)
-CXXFLAGS += -std=c++0x
-
-LDFLAGS += --preload-file data
-
 include $(GRAPPIX)/module.mk
+
+TARGET := simple
+CFLAGS += -I. -Wall -O2
+CXXFLAGS += -std=c++0x
+DATA_FILES += data/ObelixPro.ttf data/tiles.png
 
 LOCAL_FILES += simple.cpp
 

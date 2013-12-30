@@ -73,7 +73,9 @@ public:
 
 private:
 	int64_t lastTime;
+#ifdef FPS_COUNTER
 	float fps;
+#endif
 	bool winOpen;
 	unsigned int bmCounter;
 	std::chrono::high_resolution_clock::time_point benchStart;

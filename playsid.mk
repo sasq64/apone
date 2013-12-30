@@ -9,7 +9,7 @@ include $(UTILS)/config.mk
 OBJDIR := obj/
 TARGET := playsid
 #TARGET_EXT := .js
-CFLAGS += -Wall -O2 -I. -I$(UTILS)
+CFLAGS += -Wall -O2
 CXXFLAGS += -std=c++0x
 CHIPM=../chipmachine
 

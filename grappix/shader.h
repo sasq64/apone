@@ -63,7 +63,7 @@ public:
 
 	~Program() {
 		program = -5;
-		LOGD("Destroy");
+		//LOGD("Destroy");
 	}
 
 	bool operator==(const Program &p) {

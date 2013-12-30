@@ -18,6 +18,8 @@ include $(UTILS)/webutils/module.mk
 include $(GRAPPIX)/module.mk
 include $(CHIPM)/src/plugins/VicePlugin/module.mk
 
+DATA_FILES += data/hvsc.db data/c64
+
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
   SDK=/opt/android-sdk-linux
@@ -28,17 +30,11 @@ ifeq ($(HOST),android)
   CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
   LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  LDFLAGS += --preload-file data/hvsc.db --preload-file data/c64 -s TOTAL_MEMORY=67108864
-  # --preload-file fonts -s OUTLINING_LIMIT=50000
-  # 
+  LDFLAGS += -s TOTAL_MEMORY=67108864
   # -s DISABLE_EXCEPTION_CATCHING=0
   #LDFLAGS += -g -s OUTLINING_LIMIT=30000
-  #LDFLAGS += -L$(CHIPM)/src/plugins/VicePlugin/em -L$(CHIPM)/src/plugins/ModPlugin/em
   LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_set_searchstring', '_play_index']"
   TARGETDIR := html/
-else
-  #LIBS += -lviceplugin -lmodplugin
-  #LDFLAGS +=-L$(CHIPM)/src/plugins/ModPlugin -L$(CHIPM)/src/plugins/VicePlugin
 endif
 
 FILES += $(CHIPM)/src/sqlite3/sqlite3.c $(CHIPM)/src/SongDb.cpp $(CHIPM)/src/SearchIndex.cpp
