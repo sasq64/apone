@@ -213,10 +213,8 @@ GLuint createProgram(const string &vertexSource, const string &fragmentSource) {
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
 			if(bufLength) {
 				char buf[bufLength];
-				if(buf) {
-					glGetProgramInfoLog(program, bufLength, NULL, buf);
-					msg = buf;
-				}
+				glGetProgramInfoLog(program, bufLength, NULL, buf);
+				msg = buf;
 			}
 			LOGD("Link failed\n%s\n", msg.c_str());
 			glDeleteProgram(program);
@@ -274,10 +272,8 @@ void Program::createProgram() {
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
 			if(bufLength) {
 				char buf[bufLength];
-				if(buf) {
-					glGetProgramInfoLog(program, bufLength, NULL, buf);
-					msg = buf;
-				}
+				glGetProgramInfoLog(program, bufLength, NULL, buf);
+				msg = buf;
 			}
 			LOGD("Link failed\n%s\n", msg.c_str());
 			glDeleteProgram(program);

@@ -146,16 +146,13 @@ static void runMainLoop() {
 		renderLoopFunction2(rate);
 }
 #endif
-
+/*
 void Window::render_loop(function<void()> f, int fps) {
 	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
 	lastMs = utils::getms();
 	emscripten_set_main_loop(runMainLoop, fps, false);
 #else
-	//while(screen.is_open()) {
-	//	renderLoopFunction();
-	//}
 	atexit([](){
 		while(screen.is_open()) {
 			renderLoopFunction();
@@ -164,15 +161,12 @@ void Window::render_loop(function<void()> f, int fps) {
 
 #endif
 }
-
+*/
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction2 = f;
 #ifdef EMSCRIPTEN
 	emscripten_set_main_loop(runMainLoop, fps, false);
 #else
-	//while(screen.is_open()) {
-	//	renderLoopFunction();
-	//}
 	atexit([](){
 		auto lastMs = utils::getms();
 		while(screen.is_open()) {

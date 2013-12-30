@@ -32,8 +32,8 @@ bitmap load_png(const std::string &file_name) {
 	FILE *fp = fopen(file_name.c_str(), "rb");
 	if(!fp)
 		throw image_exception(format("Could not open %s", file_name));
-	fread(header, 1, 8, fp);
-	if(png_sig_cmp(header, 0, 8))
+	int rc = fread(header, 1, 8, fp);
+	if(rc < 8 || png_sig_cmp(header, 0, 8))
 		throw image_exception(format("File %s is not a png file", file_name));
 
 	// initialize stuff

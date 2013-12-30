@@ -117,7 +117,7 @@ struct App {
 	}
 };
 
-void runMainLoop() {
+void runMainLoop(uint32_t delta) {
 	static App app;
 	app.update();
 }

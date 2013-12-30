@@ -90,7 +90,7 @@ struct App {
 
 		db.generateIndex();
 #ifndef EMSCRIPTEN
-		webGetter.setBaseURL("http://localhost:8000/");
+		webGetter.setBaseURL("http://swimsuitboys.com/hvsc/");
 #endif
 
 		for(int i=0; i<256; i++) {

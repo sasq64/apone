@@ -57,7 +57,7 @@ public:
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
 
-	void render_loop(std::function<void()> f, int fps = 60);
+	//void render_loop(std::function<void()> f, int fps = 60);
 	void render_loop(std::function<void(uint32_t)> f, int fps = 60);
 
 	constexpr static const double FPS = 1.0/60.0;

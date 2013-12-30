@@ -85,7 +85,7 @@ struct App {
 	}
 };
 
-void runMainLoop() {
+void runMainLoop(uint32_t d) {
 	static App app;
 	app.update();
 }

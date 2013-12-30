@@ -2,9 +2,9 @@ UTILS=../utils
 CHIPM=../chipmachine
 GRAPPIX=grappix
 
-CXX=clang++
-CC=clang
-USE_CCACHE=1
+#CXX=clang++
+#CC=clang
+#USE_CCACHE=1
 
 include $(UTILS)/config.mk
 

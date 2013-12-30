@@ -12,7 +12,7 @@ int main() {
 		auto bm = load_png("data/tiles.png");
 		Texture t(bm);
 
-		screen.render_loop([=]() {
+		screen.render_loop([=](uint32_t) {
 			screen.clear();
 			screen.draw(t);
 			screen.circle(cxx += 4, 200, 180, 0xff0000ff);

@@ -1,5 +1,5 @@
-#include "window.h"
-#include "tween.h"
+#include "../window.h"
+#include "../tween.h"
 #include <stdio.h>
 #include <unordered_map>
 #include <EGL/egl.h>
@@ -16,6 +16,9 @@
 
 
 using namespace std;
+
+extern int main(int argc, char **argv);
+
 
 
 class AndroidHost {
@@ -332,8 +335,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 static AndroidHost host;
 
-extern int main(int argc, char **argv);
-
 void android_main(struct android_app* app) {
 	// Make sure glue isn't stripped.
 	app_dummy();
@@ -353,6 +354,8 @@ void android_main(struct android_app* app) {
 	LOGD("App ending!");
 
 }
+
+namespace grappix {
 
 
 void debug_callback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, void* userParam) {
@@ -396,13 +399,19 @@ void Window::flip() {
 }
 
 static function<void()> renderLoopFunction;
+static function<void(uint32_t)> renderLoopFunction2;
 
-void Window::renderLoop(function<void()> f) {
-	renderLoopFunction = f;
-	// Loop and render ball worm
-	while(screen.is_open()) {
-		renderLoopFunction();
-	}
+void Window::render_loop(function<void(uint32_t)> f, int fps) {
+	renderLoopFunction2 = f;
+	atexit([](){
+		auto lastMs = utils::getms();
+		while(screen.is_open()) {
+			auto ms = utils::getms();
+			uint32_t rate = ms - lastMs;
+			lastMs = ms;
+			renderLoopFunction2(rate);
+		}
+	});
 }
 
 void Window::benchmark() {
@@ -426,3 +435,4 @@ bool Window::key_pressed(key k) {
 }
 
 Window screen;
+}
