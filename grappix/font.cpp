@@ -36,7 +36,11 @@ const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZ012345678
 
 Font::Font(const string &ttfName, int size, int flags) {
 
-	ref = make_shared<FontRef>(128, 128, ttfName, size);
+	int tsize = flags & 0xffffc0;
+	if(tsize == 0) tsize = 128;
+	flags &= 0x3f;
+
+	ref = make_shared<FontRef>(tsize, tsize, ttfName, size);
 
 	auto text = fontLetters;
 	if(flags & UPPER_CASE)

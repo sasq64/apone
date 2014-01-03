@@ -39,7 +39,10 @@ public:
 
 	enum {
 		DISTANCE_MAP = 1,
-		UPPER_CASE = 2
+		UPPER_CASE = 2,
+		SIZE_128 = 128,
+		SIZE_256 = 256,
+		SIZE_512 = 512
 	};
 	Font() {};
 	Font(bool s);

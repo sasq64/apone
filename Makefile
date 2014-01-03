@@ -14,13 +14,12 @@ CFLAGS += -Wall -O2
 CXXFLAGS += -std=c++0x
 
 include $(UTILS)/coreutils/module.mk
-include $(UTILS)/webutils/module.mk
+#include $(UTILS)/webutils/module.mk
 include $(GRAPPIX)/module.mk
 include $(CHIPM)/src/plugins/ModPlugin/module.mk
 
 DATA_FILES += data/ObelixPro.ttf data/test.mod
 
-CFLAGS_demo := -DMUSIC
 
 ifeq ($(HOST),android)
   ADK=/opt/arm-linux-androideabi
@@ -39,10 +38,12 @@ else ifeq ($(HOST),emscripten)
   # -s OUTLINING_LIMIT=30000
   LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_set_searchstring', '_play_index']"
   TARGETDIR := html/
+else
+  CFLAGS += -DMUSIC
 endif
 
 ## Hack that lets us run the currently open file from Sublime if it is one of the main files
-MAIN_FILES = demo.cpp tiletest2.cpp snake.cpp simple.cpp blur.cpp map.cpp
+MAIN_FILES = demo.cpp bobs.cpp tiletest2.cpp snake.cpp simple.cpp blur.cpp map.cpp
 MAIN_FILE := $(firstword $(MAIN_FILES))
 ifneq ($(ACTIVEFILE),)
  ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)

@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009 by
+# Copyright 2000-2005, 2008, 2009, 2013 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -9,14 +9,15 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
-prefix=/usr/local
-exec_prefix=${prefix}
-exec_prefix_set=no
-includedir=${prefix}/include
-libdir=${exec_prefix}/lib
-enable_shared=
-wl=-Wl,
-hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
+LC_ALL=C
+export LC_ALL
+
+prefix="/home/sasq/android"
+exec_prefix="/home/sasq/android"
+exec_prefix_set="no"
+includedir="/home/sasq/android/include"
+libdir="/home/sasq/android/lib"
+enable_shared=""
 
 usage()
 {
@@ -72,7 +73,7 @@ while test $# -gt 0 ; do
     echo_exec_prefix=yes
     ;;
   --version)
-    echo 15.0.9
+    echo 17.1.11
     exit 0
     ;;
   --ftversion)
@@ -118,13 +119,13 @@ else
 fi
 
 if test "$echo_ft_version" = "yes" ; then
-  major=`grep define ${SYSROOT}$includedir/freetype2/freetype/freetype.h \
+  major=`grep define ${SYSROOT}$includedir/freetype2/freetype.h \
          | grep FREETYPE_MAJOR \
          | sed 's/.*[ 	]\([0-9][0-9]*\).*/\1/'`
-  minor=`grep define ${SYSROOT}$includedir/freetype2/freetype/freetype.h \
+  minor=`grep define ${SYSROOT}$includedir/freetype2/freetype.h \
          | grep FREETYPE_MINOR \
          | sed 's/.*[ 	]\([0-9][0-9]*\).*/\1/'`
-  patch=`grep define ${SYSROOT}$includedir/freetype2/freetype/freetype.h \
+  patch=`grep define ${SYSROOT}$includedir/freetype2/freetype.h \
          | grep FREETYPE_PATCH \
          | sed 's/.*[ 	]\([0-9][0-9]*\).*/\1/'`
   echo $major.$minor.$patch
@@ -132,20 +133,13 @@ fi
 
 if test "$echo_cflags" = "yes" ; then
   cflags="-I${SYSROOT}$includedir/freetype2"
-  if test "${SYSROOT}$includedir" != "/usr/include" ; then
-    echo $cflags -I${SYSROOT}$includedir
-  else
-    echo $cflags
-  fi
+  echo $cflags
 fi
 
 if test "$echo_libs" = "yes" ; then
-  rpath=
-  if test "$enable_shared" = "yes" ; then
-    eval "rpath=\"$hardcode_libdir_flag_spec\""
-  fi
-  libs="-lfreetype   "
-  if test "${SYSROOT}$libdir" != "/usr/lib" && test "${SYSROOT}$libdir" != "/usr/lib64"; then
+  libs="-lfreetype -lz   "
+  if test "${SYSROOT}$libdir" != "/usr/lib"  &&
+     test "${SYSROOT}$libdir" != "/usr/lib64"; then
     echo -L${SYSROOT}$libdir $libs
   else
     echo $libs

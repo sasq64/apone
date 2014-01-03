@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='libfreetype.so.6'
+dlname=''
 
 # Names of this library.
-library_names='libfreetype.so.6.9.0 libfreetype.so.6 libfreetype.so'
+library_names=''
 
 # The name of the static archive.
 old_library='libfreetype.a'
@@ -17,15 +17,15 @@ old_library='libfreetype.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=''
+dependency_libs=' -lz'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
 
 # Version information for libfreetype.
-current=15
-age=9
-revision=0
+current=17
+age=11
+revision=1
 
 # Is this an already installed library?
 installed=yes
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/usr/local/lib'
+libdir='/home/sasq/android/lib'

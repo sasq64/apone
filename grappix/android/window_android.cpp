@@ -185,6 +185,8 @@ public:
 		eglSurface = surface;
 		this->nativeWindow = nativeWindow;
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LOGI("Done");
 		return 0;
 	}
@@ -335,25 +337,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 static AndroidHost host;
 
-void android_main(struct android_app* app) {
-	// Make sure glue isn't stripped.
-	app_dummy();
-	LOGD("App started");
-	host.app = app;
-	app->userData = &host;
-	app->onAppCmd = engine_handle_cmd;
-	app->onInputEvent = engine_handle_input;
-	while(!host.ready()) {
-		usleep(500);
-	}
-	try {
-		main(0, nullptr);
-	} catch (std::exception &e) {
-		LOGD("Caught exception: %s", e.what());
-	}
-	LOGD("App ending!");
-
-}
 
 namespace grappix {
 
@@ -403,15 +386,6 @@ static function<void(uint32_t)> renderLoopFunction2;
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction2 = f;
-	atexit([](){
-		auto lastMs = utils::getms();
-		while(screen.is_open()) {
-			auto ms = utils::getms();
-			uint32_t rate = ms - lastMs;
-			lastMs = ms;
-			renderLoopFunction2(rate);
-		}
-	});
 }
 
 void Window::benchmark() {
@@ -435,4 +409,59 @@ bool Window::key_pressed(key k) {
 }
 
 Window screen;
+}
+
+void extract_files(struct android_app* app) {
+
+	AAssetManager* mgr = app->activity->assetManager;
+
+	const char *path = app->activity->internalDataPath;
+	LOGD("Path %s (%s)", path, app->activity->externalDataPath);
+	chdir(path);
+	mkdir("data", 0777);
+	AAssetDir *assetDir = AAssetManager_openDir(mgr, "data");
+	const char *filename;
+	while ((filename = AAssetDir_getNextFileName(assetDir)) != NULL) {
+		LOGD("Found %s", filename);
+	    string s = string("data/") + filename;
+	    AAsset *asset = AAssetManager_open(mgr, s.c_str(), AASSET_MODE_STREAMING);
+	    char buf[16*1024];
+	    int nb_read = 0;
+	    //utils::makedirs(filename);
+	    FILE *out = fopen(s.c_str(), "wb");
+	    while((nb_read = AAsset_read(asset, buf, sizeof(buf))) > 0)
+	        fwrite(buf, nb_read, 1, out);
+	    fclose(out);
+	    AAsset_close(asset);
+	}
+	AAssetDir_close(assetDir);
+}
+
+void android_main(struct android_app* app) {
+	// Make sure glue isn't stripped.
+	app_dummy();
+	extract_files(app);
+	LOGD("App started");
+	host.app = app;
+	app->userData = &host;
+	app->onAppCmd = engine_handle_cmd;
+	app->onInputEvent = engine_handle_input;
+	while(!host.ready()) {
+		usleep(500);
+	}
+	try {
+		main(0, nullptr);
+	} catch (std::exception &e) {
+		LOGD("Caught exception: %s", e.what());
+	}
+	LOGD("At exit");
+	auto lastMs = utils::getms();
+	while(grappix::screen.is_open()) {
+		auto ms = utils::getms();
+		uint32_t rate = ms - lastMs;
+		lastMs = ms;
+		grappix::renderLoopFunction2(rate);
+	}
+	LOGD("App ending!");
+
 }

@@ -8,7 +8,7 @@ int main() {
 	screen.open(false);
 
 	{
-		Font font("data/ObelixPro.ttf", 20, 1);
+		Font font("data/ObelixPro.ttf", 18);
 		auto bm = load_png("data/tiles.png");
 		Texture t(bm);
 

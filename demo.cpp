@@ -1,10 +1,10 @@
 #ifdef MUSIC
 #include "ModPlugin.h"
 #include "ChipPlayer.h"
+#include <SDL/SDL.h>
 #endif
 
 #include <grappix/grappix.h>
-#include <SDL/SDL.h>
 
 using namespace grappix;
 using namespace utils;
@@ -30,9 +30,10 @@ static const string sineShaderF = R"(
 	}
 )";
 
+#ifdef MUSIC
+
 static const int bufSize = 65536;
 
-#ifdef MUSIC
 void fill_audio(void *udata, Uint8 *stream, int len) {	
 	static vector<int16_t> buffer(bufSize);
 	auto player = static_cast<ChipPlayer*>(udata);
@@ -60,10 +61,6 @@ int main(int argc, char **argv) {
 #ifdef MUSIC
 	shared_ptr<ModPlugin> modPlugin;
 	shared_ptr<ChipPlayer> player;
-#endif
-	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE);
-
-#ifdef MUSIC
 	modPlugin = make_shared<ModPlugin>();
 	player = shared_ptr<ChipPlayer>(modPlugin->fromFile("data/test.mod"));
     // Open the audio device, forcing the desired format
@@ -73,6 +70,8 @@ int main(int argc, char **argv) {
     } else
 		SDL_PauseAudio(0);
 #endif
+
+	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE);
 
 	// Create our ball image
 	float radius = sprite.width() / 2;
@@ -87,7 +86,9 @@ int main(int argc, char **argv) {
 	program.setFragmentSource(sineShaderF);
 
 	screen.render_loop([=](uint32_t delta) mutable {
+#ifdef MUSIC
 		(void)player.get();
+#endif
 		int count = 250;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
@@ -104,6 +105,8 @@ int main(int argc, char **argv) {
 		scr.text(font, "BALLS ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, 15.0);
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
+		if(sinepos > 2*M_PI)
+			sinepos -= 2*M_PI;
 		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), program);
 		screen.flip();
 	});

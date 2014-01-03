@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='libpng16.so.16'
+dlname=''
 
 # Names of this library.
-library_names='libpng16.so.16.6.0 libpng16.so.16 libpng16.so'
+library_names=''
 
 # The name of the static archive.
 old_library='libpng16.a'
@@ -23,8 +23,8 @@ dependency_libs=' -lz -lm'
 weak_library_names=''
 
 # Version information for libpng16.
-current=22
-age=6
+current=24
+age=8
 revision=0
 
 # Is this an already installed library?
