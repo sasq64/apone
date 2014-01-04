@@ -41,6 +41,7 @@ else ifeq ($(HOST),emscripten)
   CFLAGS += -DMUSIC
 else
   CFLAGS += -DMUSIC
+  LOCAL_FILES += AudioPlayer.cpp
 endif
 
 ## Hack that lets us run the currently open file from Sublime if it is one of the main files

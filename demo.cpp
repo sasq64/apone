@@ -1,7 +1,7 @@
 #ifdef MUSIC
 #include "ModPlugin.h"
 #include "ChipPlayer.h"
-#include <SDL/SDL.h>
+#include "AudioPlayer.h"
 #endif
 
 #include <grappix/grappix.h>
@@ -30,23 +30,6 @@ static const string sineShaderF = R"(
 	}
 )";
 
-#ifdef MUSIC
-
-static const int bufSize = 65536;
-
-void fill_audio(void *udata, Uint8 *stream, int len) {	
-	static vector<int16_t> buffer(bufSize);
-	auto player = static_cast<ChipPlayer*>(udata);
-	int rc = 0;
-	if(player) {
-		rc = player->getSamples(&buffer[0], len/2);
-		memcpy(stream, &buffer[0], rc*2);
-	} else {
-		memset(stream, 0, len);
-	}
-}
-#endif
-
 int main(int argc, char **argv) {
 
 	screen.open(800, 600, false);
@@ -58,17 +41,18 @@ int main(int argc, char **argv) {
 	Texture scr {screen.width()+200, 400};
 	Program program;
 	float sinepos = 0;
+
 #ifdef MUSIC
-	shared_ptr<ModPlugin> modPlugin;
-	shared_ptr<ChipPlayer> player;
-	modPlugin = make_shared<ModPlugin>();
-	player = shared_ptr<ChipPlayer>(modPlugin->fromFile("data/test.mod"));
-    // Open the audio device, forcing the desired format
-	SDL_AudioSpec wanted = { 44100, AUDIO_S16, 2, 0, bufSize/2, 0, 0, fill_audio, player.get() };
-    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
-        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-    } else
-		SDL_PauseAudio(0);
+	auto modPlugin = make_shared<ModPlugin>();
+	auto player = shared_ptr<ChipPlayer>(modPlugin->fromFile("data/test.mod"));
+
+	AudioPlayer aPlayer([=](uint16_t *target, int len) {
+		if(player) {
+			player->getSamples((int16_t*)target, len);
+		} else {
+			memset(target, 0, len*2);
+		}
+	});
 #endif
 
 	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE);
@@ -86,14 +70,9 @@ int main(int argc, char **argv) {
 	program.setFragmentSource(sineShaderF);
 
 	screen.render_loop([=](uint32_t delta) mutable {
-#ifdef MUSIC
-		(void)player.get();
-#endif
 		int count = 250;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
-		if(xpos < -3600)
-			xpos = screen.width() + 200;
 		// Balls
 		screen.clear();
 		vec2f xy2 = xy += {0.001f * 0.6f * delta, 0.003f * 0.7f * delta};
@@ -101,12 +80,14 @@ int main(int argc, char **argv) {
 			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
 		// Scroller
+		if(sinepos > 2*M_PI)
+			sinepos -= 2*M_PI;
+		if(xpos < -3600)
+			xpos = screen.width() + 200;
 		scr.clear();
 		scr.text(font, "BALLS ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, 15.0);
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
-		if(sinepos > 2*M_PI)
-			sinepos -= 2*M_PI;
 		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), program);
 		screen.flip();
 	});
