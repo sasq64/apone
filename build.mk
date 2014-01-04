@@ -137,7 +137,7 @@ $(TARGETDIR)$(TARGET).apk: $(TARGETDIR)$(TARGET).so
 	mkdir -p $(ANDROID_PROJECT)/assets/data
 	cp -a $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
 	./fixManifest.py $(ANDROID_PROJECT)/AndroidManifest.xml $(REAL_TARGET)
-	cd $(ANDROID_PROJECT) ; $(ANT) debug
+	cd $(ANDROID_PROJECT) ; ANDROID_HOME=$(ANDROID_SDK) $(ANT) debug
 
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)

@@ -67,22 +67,21 @@ ifeq ($(HOST),android)
   LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
 
   # Test for prerequisites
-  ACC := $(shell which $(PREFIX)$(CC))
-  ifneq ($(ACC),)
-    ANDROID_TOOLCHAIN := $(subst /bin/,,$(dir $(ACC)))
-    $(info Android toolchain at $(ANDROID_TOOLCHAIN))
+
+  # First, we need the SDK. Find it from the path to the 'android' binary
+  ifeq ($(ANDROID_SDK),)
+    ANDROID_TOOL := $(realpath $(shell which android))
+    ifneq ($(ANDROID_TOOL),)
+      ANDROID_SDK := $(subst /tools/,,$(dir $(ANDROID_TOOL)))
+      $(info Android SDK at $(ANDROID_SDK))
+    else
+      $(error Can not find Android SDK. Make sure the 'android' command is in your path.)
+    endif
   else
-    $(error Can not find Android C compiler)
+    ANDROID_TOOL := $(ANDROID_SDK)/tools/android
   endif
 
-  ANDROID_TOOL := $(shell which android)
-  ifneq ($(ANDROID_TOOL),)
-    ANDROID_SDK := $(subst /tools/,,$(dir $(ANDROID_TOOL)))
-    $(info Android SDK at $(ANDROID_SDK))
-  else
-    $(error Can not find Android SDK. Make sure the 'android' command is in your path.)
-  endif
-
+  # Next, try to find the NDK relative to the SDK
   ifeq ($(ANDROID_NDK),)
     SDK_PARENT := $(dir $(ANDROID_SDK))
     ANDROID_NDK := $(lastword $(sort $(wildcard $(SDK_PARENT)*ndk*)))
@@ -92,6 +91,15 @@ ifeq ($(HOST),android)
       $(error Can not find an NDK)
     endif
   endif    
+
+  ACC := $(realpath $(shell which $(PREFIX)$(CC)))
+  ifneq ($(ACC),)
+    ANDROID_TOOLCHAIN := $(subst /bin/,,$(dir $(ACC)))
+    $(info Android toolchain at $(ANDROID_TOOLCHAIN))
+  else
+    $(error Can not find Android C compiler)
+  endif
+
 
   ifeq ($(shell which ant),)
     $(error You need ant to build android projects)
