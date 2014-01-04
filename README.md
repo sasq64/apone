@@ -6,106 +6,35 @@ GRAPPIX
 * Inspired by 8 bit basic computers
 
 
-line(x...)
- EQU
-x = make_line(x..)
-draw(x)
+CLASS DESIGN/CODING STANDARD
+============================
 
-Where x is a VBO with data and program
+All classes should be designed for pass-by-value. This means that client code should
+normally not need to use new or delete, and can program more like a scripting
+language then traditional c++, including more functional programming. For example
 
-Need to define x
-
-All data required to render or build a VBO
-vertices, indexes, program, texture
-
-STEP 1:
-Define data so draw() is fast and simple
-
-STEP 2:
-Generate object, but rendering effeciency is key.
-
-Variables of a VBO
-
-Known uniforms: Allows you to scale, postion, colorize or rotate an unknown GL object
-
-Program: Reprogram a known object
-Attributes: Known object
-
-Texture: Unknown object.
-
-TWO DISTINCT PARTS; KNOWN/UNKNOWN
-
-texture scroller(w,h);
-scroller.set_program(p)
-
-scroller.text("HELLO!")
-
-screen.draw(scroller)
-
-
-
-Tiles & Playfields
-
-
-TileArea ta(tileSet);
-
-ta[x+y*w] = 0;
-ta.render();
-
-class Tween {
-};
-
-PlayField pf(tileSet);
-	moveSprite(int no, function<vec2f(float t)>)
-
-pf.putSprite(0, x, y);
-pf.moveSpriteTo(0, x2, y2);
-pf.moveSprite(0, generator);
-
-pf.moveSprite(1, Tween({pos, 0}, {easeIn, true});
-
-pf.render();
-
-class TweenArg {
-TweenARg(string, T)
+``
+function<Bitmap()> createFractalGenerator(int w, int h) {
+	Bitmap bitmap(w, h);
+	return [=]() -> Bitmap {
+		for(int y=0; y<h; y++)
+			for(int x=0; x<w; x++)
+				bitmap[x+w*h] = someFunction(x,y);
+		return bitmap;
+	};
 }
-
-Tween(obj, time, vector<TweenArg> args)
-
-
-Tween(Sprite, t, vector<TweenArg<Sprite>> args)
+``
 
 
-STATE
-Texture
-Program
- uniforms
+THE MAKEFILE MODULE SYSTEM
+==========================
 
-draw(texture, x = 0, y = 0, w = -1, h = -1)
-draw(state...
-draw(program...
+1. Include `config.mk`. This file tries figures out your environment and sets up
+   default flags, compiler etc. It also makes sure you have the right SDKs etc and
+   complains otherwise.
 
-Shapes are predefined, we assume almost alwasy rectangle. Lines and circles have no extra state (textures, program) normally.
+2. Include the modules you need.
 
-draw({ "techStart", 2.0 }, techProgram);
-screen.draw(...)
-texture blurTarget;
-blurTarget.draw(...)
+3. Set your build variables;
 
-
-
-
-VBLCACHE
-Check every vblank
-
-cache.add(something, T)
-T cache.get<T>(something)
-cache.update() // Anything not touched since last update is removed
-
-
-
-
-
-TODO
-
-Grappix as a module
+4. Include `build.mk`

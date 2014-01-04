@@ -8,6 +8,7 @@ CFLAGS +=  -DWITH_FREETYPE
 
 ifeq ($(HOST),android)
   MODULES += $(THIS_DIR)android
+  LDFLAGS += -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
   MODULES += $(THIS_DIR)pc
   #INCLUDES += $(THIS_DIR)freetype/include

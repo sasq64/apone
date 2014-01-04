@@ -20,15 +20,10 @@ include $(CHIPM)/src/plugins/VicePlugin/module.mk
 
 DATA_FILES += data/hvsc.db data/c64
 
-ifeq ($(HOST),android)
-  ADK=/opt/arm-linux-androideabi
-  SDK=/opt/android-sdk-linux
-  APP_PLATFORM=android-10
 
-  LDFLAGS += --sysroot=/opt/android-ndk-r9/platforms/android-14/arch-arm
-  LOCAL_FILES += android/android_native_app_glue.c
-  CFLAGS += -Iandroid -I$(ADK)/include -I$(ADK)/include/freetype2
-  LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
+ifeq ($(HOST),android)
+  ANDROID_PROJECT := android
+  TARGET_EXT := .apk
 else ifeq ($(HOST),emscripten)
   LDFLAGS += -s TOTAL_MEMORY=67108864
   # -s DISABLE_EXCEPTION_CATCHING=0
