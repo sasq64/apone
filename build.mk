@@ -7,6 +7,12 @@ ifeq ($(HOST),emscripten)
 LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
 endif
 
+ifeq ($(HOST),android)
+LDFLAGS += --sysroot=$(ANDROID_NDK)/platforms/$(NDK_PLATFORM)/arch-arm
+FILES += $(ANDROID_NDK)/sources/android/native_app_glue/android_native_app_glue.c
+CFLAGS += -I$(ANDROID_NDK)/sources/android
+endif
+
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
 CXXFLAGS += $(CFLAGS)
 COMP_CXXFLAGS += $(COMP_CFLAGS)
@@ -27,6 +33,7 @@ OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(adds
 OBJDIR := $(OBJDIR)$(HOST)
 OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 
+REAL_TARGET := $(TARGET)
 TARGET := $(TARGET_PRE)$(TARGET)
 
 start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
@@ -43,19 +50,19 @@ linkrun: remove_target run
 
 $(OBJDIR)%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $< -o $@
+	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
 
 $(OBJDIR)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
 
 $(OBJDIR)%.o: %.cc
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
 
 $(OBJDIR)%.o: %.cxx
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
 
 $(OBJDIR)%.o: %.S
 	@mkdir -p $(@D)
@@ -123,6 +130,14 @@ $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 
 $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
+
+$(TARGETDIR)$(TARGET).apk: $(TARGETDIR)$(TARGET).so
+	mkdir -p $(ANDROID_PROJECT)/libs/armeabi
+	cp $(TARGETDIR)$(TARGET).so $(ANDROID_PROJECT)/libs/armeabi/
+	mkdir -p $(ANDROID_PROJECT)/assets/data
+	cp -a $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
+	./fixManifest.py $(ANDROID_PROJECT)/AndroidManifest.xml $(REAL_TARGET)
+	cd $(ANDROID_PROJECT) ; $(ANT) debug
 
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)

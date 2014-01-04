@@ -57,11 +57,45 @@ endif
 endif
 
 ifeq ($(HOST),android)
-	PREFIX=arm-linux-androideabi-
-	TARGET_PRE=lib
-	TARGET_EXT=.so
- 	CFLAGS += -DANDROID
-    LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
+
+  APP_PLATFORM=android-10
+  NDK_PLATFORM=android-14
+  PREFIX=arm-linux-androideabi-
+  TARGET_PRE=lib
+  TARGET_EXT=.so
+  CFLAGS += -DANDROID
+  LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
+
+  # Test for prerequisites
+  ACC := $(shell which $(PREFIX)$(CC))
+  ifneq ($(ACC),)
+    ANDROID_TOOLCHAIN := $(subst /bin/,,$(dir $(ACC)))
+    $(info Android toolchain at $(ANDROID_TOOLCHAIN))
+  else
+    $(error Can not find Android C compiler)
+  endif
+
+  ANDROID_TOOL := $(shell which android)
+  ifneq ($(ANDROID_TOOL),)
+    ANDROID_SDK := $(subst /tools/,,$(dir $(ANDROID_TOOL)))
+    $(info Android SDK at $(ANDROID_SDK))
+  else
+    $(error Can not find Android SDK. Make sure the 'android' command is in your path.)
+  endif
+
+  ifeq ($(ANDROID_NDK),)
+    SDK_PARENT := $(dir $(ANDROID_SDK))
+    ANDROID_NDK := $(lastword $(sort $(wildcard $(SDK_PARENT)*ndk*)))
+    ifneq ($(ANDROID_NDK),)
+      $(info Found NDK at $(ANDROID_NDK))
+    else
+      $(error Can not find an NDK)
+    endif
+  endif    
+
+  ifeq ($(shell which ant),)
+    $(error You need ant to build android projects)
+  endif
 
 else ifeq ($(HOST),emscripten)
 	CC = emcc
@@ -94,6 +128,7 @@ CXX := $(PREFIX)$(CXX)$(C_VERSION)
 #endif
 
 LD := $(CXX)
+ANT := ant
 
 ifeq ($(AR),)
 AR := ar
