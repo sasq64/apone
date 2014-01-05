@@ -1,16 +1,21 @@
 # Reset default src patterns if empty
 ifeq ($(SRC_PATTERNS),)
-SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
+  SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 endif
 
 ifeq ($(HOST),emscripten)
-LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
+  LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
 endif
 
 ifeq ($(HOST),android)
-LDFLAGS += --sysroot=$(ANDROID_NDK)/platforms/$(NDK_PLATFORM)/arch-arm
-FILES += $(ANDROID_NDK)/sources/android/native_app_glue/android_native_app_glue.c
-CFLAGS += -I$(ANDROID_NDK)/sources/android
+
+  ifeq ($(ANDROID_PROJECT),)
+    $(error You need to set up a target project directory. Try using 'android create project')
+  endif
+
+  LDFLAGS += --sysroot=$(ANDROID_NDK)/platforms/$(NDK_PLATFORM)/arch-arm
+  FILES += $(ANDROID_NDK)/sources/android/native_app_glue/android_native_app_glue.c
+  CFLAGS += -I$(ANDROID_NDK)/sources/android
 endif
 
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
@@ -22,7 +27,7 @@ FILES := $(realpath $(FILES))
 FILES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_FILES)))
 # FILES <= Now full path of all source files
 
-# Create corresponding list of OBJS from FILES
+# Create corresponding list of OBJS from FILES (but only files that end with a pattern in SRC_PATTERNS)
 OBJS := $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),$(FILES))) )
 
 # Also add all source files inside MODULES directories

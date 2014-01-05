@@ -63,7 +63,7 @@ ifeq ($(HOST),android)
   PREFIX=arm-linux-androideabi-
   TARGET_PRE=lib
   TARGET_EXT=.so
-  CFLAGS += -DANDROID
+  CFLAGS += -DANDROID -DGL_ES
   LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
 
   # Test for prerequisites
@@ -88,19 +88,21 @@ ifeq ($(HOST),android)
     ifneq ($(ANDROID_NDK),)
       $(info Found NDK at $(ANDROID_NDK))
     else
-      $(error Can not find an NDK)
+      $(error Can not find Android NDK)
     endif
-  endif    
-
-  ACC := $(realpath $(shell which $(PREFIX)$(CC)))
-  ifneq ($(ACC),)
-    ANDROID_TOOLCHAIN := $(subst /bin/,,$(dir $(ACC)))
-    $(info Android toolchain at $(ANDROID_TOOLCHAIN))
-  else
-    $(error Can not find Android C compiler)
   endif
 
+  # Create a separate toolchain from the NDK if not created earlier
+  ANDROID_TOOLCHAIN=$(HOME)/.cache/$(NDK_PLATFORM)-toolchain
+  ifeq ($(realpath $(ANDROID_TOOLCHAIN)),)
+    $(info Creating standalone toolchain for android)
+    RES := $(shell $(ANDROID_NDK)/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-clang3.3 --platform=$(NDK_PLATFORM) --install-dir=$(ANDROID_TOOLCHAIN))
+  else
+    $(info Android toolchain already created in $(ANDROID_TOOLCHAIN))
+  endif
+  export PATH := $(PATH):$(ANDROID_TOOLCHAIN)/bin
 
+  # We also need ant to build the final project
   ifeq ($(shell which ant),)
     $(error You need ant to build android projects)
   endif
