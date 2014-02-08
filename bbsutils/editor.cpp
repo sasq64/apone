@@ -165,6 +165,10 @@ wstring LineEditor::getWResult() {
 }
 //
 
+SimpleEditor::SimpleEditor(Console &console) : console(console) {
+}
+
+
 FullEditor::FullEditor(Console &console) : console(console) {
 	console.clear();
 	console.moveCursor(0,0);

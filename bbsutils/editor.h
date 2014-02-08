@@ -54,6 +54,18 @@ protected:
 
 };
 
+class SimpleEditor : public Editor {
+public:
+	SimpleEditor(Console &console);
+	int update(int msec);
+	std::string getResult();
+private:
+	Console &console;
+	int lineNo;
+	std::vector<std::wstring> lines;
+	std::unique_ptr<LineEditor> lineEd;
+};
+
 class FullEditor : public Editor {
 public:
 	FullEditor(Console &console);

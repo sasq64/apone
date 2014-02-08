@@ -136,6 +136,9 @@ void Console::put(int x, int y, Char c, int fg, int bg) {
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
 
+	if(y >= clipY1 || y < clipY0 || x >= clipX1 || x < clipX0)
+		return;
+
 	auto &t = grid[x + y * width];
 	t.c = c;
 	impl_translate(t.c);
@@ -157,7 +160,7 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
 
-	if(y >= height)
+	if(y >= clipY1 || y < clipY0)
 		return;
 
     vector<uint32_t> output(128);
@@ -166,7 +169,9 @@ void Console::put(int x, int y, const string &text, int fg, int bg) {
 	//for(int i=0; i<(int)text.length(); i++) {
     for(int i=0; i<l; i++) {
 
-		if(x+i >= width)
+    	if(x+i < clipX0)
+    		continue;
+		if(x+i >= clipX1)
 			return;
 
 		auto &t = grid[(x+i) + y * width];
@@ -191,12 +196,14 @@ void Console::put(int x, int y, const wstring &text, int fg, int bg) {
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
 
-	if(y >= height)
+	if(y >= clipY1 || y < clipY0)
 		return;
 	
 	for(int i=0; i<(int)text.length(); i++) {
   
-		if(x+i >= width)
+    	if(x+i < clipX0)
+    		continue;
+		if(x+i >= clipX1)
 			return;
 
 		auto &t = grid[(x+i) + y * width];
@@ -219,6 +226,9 @@ void Console::put(int x, int y, const wstring &text, int fg, int bg) {
 void Console::resize(int w, int h) {
 	width = w;
 	height = h;
+	clipX0 = clipY0 = 0;
+	clipX1 = w;
+	clipY1 = h;
 	LOGD("Resize");
 	grid.resize(w*h);
 	oldGrid.resize(w*h);
@@ -423,6 +433,9 @@ int Console::getKey(int timeout) {
 std::string Console::getLine(int maxlen) {
 	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
 	while(lineEd->update(500) != KEY_ENTER);
+	if(maxlen == 0) {
+		moveCursor(0, curY+1);
+	}
 	return lineEd->getResult();
 }
 

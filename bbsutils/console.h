@@ -103,6 +103,10 @@ public:
 
 	};
 
+	enum {
+		CODE_CRLF = 0x2028
+	};
+
 	typedef uint16_t Char;
 
 	struct Tile {
@@ -131,6 +135,9 @@ public:
 	Console(Terminal &terminal) : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40), height(25), curX(0), curY(0) {
 		grid.resize(width*height);
 		oldGrid.resize(width*height);
+		clipX0 = clipY0 = 0;
+		clipX1 = width;
+		clipY1 = height;
 		terminal.open();
 	}
 
@@ -166,6 +173,10 @@ public:
 	//virtual void scrollLine(int dx);
 
 	virtual std::string getLine(int maxlen = 0);
+	virtual std::string getLine(const std::string &prompt, int maxlen = 0) {
+		write(prompt);
+		return getLine(maxlen);
+	}
 	virtual std::string getPassword(int maxlen = 0);
 /*
 	virtual std::future<std::string> getLineAsync() {
@@ -193,7 +204,16 @@ public:
 
 	utils::vec2<int> getCursor() const { return utils::vec2<int>(curX, curY); }
 	void moveCursor(const utils::vec2<int> &pos) { moveCursor(pos.x, pos.y); }
+	void crlf() { moveCursor(0, curY++); }
 
+	void clipArea(int x = 0, int y = 0, int w = -1, int h = -1) {
+		if(w <= 0)  w = width-w;
+		if(h <= 0)  h = height-h;
+		clipX0 = x;
+		clipY0 = y;
+		clipX1 = x + w;
+		clipY1 = y + h;
+	}
 
 	int getFg() const { return fgColor; }
 	int getBg() const { return bgColor; }
@@ -246,6 +266,11 @@ protected:
 	// The current REAL cursor position on the console
 	int curX;
 	int curY;
+
+	int clipX0;
+	int clipY0;
+	int clipX1;
+	int clipY1;
 
 	//std::mutex lock;
 	//std::atomic<bool> getLineStarted;
