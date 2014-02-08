@@ -1,91 +1,45 @@
 #ifndef DS_FIFO_H
 #define DS_FIFO_H
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h>
+#include <memory>
 
 class Fifo {
 
 public:
-	Fifo(int size);
-	~Fifo();
-	void putBytes(char *src, int bytelen);
-	void putShorts(short *src, int shortlen) {
-		putBytes((char*)src, shortlen*2);
+	Fifo(int size) : fifo(std::make_shared<_Fifo>(size)) {}
+	//~Fifo();
+	void putBytes(uint8_t *src, int bytelen) { fifo->putBytes(src, bytelen); }
+	void putShorts(uint16_t *src, int shortlen) {
+		putBytes((uint8_t*)src, shortlen*2);
 	}
-	int getBytes(char *dest, int bytelen);
-	int getShorts(short *dest, int shortlen) {
-		return getBytes((char*)dest, shortlen*2) / 2;
+	int getBytes(uint8_t *dest, int bytelen) { return fifo->getBytes(dest, bytelen); }
+	int getShorts(uint16_t *dest, int shortlen) {
+		return getBytes((uint8_t*)dest, shortlen*2) / 2;
 	}
 
-	void processBytes(char *src, int byteLen);
+	int filled() { return fifo->bufPtr - fifo->buffer; }
+	int size() { return fifo->_size; }
 
-	int filled() { return bufPtr - buffer; }
+	uint16_t* shortPtr() { return (uint16_t*)fifo->bufPtr; }
+	uint8_t* bytePtr() { return (uint8_t*)fifo->bufPtr; }
 
-	int getSilence() { return position - lastSoundPos; }
+	template <typename T> T *ptr() { return (T*)fifo->bufPtr;}
 
-	int size() { return _size; }
-
+	uint16_t* shortBuffer() { return (uint16_t*)fifo->buffer; }
+	uint8_t* byteBuffer() { return (uint8_t*)fifo->buffer; }
 private:
-	int _size;
-	int lastSoundPos;
-	int position;
-	char *buffer;
-	char *bufPtr;
-
+	struct _Fifo {
+		_Fifo(int size);
+		~_Fifo();
+		void putBytes(uint8_t *src, int bytelen);
+		int getBytes(uint8_t *dest, int bytelen);
+		int _size;
+		int position;
+		uint8_t *buffer;
+		uint8_t *bufPtr;
+	};
+	std::shared_ptr<_Fifo> fifo;
 };
-
-Fifo::Fifo(int size) : _size(size) {
-	buffer = NULL;
-	if(size > 0) {
-		buffer = (char *)malloc(size);
-	}
-	bufPtr = buffer;
-	position = 0;
-}
-
-Fifo::~Fifo() {
-	if(buffer)
-		free(buffer);
-}
-
-
-
-void Fifo::processBytes(char *src, int bytelen) {
-
-	int soundPos = -1;
-	short *samples = (short*)src;
-	for(int i=0; i<bytelen/2; i++) {
-		short s = samples[i];
-		if(s > 256 || s < -256)
-			soundPos = i;
-	}
-
-	if(soundPos >= 0)
-		lastSoundPos = position + soundPos;
-
-	position += (bytelen/2);
-
-}
-
-void Fifo::putBytes(char *src, int bytelen) {
-	memcpy(bufPtr, src, bytelen);
-	//processBytes(src, bytelen);
-	bufPtr += bytelen;
-}
-
-int Fifo::getBytes(char *dest, int bytelen) {
-
-	int filled = bufPtr - buffer;
-	if(bytelen > filled)
-		bytelen = filled;
-
-	memcpy(dest, buffer, bytelen);
-	if(filled > bytelen)
-		memmove(buffer, &buffer[bytelen], filled - bytelen);
-	bufPtr = &buffer[filled - bytelen];
-
-	return bytelen;
-}
 
 #endif

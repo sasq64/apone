@@ -5,6 +5,15 @@ GRAPPIX
 * Allows for very simple programs
 * Inspired by 8 bit basic computers
 
+PREREQUISITES
+=============
+gcc/g++ or clang/clang++
+cgc (nvidia-cg-toolkit)
+For Android
+android-sdk (updated)
+android-ndk (r9+)
+ant
+For Emscripten
 
 CLASS DESIGN/CODING STANDARD
 ============================

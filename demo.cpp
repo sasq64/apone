@@ -2,6 +2,8 @@
 #include "ModPlugin.h"
 #include "ChipPlayer.h"
 #include "AudioPlayer.h"
+#include "MusicPlayer.h"
+#include "Equalizer.h"
 #endif
 
 #include <grappix/grappix.h>
@@ -41,17 +43,12 @@ int main(int argc, char **argv) {
 	Texture scr {screen.width()+200, 400};
 	Program program;
 	float sinepos = 0;
+	int slots = 26;
 
 #ifdef MUSIC
-	auto modPlugin = make_shared<ModPlugin>();
-	auto player = shared_ptr<ChipPlayer>(modPlugin->fromFile("data/test.mod"));
-
-	AudioPlayer aPlayer([=](uint16_t *target, int len) {
-		if(player) {
-			player->getSamples((int16_t*)target, len);
-		} else {
-			memset(target, 0, len*2);
-		}
+	auto player = MusicPlayer::fromFile("mods/planetarium.mod");
+	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
+		player.getSamples(target, len);
 	});
 #endif
 
@@ -68,12 +65,12 @@ int main(int argc, char **argv) {
 
 	program = get_program(TEXTURED_PROGRAM).clone();
 	program.setFragmentSource(sineShaderF);
-
 	screen.render_loop([=](uint32_t delta) mutable {
 		int count = 250;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
 		// Balls
+
 		screen.clear();
 		vec2f xy2 = xy += {0.001f * 0.6f * delta, 0.003f * 0.7f * delta};
 		for(int i=0; i<count; i++)

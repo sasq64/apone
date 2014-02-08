@@ -12,6 +12,10 @@ int main() {
 	vec2f size {radius*2, radius*2};
 	Texture sprite { size };
 
+	screen.call_repeatedly([]() {
+		LOGD("HELLO!");
+	}, 1000);
+
 	sprite.clear();
 	sprite.circle(size/2, radius, 0x000020); // Outline
 	sprite.circle(size/2, radius*0.9, 0x0000C0); // Main ball

@@ -46,7 +46,8 @@ public:
 		return basic_bitmap(w, h, &(*pixels)[0]);
 	}
 
-	T& operator[](const int &i) { 
+	T& operator[](const int &i) {
+		dirty = true;
 		return (*pixels)[i];
 	}
 
@@ -88,11 +89,15 @@ public:
 
 	const T* flipped() const {
 
-		int l = sizeof(T) * w;
-		flipPixels.resize(w*h);
-		for(int y=0; y<h; y++)
-			std::memcpy(&flipPixels[y*w], &(*pixels)[(h-y-1)*w], l);
-		return &flipPixels[0];
+		if(dirty) {
+			 flipPixels = std::make_shared<vector<T>>(w*h);
+			int l = sizeof(T) * w;
+			flipPixels->resize(w*h);
+			for(int y=0; y<h; y++)
+				std::memcpy(&(*flipPixels)[y*w], &(*pixels)[(h-y-1)*w], l);
+			dirty = false;
+		}
+		return &(*flipPixels)[0];
 	}
 
 
@@ -101,10 +106,10 @@ public:
 	int size() const { return w*h; }
 private:
 	std::shared_ptr<std::vector<T>> pixels;
-	mutable std::vector<T> flipPixels;
-	bool dirty;
-	int w;
-	int h;
+	mutable std::shared_ptr<std::vector<T>> flipPixels;
+	mutable bool dirty;
+	const int w;
+	const int h;
 };
 
 typedef basic_bitmap<uint32_t> bitmap;

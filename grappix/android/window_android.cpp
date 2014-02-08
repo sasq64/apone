@@ -536,6 +536,12 @@ void extract_files(struct android_app* app) {
 	AAssetDir_close(assetDir);
 }
 
+static std::vector<std::pair<std::function<void(void*)>, void*>> callbacks;
+
+void add_callback(std::function<void(void*)> f, void *context) {
+	callbacks.push_back(std::make_pair(f, context));
+}
+
 void android_main(struct android_app* app) {
 	// Make sure glue isn't stripped.
 	app_dummy();
@@ -560,6 +566,9 @@ void android_main(struct android_app* app) {
 		uint32_t rate = ms - lastMs;
 		lastMs = ms;
 		host.pollEvents();
+		for(auto f : callbacks) {
+			f.first(f.second);
+		}
 		grappix::renderLoopFunction2(rate);
 	}
 	LOGD("App ending!");

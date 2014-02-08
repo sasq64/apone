@@ -20,6 +20,7 @@
 using namespace utils;
 using namespace std;
 using namespace grappix;
+using namespace chipmachine;
 
 static const int bufSize = 32768;
 static double percent = 20;

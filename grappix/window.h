@@ -7,6 +7,7 @@
 #include <coreutils/utils.h>
 #include <chrono>
 #include <unordered_map>
+#include <set>
 #include <deque>
 #include <functional>
 
@@ -82,7 +83,26 @@ public:
 	static std::deque<int> key_buffer;
 	static std::deque<click> click_buffer;
 
+	int call_repeatedly(std::function<void(void)> f, int msec);
+	void remove_repeating(int i = -1);
+	void call_once(std::function<void(void)> f);
+
 private:
+
+	void update_callbacks();
+
+	struct Callback {
+		Callback(std::function<void(void)> cb, int msec) : cb(cb), msec(msec) {
+			next_time = utils::getms() + msec;
+		}
+		std::function<void(void)> cb;
+		long msec;
+		long next_time;
+	};
+
+	std::vector<Callback> callbacks;
+	std::set<int, std::greater<int>> to_remove;
+
 	int64_t lastTime;
 #ifdef FPS_COUNTER
 	float fps;

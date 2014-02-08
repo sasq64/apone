@@ -162,6 +162,32 @@ void Window::render_loop(function<void()> f, int fps) {
 #endif
 }
 */
+
+
+int Window::call_repeatedly(std::function<void(void)> f, int msec) {
+	callbacks.push_back(Callback(f, msec));
+	return callbacks.size()-1;
+}
+
+void Window::update_callbacks() {
+	auto ms = utils::getms();
+	for(auto &cb : callbacks) {
+		if(cb.msec == 0 || ms >= cb.next_time) {
+			cb.cb();
+			cb.next_time += cb.msec;
+		}
+	}
+
+	for(auto i : to_remove) {
+		callbacks.erase(callbacks.begin() + i);
+	}
+	to_remove.clear();
+}
+
+void Window::remove_repeating(int index) {
+	to_remove.insert(index);
+}
+
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction2 = f;
 #ifdef EMSCRIPTEN
@@ -170,6 +196,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	atexit([](){
 		auto lastMs = utils::getms();
 		while(screen.is_open()) {
+			screen.update_callbacks();
 			auto ms = utils::getms();
 			uint32_t rate = ms - lastMs;
 			lastMs = ms;

@@ -5,12 +5,12 @@ CHIPM=../chipmachine
 CXX=clang++
 CC=clang
 #USE_CCACHE=1
-
+#HOST=android
 include $(UTILS)/config.mk
 
 OBJDIR := obj/
 TARGET := demo
-CFLAGS += -Wall -O2
+CFLAGS += -Wall -g -O2
 CXXFLAGS += -std=c++0x
 
 include $(UTILS)/coreutils/module.mk
@@ -20,7 +20,7 @@ include $(CHIPM)/src/plugins/ModPlugin/module.mk
 
 DATA_FILES += data/ObelixPro.ttf data/test.mod
 
-ANDROID_PROJECT := android
+ANDROID_PROJECT := android<
 
 ifeq ($(HOST),android)
   #ADK=/opt/arm-linux-androideabi
@@ -32,6 +32,8 @@ ifeq ($(HOST),android)
   #-I$(ADK)/include -I$(ADK)/include/freetype2
   #LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
   #LDFLAGS += -lz -llog -landroid -lEGL -lGLESv2
+  LDFLAGS += -lOpenSLES
+   LOCAL_FILES += AudioPlayerSL.cpp
 else ifeq ($(HOST),emscripten)
  # LDFLAGS += -s TOTAL_MEMORY=67108864
   # -s DISABLE_EXCEPTION_CATCHING=0
@@ -41,11 +43,14 @@ else ifeq ($(HOST),emscripten)
   CFLAGS += -DMUSIC
 else
   CFLAGS += -DMUSIC
-  LOCAL_FILES += AudioPlayer.cpp
+  LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
+  LOCAL_MODULES += fft
+  CFLAGS += -pthread
+  LDFLAGS += -pthread -lpthread
 endif
 
 ## Hack that lets us run the currently open file from Sublime if it is one of the main files
-MAIN_FILES = demo.cpp snake.cpp bobs.cpp tiletest2.cpp simple.cpp blur.cpp map.cpp
+MAIN_FILES = demo.cpp bobs.cpp snake.cpp tiletest2.cpp simple.cpp blur.cpp map.cpp
 MAIN_FILE := $(firstword $(MAIN_FILES))
 ifneq ($(ACTIVEFILE),)
  ifneq ($(findstring $(ACTIVEFILE),$(MAIN_FILES)),)
