@@ -32,6 +32,8 @@ OBJS := $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),
 
 # Also add all source files inside MODULES directories
 RP_MODULES := $(realpath $(MODULES))
+RP_MODULES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_MODULES)))
+
 OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(RP_MODULES)))) )
 
 # Since all paths in OBJS are absolute, we dont add a slash after OBJDIR
