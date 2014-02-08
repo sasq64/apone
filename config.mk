@@ -84,7 +84,7 @@ ifeq ($(HOST),android)
   # Next, try to find the NDK relative to the SDK
   ifeq ($(ANDROID_NDK),)
     SDK_PARENT := $(dir $(ANDROID_SDK))
-    ANDROID_NDK := $(lastword $(sort $(wildcard $(SDK_PARENT)*ndk*)))
+    ANDROID_NDK := $(lastword $(sort $(wildcard $(SDK_PARENT)*ndk*/)))
     ifneq ($(ANDROID_NDK),)
       $(info Found NDK at $(ANDROID_NDK))
     else
@@ -97,9 +97,15 @@ ifeq ($(HOST),android)
   ifeq ($(realpath $(ANDROID_TOOLCHAIN)),)
     $(info Creating standalone toolchain for android)
     RES := $(shell $(ANDROID_NDK)/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-clang3.3 --platform=$(NDK_PLATFORM) --install-dir=$(ANDROID_TOOLCHAIN))
+    $(info $(RES))
   else
     $(info Android toolchain already created in $(ANDROID_TOOLCHAIN))
   endif
+  
+  ifeq ($(realpath $(ANDROID_TOOLCHAIN)/bin/$(PREFIX)as),)
+    $(error Android toolchain is not valid)
+  endif
+  
   export PATH := $(PATH):$(ANDROID_TOOLCHAIN)/bin
 
   # We also need ant to build the final project
