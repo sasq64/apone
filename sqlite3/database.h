@@ -3,6 +3,11 @@
 
 #include "sqlite3.h"
 
+#include <functional>
+#include <string>
+#include <vector>
+#include <memory>
+
 namespace sqlite3db {
 
 class db_exception : public std::exception {
