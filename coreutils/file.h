@@ -100,6 +100,11 @@ public:
 			throw io_exception {"Could not delete file"};
 	}
 
+	static void remove(const std::string &fileName) {
+		if(std::remove(fileName.c_str()) != 0)
+			throw io_exception {"Could not delete file"};
+	}
+
 	void copyFrom(File &otherFile);
 
 	int read(uint8_t *target, int len);
