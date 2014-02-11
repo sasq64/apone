@@ -16,82 +16,82 @@ class BitField {
 		int pos;
 	};
 public:
-		BitField(int size=0) : bits((size+63)/64) {
+		BitField(int size=0) : bitsize(size), bits((size+63)/64) {
 			if(size)
 				memset(&bits[0], 0, bits.size()*8);
 		};
 
 		void grow(int pos) {
+			if(pos > bitsize)
+				bitsize = pos;
 			int sz = (pos+63)/64;
-			if(sz > bits.size())
+			int size = bits.size();
+			if(sz > size) {
 				bits.resize(sz);
+				memset(&bits[size], 0, sz-size);
+			}
 		}
 
 		void set(uint8_t *ptr, int size) {
 			bits.resize((size+63)/64);
 			memcpy(&bits[0], ptr, size);
 		};
+
 		void *get() {
 			return &bits[0];
 		};
 
-		int size() { return bits.size() * 64; }
+		int size() { return bitsize; }
 
 		void set(int pos, bool value) {
-			grow(pos);
+			grow(pos+1);
 			if(value)
 				bits[pos>>6] |= (1<<(pos&0x3f));
 			else
 				bits[pos>>6] &= ~(1<<(pos&0x3f));
 		}
 		bool get(int pos) const {
-			if(pos>>6 >= bits.size())
+			if(pos >= bitsize)
 				return false;
 			return (bits[pos>>6] & (1<<(pos&0x3f))) != 0;
 		}
 
 		int first_bit_clr(uint64_t x) {
-			uint64_t m = 1;
-			int i=0;
-			while(i<64) {
-				if((x & m) == 0)
-					return i;
-				i++;
-				m <<= 1;
-			}
-			return -1;
+			return __builtin_ctzl(~x);
 		}
 
 		int first_bit_set(uint64_t x) {
-			uint64_t m = 1;
-			int i=0;
-			while(i<64) {
-				if(x & m)
-					return i;
-				i++;
-				m <<= 1;
-			}
-			return -1;
+			return __builtin_ctzl(x);
 		}
 
 		int lowest_set() {
+			grow(1);
+			int j = 0;
 			for(uint64_t i : bits) {
 				LOGD("%x", i);
 				if(i) {
 					int o = first_bit_set(i);
-					return i/64+o;
+					return j/64+o;
 				}
+				j++;
 			}
 			return -1;
 		}
 
 		int lowest_unset() {
+			grow(1);
+			int j = 0;
 			for(uint64_t i : bits) {
 				LOGD("U %x", i);
 				if(i != 0xffffffffffffffffL) {
 					int o = first_bit_clr(i);
-					return i/64+o;
+					LOGD("Bit %d", o);
+					int rc = j/64+o;
+					if(rc >= bitsize)
+						return -1;
+					return rc;
 				}
+				j++;
 			}
 			return -1;
 		}
@@ -100,6 +100,7 @@ public:
 
 
 private:
+	int bitsize;
 	std::vector<uint64_t> bits;
 };
 
