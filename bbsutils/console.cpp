@@ -293,6 +293,9 @@ void Console::flush(bool restoreCursor) {
 		impl_gotoxy(saveX, saveY);
 
 	if(outBuffer.size() > 0) {
+		if(outBuffer.size() > 5000) {
+			LOGD("WTF");
+		}
 		LOGV("OUTBYTES: [%02x]", outBuffer);
 		terminal.write(outBuffer, outBuffer.size());
 		outBuffer.resize(0);
@@ -338,6 +341,8 @@ void Console::moveCursor(int x, int y) {
 
 void Console::write(const std::string &text) {
 
+	LOGD("Write on Y %d", curY);
+
 	auto x = curX;
 	auto y = curY;
 
@@ -368,6 +373,7 @@ void Console::write(const std::string &text) {
 			x = 0;
 			y++;
 			if(y >= height) {
+				LOGD("LF forces scroll at %d vs %d", y, curY);
 				scrollScreen(1);
 				y--;
 			}
@@ -394,10 +400,11 @@ void Console::write(const std::string &text) {
 		//flush();
 		//this_thread::sleep_for(std::chrono::milliseconds(20));
 	}
-	LOGD("%d/%d", curX, curY);
+	//LOGD("%d/%d", curX, curY);
 	flush();
+	LOGD("Moving to %d %d", x, y);
 	moveCursor(x, y);
-	LOGD("%d/%d", curX, curY);
+	//LOGD("%d/%d", curX, curY);
 }
 
 int Console::getKey(int timeout) {
@@ -434,7 +441,8 @@ std::string Console::getLine(int maxlen) {
 	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
 	while(lineEd->update(500) != KEY_ENTER);
 	if(maxlen == 0) {
-		moveCursor(0, curY+1);
+		//moveCursor(0, curY+1);
+		write("\n");
 	}
 	return lineEd->getResult();
 }

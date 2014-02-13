@@ -234,9 +234,11 @@ bool PetsciiConsole::impl_scroll_screen(int dy) {
 	//const auto s = dy > 0 ? utils::format("\x1b[%dS",dy) : utils::format("\x1b[%dT", -dy);
 	//outBuffer.insert(outBuffer.end(), s.begin(), s.end());
 	auto steps = dy + height - curY -1;
+	LOGD("DY %d HEIGHT %d curY %d -> STEPS %d", dy, height, curY, steps);
 	while(steps--)
 		outBuffer.push_back(DOWN);
 	steps = height - curY - 1;
+	LOGD("DY %d HEIGHT %d curY %d -> STEPS %d", dy, height, curY, steps);
 	if(curY < steps) {
 		outBuffer.push_back(HOME);
 		outBuffer.push_back(DOWN);
