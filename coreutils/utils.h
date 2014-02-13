@@ -37,7 +37,7 @@ std::string utf8_encode(const std::wstring &s);
 std::wstring utf8_decode(const std::string &s);
 
 template <typename T>
-std::vector<T> split(const T &s, const T &delim = T(" ")) {
+std::vector<T> split(const T &s, const T &delim = T(" "), bool include = false) {
 	std::vector<T> args;
 	auto l = delim.length();
 	if(l == 0) return args;
@@ -56,8 +56,8 @@ std::vector<T> split(const T &s, const T &delim = T(" ")) {
 	return args;
 }
 template <typename T>
-std::vector<T> split(const T &s, const char *delim) {
-	return split(s, std::string(delim));
+std::vector<T> split(const T &s, const char *delim, bool inc = false) {
+	return split(s, std::string(delim), inc);
 }
 
 

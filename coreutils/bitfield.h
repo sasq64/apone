@@ -34,10 +34,15 @@ public:
 
 		void set(uint8_t *ptr, int size) {
 			bits.resize((size+63)/64);
-			memcpy(&bits[0], ptr, size);
+			bitsize = size;
+			memcpy(&bits[0], ptr, bits.size()*8);
 		};
 
-		void *get() {
+		std::vector<uint64_t>& get_vector() {
+			return bits;
+		}
+
+		const void *get() {
 			return &bits[0];
 		};
 
