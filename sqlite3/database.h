@@ -2,7 +2,9 @@
 #define SQLITE_DATABASE_H
 
 #include "sqlite3.h"
-
+#include <coreutils/log.h>
+#include <mutex>
+#include <cstring>
 #include <functional>
 #include <string>
 #include <vector>
@@ -38,7 +40,10 @@ public:
 		static int callback(void *t, int n, char **data, char **names) {
 			std::vector<std::string> v;
 			for(int i=0; i<n; i++) {
-				v.push_back(data[i]);
+				if(!data[i])
+					v.push_back("");
+				else
+					v.push_back(data[i]);
 			}
 			auto cb = (Callback*)t;
 			cb->func(cb->index, v);
@@ -50,6 +55,8 @@ public:
 		char *err;
 		char *q = sqlite3_mprintf(query.c_str(), normalizeArg(args)...);
 		Callback cb {f};
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, q, Callback::callback, &cb, &err);
 		sqlite3_free(q);
 		if(rc != SQLITE_OK)
@@ -59,6 +66,8 @@ public:
 	void execf(const std::string &query, std::function<void(int i, const std::vector<std::string> &result)> f) {
 		char *err;
 		Callback cb {f};
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, query.c_str(), Callback::callback, &cb, &err);
 		if(rc != SQLITE_OK)
 			throw db_exception(err);
@@ -67,12 +76,57 @@ public:
 	template <class... A> void exec(const std::string &query, const A& ... args) {
 		char *err;
 		char *q = sqlite3_mprintf(query.c_str(), normalizeArg(args)...);
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, q, nullptr, nullptr, &err);
 		sqlite3_free(q);
 		if(rc != SQLITE_OK)
 			throw db_exception(err);
 	}
+//sqlite3_column_blob
+//"INSERT INTO ONE(ID, NAME, LABEL, GRP, FILE) VALUES(NULL, 'fedfsdfss', NULL, NULL, ?)"
+	template <typename T> void get_blob(const std::string &query, int col, std::vector<T> &data) {
+		sqlite3_stmt *stmt = NULL;
 
+		std::lock_guard<std::mutex> guard(lock);
+		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+		if(rc != SQLITE_OK)
+			throw db_exception(sqlite3_errmsg(db));
+		//rc = sqlite3_bind_blob(stmt, 1, buffer, size, SQLITE_STATIC);
+		if(rc != SQLITE_OK)
+			throw db_exception(sqlite3_errmsg(db));
+		rc = sqlite3_step(stmt);
+		//if(rc != SQLITE_OK)
+		//	throw db_exception(sqlite3_errmsg(db));
+		LOGD("rc %d", rc);
+		if(rc == SQLITE_ROW) {
+			const void *p = sqlite3_column_blob(stmt, col);
+			int size = sqlite3_column_bytes(stmt, col);
+			//if(rc != SQLITE_OK)
+			//	throw db_exception(sqlite3_errmsg(db));
+			data.resize(size / sizeof(T));
+			memcpy(&data[0], p, size);
+		}
+		
+		sqlite3_finalize(stmt);
+	}
+
+	template <typename T> void put_blob(const std::string &query, int col, const std::vector<T> &data) {
+		sqlite3_stmt *stmt = NULL;
+
+		std::lock_guard<std::mutex> guard(lock);
+		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+		if(rc != SQLITE_OK)
+			throw db_exception(sqlite3_errmsg(db));
+		rc = sqlite3_bind_blob(stmt, col, &data[0], data.size() * sizeof(T), SQLITE_STATIC);
+		if(rc != SQLITE_OK)
+			throw db_exception(sqlite3_errmsg(db));
+		rc = sqlite3_step(stmt);
+		LOGD("STEP %d with size %d bytes", rc, data.size() * sizeof(T));
+		//if(rc != SQLITE_OK)
+		//	throw db_exception(sqlite3_errmsg(db));
+		sqlite3_finalize(stmt);
+	}
 	//template <class T, class A> T convertArg(const A &a) {
 	//}
 
@@ -96,6 +150,8 @@ public:
 			target = convertArg<T>(result);
 			found = true;
 		}};
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, q, Callback::callback, &cb, &err);
 		sqlite3_free(q);
 		if(rc != SQLITE_OK)
@@ -110,6 +166,8 @@ public:
 		Callback cb {[&](int i, const std::vector<std::string> &result) {
 			target.emplace_back(result);
 		}};
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, q, Callback::callback, &cb, &err);
 		sqlite3_free(q);
 		if(rc != SQLITE_OK)
@@ -118,12 +176,15 @@ public:
 
 	void exec(const std::string &query) {
 		char *err;
+
+		std::lock_guard<std::mutex> guard(lock);
 		int rc = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &err);
 		if(rc != SQLITE_OK)
 			throw db_exception(err);
 	}
 
 	uint64_t last_rowid() {
+		std::lock_guard<std::mutex> guard(lock);
 		return sqlite3_last_insert_rowid(db);
 	}
 
@@ -176,6 +237,7 @@ public:
 
 private:
 	sqlite3 *db;
+	std::mutex lock;
 };
 
 }
