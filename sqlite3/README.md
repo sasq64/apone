@@ -1,0 +1,56 @@
+
+This is a small, modern C++ interface to sqlite3, on top of the old C api
+
+
+BASIC USAGE
+-----------
+
+	struct User {
+		User(uint64_t id, string name) : id(id), name(name) {}
+		uint64_t id;
+		string name;
+		std::vector<uint8_t> pixels;
+	};
+
+	string userName = "james";
+	uint64_t id = 123;
+	std::vector<uint8_t> pixels;
+
+	Database db { "datafile.db" };
+
+Use `exec()` for commands that you do not need results from
+
+	db.exec("CREATE TABLE IF NOT EXISTS user (name TEXT, id INT, image BLOB)");
+	db.exec("INSERT INTO user (name, id) VALUES (?, ?)", name, id);
+
+Use the template method `query()` to read data. You need to provide type arguments for the selected fields.
+
+	auto q = db.query<uint64_t, string>("SELECT id,name FROM user");
+
+This is a typesafe select, an exception will be thrown if the C++ types does not match
+the database types.
+
+	auto q = db.query<string, string>("SELECT id,name FROM user");
+	auto q.step(); // Will throw exception
+
+Use `step()` and `get()` to fetch rows from the result. `get()` is a template function that
+will create an object of the given class using the row result. The constructor of the
+object must match the types defined in the query.
+
+	std::vector<User> users;
+	while(q.step()) {
+		users.push_back(q.get<User>());
+	}
+
+Blobs are supported using `std::vector`.
+
+	db.exec("INSERT INTO user (image) VALUES (?)", pixels);
+
+Note that if you only select one field, `get()` can be called directly and returns that type.
+
+	auto q = db.query<std::vector<uint8_t>>("SELECT image FROM user WHERE id=?", id);
+	auto pixels2 = q.get(); // We don't need get<vector<uint8_t>>() here;
+
+If you haven't called `step()` on a query, it will be called automatically by `get()`
+
+	uint64_t id = db.query<uint64_t>("SELECT id FROM user WHERE name=?", userName).get();
