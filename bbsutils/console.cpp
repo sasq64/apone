@@ -353,7 +353,12 @@ void Console::write(const std::string &text) {
 		y--;
 	}
 	auto spaces = 0;
-	for(auto i=0; i<(int)text.length(); i++) {
+
+    vector<uint32_t> output(128);
+    int l = u8_to_ucs(text.c_str(), &output[0], 128);
+
+
+	for(auto i=0; i<l; i++) {
 	//for(const auto &c : text) {
 		char c;
 		if(spaces) {
@@ -361,7 +366,7 @@ void Console::write(const std::string &text) {
 			i--;
 			c = ' ';
 		} else {
-			c = text[i];
+			c = output[i];
 			if(c == '\t') {
 				spaces = 4;
 				continue;
@@ -379,7 +384,7 @@ void Console::write(const std::string &text) {
 			}
 
 			if(c == 0xd) {
-				if(text[i+1] == 0xa)
+				if(output[i+1] == 0xa)
 					i++;
 				c = 0xa;
 			}
@@ -448,9 +453,7 @@ std::string Console::getLine(int maxlen) {
 }
 
 std::string Console::getPassword(int maxlen) {
-	auto lineEd = utils::make_unique<LineEditor>(*this, [](int c) -> int {
-		return c >= 0x20 && c < 0x7f ? '*' : c;
-	}, maxlen);
+	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen, '*');
 	while(lineEd->update(500) != KEY_ENTER);
 	return lineEd->getResult();
 }

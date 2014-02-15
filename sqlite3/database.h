@@ -5,7 +5,6 @@
 #include <coreutils/log.h>
 #include <mutex>
 #include <cstring>
-//#include <functional>
 #include <string>
 #include <vector>
 #include <memory>
@@ -73,7 +72,7 @@ struct base_query {
 		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 		if(rc != SQLITE_OK)
 			throw db_exception(sqlite3_errmsg(db));
-		LOGD("CONSTRUCT stmt %p", stmt);	
+		//LOGD("CONSTRUCT stmt %p", stmt);	
 
 		Statement s { stmt, 1 };
 		std::vector<int> results = { bindArg(s, args)... };
@@ -88,7 +87,7 @@ struct base_query {
 	base_query(const base_query &q) = delete;
 
 	base_query(base_query &&q) {
-		LOGD("Copy cons");
+		//LOGD("Copy cons");
 		db = q.db;
 		stmt = q.stmt;
 		lastCode = q.lastCode;
@@ -99,7 +98,7 @@ struct base_query {
 
 		finalize();
 
-		LOGD("Assign %p", q.stmt);
+		//LOGD("Assign %p", q.stmt);
 		db = q.db;
 		stmt = q.stmt;
 		lastCode = q.lastCode;
@@ -108,12 +107,12 @@ struct base_query {
 	};
 
 	~base_query() {
-		LOGD("Destroy %p", stmt);
+		//LOGD("Destroy %p", stmt);
 		finalize();
 	}
 
 	void finalize() {
-		LOGD("finalize %p", stmt);	
+		//LOGD("finalize %p", stmt);	
 		if(stmt)
 			sqlite3_finalize(stmt);
 		stmt = nullptr;

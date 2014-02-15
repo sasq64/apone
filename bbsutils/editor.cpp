@@ -9,7 +9,7 @@ namespace bbs {
 using namespace std;
 using namespace utils;
 
-LineEditor::LineEditor(Console &console, int width) : console(console), width(width), xpos(0), xoffset(0) {
+LineEditor::LineEditor(Console &console, int width, int pwChar) : console(console), width(width), xpos(0), xoffset(0), pwChar(pwChar) {
 	startX = console.getCursorX();
 	startY = console.getCursorY();
 	fg = console.getFg();
@@ -21,7 +21,7 @@ LineEditor::LineEditor(Console &console, int width) : console(console), width(wi
 	line = L"";
 }
 
-LineEditor::LineEditor(Console &console, function<int(int)> filter, int width) : LineEditor(console, width) {
+LineEditor::LineEditor(Console &console, function<int(int)> filter, int width, int pwChar) : LineEditor(console, width) {
 	filterFunction = filter;
 }
 
@@ -142,8 +142,11 @@ void LineEditor::refresh() {
 
 	console.fill(bg, startX, startY, width, 1);
 	auto l = line.substr(xoffset, width);
+	if(pwChar > 0) {
+		for(auto &c : l)
+			c = pwChar;
+	}
 	console.put(startX, startY, l);
-
 	if(xoffset > 0)
 		console.put(startX, startY, '$', Console::YELLOW);
 	if((int)line.length() - xoffset > width)

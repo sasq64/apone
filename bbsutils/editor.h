@@ -10,8 +10,8 @@ class Editor {
 
 class LineEditor : public Editor {
 public:
-	LineEditor(Console &console, int width = 0);
-	LineEditor(Console &console, std::function<int(int)> filter, int width = 0);
+	LineEditor(Console &console, int width = 0, int pwChar = -1);
+	LineEditor(Console &console, std::function<int(int)> filter, int width = 0, int pwChar = -1);
 	int update(int msec);
 	bool isDone();
 	std::string getResult();
@@ -52,6 +52,7 @@ protected:
 	int xpos;
 	int xoffset;
 
+	int pwChar;
 };
 
 class SimpleEditor : public Editor {
