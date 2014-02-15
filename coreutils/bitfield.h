@@ -16,9 +16,15 @@ class BitField {
 		int pos;
 	};
 public:
+
+		typedef std::vector<uint64_t> storage_type;
+
 		BitField(int size=0) : bitsize(size), bits((size+63)/64) {
 			if(size)
 				memset(&bits[0], 0, bits.size()*8);
+		};
+
+		BitField(const storage_type &bits) : bitsize(bits.size()*64), bits(bits) {
 		};
 
 		void grow(int pos) {
@@ -106,7 +112,7 @@ public:
 
 private:
 	int bitsize;
-	std::vector<uint64_t> bits;
+	storage_type bits;
 };
 
 

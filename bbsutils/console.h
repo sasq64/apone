@@ -178,6 +178,10 @@ public:
 		return getLine(maxlen);
 	}
 	virtual std::string getPassword(int maxlen = 0);
+	virtual std::string getPassword(const std::string &prompt, int maxlen = 0) {
+		write(prompt);
+		return getPassword(maxlen);
+	}
 /*
 	virtual std::future<std::string> getLineAsync() {
 		getLineStarted = false;

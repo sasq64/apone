@@ -79,6 +79,14 @@ V join(const Container<V, A> &strings, const wchar_t *separator) {
 	return out;
 }
 
+template<template <typename, typename> class Container, class V, class A>
+V join(const Container<V, A> &strings, const char *separator) {
+	V out;
+	for(const auto &s : strings) {
+		out += (s + separator);
+	}
+	return out;
+}
 
 std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
