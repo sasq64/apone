@@ -55,25 +55,25 @@ void Console::fill(int bg, int x, int y, int w, int h) {
 }
 
 static const u_int32_t offsetsFromUTF8[6] = {
-    0x00000000UL, 0x00003080UL, 0x000E2080UL,
-    0x03C82080UL, 0xFA082080UL, 0x82082080UL
+	0x00000000UL, 0x00003080UL, 0x000E2080UL,
+	0x03C82080UL, 0xFA082080UL, 0x82082080UL
 };
 
 static const char trailingBytesForUTF8[256] = {
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
 /* returns length of next utf-8 sequence */
 int u8_seqlen(char *s)
 {
-    return trailingBytesForUTF8[(unsigned int)(unsigned char)s[0]] + 1;
+	return trailingBytesForUTF8[(unsigned int)(unsigned char)s[0]] + 1;
 }
 
 /* conversions without error checking
@@ -88,28 +88,28 @@ int u8_seqlen(char *s)
 */
 int u8_to_ucs(const char *src, uint32_t *dest, int sz)
 {
-    u_int32_t ch;
-    int nb;
-    int i=0;
+	u_int32_t ch;
+	int nb;
+	int i=0;
 
-    while (i < sz-1) {
-        nb = trailingBytesForUTF8[(unsigned char)*src];
-        if (*src == 0)
-        	break;
-        ch = 0;
-        switch (nb) {
-            /* these fall through deliberately */
-        case 3: ch += (unsigned char)*src++; ch <<= 6;
-        case 2: ch += (unsigned char)*src++; ch <<= 6;
-        case 1: ch += (unsigned char)*src++; ch <<= 6;
-        case 0: ch += (unsigned char)*src++;
-        }
-        ch -= offsetsFromUTF8[nb];
-        dest[i++] = ch;
-    }
+	while (i < sz-1) {
+		nb = trailingBytesForUTF8[(unsigned char)*src];
+		if (*src == 0)
+			break;
+		ch = 0;
+		switch (nb) {
+			/* these fall through deliberately */
+		case 3: ch += (unsigned char)*src++; ch <<= 6;
+		case 2: ch += (unsigned char)*src++; ch <<= 6;
+		case 1: ch += (unsigned char)*src++; ch <<= 6;
+		case 0: ch += (unsigned char)*src++;
+		}
+		ch -= offsetsFromUTF8[nb];
+		dest[i++] = ch;
+	}
 
-    dest[i] = 0;
-    return i;
+	dest[i] = 0;
+	return i;
 }
 
 int Console::get_utf8(){
@@ -141,7 +141,8 @@ void Console::put(int x, int y, Char c, int fg, int bg) {
 
 	auto &t = grid[x + y * width];
 	t.c = c;
-	impl_translate(t.c);
+	if(!raw_mode)
+		impl_translate(t.c);
 
 	if(fg == CURRENT_COLOR)
 		fg = fgColor;
@@ -156,42 +157,23 @@ void Console::put(int x, int y, Char c, int fg, int bg) {
 }
 
 void Console::put(int x, int y, const string &text, int fg, int bg) {
-
-	if(x < 0) x = width+x;
-	if(y < 0) y = height+y;
-
-	if(y >= clipY1 || y < clipY0)
-		return;
-
-    vector<uint32_t> output(128);
-    int l = u8_to_ucs(text.c_str(), &output[0], 128);
-
-	//for(int i=0; i<(int)text.length(); i++) {
-    for(int i=0; i<l; i++) {
-
-    	if(x+i < clipX0)
-    		continue;
-		if(x+i >= clipX1)
-			return;
-
-		auto &t = grid[(x+i) + y * width];
-		t.c = output[i];
-		impl_translate(t.c);
-		//LOGD("Putting %04x as %04x", output[i], t.c);
-
-		if(fg == CURRENT_COLOR)
-			fg = fgColor;
-		if(bg == CURRENT_COLOR)
-			bg = bgColor;
-
-		if(fg >= 0)
-			t.fg = fg;
-		if(bg >= 0)
-			t.bg = bg;
+	vector<uint32_t> output(128);
+	if(raw_mode) {
+		output.insert(output.end(), text.begin(), text.end());
+	} else {
+		int l = u8_to_ucs(text.c_str(), &output[0], 128);
+		output.resize(l);
 	}
+	put(x, y, output, fg, bg);
 }
 
 void Console::put(int x, int y, const wstring &text, int fg, int bg) {
+	vector<uint32_t> output;
+	output.insert(output.end(), text.begin(), text.end());
+	put(x, y, output, fg, bg);
+}
+
+void Console::put(int x, int y, const vector<uint32_t> &text, int fg, int bg) {
 
 	if(x < 0) x = width+x;
 	if(y < 0) y = height+y;
@@ -199,16 +181,17 @@ void Console::put(int x, int y, const wstring &text, int fg, int bg) {
 	if(y >= clipY1 || y < clipY0)
 		return;
 	
-	for(int i=0; i<(int)text.length(); i++) {
+	for(int i=0; i<(int)text.size(); i++) {
   
-    	if(x+i < clipX0)
-    		continue;
+		if(x+i < clipX0)
+			continue;
 		if(x+i >= clipX1)
 			return;
 
 		auto &t = grid[(x+i) + y * width];
 		t.c = text[i];
-		impl_translate(t.c);
+		if(!raw_mode)
+			impl_translate(t.c);
 		//LOGD("Putting %04x as %04x", output[i], t.c);
 
 		if(fg == CURRENT_COLOR)
@@ -339,7 +322,20 @@ void Console::moveCursor(int x, int y) {
 	//curY = y;
 }
 
+void Console::write(const std::wstring &text) {
+	vector<uint32_t> output;
+	output.insert(output.end(), text.begin(), text.end());
+	write(output);
+}
+
 void Console::write(const std::string &text) {
+	vector<uint32_t> output(128);
+	int l = u8_to_ucs(text.c_str(), &output[0], 128);
+	output.resize(l);
+	write(output);
+}
+
+void Console::write(const vector<uint32_t> &text) {
 
 	LOGD("Write on Y %d", curY);
 
@@ -354,19 +350,15 @@ void Console::write(const std::string &text) {
 	}
 	auto spaces = 0;
 
-    vector<uint32_t> output(128);
-    int l = u8_to_ucs(text.c_str(), &output[0], 128);
-
-
-	for(auto i=0; i<l; i++) {
+	for(size_t i=0; i<text.size(); i++) {
 	//for(const auto &c : text) {
-		char c;
+		uint32_t c;
 		if(spaces) {
 			spaces--;
 			i--;
 			c = ' ';
 		} else {
-			c = output[i];
+			c = text[i];
 			if(c == '\t') {
 				spaces = 4;
 				continue;
@@ -384,7 +376,7 @@ void Console::write(const std::string &text) {
 			}
 
 			if(c == 0xd) {
-				if(output[i+1] == 0xa)
+				if(text[i+1] == 0xa)
 					i++;
 				c = 0xa;
 			}
@@ -396,7 +388,7 @@ void Console::write(const std::string &text) {
 		auto &t = grid[x + y * width];
 		x++;
 		//LOGD("put to %d %d",x+i,y);	
-		t.c = (Char)(c & 0xff);
+		t.c = (Char)(c & 0xffff);
 		impl_translate(t.c);
 		if(fgColor >= 0)
 			t.fg = fgColor;
@@ -433,7 +425,9 @@ int Console::getKey(int timeout) {
 			return impl_handlekey();
 		}
 
-		std::this_thread::sleep_for(ms);
+		//std::this_thread::sleep_for(ms);
+		utils::sleepms(100);
+
 		if(timeout >= 0) {
 			timeout -= 100;
 			if(timeout < 0)

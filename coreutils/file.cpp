@@ -54,11 +54,11 @@ void File::readAll()  {
 	if(!loaded) {
 		FILE *fp = fopen(fileName.c_str(), "rb");
 		if(!fp)
-			throw file_not_found_exception{};
+			throw file_not_found_exception(fileName);
 		fseek(fp, 0, SEEK_END);
 		size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-		data.reserve(size);
+		data.resize(size);
 		int rc = fread(&data[0], 1, size, fp);
 		if(rc != size)
 			throw io_exception{};
@@ -72,7 +72,7 @@ void File::open(Mode mode) {
 		if(!readFP) {
 			readFP = fopen(fileName.c_str(), "rb");
 			if(!readFP)
-				throw file_not_found_exception{};
+				throw file_not_found_exception(fileName);
 		}
 	} else if(mode == WRITE) {
 		if(!writeFP) {
@@ -100,7 +100,7 @@ int File::read(uint8_t *target, int len) {
 void File::seek(int where) {
 	open(READ);
 	if(!readFP)
-		throw file_not_found_exception{};
+		throw file_not_found_exception(fileName);
 	fseek(readFP, where, SEEK_SET);
 }
 

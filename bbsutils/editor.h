@@ -76,6 +76,7 @@ public:
 
 	void setString(const std::string &text);
 	void setString(const std::wstring &text);
+	void setComment(const std::string &text);
 
 protected:
 	void redraw(bool lines, int cursor = -1);
@@ -90,6 +91,7 @@ protected:
 	int yscroll;
 
 	int lineNo;
+	int commentLines;
 	std::vector<std::wstring> lines;
 	std::unique_ptr<LineEditor> lineEd;
 };

@@ -11,6 +11,8 @@ public:
 
 	void putChar(Char c);
 
+	virtual const std::string name() const override { return "ansi"; }
+
 protected:
 
 	virtual bool impl_scroll_screen(int dy) override;

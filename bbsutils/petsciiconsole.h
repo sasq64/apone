@@ -38,6 +38,8 @@ public:
 
 	PetsciiConsole(Terminal &terminal);
 	virtual void putChar(Char c);
+
+	virtual const std::string name() const override { return "petscii"; }
 protected:
 
 	virtual void impl_color(int fg, int bg) override;

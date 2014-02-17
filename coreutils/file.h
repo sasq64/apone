@@ -27,7 +27,11 @@ private:
 
 class file_not_found_exception : public std::exception {
 public:
-	virtual const char *what() const throw() { return "File not found"; }
+	file_not_found_exception(const std::string &fileName = "") : msg(std::string("File not found: ") + fileName) {}
+	file_not_found_exception(const char *fileName = "") : msg(std::string("File not found: ") + fileName) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
 };
 
 #define THROW(e, args...) throw e(args, __FILE__, __LINE__)
@@ -115,6 +119,13 @@ public:
 	template <typename T> int read(T *target, int count) {
 		open(READ);
 		return fread(target, sizeof(T), count, readFP);
+	}
+
+	std::string read() {
+		open(READ);
+		if(!loaded)
+			readAll();
+		return std::string((const char *)&data[0], size);
 	}
 
 	template <typename T> T read() {

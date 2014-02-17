@@ -250,7 +250,8 @@ char TelnetServer::Session::getChar() throw(disconnect_excpetion) {
 		if(inBuffer.size() > 0)
 			break;
 		inMutex.unlock();
-		this_thread::sleep_for(ms);
+		//this_thread::sleep_for(ms);
+		sleepms(100);
 	}
 
 	char c = inBuffer[0];
@@ -284,7 +285,8 @@ string TelnetServer::Session::getLine() throw(disconnect_excpetion) {
 		}
 		inMutex.unlock();
 
-		this_thread::sleep_for(ms);
+		//this_thread::sleep_for(ms);
+		sleepms(100);
 	}
 
 }
@@ -301,7 +303,8 @@ void TelnetServer::Session::waitExplored() const {
 			return;
 		inMutex.lock();
 		inMutex.unlock();
-		this_thread::sleep_for(ms);
+		//this_thread::sleep_for(ms);
+		sleepms(100);
 		if(delay-- == 0) {
 			termExplored = true;
 		}

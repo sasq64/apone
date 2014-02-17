@@ -180,6 +180,7 @@ FullEditor::FullEditor(Console &console) : console(console) {
 	yscroll = 0;
 	startX = 0;
 	startY = 1;
+	commentLines = 0;
 	width = console.getWidth();
 	//height = console.getHeight() - 2;
 	height = console.getHeight()-1;
@@ -195,6 +196,12 @@ FullEditor::FullEditor(Console &console) : console(console) {
 	console.put(1, 0, format("%02d/%02d", lineNo+1, lines.size()), Console::WHITE, Console::BLUE);
 	console.put(-10, 0, "F7 = Save", Console::WHITE, Console::BLUE);
 	console.flush();
+}
+
+void FullEditor::setComment(const std::string &text) {
+	lines = split(utf8_decode(text), wstring(L"\n"));
+	commentLines = lines.size();
+	redraw(true, 0);
 }
 
 
@@ -237,7 +244,10 @@ void FullEditor::redraw(bool full, int cursor) {
 			console.fill(Console::BLACK, startX, i + startY, width, 1);
 			if(i+yscroll >= (int)lines.size())
 				break;
+			if(i < commentLines)
+				console.setColor(0xc);
 			console.put(startX, i + startY, lines[i + yscroll].substr(0,width));
+			console.setColor(0);
 			if((int)lines[i + yscroll].length() > width)
 				console.put(startX + width - 1, i + startY, '$', Console::YELLOW);
 		}

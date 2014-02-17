@@ -361,8 +361,8 @@ void AnsiConsole::impl_color(int fg, int bg) {
 
 	//LOGD("## BG %d\n", ab);
 	//const string &s = utils::format("\x1b[%d;%d%sm", af + 30, ab + 40, hl ? ";1" : "");
-	uint8_t *p = &xtermpal[xterm2c64[fg] * 3];
-	LOGD("COL %d %d -> %d %d", fg, bg, xterm2c64[fg], xterm2c64[bg]);
+	//uint8_t *p = &xtermpal[xterm2c64[fg] * 3];
+	//LOGD("COL %d %d -> %d %d", fg, bg, xterm2c64[fg], xterm2c64[bg]);
 	const auto s = utils::format("\x1b[38;5;%d;48;5;%dm", xterm2c64[fg], xterm2c64[bg]);
 	/*auto r0 = c64pal2[fg*3];
 	auto g0 = c64pal2[fg*3+1];

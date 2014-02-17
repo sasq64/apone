@@ -39,14 +39,25 @@ string lstrip(const string &x, char c) {
 	return x.substr(l);
 }
 
-vector<string> text_wrap(const string &text, int width, int subseqWidth) {
+vector<string> text_wrap(const string &t, int width, int subseqWidth) {
 
 	vector<string> lines;
-	int start = 0;
-	int end = width;
+	size_t start = 0;
+	size_t end = width;
 	if(subseqWidth < 0)
 		subseqWidth = width;
+
+	string text = t;
+	for(auto &c : text) {
+		if(c == 0xa)
+			c = ' ';
+	}
+
 	// Find space from right
+	LOGD("wrapping '%s' at %d,%d", text, width, subseqWidth);
+
+
+
 	while(true) {
 		if(end > text.length()) {
 			lines.push_back(text.substr(start));
@@ -54,9 +65,11 @@ vector<string> text_wrap(const string &text, int width, int subseqWidth) {
 		}
 		auto pos = text.rfind(' ', end);
 		if(pos != string::npos && pos > start) {
+			LOGD("Breaking at %d,%d", start, pos - start);
 			lines.push_back(text.substr(start, pos - start));
 			start = pos+1;
 		} else {
+			LOGD("Found no space, at %d,%d", start,width);
 			lines.push_back(text.substr(start, width));
 			start += width;
 		}

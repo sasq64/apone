@@ -3,28 +3,27 @@
 
 #include "sqlite3.h"
 #include <coreutils/log.h>
-#include <mutex>
 #include <cstring>
 #include <string>
 #include <vector>
 #include <memory>
 #include <tuple>
 
-//#define BACKWARD_HAS_BFD 1
-//#include "../../bbs/backward-cpp/backward.hpp"
+#define BACKWARD_HAS_BFD 1
+#include "../../bbs/backward-cpp/backward.hpp"
 
 namespace sqlite3db {
 
 class db_exception : public std::exception {
 public:
 	db_exception(const char *ptr = "DB Exception") : msg(ptr) {
-		//st.load_here(32);
-		//backward::Printer p; p.print(st);
+		st.load_here(32);
+		backward::Printer p; p.print(st);
 	}
 	virtual const char *what() const throw() { return msg; }
 private:
 	const char *msg;
-	//backward::StackTrace st;
+	backward::StackTrace st;
 };
 
 struct Statement {
@@ -33,14 +32,12 @@ struct Statement {
 	int pos;
 };
 
-//template <class T> int bindArg(Statement &s, typename std::enable_if<std::is_integral<T>::value, long>::type arg)  {
-//template <class T> int bindArg(Statement &s, typename std::enable_if<std::is_integral<T>::value, long>::type arg)  {
-int bindArg(Statement &s, uint64_t arg);
+int bindArg(Statement &s, int64_t arg);
 
-template <class T> int bindArg(Statement &s, typename std::enable_if<std::is_floating_point<T>::value, double>::type arg)  {
+// We need enable_if since otherwise we get ambiguity with the integer version
+template <class T> int bindArg(Statement &s, typename std::enable_if<std::is_integral<T>::value, double>::type arg)  {
 	return sqlite3_bind_double(s.stmt, s.pos++, arg);
 }
-
 int bindArg(Statement &s, const char *arg);
 int bindArg(Statement &s, const std::string &arg);
 
@@ -48,15 +45,22 @@ template <typename T> int bindArg(Statement &s, const std::vector<T> &arg)  {
 	return sqlite3_bind_blob(s.stmt, s.pos++, &arg[0], arg.size() * sizeof(T), nullptr);
 }
 
-//template <class T> typename std::enable_if<std::is_floating_point<T>::value, double>::type bindArg(T arg) { return arg; }
-//template <class T> typename std::enable_if<std::is_pointer<T>::value, T>::type bindArg(T arg) { return arg; }
-
+// Default stepper signals error
 template <typename T> T stepper(Statement &s) {
 	throw db_exception("Uknown target type");
 }
 
-template <> uint64_t stepper(Statement &s);
+//template <typename T> typename std::enable_if<std::is_floating_point<T>::value, double>::type stepper(Statement &s) {
+//	throw db_exception("Uknown target type");
+//}
+
+//template <typename T> typename std::enable_if<std::is_integral<T>::value, int>::type stepper(Statement &s) {
+//	throw db_exception("Uknown target type");
+//}
+
+// These are the the types we support in our select target
 template <> int stepper(Statement &s);
+template <> uint64_t stepper(Statement &s);
 template <> double stepper(Statement &s);
 template <> const char * stepper(Statement &s);
 template <> std::string stepper(Statement &s);
@@ -127,6 +131,10 @@ struct base_query {
 	int lastCode;
 };
 
+//template <class A, class B, class C, class D, class E> f(A a, B b, C c, D d, E e) {
+//
+//}
+
 template <class... Target> struct Query : public base_query {
 	template <class... A> Query(sqlite3 *db, const std::string &query, const A& ... args) : base_query { db, query, args... } {}
 
@@ -136,20 +144,57 @@ template <class... Target> struct Query : public base_query {
 			lastCode = sqlite3_step(stmt);
 
 		if(lastCode == SQLITE_ROW) {
-			return T(stepper<Target>(s)...);
+				//auto xx = { stepper<Target>(s)... };
+				//hmm<Target>(xx);
+			return T { stepper<Target>(s)... };
 		} else
 			throw db_exception("No more rows");
 	}
+/*
+	template <class A, class B, class C> struct result {
+		result(A a, B b, C c) : a(a), b(b), c(c)  {}
+		std::tuple<A, B, C> get() { return make_tuple(a, b, c); }
+		A a;
+		B b;
+		C c;
+	};
 
-	std::tuple<Target...> get_tuple() {
+	template <class A, class B, class C, class D> struct result {
+		result(A a, B b, C c, D d) : a(a), b(b), c(c), d(d) {}
+		std::tuple<A, B, C, D> get() { return make_tuple(a, b, c, d); }
+		A a;
+		B b;
+		C c;
+		D d;
+	};
+*/
+	//template <class A, class... B> (const std::tuple<A..> &a, const B &b) {
+	//	return std::tuple_cat(head, tail);
+	//}
+/*
+	template <class A, class B, class C, class D> std::tuple<A, B, C, D> make_tuple(A a, B b, C c, D d) {
+		return std::make_tuple(a, b, c, d);
+	}
+
+	template <class A, class B, class C> std::tuple<A, B, C> make_tuple(A a, B b, C c) {
+		return std::make_tuple(a, b, c);
+	}
+
+	template <class A, class B> std::tuple<A, B> make_tuple(A a, B b) {
+		return std::make_tuple(a, b);
+	}
+*/
+	// NOTE: make_tuple resolves its arguments backwards so the tuple gets reverse. Tricky to fix.
+	std::tuple<Target...> get_reverse_tuple() {
 		Statement s { stmt, 0 };
 		if(lastCode < 0)
 			lastCode = sqlite3_step(stmt);
 		if(lastCode == SQLITE_ROW) {
-			return std::make_tuple(stepper<Target>(s)...);
+			auto r = std::make_tuple(stepper<Target>(s)...);
+			return r;
 		} else
 			throw db_exception("No more rows");
-	}
+	} 
 };
 
 template <class T> struct Query<T> : public base_query {
@@ -174,16 +219,20 @@ public:
 			throw db_exception("Could not open database");
 	}
 
-	template <class... Target, class... A> Query<Target...> query(const std::string &q, const A& ... args) {
+	~Database() {
+		if(db)
+			sqlite3_close(db);
+	}
+
+	template <class... Target, class... A> Query<Target...> query(const std::string &q, const A& ... args) const {
 		return Query<Target...>(db, q, args...);
 	}
 
-	template <class... A> void exec(const std::string &q, const A& ... args) {
+	template <class... A> void exec(const std::string &q, const A& ... args) const {
 		query(q, args...).step();
 	}
 
 	uint64_t last_rowid() {
-		std::lock_guard<std::mutex> guard(lock);
 		return sqlite3_last_insert_rowid(db);
 	}
 
@@ -236,7 +285,6 @@ public:
 
 private:
 	sqlite3 *db;
-	std::mutex lock;
 };
 
 }

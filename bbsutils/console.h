@@ -43,6 +43,7 @@ public:
 
 	virtual int write(const std::vector<Char> &source, int len) { return fwrite(&source[0], 1, len, stdout); }
 	virtual int read(std::vector<Char> &target, int len) { return fread(&target[0], 1, len, stdin); }
+
 private:
 	struct termios orig_term_attr;
 
@@ -132,7 +133,7 @@ public:
 		Char c;
 	};
 
-	Console(Terminal &terminal) : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40), height(25), curX(0), curY(0) {
+	Console(Terminal &terminal) : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40), height(25), curX(0), curY(0), raw_mode(false) {
 		grid.resize(width*height);
 		oldGrid.resize(width*height);
 		clipX0 = clipY0 = 0;
@@ -149,12 +150,16 @@ public:
 	virtual void clear();
 	virtual void put(int x, int y, const std::string &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, const std::wstring &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
+	virtual void put(int x, int y, const std::vector<uint32_t> &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, Char c, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
-	template <class... A> void write(const std::string &fmt, A... args) {
-		std::string s = utils::format(fmt, args...);
-		write(s);
-	}
+	virtual void write(const std::wstring &text);
+	virtual void write(const std::vector<uint32_t> &text);
+
+	//template <class... A> void write(const std::string &fmt, A... args) {
+	//	std::string s = utils::format(fmt, args...);
+	//	write(s);
+	//}
 
 	virtual void setColor(int fg, int bg = BLACK);
 	virtual void resize(int w, int h);
@@ -182,6 +187,8 @@ public:
 		write(prompt);
 		return getPassword(maxlen);
 	}
+
+	void set_raw(bool m) { raw_mode = m; }
 /*
 	virtual std::future<std::string> getLineAsync() {
 		getLineStarted = false;
@@ -222,9 +229,11 @@ public:
 	int getFg() const { return fgColor; }
 	int getBg() const { return bgColor; }
 
-	void rawPut(Char c) {
-		outBuffer.push_back(c & 0xff);
-	}
+	//void rawPut(Char c) {
+	//	outBuffer.push_back(c & 0xff);
+	//}
+
+	virtual const std::string name() const = 0;
 
 protected:
 
@@ -275,6 +284,8 @@ protected:
 	int clipY0;
 	int clipX1;
 	int clipY1;
+
+	bool raw_mode;
 
 	//std::mutex lock;
 	//std::atomic<bool> getLineStarted;
