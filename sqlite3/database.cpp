@@ -16,67 +16,67 @@ int bindArg(Statement &s, const std::string &arg)  {
 }
 
 #define START() \
-	auto t = sqlite3_column_type(s.stmt, s.pos); \
-	LOGD("POSITION %d TYPE %d", s.pos, t); \
+	auto t = sqlite3_column_type(s, pos); \
+	LOGD("POSITION %d TYPE %d", pos, t); \
 	if(t == SQLITE_NULL) \
 		throw db_exception("null value"); \
 
-template <> int stepper(Statement &s) {
+template <> int stepper(sqlite3_stmt *s, int pos) {
 	START()
 	LOGD("int");
 	if(t != SQLITE_INTEGER)
 		throw std::invalid_argument("Not an integer");
-	return sqlite3_column_int(s.stmt, s.pos++);
+	return sqlite3_column_int(s, pos);
 }
 
-template <> uint64_t stepper(Statement &s) {
+template <> uint64_t stepper(sqlite3_stmt *s, int pos) {
 	START();
 	LOGD("uint64_t");
 	if(t != SQLITE_INTEGER)
 		throw std::invalid_argument("Not an integer");
-	return sqlite3_column_int(s.stmt, s.pos++);
+	return sqlite3_column_int(s, pos);
 }
 
-template <> double stepper(Statement &s) {
+template <> double stepper(sqlite3_stmt *s, int pos) {
 	START()
 	if(t != SQLITE_FLOAT)
 		throw std::invalid_argument("Not a double");
-	return sqlite3_column_double(s.stmt, s.pos++);
+	return sqlite3_column_double(s, pos);
 }
 
-template <> const char * stepper(Statement &s) {
+template <> const char * stepper(sqlite3_stmt *s, int pos) {
 	START()
 	if(t != SQLITE_TEXT)
 		throw std::invalid_argument("Not a string");
-	return (const char *)sqlite3_column_text(s.stmt, s.pos++);
+	return (const char *)sqlite3_column_text(s, pos);
 }
 
-template <> std::string stepper(Statement &s) {
+template <> std::string stepper(sqlite3_stmt *s, int pos) {
 	START()
 	LOGD("string");
 	if(t != SQLITE_TEXT)
 		throw std::invalid_argument("Not a string");
-	return std::string((const char*)sqlite3_column_text(s.stmt, s.pos++));
+	return std::string((const char*)sqlite3_column_text(s, pos));
 }
 
-template <> std::vector<uint8_t> stepper(Statement &s) {
+template <> std::vector<uint8_t> stepper(sqlite3_stmt *s, int pos) {
 	START()
 	//if(t != SQLITE_BLOB)
 	//	throw std::invalid_argument("Not a blob");
-	const void *ptr = sqlite3_column_blob(s.stmt, s.pos);
-	int size = sqlite3_column_bytes(s.stmt, s.pos++);
+	const void *ptr = sqlite3_column_blob(s, pos);
+	int size = sqlite3_column_bytes(s, pos);
 
 	std::vector<uint8_t> res(size);
 	memcpy(&res[0], ptr, size);
 	return res;
 }
 
-template <> std::vector<uint64_t> stepper(Statement &s) {
+template <> std::vector<uint64_t> stepper(sqlite3_stmt *s, int pos) {
 	START()
 	//if(t != SQLITE_BLOB)
 	//	throw std::invalid_argument("Not a blob");
-	const void *ptr = sqlite3_column_blob(s.stmt, s.pos);
-	int size = sqlite3_column_bytes(s.stmt, s.pos++);
+	const void *ptr = sqlite3_column_blob(s, pos);
+	int size = sqlite3_column_bytes(s, pos);
 
 	std::vector<uint64_t> res(size/8);
 	memcpy(&res[0], ptr, size);
