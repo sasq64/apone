@@ -198,10 +198,12 @@ template <class T> struct Query<T> : public base_query {
 };
 
 public:
-	Database(const std::string &file, int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) {
-		int rc = sqlite3_open_v2(file.c_str(), &db, flags, nullptr);
-		if(rc != SQLITE_OK)
-			throw db_exception("Could not open database");
+	Database(const std::string &file = "", int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) : db(nullptr) {
+		if(file != "") {
+			int rc = sqlite3_open_v2(file.c_str(), &db, flags, nullptr);
+			if(rc != SQLITE_OK)
+				throw db_exception("Could not open database");
+		}
 	}
 
 	~Database() {

@@ -440,7 +440,6 @@ std::string Console::getLine(int maxlen) {
 	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
 	while(lineEd->update(500) != KEY_ENTER);
 	if(maxlen == 0) {
-		//moveCursor(0, curY+1);
 		write("\n");
 	}
 	return lineEd->getResult();
@@ -449,6 +448,9 @@ std::string Console::getLine(int maxlen) {
 std::string Console::getPassword(int maxlen) {
 	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen, '*');
 	while(lineEd->update(500) != KEY_ENTER);
+	if(maxlen == 0) {
+		write("\n");
+	}
 	return lineEd->getResult();
 }
 
