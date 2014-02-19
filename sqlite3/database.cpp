@@ -17,13 +17,11 @@ int bindArg(Statement &s, const std::string &arg)  {
 
 #define START() \
 	auto t = sqlite3_column_type(s, pos); \
-	LOGD("POSITION %d TYPE %d", pos, t); \
 	if(t == SQLITE_NULL) \
 		throw db_exception("null value"); \
 
 template <> int stepper(sqlite3_stmt *s, int pos) {
 	START()
-	LOGD("int");
 	if(t != SQLITE_INTEGER)
 		throw std::invalid_argument("Not an integer");
 	return sqlite3_column_int(s, pos);
@@ -31,7 +29,6 @@ template <> int stepper(sqlite3_stmt *s, int pos) {
 
 template <> uint64_t stepper(sqlite3_stmt *s, int pos) {
 	START();
-	LOGD("uint64_t");
 	if(t != SQLITE_INTEGER)
 		throw std::invalid_argument("Not an integer");
 	return sqlite3_column_int(s, pos);
@@ -53,7 +50,6 @@ template <> const char * stepper(sqlite3_stmt *s, int pos) {
 
 template <> std::string stepper(sqlite3_stmt *s, int pos) {
 	START()
-	LOGD("string");
 	if(t != SQLITE_TEXT)
 		throw std::invalid_argument("Not a string");
 	return std::string((const char*)sqlite3_column_text(s, pos));

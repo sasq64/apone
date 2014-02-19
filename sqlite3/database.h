@@ -137,6 +137,10 @@ struct base_query {
 
 template <class... Target> struct Query : public base_query {
 
+	template <class T, class A, class B, class C, class D, class E, class F, class G> T make(sqlite3_stmt *s) {
+		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3), stepper<E>(s, 4), stepper<F>(s, 5), stepper<G>(s, 6) };
+	}
+
 	template <class T, class A, class B, class C, class D, class E, class F> T make(sqlite3_stmt *s) {
 		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3), stepper<E>(s, 4), stepper<F>(s, 5) };
 	}
