@@ -57,7 +57,6 @@ int main(int argc, char **argv) {
 	// Create our ball image
 	float radius = sprite.width() / 2;
 	vec2f center { sprite.width() / 2.0f, sprite.height() / 2.0f };
-
 	sprite.clear();
 	sprite.circle(center, radius, 0x000020); // Outline
 	sprite.circle(center, radius*0.90, 0x0000C0); // Main ball
@@ -69,13 +68,14 @@ int main(int argc, char **argv) {
 		int count = 250;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
-		// Balls
 
+		// Balls
 		screen.clear();
 		vec2f xy2 = xy += {0.001f * 0.6f * delta, 0.003f * 0.7f * delta};
 		for(int i=0; i<count; i++)
 			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
+
 		// Scroller
 		if(sinepos > 2*M_PI)
 			sinepos -= 2*M_PI;

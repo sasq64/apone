@@ -20,7 +20,7 @@ include $(CHIPM)/src/plugins/ModPlugin/module.mk
 
 DATA_FILES += data/ObelixPro.ttf data/test.mod
 
-ANDROID_PROJECT := android<
+ANDROID_PROJECT := android
 
 ifeq ($(HOST),android)
   #ADK=/opt/arm-linux-androideabi
@@ -41,6 +41,7 @@ else ifeq ($(HOST),emscripten)
   #LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_set_searchstring', '_play_index']"
   TARGETDIR := html/
   CFLAGS += -DMUSIC
+  LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
 else
   CFLAGS += -DMUSIC
   LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp

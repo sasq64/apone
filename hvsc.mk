@@ -15,6 +15,7 @@ CXXFLAGS += -std=c++0x
 
 include $(UTILS)/coreutils/module.mk
 include $(UTILS)/webutils/module.mk
+include $(UTILS)/sqlite3/module.mk
 include $(GRAPPIX)/module.mk
 include $(CHIPM)/src/plugins/VicePlugin/module.mk
 
@@ -32,7 +33,7 @@ else ifeq ($(HOST),emscripten)
   TARGETDIR := html/
 endif
 
-FILES += $(CHIPM)/src/sqlite3/sqlite3.c $(CHIPM)/src/SongDb.cpp $(CHIPM)/src/SearchIndex.cpp
+FILES += $(CHIPM)/src/SongDb.cpp $(CHIPM)/src/SearchIndex.cpp
 LIBS += -ldl
 LOCAL_FILES += sidplayer.cpp
 
