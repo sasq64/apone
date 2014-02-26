@@ -13,6 +13,8 @@ TARGET := hvsc
 CFLAGS += -Wall -O2 -I. -I$(UTILS)
 CXXFLAGS += -std=c++0x
 
+INCLUDES += $(CHIPM)/src
+
 include $(UTILS)/coreutils/module.mk
 include $(UTILS)/webutils/module.mk
 include $(UTILS)/sqlite3/module.mk

@@ -13,10 +13,12 @@ TARGET := demo
 CFLAGS += -Wall -g -O2
 CXXFLAGS += -std=c++0x
 
+include $(CHIPM)/src/plugins/ModPlugin/module.mk
 include $(UTILS)/coreutils/module.mk
 #include $(UTILS)/webutils/module.mk
 include $(GRAPPIX)/module.mk
-include $(CHIPM)/src/plugins/ModPlugin/module.mk
+
+INCLUDES += $(CHIPM)/src
 
 DATA_FILES += data/ObelixPro.ttf data/test.mod
 
@@ -45,7 +47,7 @@ else ifeq ($(HOST),emscripten)
 else
   CFLAGS += -DMUSIC
   LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
-  LOCAL_MODULES += fft
+  LOCAL_DIRS += fft
   CFLAGS += -pthread
   LDFLAGS += -pthread -lpthread
 endif
