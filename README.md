@@ -8,34 +8,39 @@ Each module can depend on other modules, and sometimes external libraries.
 
 The modules use C++11 features so you need a recent compiler version.
 
-To use the module system, you normally add the top directory to your include path, and then all cpp files inside
-the module directories you want to use. If you are using Makefiles, the easiest way is to use the provided
-*Makefile.inc*, which simplifies the building process. This is a minimal Makefile example;
+The module system is based on make. This is a minimal for a project makefile that uses
+this system;
 
-	MODULE_DIR := ../utils
-	CFLAGS := -std=c++0x -I$(MODULE_DIR)
-	MODULES := $(MODULE_DIR)/coreutils
+	# First point to the utils directory
+	MODULE_DIR = ../utils
+	# then we include config.mk to set up variables and detect host etc
+	include $(MODULE_DIR)/config.mk
 
+	# then we define our compilation target and the sources to include
 	TARGET := test
-	OBJS := test.o
+	LOCAL_FILES += test.cpp
+	# and finally we build everything by including the build rules
+	include $(MODULE_DIR)/build.mk
 
-	include $(MODULE_DIR)/Makefile.inc
+A slightly more advanced example. 
 
-If you do not wish to use *Makefile.inc* you need to either copy the modules into your source directory, or
-set up appropriate build rules that can build from the modules source files into your own object directory.
+	MODULE_DIR = ../utils
+	include $(MODULE_DIR)/config.mk
 
-Makefile.inc new proposal
-=========================
+	# Include the code modules that we want to use
+	include $(MODULE_DIR)/coreutils/module.mk
+	include $(MODULE_DIR)/sqlite3/module.mk
 
-include setup.mk
+	TARGET := dbtest
+	LOCAL_FILES += dbtest.cpp
+	# Include all source files in the dbsrc/ directory
+	LOCAL_MODULES += dbsrc
 
-Investigates environment and set up default settings
+	# Include system specific sources depending on host system
+	ifeq ($(HOST),android)
+	LOCAL_FILES += android_sys.c
+	else
+	LOCAL_FILES += pc_sys.c
+	endif
 
-Input variable, defaults to current system (linux or windows). Set to cross compile.
-HOST = android | emscripten | raspberrypi | linux | windows
-
-CC = correct compiler for host
-CXX =
-CFLAGS = Defines for host (-DRASPERRYPI etc)
-OBJDIR = obj/$HOST
-
+	include $(MODULE_DIR)/build.mk

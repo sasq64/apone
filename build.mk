@@ -21,6 +21,7 @@ endif
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
 CXXFLAGS += $(CFLAGS)
 COMP_CXXFLAGS += $(COMP_CFLAGS)
+
 # LOCAL_FILES <= Source files relative to current directory + SRCDIR
 # FILES <= Source files with exact path
 FILES := $(realpath $(FILES))
@@ -30,11 +31,12 @@ FILES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_FILES)))
 # Create corresponding list of OBJS from FILES (but only files that end with a pattern in SRC_PATTERNS)
 OBJS := $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(filter %$(PAT),$(FILES))) )
 
-# Also add all source files inside MODULES directories
-RP_MODULES := $(realpath $(MODULES))
-RP_MODULES += $(realpath $(addprefix $(SRCDIR), $(LOCAL_MODULES)))
+# Also add all source files inside DIRS directories
+RP_DIRS := $(realpath $(DIRS))
+RP_DIRS += $(realpath $(addprefix $(SRCDIR), $(LOCAL_DIRS)))
 
-OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(RP_MODULES)))) )
+
+OBJS += $(foreach PAT,$(SRC_PATTERNS), $(patsubst %$(PAT),%.o, $(wildcard $(addsuffix /*$(PAT), $(RP_DIRS)))) )
 
 # Since all paths in OBJS are absolute, we dont add a slash after OBJDIR
 OBJDIR := $(OBJDIR)$(HOST)
@@ -43,7 +45,10 @@ OBJFILES += $(addprefix $(OBJDIR), $(OBJS))
 REAL_TARGET := $(TARGET)
 TARGET := $(TARGET_PRE)$(TARGET)
 
-start_rule: $(TARGETDIR) $(OBJFILES) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
+LIBMODS := $(addsuffix .a,$(MODULES))
+LIBMODS := $(addprefix $(OBJDIR)/,$(LIBMODS))
+
+start_rule: $(TARGETDIR) $(OBJFILES) $(LIBMODS) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
 
 remove_target:
 	rm -f $(TARGETDIR)$(TARGET)$(TARGET_EXT)
@@ -51,25 +56,49 @@ remove_target:
 relink: remove_target start_rule
 linkrun: remove_target run
 
+define MODULE_template
+$(1)_FILES := $$(realpath $($(1)_FILES))
+$(1)_DIRS := $$(realpath $($(1)_DIRS))
+$(1)_OBJS := $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(filter %$$(PAT),$$($(1)_FILES))) )
+$(1)_OBJS += $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(wildcard $$(addsuffix /*$$(PAT), $$($(1)_DIRS)) )))
+$(1)_OBJS := $$(addprefix $$(OBJDIR), $$($(1)_OBJS))
+
+$(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES) $$(INCLUDES))))
+$(1)_CXXFLAGS += -std=c++0x $$($(1)_CFLAGS)
+
+$$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS)
+$$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS)
+
+$$(OBJDIR)/$(1).a : $$($(1)_OBJS)
+	rm -f $$(OBJDIR)/$(1).a
+	$$(AR) r $$(OBJDIR)/$(1).a $$($(1)_OBJS)
+	ranlib $$(OBJDIR)/$(1).a
+endef
+
+$(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))
+
+
+
 -include $(OBJFILES:.o=.d)
+
 
 # Implicit rules
 
 $(OBJDIR)%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
+	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
+	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cc
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cxx
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $(CFLAGS_$(notdir $*)) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.S
 	@mkdir -p $(@D)
@@ -129,8 +158,8 @@ $(TARGETDIR)$(TARGET).elf: $(OBJFILES) $(DEPS)
 $(TARGETDIR)$(TARGET).exe: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).exe
 
-$(TARGETDIR)$(TARGET): $(OBJFILES) $(DEPS)
-	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBS) 
+$(TARGETDIR)$(TARGET): $(OBJFILES) $(LIBMODS) $(DEPS)
+	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS)
 
 $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
@@ -162,7 +191,7 @@ cleandep:
 	rm -f $(OBJFILES:.o=.d)
 
 superclean:
-	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(MODULES)) *.elf *~
+	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(DIRS)) *.elf *~
 
 run: start_rule
 	$(CURDIR)/$(TARGET)$(TARGET_EXT)

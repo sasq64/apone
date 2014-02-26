@@ -1,13 +1,15 @@
 
-CFLAGS :=
-CXXFLAGS :=
+CFLAGS := -I$(dir $(lastword $(MAKEFILE_LIST)))
+CXXFLAGS := -std=c++0x
 OBJS :=
-MODULES :=
+DIRS :=
 LIBS :=
 LDFLAGS :=
 TARGET :=
 FILES :=
 INCLUDES :=
+MODULES :=
+DIRS :=
 OBJDIR := obj/
 
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
@@ -121,7 +123,10 @@ else ifeq ($(HOST),emscripten)
  	COMP_CFLAGS += -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
 	CFLAGS += -DRASPBERRYPI
+else ifeq ($(HOST),linux)
+  CFLAGS += -DLINUX
 endif
+
 
 ifneq ($(ARM),)
 	CFLAGS += -DARM

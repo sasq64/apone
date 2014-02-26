@@ -4,7 +4,7 @@ UTILS = ..
 CFLAGS := -g -Wall -I$(UTILS) -I../netlink
 CXXFLAGS := -std=c++0x 
 
-MODULES := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/netlink
+DIRS := $(UTILS)/coreutils $(UTILS)/bbsutils $(UTILS)/netlink
 
 LDFLAGS := -pthread
 

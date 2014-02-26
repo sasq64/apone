@@ -4,8 +4,8 @@ SQLITE3_INCLUDED = 1
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 LIBS += -ldl
 INCLUDES += $(THIS_DIR)..
-FILES += $(THIS_DIR)database.cpp $(THIS_DIR)sqlite3.c
+sqlite3_FILES := $(THIS_DIR)database.cpp $(THIS_DIR)sqlite3.c
 
-FILES := $(realpath $(FILES))
+MODULES += sqlite3
 
 endif
