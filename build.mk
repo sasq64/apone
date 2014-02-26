@@ -63,7 +63,7 @@ $(1)_OBJS := $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(filte
 $(1)_OBJS += $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(wildcard $$(addsuffix /*$$(PAT), $$($(1)_DIRS)) )))
 $(1)_OBJS := $$(addprefix $$(OBJDIR), $$($(1)_OBJS))
 
-$(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES) $$(INCLUDES))))
+$(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES))) $$(sort $$(realpath $$(INCLUDES))))
 $(1)_CXXFLAGS += -std=c++0x $$($(1)_CFLAGS)
 
 $$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS)
@@ -72,7 +72,7 @@ $$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS)
 $$(OBJDIR)/$(1).a : $$($(1)_OBJS)
 	rm -f $$(OBJDIR)/$(1).a
 	$$(AR) r $$(OBJDIR)/$(1).a $$($(1)_OBJS)
-	ranlib $$(OBJDIR)/$(1).a
+	$$(RANLIB) $$(OBJDIR)/$(1).a
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))
