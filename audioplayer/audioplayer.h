@@ -23,16 +23,20 @@ public:
 #include "player_sdl.h"
 #endif
 
+
 class AudioPlayer {
 public:
 	AudioPlayer(int hz = 44100) : internalPlayer(std::make_shared<InternalPlayer>(hz)) {}
-	AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : internalPlayer(std::make_shared<InternalPlayer>(cb, hz)) {}
+	AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : internalPlayer(std::make_shared<InternalPlayer>(cb, hz)) {
+		staticInternalPlayer = internalPlayer;
+	}
 
 	void writeAudio(int16_t *samples, int sampleCount) {
 		internalPlayer->writeAudio(samples, sampleCount);
 	}
 private:
 		std::shared_ptr<InternalPlayer> internalPlayer;
+		static std::shared_ptr<InternalPlayer> staticInternalPlayer;
 };
 
 #endif // AUDIOPLAYER_H

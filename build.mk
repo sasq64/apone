@@ -63,11 +63,11 @@ $(1)_OBJS := $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(filte
 $(1)_OBJS += $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(wildcard $$(addsuffix /*$$(PAT), $$($(1)_DIRS)) )))
 $(1)_OBJS := $$(addprefix $$(OBJDIR), $$($(1)_OBJS))
 
-$(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES))) $$(sort $$(realpath $$(INCLUDES))))
-$(1)_CXXFLAGS += -std=c++0x $$($(1)_CFLAGS)
+$(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES))))
+$(1)_CXXFLAGS += $$($(1)_CFLAGS)
 
-$$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS)
-$$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS)
+$$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS) $$(CXXFLAGS)
+$$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS) $$(CFLAGS)
 
 $$(OBJDIR)/$(1).a : $$($(1)_OBJS)
 	rm -f $$(OBJDIR)/$(1).a
@@ -149,23 +149,15 @@ $(TARGETDIR):
 	mkdir -p $(TARGETDIR)
 
 $(TARGETDIR)$(TARGET).a: $(TARGETDIR) $(OBJFILES) $(DEPS)
+	rm -rf $(TARGETDIR)$(TARGET).a
 	$(AR) r $(TARGETDIR)$(TARGET).a $(OBJFILES)
-	#$(RANLIB) $(TARGETDIR)$(TARGET).a
+	$(RANLIB) $(TARGETDIR)$(TARGET).a
 	 
-$(TARGETDIR)$(TARGET).elf: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).elf
-
-$(TARGETDIR)$(TARGET).exe: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).exe
-
 $(TARGETDIR)$(TARGET): $(OBJFILES) $(LIBMODS) $(DEPS)
 	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS)
 
-$(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
-	$(OBJCOPY) -O binary $< $@
-
-$(TARGETDIR)$(TARGET).so: $(OBJFILES) $(DEPS)
-	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBS)
+$(TARGETDIR)$(TARGET).so: $(OBJFILES) $(LIBMODS) $(DEPS)
+	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBMODS) $(LIBS)
 
 $(TARGETDIR)$(TARGET).apk: $(TARGETDIR)$(TARGET).so
 	mkdir -p $(ANDROID_PROJECT)/libs/armeabi
@@ -178,11 +170,24 @@ $(TARGETDIR)$(TARGET).apk: $(TARGETDIR)$(TARGET).so
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
 	$(LD) $(LDFLAGS) -shared -o $(TARGETDIR)$(TARGET).dll $(OBJFILES) $(LIBS)
 
-$(TARGETDIR)$(TARGET).html: $(OBJFILES) $(DEPS)
-	$(LD) -O2 $(LDFLAGS) $(LIBS) $(OBJFILES) -o $(TARGETDIR)$(TARGET).html
+$(TARGETDIR)$(TARGET).html: $(OBJFILES) $(LIBMODS) $(DEPS)
+	$(LD) -O2 $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS) -o $(TARGETDIR)$(TARGET).html
 
-$(TARGETDIR)$(TARGET).js: $(OBJFILES) $(DEPS)
-	$(LD) -O2 $(LDFLAGS) $(LIBS) $(OBJFILES) -o $(TARGETDIR)$(TARGET).js
+$(TARGETDIR)$(TARGET).js: $(OBJFILES) $(LIBMODS) $(DEPS)
+	$(LD) -O2 $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS) -o $(TARGETDIR)$(TARGET).js
+
+## OBSOLETE ?
+
+$(TARGETDIR)$(TARGET).elf: $(OBJFILES) $(DEPS)
+	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).elf
+
+$(TARGETDIR)$(TARGET).exe: $(OBJFILES) $(DEPS)
+	$(LD) $(LDFLAGS) $(OBJFILES) $(LIBS) -o $(TARGETDIR)$(TARGET).exe
+
+$(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
+	$(OBJCOPY) -O binary $< $@
+
+##
 
 clean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT)

@@ -7,6 +7,7 @@
 #include <alsa/asoundlib.h>
 
 #include <thread>
+#include <vector>
 
 class InternalPlayer {
 public:
@@ -33,7 +34,7 @@ public:
 	}
 
 	~InternalPlayer() {
-		quit = false;
+		quit = true;
 		if(playerThread.joinable())
 			playerThread.join();
 	}
