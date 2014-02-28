@@ -61,7 +61,8 @@ $(1)_FILES := $$(realpath $($(1)_FILES))
 $(1)_DIRS := $$(realpath $($(1)_DIRS))
 $(1)_OBJS := $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(filter %$$(PAT),$$($(1)_FILES))) )
 $(1)_OBJS += $$(foreach PAT,$$(SRC_PATTERNS), $$(patsubst %$$(PAT),%.o, $$(wildcard $$(addsuffix /*$$(PAT), $$($(1)_DIRS)) )))
-$(1)_OBJS := $$(addprefix $$(OBJDIR), $$($(1)_OBJS))
+$(1)_OBJDIR := $$(OBJDIR)
+$(1)_OBJS := $$(addprefix $$($(1)_OBJDIR), $$($(1)_OBJS))
 
 $(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES))))
 $(1)_CXXFLAGS += $$($(1)_CFLAGS)
@@ -72,7 +73,26 @@ $$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS) $$(CFLAGS)
 $$(OBJDIR)/$(1).a : $$($(1)_OBJS)
 	rm -f $$(OBJDIR)/$(1).a
 	$$(AR) r $$(OBJDIR)/$(1).a $$($(1)_OBJS)
-	$$(RANLIB) $$(OBJDIR)/$(1).a
+
+build_$(1) : $$(OBJDIR)/$(1).a
+
+clean_$(1) :
+	rm -f $$(OBJDIR)/$(1).a
+	rm -f $$($(1)_OBJS)
+
+rebuild_$(1) : clean_$(1) build_$(1)
+
+#-include $$($(1)_OBJS:.o=.d)
+
+$(OBJDIR)%.d: %.c
+	@mkdir -p $(@D)
+	@$(CC) -MM -MG  -MT '$(OBJDIR)$*.o' $(CFLAGS) $< > $@
+
+$(OBJDIR)%.d: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+
+
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))

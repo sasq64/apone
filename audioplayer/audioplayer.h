@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 class audio_exception : public std::exception {
 public:
@@ -13,7 +14,9 @@ public:
 	std::string msg;
 };
 
-#ifdef WIN32
+#ifdef SDL_AUDIO
+#include "player_sdl.h"
+#elif defined WIN32
 #include "player_windows.h"
 #elif defined LINUX
 #include "player_linux.h"
@@ -31,9 +34,9 @@ public:
 		staticInternalPlayer = internalPlayer;
 	}
 
-	void writeAudio(int16_t *samples, int sampleCount) {
-		internalPlayer->writeAudio(samples, sampleCount);
-	}
+	//void writeAudio(int16_t *samples, int sampleCount) {
+	//	internalPlayer->writeAudio(samples, sampleCount);
+	//}
 private:
 		std::shared_ptr<InternalPlayer> internalPlayer;
 		static std::shared_ptr<InternalPlayer> staticInternalPlayer;
