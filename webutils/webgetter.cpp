@@ -5,18 +5,21 @@
 #include <coreutils/utils.h>
 
 #include <curl/curl.h>
+#include <cstring>
 
+#include <future>
 using namespace utils;
 using namespace logging;
 using namespace std;
 
-WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir) {
+WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir), datapos(-1) {
 	LOGD("Job created");
 	jobThread = thread {&Job::urlGet, this, url};
 }
 
 WebGetter::Job::~Job() {
-	jobThread.join();
+	if(jobThread.joinable())
+		jobThread.join();
 }
 
 bool WebGetter::Job::isDone() { 
@@ -64,16 +67,26 @@ void WebGetter::Job::urlGet(string url) {
 	returnCode = rc;
 	loaded = true;
 	m.unlock();
+
 }
 
 size_t WebGetter::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	Job *job = (Job*)userdata;
-	if(!job->file) {
-		//job->fp = fopen(job->target.c_str(), "wb");
-		job->file = make_unique<File>(job->target, File::WRITE);
-		LOGD("Opened %s", job->target);
+
+	if(job->datapos >= 0) {
+		auto &v = job->data;
+		v.resize(v.size() + size * nmemb);
+		memcpy(&v[job->datapos], ptr, size * nmemb);
+		job->datapos += (size * nmemb);
+	} else {
+
+		if(!job->file) {
+			//job->fp = fopen(job->target.c_str(), "wb");
+			job->file = make_unique<File>(job->target, File::WRITE);
+			LOGD("Opened %s", job->target);
+		}
+		job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
 	}
-	job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
 	return size * nmemb;
 }
 
@@ -106,3 +119,18 @@ WebGetter::WebGetter(const string &workDir) : workDir(workDir) {
 WebGetter::Job* WebGetter::getURL(const string &url) {
 	return new Job(baseURL + url, workDir);
 }
+
+
+void WebGetter::getURL(const std::string &url, std::function<void(std::vector<uint8_t> &data)> callback) {
+	std::async(std::launch::async, [&]() {
+		try {
+			vector<uint8_t> data;
+			Job job;
+			job.urlGet(url);
+			callback(job.getData());
+		} catch(std::exception &e) {
+			std::terminate();
+		}
+	});
+}
+

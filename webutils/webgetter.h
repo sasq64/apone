@@ -10,19 +10,23 @@
 #include <thread>
 #endif
 #include <memory>
-#include <stdio.h>
+#include <cstdio>
+#include <functional>
+#include <vector>
 
 class WebGetter {
 public:
 	class Job {
 	public:
+		Job() : datapos(0) {}
 		Job(const std::string &url, const std::string &targetDir);
 		~Job();
 		bool isDone();
 		int getReturnCode();
 		std::string getFile();
-	private:
+		std::vector<uint8_t>& getData() { return data; }
 		void urlGet(std::string url);
+	private:
 #ifdef EMSCRIPTEN
 		static void onLoad(void *arg, const char *name);
 		static void onError(void *arg, int code);
@@ -37,8 +41,12 @@ public:
 		int returnCode;
 		std::string targetDir;
 		std::unique_ptr<utils::File> file;
+		std::vector<uint8_t> data;
+		int32_t datapos;
 		std::string target;
 	};
+
+	static void getURL(const std::string &url, std::function<void(std::vector<uint8_t> &data)>);
 
 	WebGetter(const std::string &workDir) ;
 	Job* getURL(const std::string &url);
