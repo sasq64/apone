@@ -9,39 +9,16 @@
 #include <memory>
 #include <tuple>
 
-#ifdef BACKWARD_CPP
-#define BACKWARD_HAS_BFD 1
-#include <backward-cpp/backward.hpp>
-#endif
-
 namespace sqlite3db {
 
-class backward_exception : public std::exception {
+
+class db_exception : public std::exception {
 public:
-	backward_exception(const char *ptr) : msg(ptr) {
-		//stack_trace.load_here(32);
+	db_exception(const char *ptr = "DB Exception") : msg(ptr) {
 	}
 	virtual const char *what() const throw() { return msg; }
-	virtual void print_stack() {
-		//backward::Printer p;
-		//p.print(stack_trace);
-	}
-
-private:
-	//backward::StackTrace stack_trace;
-	const char *msg;
-};
-
-class db_exception : public backward_exception {
-public:
-	db_exception(const char *ptr = "DB Exception") : backward_exception(ptr) {
-	}
-// 	virtual const char *what() const throw() { return msg; }
-// #ifdef BACKWARD_CPP
-// 	backward::StackTrace stack_trace;
-// #endif
-// private:
-// 	const char *msg;
+ private:
+ 	const char *msg;
 };
 
 struct Statement {

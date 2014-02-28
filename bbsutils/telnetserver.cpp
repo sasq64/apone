@@ -75,20 +75,24 @@ TelnetServer::TelnetServer(int port) : init(new TelnetInit()), no_session(nullpt
 }
 
 void TelnetServer::run() {
-	while(!doQuit) {
-		group.listen(500, this);
-		for(auto it = sessions.begin(); it != sessions.end();) {
-			Session *session = it->get();
-			if(!session->valid()) {
-				LOGD("Session thread join");
-				session->join();
-				group.remove(session->getSocket());
-				session->getSocket()->disconnect();
-				delete session->getSocket();
-				it = sessions.erase(it);
-			} else
-				it++;
+	try {
+		while(!doQuit) {
+			group.listen(500, this);
+			for(auto it = sessions.begin(); it != sessions.end();) {
+				Session *session = it->get();
+				if(!session->valid()) {
+					LOGD("Session thread join");
+					session->join();
+					group.remove(session->getSocket());
+					session->getSocket()->disconnect();
+					delete session->getSocket();
+					it = sessions.erase(it);
+				} else
+					it++;
+			}
 		}
+	} catch(...) {
+		std::terminate();
 	}
 }
 
