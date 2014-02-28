@@ -1,18 +1,24 @@
 
 #include "player_sl.h"
 
+#include <coreutils/log.h>
+
 using namespace std;
 
 
-void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
+void InternalPlayer::bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
-	//auto *p = (AudioPlayer*)context;
+	auto *p = (InternalPlayer*)context;
+	p->callback(&p->buffer[0], 32768);
+	(*(p->bqPlayerBufferQueue))->Enqueue(p->bqPlayerBufferQueue, &p->buffer[0], 32768*2);
 	//notifyThreadLock(p->outlock);
 }
 
 void InternalPlayer::init() {
 	unsigned int freq = 44100;
 	unsigned int channels = 2;
+
+	LOGD("SOUND INIT");
 
 	auto result = slCreateEngine(&engineObject, 0, nullptr, 0, nullptr, nullptr);
 	if(result != SL_RESULT_SUCCESS) throw sl_exception("failed");
@@ -70,6 +76,12 @@ void InternalPlayer::init() {
 	// set the player's state to playing
 	result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
 	if(result != SL_RESULT_SUCCESS) throw sl_exception("failed");
+
+	LOGD("SOUND CALLING");
+
+	buffer.resize(32768);
+	callback(&buffer[0], 32768);
+	(*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &buffer[0], 32768*2);
 
 }
 

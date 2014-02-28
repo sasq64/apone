@@ -7,6 +7,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 class sl_exception : public std::exception {
 public:
@@ -29,8 +30,12 @@ public:
 	void init();
 private:
 
+	static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context);
+
 	std::function<void(int16_t *, int)> callback;
 	bool quit;
+
+	std::vector<int16_t> buffer;
 
 	SLObjectItf engineObject;
 	SLEngineItf engineEngine;
