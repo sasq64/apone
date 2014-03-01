@@ -197,7 +197,10 @@ template <class A, class... B> std::string format(const std::string &fmt, const 
 	return ss.str();
 }
 
+template <class... A> void print_fmt(const std::string &fmt, const A& ... args) {
+	auto s = format(fmt, args...);
+	fputs(s.c_str(), stdout);
+}
 
-};
-
+}
 #endif // FORMAT_H

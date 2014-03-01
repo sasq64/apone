@@ -21,36 +21,6 @@
 
 namespace bbs {
 
-#ifdef LOCAL_TERMINAL
-class LocalTerminal : public Terminal {
-public:
-
-	virtual void open() override {
-		struct termios new_term_attr;
-		// set the terminal to raw mode
-		tcgetattr(fileno(stdin), &orig_term_attr);
-		memcpy(&new_term_attr, &orig_term_attr, sizeof(struct termios));
-		new_term_attr.c_lflag &= ~(ECHO|ICANON);
-		new_term_attr.c_cc[VTIME] = 0;
-		new_term_attr.c_cc[VMIN] = 0;
-		tcsetattr(fileno(stdin), TCSANOW, &new_term_attr);
-	}
-
-	virtual void close() override {
-		LOGD("Restoring terminal");
-		tcsetattr(fileno(stdin), TCSANOW, &orig_term_attr);
-	}
-
-	virtual int write(const std::vector<Char> &source, int len) { return fwrite(&source[0], 1, len, stdout); }
-	virtual int read(std::vector<Char> &target, int len) { return fread(&target[0], 1, len, stdin); }
-
-private:
-	struct termios orig_term_attr;
-
-};
-extern LocalTerminal localTerminal;
-#endif
-
 class Console {
 public:	
 
@@ -235,6 +205,8 @@ public:
 
 	virtual const std::string name() const = 0;
 
+	static Console *createLocalConsole();
+
 protected:
 
 	void shiftTiles(std::vector<Tile> &tiles, int dx, int dy);
@@ -291,8 +263,6 @@ protected:
 	//std::atomic<bool> getLineStarted;
 
 };
-
-Console *createLocalConsole();
 
 } // namespace bbs
 
