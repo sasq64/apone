@@ -8,11 +8,11 @@ int bindArg(Statement &s, int64_t arg)  {
 }
 
 int bindArg(Statement &s, const char *arg)  {
-	return sqlite3_bind_text(s.stmt, s.pos++, arg, strlen(arg), nullptr);
+	return sqlite3_bind_text(s.stmt, s.pos++, arg, strlen(arg), SQLITE_TRANSIENT);
 }
 
 int bindArg(Statement &s, const std::string &arg)  {
-	return sqlite3_bind_text(s.stmt, s.pos++, arg.c_str(), arg.length(), nullptr);
+	return sqlite3_bind_text(s.stmt, s.pos++, arg.c_str(), arg.length(), SQLITE_TRANSIENT);
 }
 
 #define START() \

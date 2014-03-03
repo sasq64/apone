@@ -82,6 +82,19 @@ struct base_query {
 		}
 	};
 
+	template <class... A> void bind(const A& ... args) {
+		sqlite3_clear_bindings(stmt);
+    	sqlite3_reset(stmt);
+
+		Statement s { stmt, 1 };
+		std::vector<int> results = { bindArg(s, args)... };
+
+		for(int &r : results) {
+			if(r != SQLITE_OK)
+				throw db_exception(sqlite3_errmsg(db));
+		}
+    }
+
 	base_query& operator=(const base_query &q) = delete;
 	base_query(const base_query &q) = delete;
 
