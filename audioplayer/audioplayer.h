@@ -34,9 +34,23 @@ public:
 		staticInternalPlayer = internalPlayer;
 	}
 
+	void pause() { internalPlayer->pause(true); }
+	void resume() { internalPlayer->pause(false); }
+
+	static void pause_audio() { 
+		if(staticInternalPlayer)
+			staticInternalPlayer->pause(true);
+	}
+
+	static void resume_audio() {
+		if(staticInternalPlayer)
+			staticInternalPlayer->pause(false);
+	}
+
 	//void writeAudio(int16_t *samples, int sampleCount) {
 	//	internalPlayer->writeAudio(samples, sampleCount);
 	//}
+
 private:
 		std::shared_ptr<InternalPlayer> internalPlayer;
 		static std::shared_ptr<InternalPlayer> staticInternalPlayer;

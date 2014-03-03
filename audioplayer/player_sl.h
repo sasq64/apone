@@ -19,21 +19,30 @@ private:
 
 class InternalPlayer {
 public:
-	InternalPlayer(int hz = 44100) : quit(false) {
+	InternalPlayer(int hz = 44100) : quit(false), paused(false) {
 		init();
 	}
 
-	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false) {
+	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
 		init();
 	}
 
 	void init();
+
+	void pause(bool on) {
+		paused = on;
+		if(!paused) {
+			callback(&buffer[0], 32768);
+			(*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &buffer[0], 32768*2);
+		}
+	}
 private:
 
 	static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context);
 
 	std::function<void(int16_t *, int)> callback;
 	bool quit;
+	bool paused;
 
 	std::vector<int16_t> buffer;
 

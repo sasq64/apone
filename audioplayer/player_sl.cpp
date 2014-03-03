@@ -9,9 +9,11 @@ using namespace std;
 void InternalPlayer::bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
 	auto *p = (InternalPlayer*)context;
-	p->callback(&p->buffer[0], 32768);
-	(*(p->bqPlayerBufferQueue))->Enqueue(p->bqPlayerBufferQueue, &p->buffer[0], 32768*2);
+	if(!p->paused) {
+		p->callback(&p->buffer[0], 32768);
+		(*(p->bqPlayerBufferQueue))->Enqueue(p->bqPlayerBufferQueue, &p->buffer[0], 32768*2);
 	//notifyThreadLock(p->outlock);
+	}
 }
 
 void InternalPlayer::init() {

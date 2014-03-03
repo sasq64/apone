@@ -8,6 +8,7 @@
 
 #include <thread>
 #include <vector>
+#include <atomic>
 
 class InternalPlayer {
 public:
@@ -33,6 +34,10 @@ public:
 		}
 	}
 
+	void pause(bool on) {
+		paused = on;
+	}
+
 	~InternalPlayer() {
 		quit = true;
 		if(playerThread.joinable())
@@ -42,8 +47,10 @@ public:
 	void run() {
 		std::vector<int16_t> buffer(16384);
 		while(!quit) {
-			callback(&buffer[0], buffer.size());
-			writeAudio(&buffer[0], buffer.size());
+			if(!paused) {
+				callback(&buffer[0], buffer.size());
+				writeAudio(&buffer[0], buffer.size());
+			}
 		}
 	}
 
@@ -59,6 +66,7 @@ public:
 	bool quit;
 	int dspFD;
 	snd_pcm_t *playback_handle;
+	std::atomic<bool> paused;
 	std::thread playerThread;
 
 };

@@ -28,6 +28,10 @@ public:
 		//fifo.putBytes(nullptr, fifo.size());
 	}
 
+	void pause(bool on) {
+		SDL_PauseAudio(on ? 1 : 0);
+	}
+
 	static void fill_audio(void *udata, Uint8 *stream, int len) {
 		auto *iplayer = (InternalPlayer*)udata;
 		iplayer->callback((int16_t*)stream, len/2);
