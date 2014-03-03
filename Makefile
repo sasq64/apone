@@ -15,7 +15,7 @@ CXXFLAGS += -std=c++0x
 
 include $(CHIPM)/src/plugins/ModPlugin/module.mk
 include $(UTILS)/coreutils/module.mk
-#include $(UTILS)/webutils/module.mk
+include $(UTILS)/audioplayer/module.mk
 include $(GRAPPIX)/module.mk
 
 INCLUDES += $(CHIPM)/src
@@ -34,23 +34,28 @@ ifeq ($(HOST),android)
   #-I$(ADK)/include -I$(ADK)/include/freetype2
   #LIBS += $(ADK)/lib/libfreetype.a $(ADK)/lib/libpng.a -lz -llog -landroid -lEGL -lGLESv2
   #LDFLAGS += -lz -llog -landroid -lEGL -lGLESv2
-  LDFLAGS += -lOpenSLES
-   LOCAL_FILES += AudioPlayerSL.cpp
+  #LDFLAGS += -lOpenSLES
+  #LOCAL_FILES += AudioPlayerSL.cpp
+  CFLAGS += -DMUSIC
 else ifeq ($(HOST),emscripten)
  # LDFLAGS += -s TOTAL_MEMORY=67108864
   # -s DISABLE_EXCEPTION_CATCHING=0
   # -s OUTLINING_LIMIT=30000
   #LDFLAGS += -s EXPORTED_FUNCTIONS="['_main', '_set_searchstring', '_play_index']"
+  LDFLAGS += -s DISABLE_EXCEPTION_CATCHING=2
   TARGETDIR := html/
   CFLAGS += -DMUSIC
-  LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
+  #LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
 else
   CFLAGS += -DMUSIC
-  LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
-  LOCAL_DIRS += fft
+  #LOCAL_FILES += AudioPlayer.cpp MusicPlayer.cpp Fifo.cpp
+  #LOCAL_DIRS += fft
   CFLAGS += -pthread
   LDFLAGS += -pthread -lpthread
 endif
+
+LOCAL_FILES := MusicPlayer.cpp
+
 
 ## Hack that lets us run the currently open file from Sublime if it is one of the main files
 MAIN_FILES = demo.cpp bobs.cpp snake.cpp tiletest2.cpp simple.cpp blur.cpp map.cpp

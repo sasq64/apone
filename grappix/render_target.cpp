@@ -163,7 +163,7 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 
 
 		vector<float> coords;//(count*16);
-		coords.reserve(count*8);
+		coords.reserve(count*16);
 		for(int j=0; j<count; j++) {
 			coords.push_back(0);
 			coords.push_back(0);

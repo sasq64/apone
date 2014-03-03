@@ -5,14 +5,19 @@
 
 #include <string>
 
+#ifdef EMSCRIPTEN
+#include <SDL/SDL_image.h>
+#else
+#include <png.h>
+#endif
 using namespace std;
 using namespace utils;
+
 
 namespace grappix {
 
 #ifdef EMSCRIPTEN
 
-#include <SDL/SDL_image.h>
 
 bitmap load_png(const std::string &file_name) {
 	SDL_Surface* s = IMG_Load(file_name.c_str());
@@ -23,7 +28,6 @@ bitmap load_png(const std::string &file_name) {
 
 #else
 
-#include <png.h>
 
 bitmap load_png(const std::string &file_name) {
 	unsigned char header[8];    // 8 is the maximum size that can be checked

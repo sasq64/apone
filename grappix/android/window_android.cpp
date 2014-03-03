@@ -19,7 +19,6 @@ using namespace std;
 
 extern int main(int argc, char **argv);
 
-
 struct TouchEvent {
 	TouchEvent(int w = 0, int i = 0, float xx = 0, float yy = 0) : what(w), id(i), x(xx), y(yy) {}
 	enum {
@@ -41,7 +40,7 @@ struct KeyEvent {
 
 class AndroidHost {
 public:
-	AndroidHost() : app(nullptr), nativeWindow(nullptr), focus(true) {}
+	AndroidHost() : app(nullptr), focus(true), nativeWindow(nullptr) {}
 
 	int32_t handleAndroidEvent(AInputEvent *event) {
 		int type = AInputEvent_getType(event);
@@ -78,12 +77,12 @@ public:
 				//what = TouchEvent::MOVE;
 				//LOGI("%d MOVE: %d %d", index, x, y);
 				for(int i=0; i<n; i++) {
-					int x = AMotionEvent_getX(event, i);
+					/*int x = AMotionEvent_getX(event, i);
 					int y = AMotionEvent_getY(event, i);
 					int id = AMotionEvent_getPointerId(event, i);
 
 					int xy = x | y<<16;
-
+*/
 					//if(pos[id] != xy) {
 					//	pos[id] = xy;
 						//LOGI("MOVE %d (%d): %d %d\n", i, id, x, y);
@@ -107,108 +106,184 @@ public:
 		return 0;
 	}
 
+	void display_keyboard(bool pShow) {
+	    // Attaches the current thread to the JVM.
+	    jint lResult;
+	    jint lFlags = 0;
+
+	    JavaVM* lJavaVM = app->activity->vm;
+	    JNIEnv* lJNIEnv = app->activity->env;
+
+	    JavaVMAttachArgs lJavaVMAttachArgs;
+	    lJavaVMAttachArgs.version = JNI_VERSION_1_6;
+	    lJavaVMAttachArgs.name = "NativeThread";
+	    lJavaVMAttachArgs.group = NULL;
+
+	    lResult=lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
+	    if (lResult == JNI_ERR) {
+	        return;
+	    }
+
+	    // Retrieves NativeActivity.
+	    jobject lNativeActivity = app->activity->clazz;
+	    jclass ClassNativeActivity = lJNIEnv->GetObjectClass(lNativeActivity);
+
+	    // Retrieves Context.INPUT_METHOD_SERVICE.
+	    jclass ClassContext = lJNIEnv->FindClass("android/content/Context");
+	    jfieldID FieldINPUT_METHOD_SERVICE =
+	        lJNIEnv->GetStaticFieldID(ClassContext,
+	            "INPUT_METHOD_SERVICE", "Ljava/lang/String;");
+	    jobject INPUT_METHOD_SERVICE =
+	        lJNIEnv->GetStaticObjectField(ClassContext,
+	            FieldINPUT_METHOD_SERVICE);
+	    //jniCheck(INPUT_METHOD_SERVICE);
+
+	    // Runs getSystemService(Context.INPUT_METHOD_SERVICE).
+	    jclass ClassInputMethodManager = lJNIEnv->FindClass(
+	        "android/view/inputmethod/InputMethodManager");
+	    jmethodID MethodGetSystemService = lJNIEnv->GetMethodID(
+	        ClassNativeActivity, "getSystemService",
+	        "(Ljava/lang/String;)Ljava/lang/Object;");
+	    jobject lInputMethodManager = lJNIEnv->CallObjectMethod(
+	        lNativeActivity, MethodGetSystemService,
+	        INPUT_METHOD_SERVICE);
+
+	    // Runs getWindow().getDecorView().
+	    jmethodID MethodGetWindow = lJNIEnv->GetMethodID(
+	        ClassNativeActivity, "getWindow",
+	        "()Landroid/view/Window;");
+	    jobject lWindow = lJNIEnv->CallObjectMethod(lNativeActivity,
+	        MethodGetWindow);
+	    jclass ClassWindow = lJNIEnv->FindClass(
+	        "android/view/Window");
+	    jmethodID MethodGetDecorView = lJNIEnv->GetMethodID(
+	        ClassWindow, "getDecorView", "()Landroid/view/View;");
+	    jobject lDecorView = lJNIEnv->CallObjectMethod(lWindow,
+	        MethodGetDecorView);
+
+	    if (pShow) {
+	        // Runs lInputMethodManager.showSoftInput(...).
+	        jmethodID MethodShowSoftInput = lJNIEnv->GetMethodID(
+	            ClassInputMethodManager, "showSoftInput",
+	            "(Landroid/view/View;I)Z");
+	        jboolean lResult = lJNIEnv->CallBooleanMethod(
+	            lInputMethodManager, MethodShowSoftInput,
+	            lDecorView, lFlags);
+	    } else {
+	        // Runs lWindow.getViewToken()
+	        jclass ClassView = lJNIEnv->FindClass(
+	            "android/view/View");
+	        jmethodID MethodGetWindowToken = lJNIEnv->GetMethodID(
+	            ClassView, "getWindowToken", "()Landroid/os/IBinder;");
+	        jobject lBinder = lJNIEnv->CallObjectMethod(lDecorView,
+	            MethodGetWindowToken);
+
+	        // lInputMethodManager.hideSoftInput(...).
+	        jmethodID MethodHideSoftInput = lJNIEnv->GetMethodID(
+	            ClassInputMethodManager, "hideSoftInputFromWindow",
+	            "(Landroid/os/IBinder;I)Z");
+	        jboolean lRes = lJNIEnv->CallBooleanMethod(
+	            lInputMethodManager, MethodHideSoftInput,
+	            lBinder, lFlags);
+	    }
+
+	    // Finished with the JVM.
+	    lJavaVM->DetachCurrentThread();
+	}
+
 	int initScreen(ANativeWindow *nativeWindow) {
 
-		/*
-		 * Here specify the attributes of the desired configuration.
-		 * Below, we select an EGLConfig with at least 8 bits per color
-		 * component compatible with on-screen windows
-		 */
-		const EGLint attribs[] = {
-				//EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-				EGL_BLUE_SIZE, 8,
-				EGL_GREEN_SIZE, 8,
-				EGL_RED_SIZE, 8,
-				EGL_NONE
-		};
+		if(eglContext == nullptr) {
 
-		EGLint w, h, dummy, format;
-		EGLint numConfigs;
-		EGLConfig config;
-		EGLConfig configList[32];
-		EGLSurface surface;
-		EGLContext context;
+			EGLint format;
+			EGLint numConfigs;
+			EGLConfig config;
+			EGLConfig configList[32];
+			EGLContext context;
 
-		EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+			eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
-		EGLint m0;
-		EGLint m1;
+			EGLint m0;
+			EGLint m1;
 
-		eglInitialize(display, &m0, &m1);
+			eglInitialize(eglDisplay, &m0, &m1);
 
-		LOGI("EGL v%d.%d", m0, m1);	
+			LOGI("EGL v%d.%d", m0, m1);	
 
-		/* Here, the application chooses the configuration it desires. In this
-		 * sample, we have a very simplified selection process, where we pick
-		 * the first EGLConfig that matches our criteria */
-		eglGetConfigs(display, configList, 32, &numConfigs);
+			/* Here, the application chooses the configuration it desires. In this
+			 * sample, we have a very simplified selection process, where we pick
+			 * the first EGLConfig that matches our criteria */
+			eglGetConfigs(eglDisplay, configList, 32, &numConfigs);
 
-		LOGI("Found %d matching configs", numConfigs);
+			LOGI("Found %d matching configs", numConfigs);
 
-		for(int i=0; i<numConfigs; i++) {
-			EGLint conf, id, stype, redSize, caveat, sbuffers;
-			eglGetConfigAttrib(display, configList[i], EGL_CONFORMANT, &conf);
-			eglGetConfigAttrib(display, configList[i], EGL_CONFIG_ID, &id);
-			eglGetConfigAttrib(display, configList[i], EGL_SURFACE_TYPE, &stype);
-			eglGetConfigAttrib(display, configList[i], EGL_RED_SIZE, &redSize);
-			eglGetConfigAttrib(display, configList[i], EGL_CONFIG_CAVEAT, &caveat);
-			eglGetConfigAttrib(display, configList[i], EGL_SAMPLE_BUFFERS, &sbuffers);
-			
-			
-			LOGI("Config %d (%d) conformant %x RED %d caveat %x stype %x", i, id, conf, redSize, caveat, stype);
+			for(int i=0; i<numConfigs; i++) {
+				EGLint conf, id, stype, redSize, caveat, sbuffers;
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFORMANT, &conf);
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFIG_ID, &id);
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_SURFACE_TYPE, &stype);
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_RED_SIZE, &redSize);
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFIG_CAVEAT, &caveat);
+				eglGetConfigAttrib(eglDisplay, configList[i], EGL_SAMPLE_BUFFERS, &sbuffers);
+								
+				LOGI("Config %d (%d) conformant %x RED %d caveat %x stype %x", i, id, conf, redSize, caveat, stype);
 
-			if((conf & EGL_OPENGL_ES2_BIT) && (stype & EGL_WINDOW_BIT)) {
-				config = configList[i];
-				if(sbuffers > 0) {
-					break;
+				if((conf & EGL_OPENGL_ES2_BIT) && (stype & EGL_WINDOW_BIT)) {
+					config = configList[i];
+					if(sbuffers > 0) {
+						break;
+					}
 				}
 			}
+
+			/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+			 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
+			 * As soon as we picked a EGLConfig, we can safely reconfigure the
+			 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+			eglGetConfigAttrib(eglDisplay, config, EGL_NATIVE_VISUAL_ID, &format);
+
+			eglConfig = config;
+
+			LOGI("Native id %d", format);
+			ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, format);
+	
+			const EGLint attribs[] = {
+				EGL_CONTEXT_CLIENT_VERSION, 2, 
+				EGL_NONE, EGL_NONE
+			};
+
+			context = eglCreateContext(eglDisplay, config, NULL, attribs);
+
+			LOGI("Context %p", context);
+			if(!context) {
+				LOGI("NO CONTEXT!");
+				exit(0);
+			}
+			eglContext = context;
 		}
 
-		/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
-		 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
-		 * As soon as we picked a EGLConfig, we can safely reconfigure the
-		 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
-		eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
-
-		LOGI("Native id %d", format);
-		ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, format);
-
-		surface = eglCreateWindowSurface(display, config, nativeWindow, NULL);
-
-		const EGLint attribs2[] = {
-			EGL_CONTEXT_CLIENT_VERSION, 2, 
-			EGL_NONE, EGL_NONE
-		};
-
-		LOGI("Surface %p", surface);
-
-		context = eglCreateContext(display, config, NULL, attribs2);
-
-		LOGI("Context %p", context);
-		if(!context) {
-			LOGI("NO CONTEXT!");
-			exit(0);
-		}
+		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, nativeWindow, NULL);
 
 
-		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
+		LOGI("Surface %p", eglSurface);
+
+		if (eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
 			LOGI("Unable to eglMakeCurrent");
 			return -1;
 		}
 
-		eglQuerySurface(display, surface, EGL_WIDTH, &w);
-		eglQuerySurface(display, surface, EGL_HEIGHT, &h);
+		EGLint w, h;
+
+		eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &w);
+		eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &h);
 
 		screenWidth = w;
 		screenHeight = h;
-		eglDisplay = display;
-		eglContext = context;
-		eglSurface = surface;
 		this->nativeWindow = nativeWindow;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		LOGI("Done");
 		return 0;
 	}
@@ -253,19 +328,20 @@ public:
 	}
 
 	void closeWindow() {
+		LOGD("Closing window");
 		if(eglDisplay != EGL_NO_DISPLAY) {
-			eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-			if(eglContext != EGL_NO_CONTEXT) {
+			//eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+			/*if(eglContext != EGL_NO_CONTEXT) {
 				eglDestroyContext(eglDisplay, eglContext);
 			}
 			if(eglSurface != EGL_NO_SURFACE) {
 				eglDestroySurface(eglDisplay, eglSurface);
 			}
-			eglTerminate(eglDisplay);
+			eglTerminate(eglDisplay); */
 		}
-		eglDisplay = EGL_NO_DISPLAY;
-		eglContext = EGL_NO_CONTEXT;
-		eglContext = EGL_NO_SURFACE;
+		//eglDisplay = EGL_NO_DISPLAY;
+		//eglContext = EGL_NO_CONTEXT;
+		//eglSurface = EGL_NO_SURFACE;
 	}
 
 	void setFocus(bool focus) {
@@ -324,14 +400,13 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 	AndroidHost *host = (AndroidHost*)app->userData;
 
-	LOGI("Got cmd %d", cmd);
-
 	switch (cmd) {
 		case APP_CMD_SAVE_STATE:
 			// The system has asked us to save our current state.  Do so.
 			//engine->app->savedState = malloc(sizeof(struct saved_state));
 			//*((struct saved_state*)engine->app->savedState) = engine->state;
 			//engine->app->savedStateSize = sizeof(struct saved_state);
+			LOGI("Save state");
 			break;
 		case APP_CMD_INIT_WINDOW:
 			// The window is being shown, get it ready.
@@ -340,10 +415,14 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				host->initScreen(app->window);
 			}
 			break;
+		case APP_CMD_PAUSE:
+			LOGI("Pause");
+			break;
 		case APP_CMD_TERM_WINDOW:
 			LOGI("Terminating");
 			host->closeWindow();
-			exit(0);
+			app->window = nullptr;
+			//exit(0);
 			break;
 		case APP_CMD_GAINED_FOCUS:
 			// Start rendering
@@ -356,7 +435,15 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			host->setFocus(false);
 			break;
 		case APP_CMD_CONFIG_CHANGED:
+			LOGI("Resize");
 			// Resize here
+			break;
+		case APP_CMD_DESTROY:
+			LOGI("Destroy!");
+			exit(0);
+			break;
+		default:
+			LOGI("Got cmd %d", cmd);
 			break;
 	}
 }
@@ -432,7 +519,8 @@ unordered_map<int, int> Window::translate = {
 
 void init_keyboard(ANativeActivity *activity) {
 	if(!keyboardOn)
-		ANativeActivity_showSoftInput(activity, ANATIVEACTIVITY_SHOW_SOFT_INPUT_IMPLICIT);
+		host.display_keyboard(true);
+		//ANativeActivity_showSoftInput(activity, ANATIVEACTIVITY_SHOW_SOFT_INPUT_IMPLICIT);
 	keyboardOn = true;
 }
 
@@ -543,6 +631,8 @@ void add_callback(std::function<void(void*)> f, void *context) {
 }
 
 void android_main(struct android_app* app) {
+
+	using grappix::screen;
 	// Make sure glue isn't stripped.
 	app_dummy();
 	extract_files(app);
@@ -561,15 +651,26 @@ void android_main(struct android_app* app) {
 	}
 	LOGD("At exit");
 	auto lastMs = utils::getms();
+	bool lastFocus = host.getFocus();
 	while(grappix::screen.is_open()) {
 		auto ms = utils::getms();
 		uint32_t rate = ms - lastMs;
 		lastMs = ms;
 		host.pollEvents();
+		if(host.getFocus() != lastFocus) {
+			LOGD("Focus changed");
+			lastFocus = host.getFocus();
+			if(lastFocus && screen.focus_func)
+				screen.focus_func();
+			if(!lastFocus && screen.focus_lost_func)
+				screen.focus_lost_func();
+		}
+
 		for(auto f : callbacks) {
 			f.first(f.second);
 		}
-		grappix::renderLoopFunction2(rate);
+		//if(host.getFocus())
+			grappix::renderLoopFunction2(rate);
 	}
 	LOGD("App ending!");
 

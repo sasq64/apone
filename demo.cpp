@@ -1,9 +1,8 @@
 #ifdef MUSIC
-#include "ModPlugin.h"
+#include <ModPlugin/ModPlugin.h>
 #include "ChipPlayer.h"
-#include "AudioPlayer.h"
 #include "MusicPlayer.h"
-#include "Equalizer.h"
+#include <audioplayer/audioplayer.h>
 #endif
 
 #include <grappix/grappix.h>
@@ -37,16 +36,17 @@ int main(int argc, char **argv) {
 	screen.open(800, 600, false);
 	LOGD("Screen is open");
 
-	Texture sprite { 96, 96 };
+	int sz = screen.height() / 8;
+	Texture sprite { sz, sz };
 	vec2f xy {0,0};
 	int xpos = -9999;
 	Texture scr {screen.width()+200, 400};
 	Program program;
 	float sinepos = 0;
-	int slots = 26;
+	//int slots = 26;
 
 #ifdef MUSIC
-	auto player = MusicPlayer::fromFile("mods/planetarium.mod");
+	auto player = MusicPlayer::fromFile("data/test.mod");
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player.getSamples(target, len);
 	});
@@ -64,8 +64,9 @@ int main(int argc, char **argv) {
 
 	program = get_program(TEXTURED_PROGRAM).clone();
 	program.setFragmentSource(sineShaderF);
+
 	screen.render_loop([=](uint32_t delta) mutable {
-		int count = 250;
+		int count = sz*2;
 		static std::vector<vec2f> v(count);
 		auto scale = vec2f(screen.size()) / 2.2;
 
@@ -75,6 +76,8 @@ int main(int argc, char **argv) {
 		for(int i=0; i<count; i++)
 			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
+
+		//screen.get_key();
 
 		// Scroller
 		if(sinepos > 2*M_PI)
@@ -88,5 +91,14 @@ int main(int argc, char **argv) {
 		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), program);
 		screen.flip();
 	});
+
+	screen.on_focus_lost([=]() mutable {
+		aPlayer.pause();
+	});
+
+	screen.on_focus([=]() mutable {
+		aPlayer.resume();
+	});
+
 	return 0;
 }

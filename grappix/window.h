@@ -72,6 +72,9 @@ public:
 	//void render_loop(std::function<void()> f, int fps = 60);
 	void render_loop(std::function<void(uint32_t)> f, int fps = 60);
 
+	void on_focus(std::function<void()> f) { focus_func = f; }
+	void on_focus_lost(std::function<void()> f) { focus_lost_func = f; }
+
 	constexpr static const double FPS = 1.0/60.0;
 
 	void benchmark(); 
@@ -87,6 +90,9 @@ public:
 	void remove_repeating(int i = -1);
 	void call_once(std::function<void(void)> f);
 
+	std::function<void()> focus_func;
+	std::function<void()> focus_lost_func;
+
 private:
 
 	void update_callbacks();
@@ -99,6 +105,8 @@ private:
 		long msec;
 		long next_time;
 	};
+
+
 
 	std::vector<Callback> callbacks;
 	std::set<int, std::greater<int>> to_remove;
