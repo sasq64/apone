@@ -8,17 +8,15 @@ CFLAGS +=  -DWITH_FREETYPE
 
 ifeq ($(HOST),android)
   DIRS += $(THIS_DIR)android
-  LDFLAGS += -lz -llog -landroid -lEGL -lGLESv2
+  LIBS += -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
   DIRS += $(THIS_DIR)pc
-  #INCLUDES += $(THIS_DIR)freetype/include
-  #LDFLAGS += -L$(THIS_DIR)freetype
-  #LIBS += -lfreetype
+else ifeq ($(HOST),apple)
+  DIRS += $(THIS_DIR)pc
+  LIBS += -lglfw -framework OpenGL -lGLEW
 else
   DIRS += $(THIS_DIR)pc
-  #CFLAGS += `freetype-config --cflags` `libpng-config --cflags`
-  #LIBS += `freetype-config --libs` `libpng-config --libs`
-  LIBS += -lSDL -lglfw -lGL -lGLEW
+  LIBS += -lglfw -lGL -lGLEW
 endif
 
 include $(THIS_DIR)../freetype/module.mk
