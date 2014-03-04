@@ -8,8 +8,9 @@ INCLUDES += $(THIS_DIR)..
 audioplayer_FILES := $(THIS_DIR)audioplayer.cpp
 
 ifneq ($(SDL_AUDIO),)
-  audioplayer_CFLAGS := -DSDL_AUDIO
-  LIBS += -lSDL
+  LIBS += `sdl-config --libs`
+  audioplayer_CFLAGS := `sdl-config --cflags`
+  CFLAGS += -DSDL_AUDIO
   audioplayer_FILES += $(THIS_DIR)player_sdl.cpp
 else ifeq ($(HOST),linux)
   LIBS += -lasound
