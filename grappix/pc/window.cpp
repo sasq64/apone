@@ -108,7 +108,9 @@ void Window::open(int w, int h, bool fs) {
 		LOGE("Glew error: %s", glewGetErrorString(rc));
 		exit(0);
 	}
+  #ifdef GL_DEBUG
 	glDebugMessageCallbackARB(debug_callback, nullptr);
+  #endif
 #endif
 
 	//initPrograms();
