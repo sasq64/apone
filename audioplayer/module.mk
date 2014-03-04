@@ -18,6 +18,11 @@ else ifeq ($(HOST),linux)
 else ifeq ($(HOST),android)
   LIBS += -lOpenSLES
   audioplayer_FILES += $(THIS_DIR)player_sl.cpp
+else
+  LIBS += `sdl-config --libs`
+  audioplayer_CFLAGS := `sdl-config --cflags`
+  CFLAGS += -DSDL_AUDIO
+  audioplayer_FILES += $(THIS_DIR)player_sdl.cpp
 endif
 
 MODULES += audioplayer
