@@ -645,7 +645,8 @@ void android_main(struct android_app* app) {
 		usleep(500);
 	}
 	try {
-		main(0, nullptr);
+		char *args[1] = { "grappix" };
+		main(1, args);
 	} catch (std::exception &e) {
 		LOGD("Caught exception: %s", e.what());
 	}

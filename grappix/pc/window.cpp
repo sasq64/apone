@@ -52,8 +52,7 @@ static void resize_fn(int w, int h) {
 };
 #endif
 
-static function<void()> renderLoopFunction;
-static function<void(uint32_t)> renderLoopFunction2;
+static function<void(uint32_t)> renderLoopFunction;
 
 void Window::open(int w, int h, bool fs) {
 
@@ -134,6 +133,15 @@ void Window::open(int w, int h, bool fs) {
 
 	startTime = chrono::high_resolution_clock::now();
 	frameBuffer = 0;
+
+	atexit([](){
+		if(!renderLoopFunction) {
+			while(screen.is_open()) {
+				screen.update_callbacks();
+				screen.flip();
+			}
+		}	
+	});
 };
 
 #ifdef EMSCRIPTEN
@@ -143,9 +151,7 @@ static void runMainLoop() {
 	uint32_t rate = ms - lastMs;
 	lastMs = ms;
 	if(renderLoopFunction)
-		renderLoopFunction();
-	else
-		renderLoopFunction2(rate);
+		renderLoopFunction(rate);
 }
 #endif
 /*
@@ -191,7 +197,7 @@ void Window::remove_repeating(int index) {
 }
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
-	renderLoopFunction2 = f;
+	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
 	emscripten_set_main_loop(runMainLoop, fps, false);
 #else
@@ -202,7 +208,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 			auto ms = utils::getms();
 			uint32_t rate = ms - lastMs;
 			lastMs = ms;
-			renderLoopFunction2(rate);
+			renderLoopFunction(rate);
 		}
 	});
 

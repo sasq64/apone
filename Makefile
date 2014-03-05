@@ -2,8 +2,8 @@ UTILS=../utils
 GRAPPIX=grappix
 CHIPM=../chipmachine
 
-CXX=clang++
-CC=clang
+#CXX=clang++
+#CC=clang
 #USE_CCACHE=1
 #HOST=android
 include $(UTILS)/config.mk
