@@ -179,11 +179,15 @@ $(ANDROID_PROJECT) :
 	rm -rf $(ANDROID_PROJECT)/src/*
 	sed -i 's/ChangeMe/$(APP_NAME)/' $(ANDROID_PROJECT)/res/values/strings.xml
 
+android_data : $(DATA_FILES)
+	mkdir -p $(ANDROID_PROJECT)/assets/data
+	cp -af $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
+
+
 $(TARGETDIR)$(TARGET).apk: $(ANDROID_PROJECT) $(TARGETDIR)$(TARGET).so
 	mkdir -p $(ANDROID_PROJECT)/libs/armeabi
 	cp $(TARGETDIR)$(TARGET).so $(ANDROID_PROJECT)/libs/armeabi/
-	#mkdir -p $(ANDROID_PROJECT)/assets/data
-	#cp -af $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
+	if [ -n "$(DATA_FILES)" ] ; then mkdir -p $(ANDROID_PROJECT)/assets/data ; cp -af $(DATA_FILES) $(ANDROID_PROJECT)/assets/data ; fi
 	$(FIX_MANIFEST) $(ANDROID_PROJECT)/AndroidManifest.xml $(REAL_TARGET) $(ANDROID_SDK_VERSION) $(APP_NAME) $(ANDROID_PACKAGE)
 	cd $(ANDROID_PROJECT) ; ANDROID_HOME=$(ANDROID_SDK) $(ANT) debug
 

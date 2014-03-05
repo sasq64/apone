@@ -54,7 +54,7 @@ def main(argv) :
 	tag(doc, 'manifest.uses-sdk', set='android:targetSdkVersion='+sdkver, noclobber=True)
 	tag(doc, 'manifest.uses-feature', set='android:glEsVersion=0x00020000', noclobber=True)
 	tag(doc, 'manifest.uses-feature', set='android:glEsVersion=0x00020000', noclobber=True)
-	tag(doc, 'manifest.application', set='android:hasCode=false', noclobber=True)
+	#tag(doc, 'manifest.application', set='android:hasCode=false', noclobber=True)
 	tag(doc, 'manifest.application.activity', set='android:name=android.app.NativeActivity', where='android:name=ChangeMe')
 	tag(doc, 'manifest.application.activity', set='android:configChanges=orientation|keyboardHidden', noclobber=True) 
 	tag(doc, 'manifest.application.activity', set='android:screenOrientation=landscape', noclobber=True)
