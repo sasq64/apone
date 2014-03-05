@@ -1,3 +1,5 @@
+BUILD_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 # Reset default src patterns if empty
 ifeq ($(SRC_PATTERNS),)
   SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
@@ -8,14 +10,7 @@ ifeq ($(HOST),emscripten)
 endif
 
 ifeq ($(HOST),android)
-
-  ifeq ($(ANDROID_PROJECT),)
-    $(error You need to set up a target project directory. Try using 'android create project')
-  endif
-
-  LDFLAGS += --sysroot=$(ANDROID_NDK)/platforms/$(NDK_PLATFORM)/arch-arm
-  FILES += $(ANDROID_NDK)/sources/android/native_app_glue/android_native_app_glue.c
-  CFLAGS += -I$(ANDROID_NDK)/sources/android
+	include $(BUILD_MK_DIR)android/build.mk
 endif
 
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
@@ -179,12 +174,17 @@ $(TARGETDIR)$(TARGET): $(OBJFILES) $(LIBMODS) $(DEPS)
 $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(LIBMODS) $(DEPS)
 	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBMODS) $(LIBS)
 
-$(TARGETDIR)$(TARGET).apk: $(TARGETDIR)$(TARGET).so
+$(ANDROID_PROJECT) :
+	android create project -p $(ANDROID_PROJECT) -n $(APP_NAME) -a ChangeMe -k $(ANDROID_PACKAGE) -t android-$(ANDROID_SDK_VERSION)
+	rm -rf $(ANDROID_PROJECT)/src/*
+	sed -i 's/ChangeMe/$(APP_NAME)/' $(ANDROID_PROJECT)/res/values/strings.xml
+
+$(TARGETDIR)$(TARGET).apk: $(ANDROID_PROJECT) $(TARGETDIR)$(TARGET).so
 	mkdir -p $(ANDROID_PROJECT)/libs/armeabi
 	cp $(TARGETDIR)$(TARGET).so $(ANDROID_PROJECT)/libs/armeabi/
-	mkdir -p $(ANDROID_PROJECT)/assets/data
-	cp -a $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
-	./fixManifest.py $(ANDROID_PROJECT)/AndroidManifest.xml $(REAL_TARGET)
+	#mkdir -p $(ANDROID_PROJECT)/assets/data
+	#cp -af $(DATA_FILES) $(ANDROID_PROJECT)/assets/data
+	$(FIX_MANIFEST) $(ANDROID_PROJECT)/AndroidManifest.xml $(REAL_TARGET) $(ANDROID_SDK_VERSION) $(APP_NAME) $(ANDROID_PACKAGE)
 	cd $(ANDROID_PROJECT) ; ANDROID_HOME=$(ANDROID_SDK) $(ANT) debug
 
 $(TARGETDIR)$(TARGET).dll: $(OBJFILES) $(DEPS)
