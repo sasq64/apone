@@ -1,6 +1,6 @@
-UTILS=../utils
-GRAPPIX=grappix
-CHIPM=../chipmachine
+UTILS=../../utils
+GRAPPIX=..
+CHIPM=../../chipmachine
 
 #CXX=clang++
 #CC=clang
