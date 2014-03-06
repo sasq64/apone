@@ -11,13 +11,15 @@ FILES :=
 INCLUDES :=
 MODULES :=
 DIRS :=
+PREFIX :=
+C_VERSION :=
 OBJDIR := obj/
 
 SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 
-ifeq ($(CC),cc)
-CC = gcc
-endif
+#ifeq ($(CC),cc)
+#CC = gcc
+#endif
 
 # Figure out HOST if it is not set
 ifeq ($(HOST),)
@@ -64,9 +66,9 @@ ifeq ($(HOST),android)
 	include $(THIS_DIR)android/config.mk
 
 else ifeq ($(HOST),emscripten)
-	CC = emcc
-	CXX = em++
- 	TARGET_EXT = .html
+	CC := emcc
+	CXX := em++
+ 	TARGET_EXT := .html
  	CFLAGS += -DGL_ES
  	COMP_CFLAGS += -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
@@ -79,31 +81,3 @@ endif
 ifneq ($(ARM),)
 	CFLAGS += -DARM
 endif
-
-ifndef CGC
-CGC := cgc
-endif
-ifndef XXD
-XXD := xxd
-endif
-
-
-CC := $(PREFIX)$(CC)$(C_VERSION)
-CXX := $(PREFIX)$(CXX)$(C_VERSION)
-
-#ifneq ($(USE_CCACHE),)
-#CC := ccache $(CC)
-#CXX := ccache $(CXX)
-#endif
-
-LD := $(CXX)
-ANT := ant
-
-ifeq ($(AR),)
-AR := ar
-endif
-RANLIB=ranlib
-AS := $(PREFIX)as
-OBJCOPY := $(PREFIX)objcopy
-OBJDUMP := $(PREFIX)objdump
- 

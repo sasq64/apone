@@ -1,5 +1,4 @@
-C++ utils
-=========
+# C++ MODS
 
 This project contains a set of modules that can be included into your C++ project.
 
@@ -24,8 +23,8 @@ you can skip configuration and only include `build.mk`.
 
 This is a minimal for a project makefile that uses this system;
 
-	# First point to the utils directory
-	MODULE_DIR = ../utils
+	# First point to the cpp-mods directory
+	MODULE_DIR = ../cpp-mods
 	# then we include config.mk to set up variables and detect host etc
 	include $(MODULE_DIR)/config.mk
 
@@ -37,7 +36,7 @@ This is a minimal for a project makefile that uses this system;
 
 A slightly more advanced example. 
 
-	MODULE_DIR = ../utils
+	MODULE_DIR = ../cpp-mods
 	include $(MODULE_DIR)/config.mk
 
 	# Include the code modules that we want to use
@@ -57,3 +56,10 @@ A slightly more advanced example.
 	endif
 
 	include $(MODULE_DIR)/build.mk
+
+## Setting flags
+
+
+### Choosing the compiler
+
+

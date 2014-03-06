@@ -1,3 +1,17 @@
+#
+
+ifneq (,$(findstring clang,$(CC)))
+  CC := $(subst $(ANDROID_PREFIX),,$(CC))
+endif
+
+ifneq (,$(findstring clang,$(CXX)))
+  CXX := $(subst $(ANDROID_PREFIX),,$(CXX))
+endif
+
+CXX := $(subst ccache,,$(CXX))
+CC := $(subst ccache,,$(CC))
+LD := $(subst ccache,,$(LD))
+
 # Test for prerequisites
 
 # First, we need the SDK. Find it from the path to the 'android' binary
@@ -34,11 +48,11 @@ else
 $(info Android toolchain already created in $(ANDROID_TOOLCHAIN))
 endif
 
-ifeq ($(realpath $(ANDROID_TOOLCHAIN)/bin/$(PREFIX)as),)
+ifeq ($(realpath $(ANDROID_TOOLCHAIN)/bin),)
 $(error Android toolchain is not valid)
 endif
 
-export PATH := $(PATH):$(ANDROID_TOOLCHAIN)/bin
+export PATH := $(ANDROID_TOOLCHAIN)/bin:$(PATH)
 
 # We also need ant to build the final project
 ifeq ($(shell which ant),)

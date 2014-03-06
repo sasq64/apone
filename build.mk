@@ -1,5 +1,41 @@
 BUILD_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
+
+ifeq ($(CC),)
+ CC := gcc
+endif
+
+ifeq ($(CXX),)
+ CXX := g++
+endif
+
+ifndef CGC
+CGC := cgc
+endif
+ifndef XXD
+XXD := xxd
+endif
+
+ifndef ANT
+ANT := ant
+endif
+
+ifndef AR
+AR := ar
+endif
+
+ifndef RANLIB
+RANLIB=ranlib
+endif
+
+AS := $(PREFIX)as
+OBJCOPY := $(PREFIX)objcopy
+OBJDUMP := $(PREFIX)objdump
+
+CC := $(PREFIX)$(CC)$(C_VERSION)
+CXX := $(PREFIX)$(CXX)$(C_VERSION)
+LD := $(CXX)
+
 # Reset default src patterns if empty
 ifeq ($(SRC_PATTERNS),)
   SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
@@ -11,6 +47,11 @@ endif
 
 ifeq ($(HOST),android)
 	include $(BUILD_MK_DIR)android/build.mk
+else ifeq ($(HOST),emscripten)
+	# Override compiler changes since nothing else really works
+	# Note: Maybe move above CC assignment to support PREFIX
+	CC := emcc
+	CXX := em++
 endif
 
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))

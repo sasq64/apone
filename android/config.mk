@@ -6,6 +6,7 @@ ANDROID_SDK_VERSION := 19
 ANDROID_PACKAGE := mydomain.mypackage.myname
 NDK_PLATFORM := android-19
 PREFIX := arm-linux-androideabi-
+ANDROID_PREFIX := $(PREFIX)
 TARGET_PRE := lib
 TARGET_EXT := .apk
 CFLAGS += -DANDROID -DGL_ES
