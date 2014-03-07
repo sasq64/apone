@@ -31,6 +31,9 @@ ifndef RANLIB
 RANLIB=ranlib
 endif
 
+CGC_PATH := $(realpath $(shell which $(CGC)))
+
+
 AS := $(PREFIX)as
 OBJCOPY := $(PREFIX)objcopy
 OBJDUMP := $(PREFIX)objdump
@@ -172,7 +175,7 @@ $(OBJDIR)%.o: %.s
 
 $(OBJDIR)%_v.o: %_v.glsl
 	@mkdir -p $(@D)
-	$(CGC) -noentry -oglsl -profile vs_2_0 $< 
+	if [ -n "$(CGC_PATH)" ] ; then $(CGC) -noentry -oglsl -profile vs_2_0 $< ; fi
 	@mkdir -p .shader
 	@cp $< .shader/$(<F)
 	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
@@ -180,7 +183,7 @@ $(OBJDIR)%_v.o: %_v.glsl
 
 $(OBJDIR)%_f.o: %_f.glsl
 	@mkdir -p $(@D)
-	$(CGC) -noentry -oglsl -profile ps_2_0 $< 
+	if [ -n "$(CGC_PATH)" ] ; then $(CGC) -noentry -oglsl -profile ps_2_0 $<  ; fi
 	@mkdir -p .shader
 	@cp $< .shader/$(<F)
 	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
