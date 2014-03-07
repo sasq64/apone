@@ -7,20 +7,20 @@
 ## PREREQUISITES
 
 * gcc-4.7+ or clang-3.2+
-* cgc (nvidia-cg-toolkit)
 * libpng
 * freetype
+* glfw 2
+* glew
 
+### Ubuntu
 ```
-sudo apt-get install libfreetype6-dev libpng12-dev nvidia-cg-toolkit
+sudo apt-get install libfreetype6-dev libpng12-dev libglfw-dev libglew-dev
 ```
 
-## CLASS DESIGN/CODING STANDARD
-
-All grappix classes are designed for pass-by-value. This means that client code should
-normally not need to use new or delete, and can program more like a scripting
-language then traditional c++, including more functional programming.
-
+### Mac OS (brew)
+```
+brew install freetype glew libpng homebrew/versions/glfw2 
+```
 ## QUICKSTART
 
 ```Shell
@@ -49,3 +49,9 @@ int main(int argc, char **argv) {
 $ make
 $ ./test
 ```
+
+## CLASS DESIGN/CODING STANDARD
+
+All grappix classes are designed for pass-by-value. This means that client code should
+normally not need to use new or delete, and can program more like a scripting
+language then traditional c++, including more functional programming.
