@@ -4,6 +4,10 @@ ifeq ($(CC),)
  CC := gcc
 endif
 
+ifeq ($(CC),cc)
+ CC := gcc
+endif
+
 ifeq ($(CXX),)
  CXX := g++
 endif
@@ -40,13 +44,12 @@ ifeq ($(SRC_PATTERNS),)
   SRC_PATTERNS := .cpp .cxx .cc .c .s .glsl
 endif
 
-ifeq ($(HOST),emscripten)
-  LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
-endif
-
 ifeq ($(HOST),android)
 	include $(BUILD_MK_DIR)android/build.mk
 else ifeq ($(HOST),emscripten)
+	ifneq ($(DATA_FILES),)
+ 		LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
+ 	endif
 	# Override compiler changes since nothing else really works
 	# Note: Maybe move above CC assignment to support PREFIX
 	CC := emcc
@@ -91,6 +94,9 @@ remove_target:
 relink: remove_target start_rule
 linkrun: remove_target run
 
+##
+## MODULE RULE - Dynamic target and build rules for each module
+##
 define MODULE_template
 $(1)_FILES := $$(realpath $($(1)_FILES))
 $(1)_DIRS := $$(realpath $($(1)_DIRS))
@@ -126,14 +132,15 @@ $(OBJDIR)%.d: %.c
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
-
-
 endef
-
+## Generate the rules
 $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))
+##
+## END MODULES
+##
 
 
-
+## Dependency files
 -include $(OBJFILES:.o=.d)
 
 

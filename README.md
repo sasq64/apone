@@ -75,25 +75,38 @@ A slightly more advanced example;
 
 #### Choosing the compiler
 
-## Cross platform support
+## Platform support
+
+### Desktop (Linux, Mac)
+
+Build using `make`
+Requires gcc 4.7+ or clang 3.2+
 
 ### Android
 
-Build using;
-
-`HOST=android make`
+Build using `HOST=android make`
 
 Requires
 
-* Android NDK
-* Android SDK
+* Android NDK r9+
+* Android SDK api 19+
+* ant
+
+The *android* tool needs to be in your path and the NDK and SDK installed in the same parent directory.
+Otherwise you need to set ANDROID_SDK and ANDROID_NDK to point to those directories.
 
 ### Emscripten
 
-Build using;
+Build using `emmake make`
 
-`emmake make`
+Requires: *emscripten*, and *emmake* in your path.
 
+# Quickstart
 
-## The Code Modules
-
+```Shell
+$ git clone http://github.com/sasq64/cpp-mods.git
+$ git clone http://github.com/sasq64/grappix.git
+$ cp -a grappix/quickstart .
+$ cd quickstart
+$ make
+```
