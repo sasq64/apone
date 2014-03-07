@@ -1,6 +1,5 @@
 BUILD_MK_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
-
 ifeq ($(CC),)
  CC := gcc
 endif

@@ -1,10 +1,21 @@
 # C++ MODS
 
-This project contains a set of modules that can be included into your C++ project.
+## Introduction
 
-The modules use C++11 features so you need a recent compiler version.
+*C++ MODS* is two things;
 
-The module system comes with its own build system is based on make. The basic idea
+* It's a set of code modules that you can use in your C++ projects
+* It contains a set of make files which constitutes a 'build system' on top of *make*
+
+To use the modules in this project, you are encouraged to include the makefiles from
+C++ MODS. This gives you a lot of functionality; they both let you write smaller makefiles
+and facilitates cross platform development.
+
+Currently supported are *Linux*, *Mac OS*, *Android* and *emscripten*.
+
+## The Build System
+
+*C++ MODS* comes with its own build system and is based on make. The basic idea
 is that you include 'smart' makefiles that helps with the build.
 
 First you include `config.mk` that figures out what the target of the build is
@@ -16,12 +27,12 @@ Then you include `module.mk` from each module directory you want to use.
 Last you include `build.mk` which contains all the targets and logic for
 building your project given the variables you have defined.
 
-`build.mk` and `config.mk` are not dependant on each other; if you only want
+`build.mk` and `config.mk` are not dependent on each other; if you only want
 help with configuration in your normal Makefile you can just include `config.mk`,
 and if you don't care about cross compilation and want to set all flags yourself,
 you can skip configuration and only include `build.mk`.
 
-This is a minimal for a project makefile that uses this system;
+This is a small makefile for a project that uses this system;
 
 	# First point to the cpp-mods directory
 	MODULE_DIR = ../cpp-mods
@@ -34,7 +45,7 @@ This is a minimal for a project makefile that uses this system;
 	# and finally we build everything by including the build rules
 	include $(MODULE_DIR)/build.mk
 
-A slightly more advanced example. 
+A slightly more advanced example;
 
 	MODULE_DIR = ../cpp-mods
 	include $(MODULE_DIR)/config.mk
@@ -42,6 +53,9 @@ A slightly more advanced example.
 	# Include the code modules that we want to use
 	include $(MODULE_DIR)/coreutils/module.mk
 	include $(MODULE_DIR)/sqlite3/module.mk
+
+	CC := clang
+	CXX := clang++
 
 	TARGET := dbtest
 	LOCAL_FILES += dbtest.cpp
@@ -57,9 +71,29 @@ A slightly more advanced example.
 
 	include $(MODULE_DIR)/build.mk
 
-## Setting flags
+### Setting flags
+
+#### Choosing the compiler
+
+## Cross platform support
+
+### Android
+
+Build using;
+
+`HOST=android make`
+
+Requires
+
+* Android NDK
+* Android SDK
+
+### Emscripten
+
+Build using;
+
+`emmake make`
 
 
-### Choosing the compiler
-
+## The Code Modules
 
