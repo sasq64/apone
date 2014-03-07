@@ -1,4 +1,4 @@
-UTILS=../../utils
+UTILS=../../cpp-mods
 GRAPPIX=..
 CHIPM=../../chipmachine
 

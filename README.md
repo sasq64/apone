@@ -1,49 +1,47 @@
-GRAPPIX
-=======
+# GRAPPIX
 
 * Simple graphics library built on top of OpenGL 3.0 (and restricted to ES 2.0 profile)
 * Allows for very simple programs
-* Inspired by 8 bit basic computers
+* Uses C++11 
 
-PREREQUISITES
-=============
-gcc/g++ or clang/clang++
-cgc (nvidia-cg-toolkit)
-For Android
-android-sdk (updated)
-android-ndk (r9+)
-ant
-For Emscripten
+## PREREQUISITES
 
-CLASS DESIGN/CODING STANDARD
-============================
+* gcc-4.7+ or clang-3.2+
+* cgc (nvidia-cg-toolkit)
+* libpng
+* freetype
 
-All classes should be designed for pass-by-value. This means that client code should
+## CLASS DESIGN/CODING STANDARD
+
+All grappix classes are designed for pass-by-value. This means that client code should
 normally not need to use new or delete, and can program more like a scripting
-language then traditional c++, including more functional programming. For example
+language then traditional c++, including more functional programming.
 
-``
-function<Bitmap()> createFractalGenerator(int w, int h) {
-	Bitmap bitmap(w, h);
-	return [=]() -> Bitmap {
-		for(int y=0; y<h; y++)
-			for(int x=0; x<w; x++)
-				bitmap[x+w*h] = someFunction(x,y);
-		return bitmap;
-	};
+## QUICKSTART
+
+```Shell
+$ git clone http://github.com/sasq64/cpp-mods.git
+$ git clone http://github.com/sasq64/grappix.git
+$ cp -a grappix/quickstart .
+$ cd quickstart
+$ ls
+Makefile test.cpp
+$ cat test.cpp
+
+#include <grappix/grappix.h>
+using namespace grappix;
+
+int main(int argc, char **argv) {
+	screen.open(640, 480, false);
+	double x = 0;
+	screen.render_loop([=](uint32_t delta) mutable {
+		screen.clear();
+		screen.circle(x += (delta/10.0), 200, 50, 0xff00ff);
+		screen.text("CIRCLE", 10, 0, 0xffffffff, 2.0);
+		screen.flip();
+	});
+	return 0;
 }
-``
-
-
-THE MAKEFILE MODULE SYSTEM
-==========================
-
-1. Include `config.mk`. This file tries figures out your environment and sets up
-   default flags, compiler etc. It also makes sure you have the right SDKs etc and
-   complains otherwise.
-
-2. Include the modules you need.
-
-3. Set your build variables;
-
-4. Include `build.mk`
+$ make
+$ ./test
+```
