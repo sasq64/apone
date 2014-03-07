@@ -1,7 +1,8 @@
 # GRAPPIX
 
-* Simple graphics library built on top of OpenGL 3.0 (and restricted to ES 2.0 profile)
-* Allows for very simple programs
+* Simple graphics library built with OpenGL 3.0 (and restricted to ES 2.0 profile)
+* Allows for very short programs
+* Supports *Linux*, *Mac OS*, *Android* and *Emscripten*.
 * Uses C++11 
 
 ## PREREQUISITES
