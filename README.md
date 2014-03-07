@@ -11,6 +11,10 @@
 * libpng
 * freetype
 
+```
+sudo apt-get install libfreetype6-dev libpng12-dev nvidia-cg-toolkit
+```
+
 ## CLASS DESIGN/CODING STANDARD
 
 All grappix classes are designed for pass-by-value. This means that client code should

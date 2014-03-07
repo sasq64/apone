@@ -1,9 +1,7 @@
-#ifdef MUSIC
 #include <ModPlugin/ModPlugin.h>
 #include "ChipPlayer.h"
 #include "MusicPlayer.h"
 #include <audioplayer/audioplayer.h>
-#endif
 
 #include <grappix/grappix.h>
 
@@ -34,7 +32,6 @@ static const string sineShaderF = R"(
 int main(int argc, char **argv) {
 
 	screen.open(800, 600, false);
-	LOGD("Screen is open");
 
 	int sz = screen.height() / 8;
 	Texture sprite { sz, sz };
@@ -43,14 +40,11 @@ int main(int argc, char **argv) {
 	Texture scr {screen.width()+200, 400};
 	Program program;
 	float sinepos = 0;
-	//int slots = 26;
 
-#ifdef MUSIC
 	auto player = MusicPlayer::fromFile("data/test.mod");
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player.getSamples(target, len);
 	});
-#endif
 
 	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE);
 
@@ -76,8 +70,6 @@ int main(int argc, char **argv) {
 		for(int i=0; i<count; i++)
 			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
-
-		//screen.get_key();
 
 		// Scroller
 		if(sinepos > 2*M_PI)
