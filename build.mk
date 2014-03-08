@@ -33,6 +33,10 @@ endif
 
 CGC_PATH := $(realpath $(shell which $(CGC)))
 
+ifndef TARGETDIR
+TARGETDIR := $(CURDIR)
+endif
+
 
 AS := $(PREFIX)as
 OBJCOPY := $(PREFIX)objcopy
@@ -261,6 +265,10 @@ $(TARGETDIR)$(TARGET).exe: $(OBJFILES) $(DEPS)
 $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
+#%/module.mk : %
+#	mkdir -p %
+#	git clone $(1) $$(BASENAME_$(2))
+
 ##
 
 clean:
@@ -273,5 +281,4 @@ superclean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(DIRS)) *.elf *~
 
 run: start_rule
-	$(CURDIR)/$(TARGET)$(TARGET_EXT)
-
+	$(realpath $(TARGETDIR))$(TARGET)$(TARGET_EXT)

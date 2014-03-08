@@ -13,17 +13,9 @@ namespace utils {
 
 // FORMAT
 
-class Printable {
-public:
-	virtual std::string toText() const = 0;
-};
-
 
 char parse_format(std::stringstream &ss, std::string &fmt);
 
-//void format_stream(std::stringstream &ss, std::string &fmt, const std::vector<int8_t> &bytes);
-//void format_stream(std::stringstream &ss, std::string &fmt, const std::vector<uint8_t> &bytes);
-void format_stream(std::stringstream &ss, std::string &fmt, const Printable &printable);
 
 /*void format_stream(std::stringstream &ss, std::string &fmt, const slice<std::vector<int8_t>::const_iterator> &bytes);
 void format_stream(std::stringstream &ss, std::string &fmt, const slice<std::vector<uint8_t>::const_iterator> &bytes);
@@ -168,7 +160,6 @@ template <class T> void format_stream(std::stringstream &ss, std::string &fmt, c
 	}
 } */
 
-
 template <class A, class... B>
 void format_stream(std::stringstream &ss, std::string &fmt, const A &head, const B& ... tail)
 {
@@ -176,30 +167,23 @@ void format_stream(std::stringstream &ss, std::string &fmt, const A &head, const
 	format_stream(ss, fmt, tail...);
 }
 
-template <class T>
-std::string format(const std::string &fmt, const T& arg) {
-	std::string fcopy = fmt;
-	std::stringstream ss;
-	format_stream(ss, fcopy, arg);
-	ss << fcopy;
-	return ss.str();  
-}
-
 std::string format(const std::string &fmt);
 
-template <class A, class... B> std::string format(const std::string &fmt, const A &head, const B& ... tail)
+template <class... A> std::string format(const std::string &fmt, const A& ... args)
 {
 	std::string fcopy = fmt;
 	std::stringstream ss;
-	format_stream(ss, fcopy, head);
-	format_stream(ss, fcopy, tail...);
+	format_stream(ss, fcopy, args...);
 	ss << fcopy;
 	return ss.str();
 }
 
 template <class... A> void print_fmt(const std::string &fmt, const A& ... args) {
-	auto s = format(fmt, args...);
-	fputs(s.c_str(), stdout);
+	std::string fcopy = fmt;
+	std::stringstream ss;
+	format_stream(ss, fcopy, args...);
+	ss << fcopy;
+	fputs(ss.str().c_str(), stdout);
 }
 
 }
