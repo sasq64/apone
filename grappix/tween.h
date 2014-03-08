@@ -167,7 +167,7 @@ public:
 	}
 
 	bool step() { // t : 0 -> 1
-		int ended = 0;
+		size_t ended = 0;
 		for(auto &a : args) {
 			float t = (currentTime - startTime - a.delay) / totalTime;
 			if(t < 0.0)

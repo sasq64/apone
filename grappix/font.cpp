@@ -75,7 +75,7 @@ TextBuf Font::make_text2(const string &text) const {
 	for(auto c : text) {
 
         texture_glyph2_t *glyph = 0;
-        for(int j=0; j<static_font.glyphs_count; ++j) {
+        for(unsigned int j=0; j<static_font.glyphs_count; ++j) {
             if(static_font.glyphs[j].charcode == c) {
                 glyph = &static_font.glyphs[j];
                 break;

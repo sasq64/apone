@@ -1,4 +1,4 @@
-UTILS=../cpp-mods
+CPP_MODS=../cpp-mods
 CHIPM=../chipmachine
 GRAPPIX=.
 
@@ -6,18 +6,19 @@ GRAPPIX=.
 #CC=clang
 #USE_CCACHE=1
 
-include $(UTILS)/config.mk
+include $(CPP_MODS)/config.mk
 
 OBJDIR := obj/
 TARGET := hvsc
-CFLAGS += -Wall -O2 -I. -I$(UTILS)
+CFLAGS += -Wall -O2 -I.
 CXXFLAGS += -std=c++0x
 
 INCLUDES += $(CHIPM)/src
 
-include $(UTILS)/coreutils/module.mk
-include $(UTILS)/webutils/module.mk
-include $(UTILS)/sqlite3/module.mk
+include $(CPP_MODS)/coreutils/module.mk
+include $(CPP_MODS)/webutils/module.mk
+include $(CPP_MODS)/sqlite3/module.mk
+include $(CPP_MODS)/audioplayer/module.mk
 include $(GRAPPIX)/module.mk
 include $(CHIPM)/src/plugins/VicePlugin/module.mk
 
@@ -39,4 +40,4 @@ FILES += $(CHIPM)/src/SongDb.cpp $(CHIPM)/src/SearchIndex.cpp
 LIBS += -ldl
 LOCAL_FILES += sidplayer.cpp
 
-include $(UTILS)/build.mk
+include $(CPP_MODS)/build.mk

@@ -83,7 +83,7 @@ bitmap load_png(const std::string &file_name) {
 	else
 		rowbytes = width*4;
 
-	for(int y=0; y<height; y++)
+	for(unsigned int y=0; y<height; y++)
 		row_pointers[y] = new png_byte [rowbytes];
 
 	png_read_image(png_ptr, row_pointers);
@@ -92,12 +92,12 @@ bitmap load_png(const std::string &file_name) {
 
 	bitmap bm(width, height);
 
-	for(int y=0; y<height; y++) {
+	for(unsigned int y=0; y<height; y++) {
 		png_byte* row = row_pointers[y];
 		memcpy(&bm[y*width], row, width*4);
     }
 
-	for(int y=0; y<height; y++)
+	for(unsigned int y=0; y<height; y++)
 		delete[] row_pointers[y];
     delete[] row_pointers;
 

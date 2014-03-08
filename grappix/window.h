@@ -102,8 +102,8 @@ private:
 			next_time = utils::getms() + msec;
 		}
 		std::function<void(void)> cb;
-		long msec;
-		long next_time;
+		unsigned long msec;
+		unsigned long next_time;
 	};
 
 

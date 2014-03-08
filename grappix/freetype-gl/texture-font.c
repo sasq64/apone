@@ -372,7 +372,7 @@ texture_font_load_glyphs( texture_font_t * self,
         FT_Int32 flags = 0;
         int ft_bitmap_width = 0;
         int ft_bitmap_rows = 0;
-        int ft_bitmap_pitch = 0;
+        /// int ft_bitmap_pitch = 0;
         int ft_glyph_top = 0;
         int ft_glyph_left = 0;
         glyph_index = FT_Get_Char_Index( face, charcodes[i] );
@@ -424,7 +424,7 @@ texture_font_load_glyphs( texture_font_t * self,
             ft_bitmap       = slot->bitmap;
             ft_bitmap_width = slot->bitmap.width;
             ft_bitmap_rows  = slot->bitmap.rows;
-            ft_bitmap_pitch = slot->bitmap.pitch;
+            /// ft_bitmap_pitch = slot->bitmap.pitch;
             ft_glyph_top    = slot->bitmap_top;
             ft_glyph_left   = slot->bitmap_left;
         }
@@ -510,7 +510,7 @@ texture_font_load_glyphs( texture_font_t * self,
             ft_bitmap       = ft_bitmap_glyph->bitmap;
             ft_bitmap_width = ft_bitmap.width;
             ft_bitmap_rows  = ft_bitmap.rows;
-            ft_bitmap_pitch = ft_bitmap.pitch;
+            /// ft_bitmap_pitch = ft_bitmap.pitch;
             ft_glyph_top    = ft_bitmap_glyph->top;
             ft_glyph_left   = ft_bitmap_glyph->left;
             FT_Stroker_Done(stroker);

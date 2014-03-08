@@ -1,16 +1,14 @@
 
-//#include "ModPlugin.h"
-#include "VicePlugin.h"
+#include <VicePlugin/VicePlugin.h>
+#include <audioplayer/audioplayer.h>
+
 #include "ChipPlugin.h"
 #include "ChipPlayer.h"
-
 #include "SongDb.h"
 
-//#include "Fifo.h"
 #include <mutex>
 #include <webutils/webgetter.h>
 #include <grappix/grappix.h>
-#include <SDL/SDL.h>
 #include <algorithm>
 
 #ifdef EMSCRIPTEN
@@ -64,7 +62,8 @@ struct App {
 	float tstart;
 	//ModPlugin *modPlugin;
 	ChipPlayer *player;
- 	SDL_AudioSpec wanted;
+ 	//SDL_AudioSpec wanted;
+ 	AudioPlayer *audioplayer;
 	TileSet font;
 	TileLayer tiles;
 	unique_ptr<VicePlugin> vicePlugin;
@@ -74,17 +73,6 @@ struct App {
 	unique_ptr<WebGetter::Job> sidJob;
 	SongDatabase db;
 	IncrementalQuery query;
-
-	~App() {
-		SDL_PauseAudio(1);
-		int i = 0;
-		//for(auto &r : opcode_stats)
-		//	r = (r << 8) | i++;
-		//std::sort(begin(opcode_stats), end(opcode_stats));
-		//i = 0;
-		//for(const auto &r : opcode_stats)
-		//	printf("%02x : %d\n", r&0xff, r>>8);
-	}
 
 	App() : sprite {64, 64}, xy {0, 0}, xpos {-9999}, scr {screen.width()+200, 400}, tstart {0}, player(nullptr), font(8,8), tiles(40,25,16*40,16*25, font),
 	/*fifo(512*1024),*/ webGetter("files"), db { "data/hvsc.db" } { //inProgress(9999999) {
@@ -123,20 +111,27 @@ struct App {
 		for(int i=0; i<tiles.size(); i++)
 			tiles[i] = 0x20;
 
-	    // Set the audio format
-	    wanted.freq = 44100;
-	    wanted.format = AUDIO_S16;
-	    wanted.channels = 2;    // 1 = mono, 2 = stereo
-	    wanted.samples = (bufSize/2);
-	    wanted.callback = App::fill_audio;
-	    wanted.userdata = this;
+		audioplayer = new AudioPlayer([&](int16_t *ptr, int size) {
+			int rc = 0;
+			if(player) {
+		#ifndef EMSCRIPTEN
+				m.lock();
+		#endif
+				auto now = getms();//emscripten_get_now();
+				rc = player->getSamples(ptr, size);
+				auto t = getms() - now;
+		#ifndef EMSCRIPTEN
+				m.unlock();
+		#endif
+				double p = (t * 100) / (size / 2.0 / 44.1);
+				percent = percent * 0.8 + p * 0.2;
+				//LOGD("Sound CPU %dms for %d samples ie %d%%", t, len, (t * 100) / (len / 4.0 / 44.1));  
+				//memcpy(stream, &buffer[0], rc*2);
+			} else {
+				memset(ptr, 0, size*2);
+			}
+		});
 
-	    // Open the audio device, forcing the desired format
-	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
-	        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-	        exit(0);
-	    }
-	    SDL_PauseAudio(0);
 		//player = vicePlugin->fromFile("data/test.sid");
 	    sidJob = unique_ptr<WebGetter::Job>(webGetter.getURL("C64Music/MUSICIANS/G/Galway_Martin/Ocean_Loader_2.sid"));
 	   	query = db.find();
@@ -359,15 +354,15 @@ struct App {
 
 	static void onLoad(void *arg, const char *name);
 	static void onError(void *arg, int code);
-	static void fill_audio(void *udata, Uint8 *stream, int len);
+	//static void fill_audio(void *udata, Uint8 *stream, int len);
 };
-
+/*
 void App::fill_audio(void *udata, Uint8 *stream, int len) {
 	App *app = static_cast<App*>(udata);
 	//static vector<int16_t> buffer(bufSize);
 	//float now = emscripten_get_now();
 	int rc = 0;
-	if(app->player) {
+	if(player) {
 #ifndef EMSCRIPTEN
 		app->m.lock();
 #endif
@@ -385,7 +380,7 @@ void App::fill_audio(void *udata, Uint8 *stream, int len) {
 		memset(stream, 0, len);
 	}
 }
-
+*/
 void runMainLoop(int d) {
 	static App app;
 	app.update(d);
