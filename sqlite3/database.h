@@ -82,6 +82,23 @@ struct base_query {
 		}
 	};
 
+	template <class A> base_query(sqlite3 *db, const std::string &query, const std::vector<A> &args) : db(db), stmt(nullptr), lastCode(-1) {
+		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
+		if(rc != SQLITE_OK)
+			throw db_exception(sqlite3_errmsg(db));
+		//LOGD("CONSTRUCT stmt %p", stmt);	
+
+		Statement s { stmt, 1 };
+		std::vector<int> results;
+		for(const auto &a : args)
+			results.push_back(bindArg(s, a));
+
+		for(int &r : results) {
+			if(r != SQLITE_OK)
+				throw db_exception(sqlite3_errmsg(db));
+		}
+	};
+
 	template <class... A> void bind(const A& ... args) {
 		sqlite3_clear_bindings(stmt);
     	sqlite3_reset(stmt);
@@ -134,6 +151,7 @@ struct base_query {
 		lastCode = sqlite3_step(stmt);
 		return (lastCode == SQLITE_ROW);
 	}
+
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
 	int lastCode;
@@ -223,12 +241,21 @@ public:
 		return Query<Target...>(db, q, args...);
 	}
 
+	template <class... Target, class A> Query<Target...> query(const std::string &q, const std::vector<A> &args) const {
+		return Query<Target...>(db, q, args);
+	}
+
 	template <class... A> void exec(const std::string &q, const A& ... args) const {
 		query(q, args...).step();
 	}
 
 	uint64_t last_rowid() {
 		return sqlite3_last_insert_rowid(db);
+	}
+
+	bool has_table(const std::string &table) {
+		auto q = query<std::string>("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table);
+		return q.step();
 	}
 
 	struct Transaction {

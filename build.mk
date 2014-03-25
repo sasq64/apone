@@ -31,10 +31,14 @@ ifndef RANLIB
 RANLIB=ranlib
 endif
 
+ifdef USE_CCACHE
+CCACHE=ccache
+endif
+
 CGC_PATH := $(realpath $(shell which $(CGC)))
 
 ifndef TARGETDIR
-TARGETDIR := $(CURDIR)
+TARGETDIR := $(CURDIR)/
 endif
 
 
@@ -101,6 +105,8 @@ remove_target:
 relink: remove_target start_rule
 linkrun: remove_target run
 
+test :
+
 ##
 ## MODULE RULE - Dynamic target and build rules for each module
 ##
@@ -117,6 +123,10 @@ $(1)_CXXFLAGS += $$($(1)_CFLAGS)
 
 $$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS) $$(CXXFLAGS)
 $$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS) $$(CFLAGS)
+
+ifneq ($$($(1)_CC),cc)
+$$(OBJDIR)/$(1).a : CC := $$(PREFIX)$$($(1)_CC)
+endif
 
 $$(OBJDIR)/$(1).a : $$($(1)_OBJS)
 	rm -f $$(OBJDIR)/$(1).a
@@ -155,19 +165,19 @@ $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))
 
 $(OBJDIR)%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $< -o $@
+	$(CCACHE) $(CC) -c -MMD $(CFLAGS) $(COMP_CFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CCACHE) $(CXX) -c -MMD $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cc
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CCACHE) $(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.cxx
 	@mkdir -p $(@D)
-	$(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
+	$(CCACHE) $(CXX) -c $(CXXFLAGS) $(COMP_CXXFLAGS) $< -o $@
 
 $(OBJDIR)%.o: %.S
 	@mkdir -p $(@D)
@@ -281,4 +291,4 @@ superclean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(DIRS)) *.elf *~
 
 run: start_rule
-	$(realpath $(TARGETDIR))$(TARGET)$(TARGET_EXT)
+	$(realpath $(TARGETDIR))/$(TARGET)$(TARGET_EXT)

@@ -415,6 +415,34 @@ template <class T> struct vec4 {
 typedef vec4<float> vec4f;
 typedef vec4<int> vec4i;
 
+
+template <typename T = float> struct rect {
+
+	rect() {}
+	rect(T x0, T y0, T x1, T y1) : x0(x0), y0(y0), x1(x1), y1(y1) {}
+
+	T& operator[](const int &i) {
+		return data[i];
+	}
+
+	union {
+		T data[4];
+		struct {
+			vec2<T> p0;
+			vec2<T> p1;
+		};
+		struct {
+			T x0;
+			T y0;
+			T x1;
+			T y1;
+	    };
+	};
+};
+
+typedef rect<float> rectf;
+typedef rect<int> recti;
+
 }
 
 #endif // UTILS_VEC_H

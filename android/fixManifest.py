@@ -15,7 +15,8 @@ def tag(node, path, set = "", where = "", create = False, noclobber = False) :
 			parts = set.split("=")
 			if noclobber and node.getAttribute(parts[0]) :
 				print parts[0] + ' already set, wont clobber'
-			node.setAttribute(parts[0], parts[1])
+			else :
+				node.setAttribute(parts[0], parts[1])
 			return True
 	else :
 		parts = path.split(".");
