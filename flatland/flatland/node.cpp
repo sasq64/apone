@@ -1,6 +1,7 @@
 
 #include "node.h"
-
+#include "shape.h"
+#include "container.h"
 #include <algorithm>
 
 using namespace std;
@@ -10,6 +11,14 @@ namespace flatland {
 
 	void Node::add(Node *node) { 
 		nodes.push_back(node);
+	}
+
+	void Node::add(const Shape &s) {
+		nodes.push_back(new Container<Shape>(s));
+	}
+
+	void Node::add(const Primitive &s) {
+		nodes.push_back(new Container<Primitive>(s));
 	}
 
 	bool Node::remove(Node *node, bool deep) {

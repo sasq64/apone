@@ -13,6 +13,7 @@
 #include "rendercontext.h"
 //#include "TagFunctions.h"
 #include "colors.h"
+//#include "shape.h"
 //#include "Animatable.h"
 
 #ifndef M_PI
@@ -22,6 +23,9 @@
 
 namespace flatland {
 
+class Primitive;
+class Shape;
+
 class Node : public Movable {
 public:
 
@@ -30,9 +34,8 @@ public:
 
 	virtual void add(Node *node);
 
-	//template <typename T> void add(const T &t) {
-	//	add(new Container<T>(t));
-	//}
+	void add(const Shape &s);
+	void add(const Primitive &p);
 
 	virtual bool remove(Node *node, bool deep = false);
 
