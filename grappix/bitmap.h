@@ -100,16 +100,26 @@ public:
 		return &(*flipPixels)[0];
 	}
 
+	void flip() {
+		if(!flipPixels)
+			flipPixels = std::make_shared<vector<T>>(w*h);
+		flipPixels->resize(w*h);
+		*flipPixels = *pixels;
+		int l = sizeof(T) * w;
+		for(int y=0; y<h; y++)
+			std::memcpy(&(*pixels)[(h-y-1)*w], &(*flipPixels)[y*w], l);
+	}
 
-	int width() const { return w; }
-	int height() const { return h; }
-	int size() const { return w*h; }
+
+	unsigned int width() const { return w; }
+	unsigned int height() const { return h; }
+	unsigned int size() const { return w*h; }
 private:
 	std::shared_ptr<std::vector<T>> pixels;
 	mutable std::shared_ptr<std::vector<T>> flipPixels;
 	mutable bool dirty;
-	const int w;
-	const int h;
+	unsigned int w;
+	unsigned int h;
 };
 
 typedef basic_bitmap<uint32_t> bitmap;

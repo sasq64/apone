@@ -19,29 +19,41 @@ private:
 struct TileSet {
 
 	TileSet();
-	TileSet(int tilew, int tileh);
+	TileSet(unsigned int tilew, unsigned int tileh, uint32_t texh = 256, uint32_t texw = 256);
 	int add_tiles(const bitmap &bm);
+	void set_image(const bitmap &bm);
+
+	int add_solid(uint32_t color);
+	void set_tile(int no) {
+		xpos = (no % widthInTiles) * tilew;
+		ypos = (no / widthInTiles) * tileh;
+	}
 
 	void render_tile(int tileno, RenderTarget &target, float x, float y, double s);
 
-	int tilew;
-	int tileh;
-	int widthInTiles;
-	int heightInTiles;
+	unsigned int tilew;
+	unsigned int tileh;
+	unsigned int widthInTiles;
+	unsigned int heightInTiles;
 	Texture texture;
+
+	// Current add position
+	unsigned int xpos;
+	unsigned int ypos;
 };
 
 
 class TileLayer {
 public:
-	TileLayer(int w, int h, int pw, int ph, TileSet &ts);
+	TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts);
+	TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
 	void render(RenderTarget &target, float x = 0, float y = 0);
 
 	//float scale() { return s; }
 	//float scale(float s) { this->s = s; return s; }
-	int width() const { return _width; }
-	int height() const { return _height; }
-	int size() const { return _width * _height;  }
+	uint32_t width() const { return _width; }
+	uint32_t height() const { return _height; }
+	uint32_t size() const { return _width * _height;  }
 
 	void fill(int tileno = 0, int x = 0, int y = 0, int w = 0, int h = 0) {
 		if(w == 0) w = _width - x;
@@ -49,6 +61,14 @@ public:
 		for(int xx = 0; xx < w; xx++)
 			for(int yy = 0; yy < h; yy++)
 				map[xx+x+(yy+y)*_width] = tileno;
+	}
+
+	void shift_tiles(int dx, int dy) {
+		for(unsigned int i=map.size()-1; i >= _width; i--) {
+			map[i] = map[i-_width];
+		}
+		for(unsigned int i=0; i<_width; i++)
+			map[i] = 0;
 	}
 
 	uint32_t &operator[](uint32_t i) {
@@ -65,13 +85,14 @@ private:
 	TileSet tileset;
 
 	// Total size in tiles
-	int _width;
-	int _height;
+	uint32_t _width;
+	uint32_t _height;
 	// Size of visible area
-	int pixelWidth;
-	int pixelHeight;
+	uint32_t pixelWidth;
+	uint32_t pixelHeight;
 
 	std::vector<uint32_t> map;
+	std::function<int(int,int)> sourceFunction;
 
 	int multiBuf[2] = {-1, -1};
 };
@@ -87,34 +108,42 @@ struct Sprite {
 
 class SpriteLayer {
 public:
-	SpriteLayer(TileSet &ts) : tileSet(ts) {}
-	int addSprite(int tileno, float x = 0.0, float y = 0.0, float scale = 1.0) {
-		sprites.emplace_back(tileno, x, y, scale);
-		return sprites.size() -1;
+	SpriteLayer(const TileSet &ts) : tileSet(ts) {}
+	std::shared_ptr<Sprite> addSprite(int tileno, float x = 0.0, float y = 0.0, float scale = 1.0) {
+		auto s = std::make_shared<Sprite>(tileno, x, y, scale);
+		sprites.push_back(s);
+		return s;
 	}
 
-	Sprite &sprite(int i) { return sprites[i]; }
+	void render(RenderTarget &target, int x = 0, int y = 0) {
 
-	void render(RenderTarget &target) {
-		for(auto &s : sprites) {
-			tileSet.render_tile(s.tileno, target, s.x, s.y, s.scale);
+		auto i = sprites.begin();
+		while(i != sprites.end()) {
+			auto s = i->lock();
+			if(s) {
+				tileSet.render_tile(s->tileno, target, s->x + x, s->y + y, s->scale);
+				++i;
+			} else 
+				i = sprites.erase(i);
 		}
 	}
 
-	Sprite& operator[](const int &i) { 
-		return sprites[i];
+	std::shared_ptr<Sprite> operator[](const int &i) { 
+		return sprites[i].lock();
 	}
 	
-	const Sprite& operator[](const int &i) const { return sprites[i]; }
+	const std::shared_ptr<Sprite> operator[](const int &i) const { return sprites[i].lock(); }
 
 	void foreach(std::function<void(Sprite&)> f) {
-		for(auto &s : sprites) {
-			f(s);
+		for(auto &ws : sprites) {
+			auto s = ws.lock();
+			if(s)
+				f(*s);
 		}
 	}
 
 private:
-	std::vector<Sprite> sprites;
+	std::vector<std::weak_ptr<Sprite>> sprites;
 	TileSet tileSet;
 };
 

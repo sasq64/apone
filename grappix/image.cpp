@@ -95,16 +95,104 @@ bitmap load_png(const std::string &file_name) {
 	for(unsigned int y=0; y<height; y++) {
 		png_byte* row = row_pointers[y];
 		memcpy(&bm[y*width], row, width*4);
-    }
+	}
 
 	for(unsigned int y=0; y<height; y++)
 		delete[] row_pointers[y];
-    delete[] row_pointers;
+	delete[] row_pointers;
 
 	fclose(fp);
 
 	return bm;
 }
+
+void save_png(bitmap bitmap, const std::string &path)
+{
+	FILE * fp;
+	png_structp png_ptr = NULL;
+	png_infop info_ptr = NULL;
+	size_t x, y;
+	png_byte ** row_pointers = NULL;
+	/* "status" contains the return value of this function. At first
+	   it is set to a value which means 'failure'. When the routine
+	   has finished its work, it is set to a value which means
+	   'success'. */
+	//int status = -1;
+	/* The following number is set by trial and error only. I cannot
+	   see where it it is documented in the libpng manual.
+	*/
+	int pixel_size = 4;
+	int depth = 8;
+	
+	fp = fopen (path.c_str(), "wb");
+	if (! fp) {
+		throw image_exception("failed");
+
+	}
+
+	png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (png_ptr == NULL) {
+	   throw image_exception("failed");
+	}
+	
+	info_ptr = png_create_info_struct (png_ptr);
+	if (info_ptr == NULL) {
+	   throw image_exception("failed");
+	}
+	
+	/* Set up error handling. */
+
+	if (setjmp (png_jmpbuf (png_ptr))) {
+	   throw image_exception("failed");
+	}
+	
+	/* Set image attributes. */
+
+	png_set_IHDR (png_ptr,
+				  info_ptr,
+				  bitmap.width(),
+				  bitmap.height(),
+				  depth,
+				  PNG_COLOR_TYPE_RGBA,
+				  PNG_INTERLACE_NONE,
+				  PNG_COMPRESSION_TYPE_DEFAULT,
+				  PNG_FILTER_TYPE_DEFAULT);
+	
+	/* Initialize rows of PNG. */
+
+	row_pointers = (png_byte**)png_malloc (png_ptr, bitmap.height() * sizeof (png_byte *));
+	for (y = 0; y < bitmap.height(); ++y) {
+		png_byte *row = (png_byte*)png_malloc (png_ptr, sizeof (uint8_t) * bitmap.width() * pixel_size);
+		row_pointers[y] = row;
+		for (x = 0; x < bitmap.width(); ++x) {
+			//pixel_t * pixel = pixel_at (bitmap, x, y);
+			uint32_t pixel = bitmap[x+y*bitmap.width()];
+			*row++ = pixel&0xff;
+			*row++ = (pixel>>8)&0xff;
+			*row++ = (pixel>>16)&0xff;
+			*row++ = (pixel>>24)&0xff;
+		}
+	}
+	
+	/* Write the image data to "fp". */
+
+	png_init_io (png_ptr, fp);
+	png_set_rows (png_ptr, info_ptr, row_pointers);
+	png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+
+	/* The routine has successfully written the file, so we set
+	   "status" to a value which indicates success. */
+	
+	for (y = 0; y < bitmap.height(); y++) {
+		png_free (png_ptr, row_pointers[y]);
+	}
+	png_free (png_ptr, row_pointers);
+	
+	png_destroy_write_struct (&png_ptr, &info_ptr);
+	fclose (fp);
+
+}
+
 
 #endif
 }

@@ -1,5 +1,5 @@
 start_rule :
-	+make -f hvsc.mk
+	+make -C demo
 
 .DEFAULT :
-	+make -f hvsc.mk $@
+	+make -C demo $@

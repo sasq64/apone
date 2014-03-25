@@ -15,4 +15,6 @@ else
   LIBS += `freetype-config --libs` `libpng-config --libs`
 endif
 
+#CXXFLAGS += -Wno-literal-suffix
+
 endif

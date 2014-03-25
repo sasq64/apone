@@ -1,5 +1,8 @@
 #include "GL_Header.h"
 
+#include "texture-font.h"
+#include "texture-atlas.h"
+
 #include "font.h"
 #include "shader.h"
 #include "color.h"
@@ -20,12 +23,13 @@ uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 Font::Font(bool stfont) {
 	ref = make_shared<FontRef>(0, 0, "", 0.0);
-	ref->atlas = new texture_atlas_t();
-	ref->atlas->width = static_font.tex_width;
-	ref->atlas->height = static_font.tex_height;
-	ref->atlas->id = 0;
-	ref->atlas->data = static_font.tex_data;
-    texture_atlas_upload(ref->atlas);
+	texture_atlas_t *atlas = new texture_atlas_t();
+	ref->atlas = atlas;
+	atlas->width = static_font.tex_width;
+	atlas->height = static_font.tex_height;
+	atlas->id = 0;
+	atlas->data = static_font.tex_data;
+    texture_atlas_upload(atlas);
     LOGD("Static font created");
 }
 
@@ -46,22 +50,23 @@ Font::Font(const string &ttfName, int size, int flags) {
 	if(flags & UPPER_CASE)
 		text = fontLettersUpper;
 
-	texture_font_load_glyphs(ref->font, text);
+	texture_font_load_glyphs((texture_font_t*)ref->font, text);
 
+	texture_atlas_t *atlas = (texture_atlas_t*)ref->atlas;
 	if(flags & DISTANCE_MAP) {
-		uint8_t *data = make_distance_map(ref->atlas->data, ref->atlas->width, ref->atlas->height);
+		uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
 		LOGD("Distance map created");
-		free(ref->atlas->data);
-		ref->atlas->data = data;
+		free(atlas->data);
+		atlas->data = data;
 	}
-    texture_atlas_upload(ref->atlas);
+    texture_atlas_upload(atlas);
 }
 
 //static float scale = 1.0;
 
 TextBuf Font::make_text2(const string &text) const {
 
-	LOGD("Make text2");
+	//LOGD("Make text2");
 
 	//auto tl = text.length();
 	//vector<GLfloat> p;
@@ -160,16 +165,19 @@ TextBuf Font::make_text(const string &text) const {
 	int i = 0;
 	float x = 0;
 	float y = 0;
+	texture_font_t *font = (texture_font_t*)ref->font;
 	for(auto c : text) {
-		texture_glyph_t *glyph = texture_font_get_glyph(ref->font, c);
+
+		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
 		//LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)
 			x += texture_glyph_get_kerning(glyph, lastChar);
 		lastChar = c;
 
-		float x0  = x + glyph->offset_x;
-		float y0  = y + ref->font->height;//gl;//+ glyph->offset_y;
+		float x0  = x + 
+		glyph->offset_x;
+		float y0  = y + font->height;//gl;//+ glyph->offset_y;
 		float x1  = x0 + glyph->width;
 		float y1  = y0 - glyph->offset_y;
 		//LOGD("%d %d", glyph->height, glyph->offset_y);
@@ -264,7 +272,8 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, i
 	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
 	glEnableVertexAttribArray(uvHandle);
 
-	glBindTexture( GL_TEXTURE_2D, ref->atlas->id );
+	texture_atlas_t *atlas = (texture_atlas_t*)ref->atlas;
+	glBindTexture( GL_TEXTURE_2D, atlas->id );
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -290,4 +299,26 @@ void Font::render_text(const RenderTarget &target, const std::string &text, int 
 	render_text(target, buf, x, y, col, scale);
 }
 
+
+Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int size) : atlas(nullptr), font(nullptr) {
+	LOGD("FONTREF CONSTRUCT");
+	texture_atlas_t *a = nullptr;
+	if(w > 0 && h > 0)
+		a = texture_atlas_new(w, h, 1);
+	if(a && size > 0) {
+		font = (texture_font_t*)texture_font_new(a, ttfName.c_str(), size);
+		LOGD("FONTREF DONE");
+	}
+	atlas = a;
 }
+Font::FontRef::~FontRef() {
+	LOGD("FONTREF DESTROY");
+	texture_font_delete((texture_font_t*)font);
+	texture_atlas_delete((texture_atlas_t*)atlas);
+	font = nullptr;
+	atlas = nullptr;
+}
+
+
+}
+

@@ -1,6 +1,6 @@
 #include "../window.h"
 #include "../tween.h"
-
+#include "../resources.h"
 #include "../GL_Header.h"
 #include <GL/glfw.h>
 #include <stdio.h>
@@ -247,7 +247,9 @@ void Window::flip() {
 	}
 
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	tween::Tween::updateTweens(ms / 1000000.0f);
+	tween::NewTween::updateTweens(ms / 1000000.0f);
+	Resources::getInstance().update();
+
 #ifdef EMSCRIPTEN
 	int fs;
 	emscripten_get_canvas_size(&_width, &_height, &fs);
@@ -273,9 +275,23 @@ unordered_map<int, int> Window::translate = {
 	{ PAGEDOWN, GLFW_KEY_PAGEDOWN }
 };
 
+bool Window::mouse_pressed() {
+	return glfwGetMouseButton(0);
+}
+
+tuple<int, int> Window::mouse_position() {
+	int x,y;
+	glfwGetMousePos(&x, &y);
+	return make_tuple(x, y);
+}
+
 bool Window::key_pressed(key k) {
 	auto glfwKey = translate[k];
 	return glfwGetKey(glfwKey) != 0;
+}
+
+bool Window::key_pressed(char k) {
+	return glfwGetKey(k) != 0;
 }
 
 Window::click Window::get_click() {

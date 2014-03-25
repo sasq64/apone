@@ -50,9 +50,18 @@ double easeInOutBack(double t,double b , double c) {
 std::vector<Tween> Tween::allTweens;
 double Tween::currentTime = 0;
 
+std::vector<NewTween> NewTween::allTweens;
+double NewTween::currentTime = 0;
+
 int to(float totalTime, const std::initializer_list<TweenAttr> &il) {
 	return Tween::to(totalTime, il);
 }
+
+NewTween& make_tween() {
+	NewTween::allTweens.emplace_back();
+	return NewTween::allTweens.back();
+}
+
 
 }
 }

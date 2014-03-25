@@ -2,13 +2,14 @@
 #define FONT_H
 
 //#include "render_target.h"
-#include "texture-font.h"
-#include "texture-atlas.h"
 #include <coreutils/log.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <memory>
+
+//struct texture_atlas_t;
+//struct texture_font_t;
 
 namespace grappix {
 
@@ -56,24 +57,10 @@ private:
 
 	class FontRef {
 	public:
-		FontRef(int w, int h, const std::string &ttfName, int size) : atlas(nullptr), font(nullptr) {
-			LOGD("FONTREF CONSTRUCT");
-			if(w > 0 && h > 0)
-				atlas = texture_atlas_new(w, h, 1 );
-			if(atlas && size > 0) {
-				font = texture_font_new(atlas, ttfName.c_str(), size);
-				LOGD("FONTREF DONE");
-			}
-		}
-		~FontRef() {
-			LOGD("FONTREF DESTROY");
-			texture_font_delete(font);
-			texture_atlas_delete(atlas);
-			font = nullptr;
-			atlas = nullptr;
-		}
-		texture_atlas_t *atlas;
-		texture_font_t *font;
+		FontRef(int w, int h, const std::string &ttfName, int size);
+		~FontRef();
+		void *atlas;
+		void *font;
 	};
 
 	TextBuf make_text2(const std::string &text) const;

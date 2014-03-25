@@ -15,6 +15,7 @@ private:
 };
 
 bitmap load_png(const std::string &file_name);
+void save_png(bitmap bitmap, const std::string &path);
 
 }
 

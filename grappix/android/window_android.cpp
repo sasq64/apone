@@ -1,5 +1,6 @@
 #include "../window.h"
 #include "../tween.h"
+#include "../resources.h"
 #include <stdio.h>
 #include <unordered_map>
 #include <EGL/egl.h>
@@ -490,7 +491,8 @@ void Window::flip() {
 	host.flip();
 	auto t = chrono::high_resolution_clock::now();
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	tween::Tween::updateTweens(ms / 1000000.0f);
+	Resources::getInstance().update();
+	tween::NewTween::updateTweens(ms / 1000000.0f);
 
 	//glfwSwapBuffers();
 	//if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
@@ -549,7 +551,7 @@ unordered_map<int, int> Window::translate = {
 	{ END, 123},
 };
 bool Window::key_pressed(key k) {
-	init_keyboard(host.app->activity);
+	//init_keyboard(host.app->activity);
 	//auto glfwKey = translate[k];
 	return false;
 	//return glfwGetKey(glfwKey) != 0;
@@ -574,7 +576,7 @@ Window::click Window::get_click() {
 
 
 Window::key Window::get_key() {
-	init_keyboard(host.app->activity);
+	//init_keyboard(host.app->activity);
 	if(host.keyEvents.size() > 0) {
 		auto e = host.keyEvents.front();
 		int k = e.code;

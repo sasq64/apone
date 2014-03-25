@@ -1,8 +1,6 @@
-#include <ModPlugin/ModPlugin.h>
-#include "ChipPlayer.h"
 #include "MusicPlayer.h"
+#include <ModPlugin/ModPlugin.h>
 #include <audioplayer/audioplayer.h>
-
 #include <grappix/grappix.h>
 
 using namespace grappix;
@@ -33,7 +31,7 @@ int main(int argc, char **argv) {
 
 	screen.open(800, 600, false);
 
-	int sz = screen.height() / 8;
+	uint32_t sz = screen.height() / 8;
 	Texture sprite { sz, sz };
 	vec2f xy {0,0};
 	int xpos = -9999;
@@ -41,7 +39,7 @@ int main(int argc, char **argv) {
 	Program program;
 	float sinepos = 0;
 
-	auto player = MusicPlayer::fromFile("data/test.mod");
+	auto player = MusicPlayer::fromFile("data/mods/stardust memories.mod");
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player.getSamples(target, len);
 	});
@@ -67,9 +65,11 @@ int main(int argc, char **argv) {
 		// Balls
 		screen.clear();
 		vec2f xy2 = xy += {0.001f * 0.6f * delta, 0.003f * 0.7f * delta};
+		float uvs[] = { 0,0,1,0,0,1,1,1 };
 		for(int i=0; i<count; i++)
 			v[i] = (sin(xy2 += {0.078, 0.093}) + 1.0f) * scale;
 		screen.draw_texture(sprite.id(), &v[0][0], count, sprite.width(), sprite.height());
+
 
 		// Scroller
 		if(sinepos > 2*M_PI)
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 		scr.text(font, "BALLS ON THE SCREEN!!", xpos-=4, -40, 0xe080c0ff, 15.0);
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
-		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), program);
+		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), uvs, program);
 		screen.flip();
 	});
 

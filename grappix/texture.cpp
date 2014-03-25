@@ -13,10 +13,8 @@ Texture::Texture(const bitmap &bm) {
 	_width = bm.width();
 	_height = bm.height();
 
-	LOGD("%dx%d", _width, _height);
-
 	tref = make_shared<texref>();
-	//glGenTextures(1, &tref->id);
+
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bm.flipped());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -26,14 +24,14 @@ Texture::Texture(const bitmap &bm) {
 
 }
 
-Texture::Texture(uint8_t *data, int w, int h) {
+Texture::Texture(uint8_t *data, unsigned int w, unsigned int h) {
 	_width = w;
 	_height = h;
 
 	LOGD("%dx%d", _width, _height);
 
 	tref = make_shared<texref>();
-	//glGenTextures(1, &tref->id);
+
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -42,21 +40,15 @@ Texture::Texture(uint8_t *data, int w, int h) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
 }
 
-Texture::Texture(int width, int height, Format fmt) {
+Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 
 	_width = width;
 	_height = height;
 
-	LOGD("1");
-
 	// Create and bind a new framebuffer with emtpy attachment points (not yet useable)
-	//GLuint fbuf;
 	glGenFramebuffers(1, &frameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
-	// Create an empty Texture with no filtering
-	//GLuint renderedTexture;
-	//glGenTextures(1, &texture_id);
 	tref = make_shared<texref>();
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -78,7 +70,6 @@ if(status != GL_FRAMEBUFFER_COMPLETE) {
 	glfwSleep(100);
 }
 */
-	LOGD("CREATED");
 }
 
 }

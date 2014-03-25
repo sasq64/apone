@@ -21,9 +21,9 @@ public:
 	Texture() {}
 
 	template <typename T> Texture(T size) : Texture(size[0], size[1]) {}
-	Texture(int width, int height, Format fmt = RGBA32);
+	Texture(unsigned int width, unsigned int height, Format fmt = RGBA32);
 	Texture(const bitmap &bm);
-	Texture(uint8_t *data, int w, int h);
+	Texture(uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }
 private:
 

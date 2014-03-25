@@ -12,11 +12,11 @@ using namespace std;
 
 namespace grappix {
 
-TileSet::TileSet() {}
+TileSet::TileSet() : xpos(0), ypos(0) {}
 
-TileSet::TileSet(int tilew, int tileh) : tilew(tilew), tileh(tileh), texture(256, 256) {
-	widthInTiles = 256 / tilew;
-	heightInTiles = 256 / tileh;
+TileSet::TileSet(uint32_t tilew, uint32_t tileh, uint32_t texh, uint32_t texw) : tilew(tilew), tileh(tileh), texture(texw, texh), xpos(0), ypos(0)  {
+	widthInTiles = texw / tilew;
+	heightInTiles = texh / tileh;
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
@@ -28,10 +28,10 @@ TileSet::TileSet(int tilew, int tileh) : tilew(tilew), tileh(tileh), texture(256
 
 int TileSet::add_tiles(const bitmap &bm) {
 
-	int xs = 0;
-	int ys = 0;
-	int x = 0;
-	int y = 0;
+	unsigned int xs = 0;
+	unsigned int ys = 0;
+	//int x = 0;
+	//int y = 0;
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
 
@@ -42,19 +42,44 @@ int TileSet::add_tiles(const bitmap &bm) {
 		if(xs+tilew > bm.width()) {
 			xs = 0;
 			ys += tileh;
-			if(ys + tileh > bm.height())
-				break;
 		}
 
-		//LOGD("Adding tile to %d %d %dx%d", x, y, tilew, tileh);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, bmTile.flipped());
-		x += tilew;
-		if(x+tilew > texture.width()) {
-			x = 0;
-			y += tileh;
-			if(y + tileh > texture.height())
+		//LOGD("Adding tile to %d %d %dx%d", xpos, ypos, tilew, tileh);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, ypos, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, bmTile.flipped());
+		xpos += tilew;
+		if(xpos+tilew > texture.width()) {
+			xpos = 0;
+			ypos += tileh;
+			if(ypos + tileh > texture.height())
 				throw tile_exception("Texture full");
 		}
+	
+		if(ys + tileh > bm.height())
+			break;
+	}
+
+	return 0;
+}
+
+void TileSet::set_image(const bitmap &bm) {
+	glBindTexture(GL_TEXTURE_2D, texture.id());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.width(), bm.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, bm.flipped());
+}
+
+int TileSet::add_solid(uint32_t color) {
+	glBindTexture(GL_TEXTURE_2D, texture.id());
+	//LOGD("Adding tile to %d %d %dx%d", xpos, ypos, tilew, tileh);
+	vector<uint32_t> pixels(tilew*tileh);
+	uint32_t *ptr = &pixels[0];
+	for(unsigned int i=0; i<tilew*tileh; i++)
+		ptr[i] = color;
+	glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, ypos, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
+	xpos += tilew;
+	if(xpos+tilew > texture.width()) {
+		xpos = 0;
+		ypos += tileh;
+		if(ypos + tileh > texture.height())
+			throw tile_exception("Texture full");
 	}
 
 	return 0;
@@ -70,33 +95,28 @@ void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, do
 	double stw = tilew*s;
 	double sth = tileh*s;
 
-	double fs = pw/(s*s);//pw/10000.0;
-	double ft = ph/(s*s);//pw/10000.0;
-	double s0 = tx*pw*tilew + fs;
-	double t0 = ty*ph*tileh + ft;
-	double s1 = s0 + pw*tilew - fs*2;
-	double t1 = t0 + ph*tileh - ft*2;
+	//double fs = pw/(s*s);//pw/10000.0;
+	//double ft = ph/(s*s);//pw/10000.0;
+	float s0 = tx*pw*tilew;
+	float t0 = ty*ph*tileh;
+	float s1 = s0 + pw*tilew;
+	float t1 = t0 + ph*tileh;
 
-	vector<float> uvs;
-	uvs.push_back(s0);
-	uvs.push_back(t0);
-	uvs.push_back(s1);
-	uvs.push_back(t0);
-	uvs.push_back(s0);
-	uvs.push_back(t1);
-	uvs.push_back(s1);
-	uvs.push_back(t1);
-	
-	target.draw_texture(texture.id(), x, y, stw, sth, &uvs[0]);
+	vector<float> uvs = { s0, t0, s1, t0, s0, t1, s1, t1 };
+	target.draw_texture(texture.id(), (int)x, (int)y, stw, sth, &uvs[0]);
 }
 
 
-TileLayer::TileLayer(int w, int h, int pw, int ph, TileSet &ts) : 
+TileLayer::TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts) : 
 	scrollx(0), scrolly(0), scale(1.0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), map(w*h) {}
+
+TileLayer::TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts, std::function<uint32_t(uint32_t,uint32_t)> source) : 
+	scrollx(0), scrolly(0), scale(1.0), tileset(ts), _width(w), _height(h), pixelWidth(pw), pixelHeight(ph), sourceFunction(source) {
+	}
 
 void TileLayer::render(RenderTarget &target, float x0, float y0) {
 
-	float s = 2.0;
+	float s = 1.0;
 	int tw = tileset.tilew*s;
 	int th = tileset.tileh*s;
 
@@ -112,6 +132,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 		glGenBuffers(2, (GLuint*)multiBuf);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
 		vector<uint16_t> indexes;//(count*6);
+		indexes.reserve(count*6);
 		int i=0;
 		for(int j=0; j<count; j++) {
 			indexes.push_back(i);
@@ -127,8 +148,8 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 		vector<float> coords;//(count*16);
 		coords.reserve(count*16);
 
-		int x = 0;
-		int y = 0;
+		int x = x0;
+		int y = y0;
 		for(int iy=0; iy<areah; iy++) {
 			for(int ix=0; ix<areaw; ix++) {
 				coords.push_back(x);
@@ -142,7 +163,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 				x += tw;
 			}
 			y += th;
-			x = 0;
+			x = x0;
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
@@ -155,10 +176,13 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 
 	int sx = scrollx / tileset.tilew;
 	int sy = scrolly / tileset.tileh;
-	float xx = fmod(scrollx, tileset.tilew);
-	float yy = fmod(scrolly, tileset.tileh);
+	//float xx = fmod(scrollx, tileset.tilew);
+	//float yy = fmod(scrolly, tileset.tileh);
+	int xx = (int)scrollx % tileset.tilew;
+	int yy = (int)scrolly % tileset.tileh;
 	if(xx < 0) xx += tileset.tilew;
 	if(yy < 0) yy += tileset.tileh;
+
 
 	double pw = 1.0f/tileset.texture.width();
 	double ph = 1.0f/tileset.texture.height();
@@ -172,7 +196,11 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 			if(xp < 0) xp += _width;
 			int yp = (iy+sy) % _height;
 			if(yp < 0) yp += _height;
-			auto tileno = map[xp+yp*_width];
+			int tileno;
+			if(sourceFunction)
+				tileno = sourceFunction(xp, yp);
+			else
+				tileno = map[xp+yp*_width];
 			auto tx = tileno % tileset.widthInTiles;
 			auto ty = tileno / tileset.widthInTiles;
 
@@ -189,14 +217,6 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 			uvs[i++] = t1;
 			uvs[i++] = s1;
 			uvs[i++] = t1;
-			//uvs.push_back(s0);
-			//uvs.push_back(t0);
-			//uvs.push_back(s1);
-			//uvs.push_back(t0);
-			//uvs.push_back(s0);
-			//uvs.push_back(t1);
-			//uvs.push_back(s1);
-			//uvs.push_back(t1);			
 		}
 	}
 

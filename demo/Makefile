@@ -12,7 +12,8 @@ include $(CPP_MODS)/coreutils/module.mk
 include $(CPP_MODS)/audioplayer/module.mk
 include $(GRAPPIX)/module.mk
 
-INCLUDES += $(CHIPM)/src
+CC = clang
+CXX = clang++
 
 DATA_FILES += data/ObelixPro.ttf data/test.mod
 

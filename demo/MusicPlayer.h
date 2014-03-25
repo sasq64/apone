@@ -1,5 +1,4 @@
 #include <ModPlugin/ModPlugin.h>
-#include "ChipPlayer.h"
 #include <memory>
 namespace grappix {
 

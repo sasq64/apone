@@ -10,6 +10,7 @@
 #include <set>
 #include <deque>
 #include <functional>
+#include <tuple>
 
 namespace grappix {
 
@@ -62,8 +63,11 @@ public:
 	static click NO_CLICK;
 
 	click get_click();
+	bool mouse_pressed();
+	std::tuple<int, int> mouse_position();
 
 	bool key_pressed(key k);
+	bool key_pressed(char k);
 	key get_key();
 
 	bool is_open() { return winOpen; }
