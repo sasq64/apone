@@ -186,7 +186,7 @@ public:
 	};
 
 	static void updateTweens(double t) {
-		std::vector<std::function<void()>> callbacks;
+		//std::vector<std::function<void()>> callbacks;
 		currentTime = t;
 		auto it = allTweens.begin();
 		//LOGD("We have %d tweens", allTweens.size());
@@ -194,16 +194,13 @@ public:
 			if(!it->step()) {
 				LOGD("Tween ended");
 				if(it->onCompleteFunc)
-					callbacks.push_back(it->onCompleteFunc);
+					it->onCompleteFunc();
 				//allTweens.erase(it++);
 				it = allTweens.erase(it);
 			} else {
 				//LOGD("Tween going");
 				it++;
 			}
-		}
-		for(auto &cb : callbacks) {
-			//cb();
 		}
 	}
 
