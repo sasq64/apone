@@ -22,28 +22,28 @@ WebGetter::Job::~Job() {
 		jobThread.join();
 }
 
-bool WebGetter::Job::isDone() { 
+bool WebGetter::Job::isDone() const { 
 	lock_guard<mutex>{m};
 	return loaded;
 }
 
-int WebGetter::Job::getReturnCode() { 
+int WebGetter::Job::getReturnCode() const { 
 	lock_guard<mutex>{m};
 	return returnCode;
 }
 
-string WebGetter::Job::getFile() {
+string WebGetter::Job::getFile() const {
 	return target;
 }
 
-void WebGetter::Job::urlGet(string url) {
+void WebGetter::Job::urlGet(const std::string &url) {
 
 	target = targetDir + "/" + urlencode(url, ":/\\?;");
 
 	int rc = 0;
 	if(!File::exists(target)) {
 
-		LOGD("Downloading %s", url);
+		LOGI("Downloading %s", url);
 		CURL *curl;
 		curl = curl_easy_init();
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -53,11 +53,11 @@ void WebGetter::Job::urlGet(string url) {
 		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, this);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 		rc = curl_easy_perform(curl);
-		LOGD("Curl returned %d", rc);
+		LOGI("Curl returned %d", rc);
 		if(file)
 			file->close();
 	} else {
-		LOGD("Getting %s from cache", target);
+		LOGI("Getting %s from cache", target);
 	}
 
 	//if(fp)
@@ -121,13 +121,32 @@ WebGetter::Job* WebGetter::getURL(const string &url) {
 }
 
 
-void WebGetter::getURL(const std::string &url, std::function<void(std::vector<uint8_t> &data)> callback) {
+void WebGetter::getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)> callback) {
 	std::async(std::launch::async, [&]() {
 		try {
-			vector<uint8_t> data;
+			//vector<uint8_t> data;
 			Job job;
 			job.urlGet(url);
 			callback(job.getData());
+		} catch(std::exception &e) {
+			std::terminate();
+		}
+	});
+}
+
+bool WebGetter::inCache(const std::string &url) const {
+	auto target = workDir + "/" + urlencode(baseURL + url, ":/\\?;");
+	return File::exists(target);
+}
+
+void WebGetter::getURL(const std::string &url, std::function<void(const Job &job)> callback) {
+	std::async(std::launch::async, [&]() {
+		try {
+			Job job;
+			//Job job(baseURL + url, workDir);
+			job.setTargetDir(workDir);
+			job.urlGet(baseURL + url);
+			callback(job);
 		} catch(std::exception &e) {
 			std::terminate();
 		}

@@ -21,11 +21,17 @@ public:
 		Job() : datapos(0) {}
 		Job(const std::string &url, const std::string &targetDir);
 		~Job();
-		bool isDone();
-		int getReturnCode();
-		std::string getFile();
-		std::vector<uint8_t>& getData() { return data; }
-		void urlGet(std::string url);
+
+		void setTargetDir(const std::string &wd) {
+			targetDir = wd;
+			datapos = -1;
+		}
+
+		bool isDone() const;
+		int getReturnCode() const;
+		std::string getFile() const;
+		const std::vector<uint8_t>& getData() const { return data; }
+		void urlGet(const std::string &url);
 	private:
 #ifdef EMSCRIPTEN
 		static void onLoad(void *arg, const char *name);
@@ -34,7 +40,7 @@ public:
 		static size_t writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 		static size_t headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 
-		std::mutex m;
+		mutable std::mutex m;
 		std::thread jobThread;
 #endif
 		bool loaded;
@@ -46,11 +52,16 @@ public:
 		std::string target;
 	};
 
-	static void getURL(const std::string &url, std::function<void(std::vector<uint8_t> &data)>);
+	static void getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
 
 	WebGetter(const std::string &workDir) ;
 	Job* getURL(const std::string &url);
+
+	void getURL(const std::string &url, std::function<void(const Job&)>);
+
 	void setBaseURL(const std::string &base) { baseURL = base; }
+
+	bool inCache(const std::string &url) const;
 private:
 	std::string workDir;
 	std::string baseURL;
