@@ -1,0 +1,8 @@
+ifeq ($(GLM_INCLUDED),)
+GLM_INCLUDED = 1
+THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
+INCLUDES += $(THIS_DIR)/glm
+CFLAGS += -DGLM_FORCE_RADIANS
+
+endif
