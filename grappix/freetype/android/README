@@ -1,0 +1,8 @@
+
+LIBPNG 
+./configure --enable-shared=false --host=arm-linux-androideabi --prefix=/home/sasq/android
+make
+
+FREETYPE
+./configure --enable-shared=false --host=arm-linux-androideabi --prefix=/home/sasq/android --without-png
+make
