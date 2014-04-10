@@ -7,18 +7,20 @@
 #include <mutex>
 #include <thread>
 #include <memory>
-#include <stdio.h>
+#include <unordered_map>
+#include <cstdio>
 
 class WebRPC {
 public:
 	class Job {
 	public:
+		Job() {};
 		Job(const std::string &url);
 		~Job();
 		bool isDone();
 		int getReturnCode();
 		std::string getData();
-	private:
+	//private:
 		void urlCall(const std::string &url);
 		static size_t writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 		//static size_t headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
@@ -32,8 +34,17 @@ public:
 
 	WebRPC(const std::string &baseURL) ;
 	Job* call(const std::string &method);
+
+	void setErrorCallback(std::function<void(int code, const std::string &msg)> cb) {
+		errorCallback = cb;
+	}
+
+	void call(const std::string &method, const std::unordered_map<std::string, std::string>, std::function<void(const std::string &result)>);
+	void call(const std::string &method, std::function<void(const std::string &result)>);
+
 private:
 	std::string baseUrl;
+	std::function<void(int code, const std::string &msg)> errorCallback;
 };
 
 #endif // WEBRPC_H

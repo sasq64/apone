@@ -4,12 +4,12 @@
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 
+#include <future>
 #include <curl/curl.h>
 
 using namespace utils;
 using namespace logging;
 using namespace std;
-
 
 WebRPC::Job::Job(const string &url) : done(false) {
 	LOGD("Job created");
@@ -17,7 +17,8 @@ WebRPC::Job::Job(const string &url) : done(false) {
 }
 
 WebRPC::Job::~Job() {
-	jobThread.join();
+	if(jobThread.joinable())
+		jobThread.join();
 }
 
 bool WebRPC::Job::isDone() { 
@@ -83,4 +84,47 @@ WebRPC::WebRPC(const string &baseUrl) : baseUrl(baseUrl) {
 
 WebRPC::Job* WebRPC::call(const string &method) {
 	return new Job(baseUrl + method);
+}
+
+void WebRPC::call(const std::string &method, const std::unordered_map<std::string, std::string> args, std::function<void(const std::string &result)> callback) {
+	std::async(std::launch::async, [=]() {
+	//utils::run_async([=]() {
+		try {
+			string url = baseUrl + method;
+			if(args.size()) {
+				char c = '?';
+				for(const auto &e : args) {
+					url += format("%c%s=%s", c, e.first, e.second);
+					c = '&';
+				}
+			}
+			LOGD("URL:%s", url);
+			Job job;
+			job.urlCall(url);
+			if(job.returnCode == CURLE_OK)
+				callback(job.data);
+			else
+				errorCallback(job.returnCode, job.data);
+		} catch(std::exception &e) {
+			std::terminate();
+		}
+	});
+}
+
+void WebRPC::call(const std::string &method, std::function<void(const std::string &result)> callback) {
+	std::async(std::launch::async, [=]() {
+	//utils::run_async([=]() {
+		try {
+			string url = baseUrl + method;
+			LOGD("URL:%s", url);
+			Job job;
+			job.urlCall(url);
+			if(job.returnCode == CURLE_OK)
+				callback(job.data);
+			else
+				errorCallback(job.returnCode, job.data);
+		} catch(std::exception &e) {
+			std::terminate();
+		}
+	});
 }
