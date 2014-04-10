@@ -75,6 +75,9 @@ A slightly more advanced example;
 
 #### Choosing the compiler
 
+Define `CC` and `CXX` to either clang or gcc after including `config.mk`
+You can also define `USE_CCACHE=1` to use ccache for compileation. 
+
 ## Platform support
 
 ### Desktop (Linux, Mac)
@@ -105,7 +108,6 @@ Requires: *emscripten*, and *emmake* in your path.
 
 ```Shell
 $ git clone http://github.com/sasq64/cpp-mods.git
-$ git clone http://github.com/sasq64/grappix.git
 $ cp -a grappix/quickstart .
 $ cd quickstart
 $ make
