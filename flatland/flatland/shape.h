@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <glm/glm.hpp>
+#include <functional>
 
 #include "primitive.h"
 #include "rendercontext.h"

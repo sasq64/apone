@@ -13,12 +13,14 @@ namespace flatland {
 		nodes.push_back(node);
 	}
 
-	void Node::add(const Shape &s) {
+	Node* Node::add(const Shape &s) {
 		nodes.push_back(new Container<Shape>(s));
+		return nodes.back();
 	}
 
-	void Node::add(const Primitive &s) {
+	Node* Node::add(const Primitive &s) {
 		nodes.push_back(new Container<Primitive>(s));
+		return nodes.back();
 	}
 
 	bool Node::remove(Node *node, bool deep) {
@@ -51,15 +53,17 @@ namespace flatland {
 
 	void Node::update() {
 
-		if(_rotation != oldrot) {
+		if(_rotation != oldrot || _scale != oldscale) {
 	
 			float ca = cos(_rotation * M_PI / 180);
 			float sa = sin(_rotation * M_PI / 180);
-			matrix[0][0] = matrix[1][1] = ca;
+			matrix[0][0] = ca * _scale.x;
+			matrix[1][1] = ca * _scale.y;
 			matrix[0][1] = sa;
 			matrix[1][0] = -sa;
 			inverseDirty = true;
 			oldrot = _rotation;
+			oldscale = _scale;
 		}
 
 		if(_position != oldpos) {

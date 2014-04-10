@@ -29,13 +29,13 @@ class Shape;
 class Node : public Movable {
 public:
 
-	Node() : inverseDirty(false), color(Colors::GREEN), _rotation(0), oldrot(0), flags(0) {}
+	Node() : inverseDirty(false), color(Colors::GREEN), _rotation(0), oldrot(0), _scale(1.0, 1.0), flags(0) {}
 
 
 	virtual void add(Node *node);
 
-	void add(const Shape &s);
-	void add(const Primitive &p);
+	Node* add(const Shape &s);
+	Node* add(const Primitive &p);
 
 	virtual bool remove(Node *node, bool deep = false);
 
@@ -46,6 +46,7 @@ public:
 	//virtual void setPosition(const glm::vec2 &v) override;
 	virtual float& rotation() override{ return _rotation; };
 	virtual glm::vec2& position() override { return _position; };
+	virtual glm::vec2& scale() override { return _scale; };
 
 	//const glm::vec2 getPosition() const override { return glm::vec2(matrix[2].x, matrix[2].y); }
 	//const float getRotation() const override { return rotation; }
@@ -107,7 +108,8 @@ protected:
 	float oldrot;
 	glm::vec2 _position;
 	glm::vec2 oldpos;
-
+	glm::vec2 _scale;
+	glm::vec2 oldscale;
 	int flags;
 };
 

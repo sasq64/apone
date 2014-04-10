@@ -5,6 +5,7 @@
 
 namespace flatland {
 
+// T must implement render(RenderContext) and contains(Vec2, radius);
 template <typename T> class Container : public Node {
 public:
 	Container(const T &shape, int flags = 0) : flags(0), currentFrame(0) {
