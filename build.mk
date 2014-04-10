@@ -124,7 +124,7 @@ $(1)_CXXFLAGS += $$($(1)_CFLAGS)
 $$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS) $$(CXXFLAGS)
 $$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS) $$(CFLAGS)
 
-ifneq ($$($(1)_CC),cc)
+ifneq ($$($(1)_CC),)
 $$(OBJDIR)/$(1).a : CC := $$(PREFIX)$$($(1)_CC)
 endif
 
@@ -148,7 +148,7 @@ $(OBJDIR)%.d: %.c
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 endef
 ## Generate the rules
 $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod))))
@@ -209,11 +209,11 @@ $(OBJDIR)%.d: %.c
 
 $(OBJDIR)%.d: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
 $(OBJDIR)%.d: %.cc
 	@mkdir -p $(@D)
-	$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
+	@$(CXX) -MM -MG -MT '$(OBJDIR)$*.o' $(CXXFLAGS) $< > $@
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
@@ -236,7 +236,7 @@ $(TARGETDIR)$(TARGET): $(OBJFILES) $(LIBMODS) $(DEPS)
 	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS)
 
 $(TARGETDIR)$(TARGET).so: $(OBJFILES) $(LIBMODS) $(DEPS)
-	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBMODS) $(LIBS)
+	$(LD) $(LDFLAGS) -Wl,-soname,$(TARGET).so -shared -o $(TARGETDIR)$(TARGET).so $(OBJFILES) $(LIBMODS)  $(LIBS)
 
 $(ANDROID_PROJECT) :
 	android create project -p $(ANDROID_PROJECT) -n $(APP_NAME) -a ChangeMe -k $(ANDROID_PACKAGE) -t android-$(ANDROID_SDK_VERSION)

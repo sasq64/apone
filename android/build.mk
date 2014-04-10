@@ -43,7 +43,8 @@ endif
 ANDROID_TOOLCHAIN=$(HOME)/.cache/$(NDK_PLATFORM)-toolchain
 ifeq ($(realpath $(ANDROID_TOOLCHAIN)),)
 $(info Creating standalone toolchain for android)
-RES := $(shell $(ANDROID_NDK)/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --llvm-version=3.3 --platform=$(NDK_PLATFORM) --install-dir=$(ANDROID_TOOLCHAIN))
+RES := $(shell cd $(ANDROID_NDK) ; $(ANDROID_NDK)/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --llvm-version=3.4 --platform=$(NDK_PLATFORM) --install-dir=$(ANDROID_TOOLCHAIN))
+#--stl=libc++
 $(info $(RES))
 else
 $(info Android toolchain already created in $(ANDROID_TOOLCHAIN))
@@ -69,5 +70,9 @@ APP_NAME := $(TARGET)
 endif
 
 LDFLAGS += --sysroot=$(ANDROID_NDK)/platforms/$(NDK_PLATFORM)/arch-arm
+# -lcompiler_rt_shared
 FILES += $(ANDROID_NDK)/sources/android/native_app_glue/android_native_app_glue.c
 CFLAGS += -I$(ANDROID_NDK)/sources/android
+
+CFLAGS += -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16
+LDFLAGS += -march=armv7-a -Wl,--fix-cortex-a8
