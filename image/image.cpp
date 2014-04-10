@@ -14,7 +14,7 @@ using namespace std;
 using namespace utils;
 
 
-namespace grappix {
+namespace image {
 
 #ifdef EMSCRIPTEN
 
@@ -75,7 +75,7 @@ bitmap load_png(const std::string &file_name) {
 	if(setjmp(png_jmpbuf(png_ptr)))
 		throw image_exception("Error during read_image");
 
-	png_bytep *row_pointers = new png_bytep [height];//  (png_bytep*) malloc(sizeof(png_bytep) * height);
+	png_bytep *row_pointers = (png_bytep*)png_malloc(png_ptr, sizeof(void*) * height);//new png_bytep [height];//  (png_bytep*) malloc(sizeof(png_bytep) * height);
 
 	int rowbytes;
 	if(bit_depth == 16)
@@ -84,12 +84,13 @@ bitmap load_png(const std::string &file_name) {
 		rowbytes = width*4;
 
 	for(unsigned int y=0; y<height; y++)
-		row_pointers[y] = new png_byte [rowbytes];
+		row_pointers[y] = (png_bytep)png_malloc(png_ptr, rowbytes);//new png_byte [rowbytes];
 
+	LOGD("Reading image");
 	png_read_image(png_ptr, row_pointers);
-	png_set_expand(png_ptr);
 	//png_set_strip_16(png_ptr);
 
+	LOGD("Creating bitmap");
 	bitmap bm(width, height);
 
 	for(unsigned int y=0; y<height; y++) {
@@ -98,8 +99,10 @@ bitmap load_png(const std::string &file_name) {
 	}
 
 	for(unsigned int y=0; y<height; y++)
-		delete[] row_pointers[y];
-	delete[] row_pointers;
+		png_free(png_ptr, row_pointers[y]);
+	//delete[] row_pointers[y];
+	//delete[] row_pointers;
+	png_free(png_ptr, row_pointers);
 
 	fclose(fp);
 

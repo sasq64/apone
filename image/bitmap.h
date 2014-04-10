@@ -1,5 +1,5 @@
-#ifndef GRAPPIX_BITMAP_H
-#define GRAPPIX_BITMAP_H
+#ifndef IMAGE_BITMAP_H
+#define IMAGE_BITMAP_H
 
 //#include <coreutils/log.h>
 
@@ -12,10 +12,64 @@
 
 using namespace std;
 
-namespace grappix {
+namespace image {
 
 template <typename T = uint32_t> class basic_bitmap {
+	class const_split_iterator  {
+	public:
+		const_split_iterator(const basic_bitmap &bm, int w, int h, int xpos = 0, int ypos = 0) : bm(bm), width(w), height(h), xpos(xpos), ypos(ypos) {}
+		const_split_iterator(const const_split_iterator& rhs) : bm(rhs.bm), width(rhs.width), height(rhs.height), xpos(rhs.xpos), ypos(rhs.ypos) {}
+
+		bool operator!= (const const_split_iterator& other) const {
+			return xpos != other.xpos || ypos != other.ypos;
+		}
+ 
+		basic_bitmap operator* () const {
+			return bm.cut(xpos, ypos, width, height);
+		}
+ 
+		const const_split_iterator& operator++ () {
+			xpos += width;
+			if(xpos > bm.width()-width) {
+				xpos = 0;
+				ypos += height;
+				if(ypos > bm.height()-height) {
+					xpos = ypos = -1;
+				}
+			}
+			return *this;
+		}
+	private:
+		const basic_bitmap &bm;
+		int width;
+		int height;
+		int xpos;
+		int ypos;
+	};
+
+	class splitter {
+	public:
+		splitter(const basic_bitmap &bm, int w, int h) : bm(bm), width(w), height(h) {}
+		const_split_iterator begin() {
+			return const_split_iterator(bm, width, height);
+		}
+
+		const_split_iterator end() {
+			return const_split_iterator(bm, width, height, -1, -1);
+		}
+	private:
+		const basic_bitmap &bm;
+		int width;
+		int height;
+	};
+
 public:
+
+	splitter split(int w, int h) const {
+		return splitter(*this, w, h);
+	}
+
+
 	basic_bitmap() : w(0), h(0) {}
 
 	//basic_bitmap(basic_bitmap &&b) : pixels(std::move(b.pixels)), w(b.w), h(b.h) {}
@@ -80,10 +134,10 @@ public:
 		return dest;
 	}
 
-	std::vector<basic_bitmap> split(int w, int h) {
-		std::vector<basic_bitmap> rv;
-		return rv;
-	}
+	//std::vector<basic_bitmap> split(int w, int h) {
+	//	std::vector<basic_bitmap> rv;
+	//	return rv;
+	//}
 
 	const T* data() const { return &(*pixels)[0]; }
 
@@ -126,4 +180,4 @@ typedef basic_bitmap<uint32_t> bitmap;
 
 }
 
-#endif // GRAPPIX_BITMAP_H
+#endif // IMAGE_BITMAP_H

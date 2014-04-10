@@ -1,10 +1,10 @@
-#ifndef IMAGE_H
-#define IMAGE_H
+#ifndef IMAGE_IMAGE_H
+#define IMAGE_IMAGE_H
 
 #include "bitmap.h"
 #include <stdexcept>
 
-namespace grappix {
+namespace image {
 
 class image_exception : public std::exception {
 public:
@@ -19,4 +19,4 @@ void save_png(bitmap bitmap, const std::string &path);
 
 }
 
-#endif // IMAGE_H
+#endif // IMAGE_IMAGE_H
