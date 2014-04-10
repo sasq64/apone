@@ -19,6 +19,9 @@
 #include <utility>
 #include <initializer_list>
 #include <stdexcept>
+#include <thread>
+#include <atomic>
+
 //#include <math.h>
 //#ifndef M_PI
 //#define M_PI 3.14159265358979323846
@@ -168,6 +171,22 @@ template<class T>
 template<class T, class... Args>
     typename _Unique_if<T>::_Known_bound
     make_unique(Args&&...) = delete;
+
+struct asyncthread {
+	asyncthread() : done(false) {}
+	~asyncthread() {
+		if(t.joinable())
+			t.join();
+	}
+	std::thread t;
+	std::atomic<bool> done;
+};
+
+//static std::vector<asyncthread> atlist;
+
+void cleanup_async();
+
+void run_async(std::function<void()> f);
 
 
 };

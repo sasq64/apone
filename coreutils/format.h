@@ -173,6 +173,7 @@ template <class... A> std::string format(const std::string &fmt, const A& ... ar
 {
 	std::string fcopy = fmt;
 	std::stringstream ss;
+	ss << std::boolalpha;
 	format_stream(ss, fcopy, args...);
 	ss << fcopy;
 	return ss.str();
@@ -181,6 +182,7 @@ template <class... A> std::string format(const std::string &fmt, const A& ... ar
 template <class... A> void print_fmt(const std::string &fmt, const A& ... args) {
 	std::string fcopy = fmt;
 	std::stringstream ss;
+	ss << std::boolalpha;
 	format_stream(ss, fcopy, args...);
 	ss << fcopy;
 	fputs(ss.str().c_str(), stdout);

@@ -31,6 +31,10 @@ template <class T> struct vec2 {
 		return other.x == x && other.y == y;
 	}
 
+	bool operator!=(const vec2 &other) const {
+		return other.x != x || other.y != y;
+	}
+
 	vec2 operator+(const vec2 &v) const {
 		return vec2(x + v.x, y + v.y);
 	}
@@ -51,13 +55,17 @@ template <class T> struct vec2 {
 		return vec2(x * v.x, y * v.y);
 	}
 
+	vec2 operator/(const vec2 &v) const {
+		return vec2(x / v.x, y / v.y);
+	}
+
 	vec2 operator*(T n) const {
 		return vec2(x * n, y * n);
 	}
 
-	template <typename S> vec2 operator/(const vec2<S> &v) const {
-		return vec2(x / v.x, y / v.y);
-	}
+	//template <typename S> vec2 operator/(const vec2<S> &v) const {
+	//	return vec2(x / v.x, y / v.y);
+	//}
 
 
 	vec2 operator/(T n) const {
@@ -95,6 +103,10 @@ template <class T> struct vec2 {
 		y -= ya;
 		return *this;
 	}
+
+	template <typename U> operator vec2<U>() {
+		return vec2<U>(static_cast<U>(x), static_cast<U>(y));
+	};
 
 	T operator[](const int &i) const {
 		return data[i];

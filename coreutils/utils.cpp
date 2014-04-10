@@ -16,6 +16,9 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+
+#include <mutex>
+
 namespace utils {
 
 using namespace std;
@@ -282,6 +285,54 @@ string utf8_encode(const wstring &s) {
 		}
 	}
 	return out;
+}
+
+//static std::vector<std::shared_ptr<asyncthread>> atlist;
+
+
+
+vector<thread> flist;
+vector<thread::id> donelist;
+mutex doneMutex;
+
+void cleanup_async() {
+	lock_guard<mutex> guard(doneMutex);
+	for(auto &id : donelist) {
+		auto it = flist.begin();
+		while(it != flist.end()) {
+			if(it->get_id() == id) {
+				LOGD("Removing finished async thread");
+				it = flist.erase(it);
+			} else
+				it++;
+		}
+	}
+	donelist.clear();
+}
+
+void run_async(std::function<void()> f) {
+
+	flist.emplace_back([=]() {
+		f();
+		{ lock_guard<mutex> guard(doneMutex);
+			donelist.push_back(std::this_thread::get_id());
+		}
+
+	});
+	//flist.back().detach();
+
+//#ifndef ANDROID
+	//std::async(std::launch::async, f);
+//#else
+	// atlist.emplace_back();
+	// auto &at = atlist.back();
+	// at->t = thread { [=]() {
+	// 	LOGD("In thread");
+	// 	f();
+	// 	at->done = true;
+	// } };
+
+//#endif
 }
 
 }
