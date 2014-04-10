@@ -1,5 +1,7 @@
 #include "resources.h"
 
+using namespace image;
+
 #ifdef EMSCRIPTEN
 
 #include "resources.h"
@@ -59,7 +61,7 @@ void Resources::update() {
 }
 
 }
-#elif defined ANDROID
+//#elif defined ANDROID
 
 
 #else

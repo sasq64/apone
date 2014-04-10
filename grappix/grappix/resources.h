@@ -1,7 +1,7 @@
 #ifndef RESOURCES_H
 #define RESOURCES_H
 
-#include "image.h"
+#include <image/image.h>
 #include <unordered_map>
 
 namespace grappix {
@@ -18,10 +18,10 @@ public:
 	~Resources();
 	Resources(const Resources &) = delete;
 
-	void register_image(const std::string &name, std::function<void(bitmap &b)> generator);
+	void register_image(const std::string &name, std::function<void(image::bitmap &b)> generator);
 	void on_load(const std::string &name, std::function<void(const std::string &name, Resources&)> f);
 	bool done();
-	const bitmap& get_image(const std::string &name);
+	const image::bitmap& get_image(const std::string &name);
 	void update();
 
 private:
@@ -29,10 +29,10 @@ private:
 	struct Resource {
 		std::string name;
 		std::string file_name;
-		std::function<void(bitmap &b)> generator;
+		std::function<void(image::bitmap &b)> generator;
 		std::function<void(const std::string &name, Resources&)> on_load;
 		//std::vector<uint8_t> data;
-		bitmap image;
+		image::bitmap image;
 		bool loaded;
 	};
 

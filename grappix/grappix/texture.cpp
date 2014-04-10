@@ -5,6 +5,7 @@
 #include <coreutils/log.h>
 
 using namespace std;
+using namespace image;
 
 namespace grappix {
 

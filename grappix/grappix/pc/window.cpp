@@ -78,6 +78,7 @@ void Window::open(int w, int h, bool fs) {
 	GLFWvidmode mode;
 	glfwGetDesktopMode(&mode);
 
+
 	LOGD("Desktop is %dx%d", mode.Width, mode.Height);
 	//mode.Width = 1600;
 
@@ -96,7 +97,7 @@ void Window::open(int w, int h, bool fs) {
 	}
 #endif
 
-	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 0, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
 	LOGD("%dx%d win -> %d", _width, _height, win);
 	if(win) {
 	}
@@ -120,8 +121,10 @@ void Window::open(int w, int h, bool fs) {
 	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
+	glLineWidth(2.0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	lastTime = -1;
 	winOpen = true;
 
@@ -130,7 +133,7 @@ void Window::open(int w, int h, bool fs) {
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(resize_fn);
 #endif
-
+	glfwEnable(GLFW_MOUSE_CURSOR);
 	startTime = chrono::high_resolution_clock::now();
 	frameBuffer = 0;
 
@@ -247,7 +250,7 @@ void Window::flip() {
 	}
 
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	tween::NewTween::updateTweens(ms / 1000000.0f);
+	tween::Tween::updateTweens(ms / 1000000.0f);
 	Resources::getInstance().update();
 
 #ifdef EMSCRIPTEN
@@ -263,11 +266,28 @@ void Window::benchmark() {
 
 unordered_map<int, int> Window::translate = {
 	{ F1, GLFW_KEY_F1 },
+	{ F2, GLFW_KEY_F2 },
+	{ F3, GLFW_KEY_F3 },
+	{ F4, GLFW_KEY_F4 },
+	{ F5, GLFW_KEY_F5 },
+	{ F6, GLFW_KEY_F6 },
+	{ F7, GLFW_KEY_F7 },
+	{ F8, GLFW_KEY_F8 },
+	{ F9, GLFW_KEY_F9 },
+	{ F10, GLFW_KEY_F10 },
+	{ F11, GLFW_KEY_F11},
+	{ F12, GLFW_KEY_F12 },
 	{ BACKSPACE, GLFW_KEY_BACKSPACE },
 	{ ENTER, GLFW_KEY_ENTER },
 	{ ESCAPE, GLFW_KEY_ESC },
 	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
+	{ CTRL_LEFT, GLFW_KEY_LCTRL },
+	{ CTRL_RIGHT, GLFW_KEY_RCTRL },
+	{ ALT_LEFT, GLFW_KEY_LALT },
+	{ ALT_RIGHT, GLFW_KEY_RALT },
+	{ SHIFT_LEFT, GLFW_KEY_LSHIFT },
+	{ SHIFT_RIGHT, GLFW_KEY_RSHIFT },
 	{ RIGHT, GLFW_KEY_RIGHT },
 	{ UP, GLFW_KEY_UP },
 	{ DOWN, GLFW_KEY_DOWN },
@@ -294,19 +314,21 @@ bool Window::key_pressed(char k) {
 	return glfwGetKey(k) != 0;
 }
 
-Window::click Window::get_click() {
+Window::click Window::get_click(bool peek) {
 	if(click_buffer.size() > 0) {
 		auto k = click_buffer.front();
-		click_buffer.pop_front();
+		if(!peek)
+			click_buffer.pop_front();
 		return k;
 	}
 	return NO_CLICK;
 }
 
-Window::key Window::get_key() {
+Window::key Window::get_key(bool peek) {
 	if(key_buffer.size() > 0) {
 		auto k = key_buffer.front();
-		key_buffer.pop_front();
+		if(!peek)
+			key_buffer.pop_front();
 		for(auto t : translate) {
 			if(t.second == k)
 				return (key)t.first;

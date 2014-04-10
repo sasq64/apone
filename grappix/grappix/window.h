@@ -43,9 +43,21 @@ public:
 		SHIFT_RIGHT,
 		ALT_LEFT,
 		ALT_RIGHT,
-		CTRL,
+		CTRL_LEFT,
+		CTRL_RIGHT,
 		WINDOWS,
 		F1,
+		F2,
+		F3,
+		F4,
+		F5,
+		F6,
+		F7,
+		F8,
+		F9,
+		F10,
+		F11,
+		F12,
 		CLICK,
 		RIGHT_CLICK,
 		NO_KEY = 0xffff
@@ -62,13 +74,13 @@ public:
 
 	static click NO_CLICK;
 
-	click get_click();
+	click get_click(bool peek = false);
 	bool mouse_pressed();
 	std::tuple<int, int> mouse_position();
 
 	bool key_pressed(key k);
 	bool key_pressed(char k);
-	key get_key();
+	key get_key(bool peek = false);
 
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }

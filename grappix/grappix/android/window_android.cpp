@@ -492,7 +492,7 @@ void Window::flip() {
 	auto t = chrono::high_resolution_clock::now();
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 	Resources::getInstance().update();
-	tween::NewTween::updateTweens(ms / 1000000.0f);
+	tween::Tween::updateTweens(ms / 1000000.0f);
 
 	//glfwSwapBuffers();
 	//if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
@@ -545,7 +545,7 @@ unordered_map<int, int> Window::translate = {
 	{ SHIFT_RIGHT, AKEYCODE_SHIFT_RIGHT },
 	{ ESCAPE, 111 },
 	{ DELETE, 112 },
-	{ CTRL, 113 },
+	{ CTRL_LEFT, 113 },
 	{ WINDOWS, 117},
 	{ HOME, 122},
 	{ END, 123},
@@ -557,7 +557,7 @@ bool Window::key_pressed(key k) {
 	//return glfwGetKey(glfwKey) != 0;
 }
 
-Window::click Window::get_click() {
+Window::click Window::get_click(bool peek) {
 	/*if(click_buffer.size() > 0) {
 		auto k = click_buffer.front();
 		click_buffer.pop_front();
@@ -565,7 +565,8 @@ Window::click Window::get_click() {
 	} */
 	if(host.touchEvents.size() > 0) {
 		auto t = host.touchEvents.front();
-		host.touchEvents.pop_front();
+		if(!peek)
+			host.touchEvents.pop_front();
 		if(t.what == TouchEvent::DOWN)
 			return click(t.x, t.y, 1);
 	}
@@ -573,14 +574,25 @@ Window::click Window::get_click() {
 	return NO_CLICK;
 }
 
+bool Window::mouse_pressed() {
+	return false;//glfwGetMouseButton(0);
+}
+
+tuple<int, int> Window::mouse_position() {
+	int x,y;
+	x = y = 0;
+	return make_tuple(x, y);
+}
 
 
-Window::key Window::get_key() {
+
+Window::key Window::get_key(bool peek) {
 	//init_keyboard(host.app->activity);
 	if(host.keyEvents.size() > 0) {
 		auto e = host.keyEvents.front();
 		int k = e.code;
-		host.keyEvents.pop_front();
+		if(!peek)
+			host.keyEvents.pop_front();
 		//LOGD("Code %d", k);
 		if(e.what == KeyEvent::DOWN) {
 			if(k >= 29 && k <= 54)

@@ -190,6 +190,13 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	program.setUniform("vScale", globalScale * w/2, globalScale * h/2, 0, 1);
 	program.setUniform("vPosition", x + w/2, (y + h/2), 0, 1);
 
+
+	float d = 1.0 - ((y+h) / (float)_height);
+	if(d < 0) d = 0;
+	if(d > 1) d = 1;
+	program.setUniform("vUniformZ", d);
+
+
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
 	if(uvs)
 		program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 16*4);

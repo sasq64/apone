@@ -2,7 +2,7 @@
 #define GRAPPIX_SHADER_H
 
 #include "GL_Header.h"
-#include <coreutils/log.h>
+//#include <coreutils/log.h>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -34,7 +34,7 @@ public:
 		createProgram();
 	}
 
-	Program(GLint p) : program(p), vertexShader(-1), pixelShader(-1) { LOGD("PPPP %d", p);}
+	Program(GLint p) : program(p), vertexShader(-1), pixelShader(-1) {}
 
 	Program() : program(-2), vertexShader(-1), pixelShader(-1) {}
 

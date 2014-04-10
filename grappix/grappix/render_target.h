@@ -5,7 +5,7 @@
 
 #include "shader.h"
 #include "font.h"
-#include "bitmap.h"
+#include <image/bitmap.h>
 
 #include <vector>
 #include <string>
@@ -80,6 +80,11 @@ public:
 	float scale(float s) { globalScale = s; return s; }
 
 	void text(const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
+	void text(const char c, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const {
+		static char s[2] = {0,0};
+		s[0] = c;
+		text(s, x, y, color, scale);
+	}
 	void text(const Font &font, const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
@@ -88,9 +93,9 @@ public:
 		renderable.render(_width, _height);
 	}
 
-	bitmap get_pixels() {
+	image::bitmap get_pixels() {
 
-		bitmap target(_width, _height);
+		image::bitmap target(_width, _height);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, &target[0]);

@@ -2,7 +2,7 @@
 #define GRAPPIX_TEXTURE_H
 
 #include "render_target.h"
-#include "bitmap.h"
+#include <image/bitmap.h>
 
 #include <memory>
 
@@ -22,19 +22,19 @@ public:
 
 	template <typename T> Texture(T size) : Texture(size[0], size[1]) {}
 	Texture(unsigned int width, unsigned int height, Format fmt = RGBA32);
-	Texture(const bitmap &bm);
+	Texture(const image::bitmap &bm);
 	Texture(uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }
 private:
 
 	struct texref {
 		texref() {
-			LOGD("GEN");
+			//LOGD("GEN");
 			glGenTextures(1, &id);
 		}
 		texref(GLuint id) : id(id) {}
 		~texref() {
-			LOGD("DEL");
+			//LOGD("DEL");
 			glDeleteTextures(1, &id);
 		}
 		GLuint id;
