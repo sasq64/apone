@@ -16,48 +16,47 @@ public:
 private:
 	std::string msg;
 };
-/*
-struct SimplePacker {
-	SimplePacker(int w, int h) : xpos(0), ypos(0), width(w), height(h) {}
-	std::pair<int, int> add(int w, int h) {
 
-		if(ypos + w > height)
-			throw tile_exception("Texture full");
+class SequentialPacker : public image::ImagePacker {
+public:
+	SequentialPacker(int w, int h) : xpos(0), ypos(0), width(w), height(h) {}
+	bool add(Rect &r) override {
 
-		auto rc = make_pair(xpos, ypos);
-		xpos += w;
+		if(ypos + r.w > height)
+			return false;
+
+		r.x = xpos;
+		r.y = ypos;
+
+		xpos += r.w;
 		if(xpos > width) {
 			xpos = 0;
-			ypos += h;
+			ypos += r.h;
 		}
-		return rc;
+		return true;
 	}
-	void free(int x, int y) {
-		throw tile_exception("Free not supported");
+	void remove(const Rect &r) override {
+		throw tile_exception("remove() not supported in SequentialPacker");
 	}
+private:
 	int xpos;
 	int ypos;
 	int width;
 	int height;
 };
-*/
+
 
 struct TileSet {
 
 	TileSet();
-	TileSet(unsigned int tilew, unsigned int tileh, uint32_t texw = 256, uint32_t texh = 256);
-	int add_tiles(const image::bitmap &bm) {
-		for(const auto &b : bm.split(tilew, tileh)) {
-			add(b);
-		}
-		return tiles->size()-1;
-	} 
+	TileSet(uint32_t texw, uint32_t texh);
+	TileSet(std::shared_ptr<image::ImagePacker> packer);
 
 	int add(const image::bitmap &bm);
-	//int add(const bitmap::splitter &
 	void set_image(const image::bitmap &bm);
 
 	int add_solid(uint32_t color, uint32_t w, uint32_t h);
+
 	void set_tile(unsigned int no) {
 		while(tiles->size() < no)
 			tiles->emplace_back(0,0,0,0,0,0);
@@ -67,15 +66,7 @@ struct TileSet {
 
 	void render_tile(int tileno, RenderTarget &target, float x, float y, double s);
 
-	unsigned int tilew;
-	unsigned int tileh;
-	//unsigned int widthInTiles;
-	//unsigned int heightInTiles;
 	Texture texture;
-
-	// Current add position
-	unsigned int xpos;
-	unsigned int ypos;
 
 	struct tile {
 		tile(float s0, float t0, float s1, float t1, int w, int h) : s0(s0), t0(t0), s1(s1), t1(t1), w(w), h(h) {}
@@ -84,43 +75,61 @@ struct TileSet {
 	};
 
 	std::shared_ptr<std::vector<tile>> tiles;
-	std::shared_ptr<image::Packer> packer;
+	std::shared_ptr<image::ImagePacker> packer;
 };
 
+class TileSource {
+public:
+	virtual uint32_t getTile(uint32_t, uint32_t) = 0;
+	virtual bool ready() { return true; }
+};
+
+class TileArray : public TileSource {
+public:
+	TileArray(uint32_t w, uint32_t h) : _width(w), _height(h) {}
+	virtual uint32_t getTile(uint32_t x , uint32_t y) { return tiles[(x%_width) + (y%_height) * _width]; }
+	virtual bool ready() { return true; }
+
+	void fill(int tileno, int x, int y, int w, int h) {
+		if(w == 0) w = _width - x;
+		if(h == 0) h = _height -y;
+		for(int xx = 0; xx < w; xx++)
+			for(int yy = 0; yy < h; yy++)
+				tiles[xx+x+(yy+y)*_width] = tileno;
+	}
+
+	void shift_tiles(int dx, int dy) {
+		for(unsigned int i=tiles.size()-1; i >= _width; i--) {
+			tiles[i] = tiles[i-_width];
+		}
+		for(unsigned int i=0; i<_width; i++)
+			tiles[i] = 0;
+	}
+
+private:
+	uint32_t _width;
+	uint32_t _height;
+	vector<uint32_t> tiles;
+
+};
 
 class TileLayer {
 public:
 
-	class TileSource {
-	public:
-		virtual uint32_t getTile(uint32_t, uint32_t) = 0;
-		virtual bool ready() = 0;
-	};
-
 	TileLayer() {}
 
-	TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts);
-	TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
-	TileLayer(uint32_t w, uint32_t h, uint32_t pw, uint32_t ph, const TileSet &ts, TileSource &source);
+	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
+	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
+	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, TileSource &source);
 	void render(RenderTarget &target, float x = 0, float y = 0);
 
 	void setPixelSize(uint32_t px, uint32_t ph);
 
-	uint32_t pixel_width() { return pixelWidth; }
-	uint32_t pixel_height() { return pixelHeight; }
+	uint32_t pixelWidth() { return pixel_width; }
+	uint32_t pixelHeight() { return pixel_height; }
 
-	//float scale() { return s; }
-	//float scale(float s) { this->s = s; return s; }
-	uint32_t width() const { return _width; }
-	uint32_t height() const { return _height; }
-	uint32_t size() const { return _width * _height;  }
-
-	void fill(int tileno = 0, int x = 0, int y = 0, int w = 0, int h = 0);
-	void shift_tiles(int dx, int dy);
-
-	uint32_t &operator[](uint32_t i) {
-		return map[i];
-	}
+	uint32_t tileWidth() { return tile_width; }
+	uint32_t tileHeight() { return tile_height; }
 
 	// Pixel offset into tiles
 	double scrollx;
@@ -131,14 +140,12 @@ private:
 
 	TileSet tileset;
 
-	// Total size in tiles
-	uint32_t _width;
-	uint32_t _height;
-	// Size of visible area
-	uint32_t pixelWidth;
-	uint32_t pixelHeight;
+	uint32_t pixel_width;
+	uint32_t pixel_height;
 
-	std::vector<uint32_t> map;
+	uint32_t tile_width;
+	uint32_t tile_height;
+
 	std::function<int(int,int)> sourceFunction;
 	TileSource *tileSource;
 
@@ -172,7 +179,7 @@ class SpriteLayer {
 	};
 public:
 	SpriteLayer() {}
-	SpriteLayer(const TileSet &ts, int pw, int ph) : scrollx(0), scrolly(0), tileSet(ts), pixelWidth(pw), pixelHeight(ph) {}
+	SpriteLayer(const TileSet &ts, int32_t pw = -1, int32_t ph = -1) : scrollx(0), scrolly(0), tileSet(ts), pixel_width(pw), pixel_height(ph) {}
 	std::shared_ptr<Sprite> addSprite(std::vector<int> frames, float x = 0.0, float y = 0.0, float scale = 1.0);
 	std::shared_ptr<Sprite> addSprite(int tileno, float x = 0.0, float y = 0.0, float scale = 1.0);
 	void render(RenderTarget &target, int x = 0, int y = 0);
@@ -184,8 +191,8 @@ public:
 private:
 	std::set<std::weak_ptr<Sprite>, SpriteCompare> sprites;
 	TileSet tileSet;
-	int pixelWidth;
-	int pixelHeight;
+	int32_t pixel_width;
+	int32_t pixel_height;
 
 };
 
