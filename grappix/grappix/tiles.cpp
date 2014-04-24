@@ -1,5 +1,6 @@
 #include "tiles.h"
 #include "shader.h"
+#include "transform.h"
 
 #include <coreutils/log.h>
 #include <image/packer.h>
@@ -8,18 +9,17 @@
 
 using namespace std;
 using namespace image;
-
-//using namespace utils;
+using namespace utils;
 
 namespace grappix {
 
-TileSet::TileSet() {}
+//TileSet::TileSet() {}
 
 TileSet::TileSet(shared_ptr<ImagePacker> packer) : packer(packer) {}
 
 TileSet::TileSet(uint32_t texw, uint32_t texh) : texture(texw, texh)  {
 
-	packer = make_shared<KDPacker>(texw, texh);
+	packer = make_shared<SequentialPacker>(texw, texh);
 
 	tiles = make_shared<vector<tile>>();
 
@@ -42,10 +42,10 @@ int TileSet::add(const bitmap &bm) {
 	auto xpos = r.x;
 	auto ypos = r.y;
 
-	LOGD("Adding %dx%d to pos %d,%d", tilew, tileh, xpos, ypos);
+	//LOGD("Adding %dx%d to pos %d,%d", tilew, tileh, xpos, ypos);
 
-	double pw = 1.0f/texture.width();
-	double ph = 1.0f/texture.height();
+	double pw = 1.0/texture.width();
+	double ph = 1.0/texture.height();
 
 	float s0 = xpos * pw;
 	float s1 = s0 + pw*tilew;
@@ -61,6 +61,8 @@ int TileSet::add(const bitmap &bm) {
 }
 
 int TileSet::add_tile(int tx, int ty, int tw, int th) {
+
+	//auto p = 1.0 / utils::make_vec(texture.width(), texture.height());
 
 	double pw = 1.0f/texture.width();
 	double ph = 1.0f/texture.height();
@@ -120,12 +122,8 @@ void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, do
 	target.draw_texture(texture.id(), (int)x, (int)y, t.w, t.h, &uvs[0]);
 }
 
-TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) : 
-	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(nullptr) {}
-
-TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, function<uint32_t(uint32_t,uint32_t)> source) : 
-	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), sourceFunction(source), tileSource(nullptr) {
-	}
+//TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) : 
+//	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(nullptr) {}
 
 TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, TileSource &source) : 
 	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(&source) {
@@ -194,39 +192,20 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, multiBuf[1]);
 
 	vector<float> uvs(count*8);
-	//uvs.resiz(count*8);
-
-	auto scx = scrollx;
-	auto scy = scrolly;
-
-	//while(scx < 0)
-	//	scx += (tile_width*_width);
-	//while(scy < 0)
-	//	scy += (tile_height*_height);
 
 	// Start pos in tiles
-	int sx = scx / tile_width;
-	int sy = scy / tile_height;
+	int sx = scrollx / tile_width;
+	int sy = scrolly / tile_height;
 
 	// pixel pos within start tile
-	int xx = (int)scx % tile_width;
-	int yy = (int)scy % tile_height;
+	int xx = (int)scrollx % tile_width;
+	int yy = (int)scrolly % tile_height;
 
 	int i = 0;
 	for(int iy=0; iy<areah; iy++) {
 		for(int ix=0; ix<areaw; ix++) {
-			int xp = (ix+sx);// % _width;
-			//if(xp < 0) xp += _width;
-			int yp = (iy+sy);// % _height;
-			//if(yp < 0) yp += _height;
-			int tileno = 0;
-			if(tileSource) {
-				tileno = tileSource->getTile(xp, yp);
-			} else if(sourceFunction)
-				tileno = sourceFunction(xp, yp);
-			//else
-			//	tileno = map[xp+yp*_width];
-
+			auto tileno = tileSource->getTile(ix+sx, iy+sy);
+			//LOGD("TILE %d", tileno);
 			auto &t = (*tileset.tiles)[tileno];
 
 			uvs[i++] = t.s0;
@@ -253,9 +232,23 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	glViewport(0,0,target.width(), target.height());
 	glBindTexture(GL_TEXTURE_2D, tileset.texture.id());
 
-	program.setUniform("vScreenScale", 2.0 / target.width(), 2.0 / target.height(), 0, 1);
-	program.setUniform("vScale", 1.0, 1.0, 0, 1);
-	program.setUniform("vPosition", -xx, -yy, 0, 1);
+	//auto sx = globalScale * w/2;
+	//auto sy = globalScale * h/2;
+	mat4f matrix(1.0);
+
+	
+	//matrix = make_rotate_z(50.0) * matrix;
+	//matrix = make_scale(sx, sy) * matrix;
+	matrix = make_translate(-xx, -yy) * matrix;
+	matrix = make_scale(2.0 / target.width(), 2.0 / target.height()) * matrix;
+	matrix = make_scale(1.0, -1.0) * matrix;
+	matrix = make_translate(-1.0, 1.0, 0.5) * matrix;
+
+	program.setUniform("matrix", matrix);
+
+	// program.setUniform("vScreenScale", 2.0 / target.width(), 2.0 / target.height(), 0, 1);
+	// program.setUniform("vScale", 1.0, 1.0, 0, 1);
+	// program.setUniform("vPosition", -xx, -yy, 0, 1);
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, 0);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);

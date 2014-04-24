@@ -4,18 +4,22 @@
 #include "render_target.h"
 #include "shader.h"
 #include "color.h"
-
+#include "transform.h"
 #include <coreutils/log.h>
-
+#include <coreutils/mat.h>
 #ifdef WITH_FREETYPE
 #include <freetype-gl.h>
 #endif
+
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
 
 #include <vector>
 using namespace std;
+using namespace utils;
 
 namespace grappix {
 
@@ -156,6 +160,8 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	glDisableVertexAttribArray(posHandle);
 }
 
+static float xrot = 0;
+
 void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, Program &program) const {
 //	static float uvs2[] = { 0,0,1,0,0,1,1,1 };
 
@@ -186,15 +192,20 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height, 0, 1);
-	program.setUniform("vScale", globalScale * w/2, globalScale * h/2, 0, 1);
-	program.setUniform("vPosition", x + w/2, (y + h/2), 0, 1);
-
-
 	float d = 1.0 - ((y+h) / (float)_height);
 	if(d < 0) d = 0;
 	if(d > 1) d = 1;
 	program.setUniform("vUniformZ", d);
+
+	mat4f matrix = make_scale(globalScale * w/2, globalScale * h/2);
+	matrix = make_rotate_z(xrot) * matrix;
+	xrot += 0.5;
+	matrix = make_translate(x + w/2, y + h/2) * matrix;
+	
+	matrix = toScreen * matrix;
+
+	program.setUniform("matrix", matrix);
+
 
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
@@ -270,11 +281,8 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-
-
-	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height, 0, 1);
-	program.setUniform("vScale", globalScale, globalScale, 0, 1);
-	program.setUniform("vPosition", 0, 0, 0, 1);
+	//mat4f m = make_rotate_x(2.0);
+	program.setUniform("matrix", toScreen);
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 0);

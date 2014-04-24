@@ -18,7 +18,7 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
-Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
+Window::Window() : RenderTarget(), winOpen(false), bmCounter(0), lockIt(false) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }
 
@@ -101,6 +101,7 @@ void Window::open(int w, int h, bool fs) {
 	LOGD("%dx%d win -> %d", _width, _height, win);
 	if(win) {
 	}
+	update_matrix();
 
 #ifndef EMSCRIPTEN
 	int rc = glewInit();
@@ -181,6 +182,15 @@ int Window::call_repeatedly(std::function<void(void)> f, int msec) {
 }
 
 void Window::update_callbacks() {
+
+	while(safeFuncs.size() > 0) {
+		safeMutex.lock();
+		auto &f = safeFuncs.front();
+		f();
+		safeFuncs.pop_front();
+		safeMutex.unlock();
+	}
+
 	auto ms = utils::getms();
 	for(auto &cb : callbacks) {
 		if(cb.msec == 0 || ms >= cb.next_time) {
@@ -212,6 +222,9 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 			uint32_t rate = ms - lastMs;
 			lastMs = ms;
 			renderLoopFunction(rate);
+			//while(screen.locked()) {
+			//	utils::sleepms(5);
+			//}
 		}
 	});
 

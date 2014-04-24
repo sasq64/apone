@@ -235,7 +235,7 @@ Program& get_program(program_name program) {
 		//programs[FONT_PROGRAM] = createProgram(vFontShader, pFontShader);
 		//programs[FONT_PROGRAM_DF] = createProgram(vFontShader, pDFontShader);
 		programs[FLAT_PROGRAM] = Program(_shader_plain_v_glsl, _shader_plain_v_glsl_len, _shader_plain_f_glsl,_shader_plain_f_glsl_len);
-		programs[TEXTURED_PROGRAM] = Program(_shader_texture_v_glsl, _shader_texture_v_glsl_len, _shader_texture_f_glsl, _shader_texture_v_glsl_len);
+		programs[TEXTURED_PROGRAM] = Program(_shader_texture_v_glsl, _shader_texture_v_glsl_len, _shader_texture_f_glsl, _shader_texture_f_glsl_len);
 		programs[FONT_PROGRAM] = Program(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_font_f_glsl, _shader_font_f_glsl_len);
 		programs[FONT_PROGRAM_DF] = Program(_shader_font_v_glsl, _shader_font_v_glsl_len, _shader_fontdf_f_glsl, _shader_fontdf_f_glsl_len);
 	}

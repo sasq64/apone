@@ -37,9 +37,11 @@ private:
 	};
 
 	std::unordered_map<std::string, Resource> resources;
+#ifndef EMSCRIPTEN
 	int infd;
 	int watchfd;
 	int delay_counter;
+#endif
 };
 
 }

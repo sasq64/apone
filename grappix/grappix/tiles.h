@@ -29,7 +29,7 @@ public:
 		r.y = ypos;
 
 		xpos += r.w;
-		if(xpos > width) {
+		if(xpos >= width) {
 			xpos = 0;
 			ypos += r.h;
 		}
@@ -48,8 +48,8 @@ private:
 
 struct TileSet {
 
-	TileSet();
-	TileSet(uint32_t texw, uint32_t texh);
+	//TileSet();
+	TileSet(uint32_t texw = 256, uint32_t texh = 256);
 	TileSet(std::shared_ptr<image::ImagePacker> packer);
 
 	int add(const image::bitmap &bm);
@@ -86,11 +86,15 @@ public:
 
 class TileArray : public TileSource {
 public:
-	TileArray(uint32_t w, uint32_t h) : _width(w), _height(h) {}
+	TileArray(uint32_t w, uint32_t h) : _width(w), _height(h), _size(w*h), tiles(_size) {}
 	virtual uint32_t getTile(uint32_t x , uint32_t y) { return tiles[(x%_width) + (y%_height) * _width]; }
 	virtual bool ready() { return true; }
 
-	void fill(int tileno, int x, int y, int w, int h) {
+	uint32_t width() const { return _width; }
+	uint32_t height() const { return _height; }
+	size_t size() const { return _size; }
+
+	void fill(int tileno, int x = 0, int y = 0, int w = 0, int h = 0) {
 		if(w == 0) w = _width - x;
 		if(h == 0) h = _height -y;
 		for(int xx = 0; xx < w; xx++)
@@ -106,9 +110,19 @@ public:
 			tiles[i] = 0;
 	}
 
+	uint32_t operator[](uint32_t o) const {
+		return tiles[o % _size];
+	}
+
+	uint32_t& operator[](uint32_t o) {
+		return tiles[o % _size];
+	}
+
+
 private:
 	uint32_t _width;
 	uint32_t _height;
+	size_t _size;
 	vector<uint32_t> tiles;
 
 };
@@ -116,10 +130,10 @@ private:
 class TileLayer {
 public:
 
-	TileLayer() {}
+	//TileLayer() {}
 
-	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
-	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
+	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
+	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
 	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, TileSource &source);
 	void render(RenderTarget &target, float x = 0, float y = 0);
 
@@ -146,7 +160,7 @@ private:
 	uint32_t tile_width;
 	uint32_t tile_height;
 
-	std::function<int(int,int)> sourceFunction;
+	//std::function<int(int,int)> sourceFunction;
 	TileSource *tileSource;
 
 	int multiBuf[2] = {-1, -1};

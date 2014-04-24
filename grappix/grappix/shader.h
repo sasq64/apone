@@ -3,6 +3,8 @@
 
 #include "GL_Header.h"
 //#include <coreutils/log.h>
+#include <coreutils/mat.h>
+
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -81,6 +83,10 @@ public:
 		createProgram();
 	}
 
+	std::string getFragmentSource() {
+		return fSource;
+	}
+
 	GLuint getAttribLocation(const std::string &name) {
 		GLuint a;
 		if(attributes.count(name) == 0) {
@@ -100,6 +106,11 @@ public:
 			u = uniforms[name];
 		}
 		return u;
+	}
+
+	void setUniform(const std::string &name, const utils::mat4f &m) {
+		auto h = getUniformLocation(name);
+		glUniformMatrix4fv(h, 1, true, &m[0][0]);
 	}
 
 	void setUniform(const std::string &name, float f0) {
@@ -137,6 +148,9 @@ public:
 	void use() { glUseProgram(program); }
 
 	GLint id() { return program; }
+
+	//std::unordered_map<uint32_t, GLint> programs;
+	//std::vector<std::string> flags;
 
 //private:
 	std::unordered_map<std::string, GLuint> uniforms;

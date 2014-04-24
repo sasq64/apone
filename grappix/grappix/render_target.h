@@ -5,6 +5,7 @@
 
 #include "shader.h"
 #include "font.h"
+#include "transform.h"
 #include <image/bitmap.h>
 
 #include <vector>
@@ -104,10 +105,18 @@ public:
 	}
 
 protected:
+
+	void update_matrix() {
+		toScreen = make_scale(2.0 / _width, -2.0 / _height);
+		toScreen = make_translate(-1.0, 1.0, 0.5) * toScreen;
+		LOGD("#### toScreen %d %d", _width, _height);
+	}
+
 	unsigned int frameBuffer;
 	int _width;
 	int _height;
 	float globalScale;
+	utils::mat4f toScreen;
 
 	mutable std::shared_ptr<Font> font;
 

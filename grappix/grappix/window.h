@@ -11,6 +11,7 @@
 #include <deque>
 #include <functional>
 #include <tuple>
+#include <mutex>
 
 namespace grappix {
 
@@ -106,10 +107,32 @@ public:
 	void remove_repeating(int i = -1);
 	void call_once(std::function<void(void)> f);
 
+	void lock() {
+		lockIt = true;
+	}
+
+	void unlock() {
+		lockIt = false;
+	}
+
+	bool locked() { return lockIt; }
+
+	void run_safely(std::function<void()> f) {
+		safeMutex.lock();
+		safeFuncs.push_back(f);
+		safeMutex.unlock();
+		while(safeFuncs.size() != 0) {
+			safeMutex.lock();
+			safeMutex.unlock();
+		}
+	}
+
+
 	std::function<void()> focus_func;
 	std::function<void()> focus_lost_func;
 
 private:
+
 
 	void update_callbacks();
 
@@ -137,8 +160,18 @@ private:
 
 	std::chrono::high_resolution_clock::time_point startTime;
 
+	std::atomic<bool> lockIt;
+
+	std::mutex safeMutex;
+	std::deque<std::function<void()>> safeFuncs;
+
 	static std::unordered_map<int, int> translate;
 };
+
+
+constexpr Window::key as_key(const char c) {
+	return static_cast<Window::key>(c); 
+}
 
 extern Window screen;
 }
