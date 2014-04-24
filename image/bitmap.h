@@ -105,7 +105,30 @@ public:
 		return (*pixels)[i];
 	}
 
-	T operator[](const int &i) const { return pixels[i]; }
+	T operator[](const int &i) const { return (*pixels)[i]; }
+/*
+	struct iterator {
+		bool operator!= (const iterator& other) const {
+			return i != other.i
+		}
+ 
+		T operator* () const {
+			return bm.pixels[i];
+		}
+ 
+		const iterator& operator++ () {
+			i++;
+		}
+
+	};
+*/
+	typename std::vector<T>::iterator begin() {
+		return pixels->begin();
+	};
+
+	typename std::vector<T>::iterator end() {
+		return pixels->end();
+	};
 
 	basic_bitmap operator+(T &pixel) {
 		basic_bitmap rb = *this;

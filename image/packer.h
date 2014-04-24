@@ -9,7 +9,7 @@
 
 namespace image {
 
-class Packer {
+class ImagePacker {
 public:
 	struct Rect {
 		Rect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
@@ -18,6 +18,13 @@ public:
 		uint16_t w;
 		uint16_t h;
 	};
+
+	virtual bool add(Rect &r) = 0;
+	virtual void remove(const Rect &r) = 0;
+};
+
+class KDPacker : public ImagePacker {
+public:
 
 	struct Node {
 		Node(const Rect &r, bool used) : r(r), used(used) {}
@@ -112,15 +119,15 @@ public:
 
 	};
 
-	Packer(const Rect &r) : root(r, false) {}
+	KDPacker(const Rect &r) : root(r, false) {}
 
-	Packer(int w, int h) : root(Rect(0,0,w,h), false) {}
+	KDPacker(int w, int h) : root(Rect(0,0,w,h), false) {}
 
-	bool add(Rect &r) {
+	bool add(Rect &r) override {
 		return root.add(r);
 	}
 
-	void remove(const Rect &r) {
+	void remove(const Rect &r) override{
 		root.remove(r);
 	}
 
