@@ -44,15 +44,15 @@ void WebGetter::Job::onError(void *arg, int code) {
 WebGetter::Job::~Job() {
 }
 
-bool WebGetter::Job::isDone() { 
+bool WebGetter::Job::isDone() const { 
 	return loaded;
 }
 
-int WebGetter::Job::getReturnCode() { 
+int WebGetter::Job::getReturnCode() const { 
 	return returnCode;
 }
 
-string WebGetter::Job::getFile() {
+string WebGetter::Job::getFile() const {
 	return target;
 }
 
