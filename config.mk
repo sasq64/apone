@@ -72,7 +72,16 @@ else ifeq ($(HOST),emscripten)
  	CFLAGS += -DGL_ES
  	COMP_CFLAGS += -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
-	CFLAGS += -DRASPBERRYPI
+
+	ifeq ($(PI),)
+ 		PI := /opt/raspberry
+ 	endif
+
+	CFLAGS += -DRASPBERRYPI -DLINUX
+ 	PREFIX := arm-linux-gnueabihf-
+	CFLAGS += --sysroot=$(PI)
+	LDFLAGS += --sysroot=$(PI)
+
 else ifeq ($(HOST),linux)
   CFLAGS += -DLINUX
 endif

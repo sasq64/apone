@@ -23,6 +23,15 @@ else ifeq ($(HOST),emscripten)
 else ifeq ($(HOST),apple)
   DIRS += $(GRAPPIX_DIR)grappix/pc
   LIBS += -lglfw -framework OpenGL -lGLEW
+else ifeq ($(HOST),raspberrypi)
+  VC := /opt/raspberry/vc
+  DIRS += $(GRAPPIX_DIR)grappix/pi
+  LIBS += -lz -lEGL -lGLESv2 -lvcos -lvchiq_arm -lbcm_host
+  CFLAGS += -I$(VC)/include -I$(VC)/include/interface/vcos/pthreads -I$(VC)/include/interface/vmcs_host/linux
+
+  # -I/opt/raspberry/include
+  LDFLAGS += -L$(VC)/lib
+  # -L/home/sasq/raspberrypi/arm
 else
   DIRS += $(GRAPPIX_DIR)grappix/pc
   LIBS += -lglfw -lGL -lGLEW

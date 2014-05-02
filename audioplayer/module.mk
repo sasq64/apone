@@ -15,6 +15,9 @@ ifneq ($(SDL_AUDIO),)
 else ifeq ($(HOST),linux)
   LIBS += -lasound
   audioplayer_FILES += $(THIS_DIR)player_linux.cpp
+else ifeq ($(HOST),raspberrypi)
+  LIBS += -lasound
+  audioplayer_FILES += $(THIS_DIR)player_linux.cpp
 else ifeq ($(HOST),android)
   LIBS += -lOpenSLES
   audioplayer_FILES += $(THIS_DIR)player_sl.cpp

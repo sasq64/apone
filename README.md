@@ -84,6 +84,10 @@ You can also define `USE_CCACHE=1` to use ccache for compileation.
 
 Build using `make`
 Requires gcc 4.7+ or clang 3.2+
+apt-get install git g++
+apt-get install libfreetype6-dev libasound2-dev libglew-dev libglfw-dev libcurl4-gnutls-dev
+apt-get install libsdl1.2-dev
+
 
 ### Android
 

@@ -15,6 +15,15 @@
 
 namespace grappix {
 
+class display_exception : public std::exception {
+public:
+	display_exception(const std::string &msg) : msg(msg) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
+};
+
+
 class Window : public RenderTarget {
 public:
 

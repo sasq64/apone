@@ -10,6 +10,9 @@ ifeq ($(HOST),android)
   LDFLAGS += -L$(THIS_DIR)android/lib
   LIBS += -lpng
 else ifeq ($(HOST),emscripten)
+else ifeq ($(HOST),raspberrypi)
+  CFLAGS += -I/usr/include/libpng12
+  LIBS += -lpng12
 else
   image_CFLAGS := `libpng-config --cflags`
   LIBS += `libpng-config --libs`

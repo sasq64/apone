@@ -10,6 +10,9 @@ else ifeq ($(HOST),emscripten)
   INCLUDES += $(THIS_DIR)emscripten/include $(THIS_DIR)emscripten/include/freetype
   LDFLAGS += -L$(THIS_DIR)emscripten/lib
   LIBS += -lfreetype
+else ifeq ($(HOST),raspberrypi)
+  LIBS += -lfreetype -lz
+  CFLAGS += -I/usr/include/freetype2
 else
   CFLAGS += `freetype-config --cflags`
   LIBS += `freetype-config --libs`

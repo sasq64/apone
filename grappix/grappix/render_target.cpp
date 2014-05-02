@@ -198,9 +198,11 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	program.setUniform("vUniformZ", d);
 
 	mat4f matrix = make_scale(globalScale * w/2, globalScale * h/2);
-	matrix = make_rotate_z(xrot) * matrix;
-	xrot += 0.5;
+	//matrix = make_rotate_z(xrot) * matrix;
+	//xrot += 0.5;
 	matrix = make_translate(x + w/2, y + h/2) * matrix;
+
+	//matrix = make_perspective(M_PI, 1.0, 0, 10) * matrix;
 	
 	matrix = toScreen * matrix;
 
