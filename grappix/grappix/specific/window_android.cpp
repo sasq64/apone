@@ -14,6 +14,7 @@
 //#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Grappix", __VA_ARGS__))
 //#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Grappix", __VA_ARGS__))
 
+bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
 
 
 using namespace std;
@@ -196,71 +197,18 @@ public:
 
 		if(eglContext == nullptr) {
 
-			EGLint format;
-			EGLint numConfigs;
-			EGLConfig config;
-			EGLConfig configList[32];
-			EGLContext context;
-
-			eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-
-			EGLint m0;
-			EGLint m1;
-
-			eglInitialize(eglDisplay, &m0, &m1);
-
-			LOGI("EGL v%d.%d", m0, m1);	
-
-			/* Here, the application chooses the configuration it desires. In this
-			 * sample, we have a very simplified selection process, where we pick
-			 * the first EGLConfig that matches our criteria */
-			eglGetConfigs(eglDisplay, configList, 32, &numConfigs);
-
-			LOGI("Found %d matching configs", numConfigs);
-
-			for(int i=0; i<numConfigs; i++) {
-				EGLint conf, id, stype, redSize, caveat, sbuffers;
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFORMANT, &conf);
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFIG_ID, &id);
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_SURFACE_TYPE, &stype);
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_RED_SIZE, &redSize);
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_CONFIG_CAVEAT, &caveat);
-				eglGetConfigAttrib(eglDisplay, configList[i], EGL_SAMPLE_BUFFERS, &sbuffers);
-								
-				LOGI("Config %d (%d) conformant %x RED %d caveat %x stype %x", i, id, conf, redSize, caveat, stype);
-
-				if((conf & EGL_OPENGL_ES2_BIT) && (stype & EGL_WINDOW_BIT)) {
-					config = configList[i];
-					if(sbuffers > 0) {
-						break;
-					}
-				}
-			}
+			initEGL(eglConfig, eglContext, eglDisplay);
 
 			/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
 			 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
 			 * As soon as we picked a EGLConfig, we can safely reconfigure the
 			 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
-			eglGetConfigAttrib(eglDisplay, config, EGL_NATIVE_VISUAL_ID, &format);
+			EGLint visid;
+			eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &visid);
 
-			eglConfig = config;
+			LOGI("Native id %d", visid);
+			ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, visid);
 
-			LOGI("Native id %d", format);
-			ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, format);
-	
-			const EGLint attribs[] = {
-				EGL_CONTEXT_CLIENT_VERSION, 2, 
-				EGL_NONE, EGL_NONE
-			};
-
-			context = eglCreateContext(eglDisplay, config, NULL, attribs);
-
-			LOGI("Context %p", context);
-			if(!context) {
-				LOGI("NO CONTEXT!");
-				exit(0);
-			}
-			eglContext = context;
 		}
 
 		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, nativeWindow, NULL);
@@ -281,9 +229,6 @@ public:
 		screenWidth = w;
 		screenHeight = h;
 		this->nativeWindow = nativeWindow;
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		LOGI("Done");
 		return 0;
@@ -469,19 +414,11 @@ Window::Window() : RenderTarget(), winOpen(false), bmCounter(0) {
 }
 
 void Window::open(bool fs) {
-	startTime = chrono::high_resolution_clock::now();
-	_width = host.width();
-	_height = host.height();
-	winOpen = true;
-	return;
+	setup(host.width(), host.height());
 }
 
 void Window::open(int w, int h, bool fs) {
-	startTime = chrono::high_resolution_clock::now();
-	_width = host.width();
-	_height = host.height();
-	winOpen = true;
-	return;
+	setup(host.width(), host.height());
 };
 
 void Window::vsync() {
@@ -493,31 +430,11 @@ void Window::flip() {
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 	Resources::getInstance().update();
 	tween::Tween::updateTweens(ms / 1000000.0f);
-
-	//glfwSwapBuffers();
-	//if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
-	//	glfwCloseWindow();
-	//	winOpen = false;			
-	//}
 }
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction2 = f;
 }
-
-void Window::benchmark() {
-	benchStart = chrono::high_resolution_clock::now();
-	bmCounter = 100;
-}
-
-/*
-unordered_map<int, int> Window::translate = {
-	{ ENTER, GLFW_KEY_ENTER },
-	{ LEFT, GLFW_KEY_LEFT },
-	{ RIGHT, GLFW_KEY_RIGHT },
-	{ UP, GLFW_KEY_UP },
-	{ DOWN, GLFW_KEY_DOWN }
-};*/
 
 void init_keyboard(ANativeActivity *activity) {
 	if(!keyboardOn)

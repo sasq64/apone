@@ -13,6 +13,8 @@
 
 using namespace std;
 
+bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
+
 namespace grappix {
 
 Window::Window() : RenderTarget(), winOpen(false), bmCounter(0), lockIt(false) {
@@ -29,6 +31,10 @@ static function<void(uint32_t)> renderLoopFunction;
 
 static EGL_DISPMANX_WINDOW_T nativewindow;
 
+static EGLConfig eglConfig;
+static EGLContext eglContext;
+static EGLDisplay eglDisplay;
+static EGLSurface eglSurface;
 
 void Window::open(int w, int h, bool fs) {
 
@@ -78,19 +84,19 @@ void Window::open(int w, int h, bool fs) {
 	nativewindow.height = display_height;
 	vc_dispmanx_update_submit_sync(dispman_update);
 
-	update_matrix();
-	glLineWidth(2.0);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	initEGL(eglConfig, eglContext, eglDisplay);
 
-	lastTime = -1;
-	winOpen = true;
+	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &nativewindow, NULL);
 
-	//glfwSetKeyCallback(key_fn);
+	LOGI("Surface %p", eglSurface);
+
+	if (eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
+		LOGI("Unable to eglMakeCurrent");
+		return;
+	}
 
 
-	startTime = chrono::high_resolution_clock::now();
-	frameBuffer = 0;
+	setup(display_width, display_height);
 
 	atexit([](){
 		if(!renderLoopFunction) {
@@ -102,39 +108,6 @@ void Window::open(int w, int h, bool fs) {
 	});
 };
 
-
-int Window::call_repeatedly(std::function<void(void)> f, int msec) {
-	callbacks.push_back(Callback(f, msec));
-	return callbacks.size()-1;
-}
-
-void Window::update_callbacks() {
-
-	while(safeFuncs.size() > 0) {
-		safeMutex.lock();
-		auto &f = safeFuncs.front();
-		f();
-		safeFuncs.pop_front();
-		safeMutex.unlock();
-	}
-
-	auto ms = utils::getms();
-	for(auto &cb : callbacks) {
-		if(cb.msec == 0 || ms >= cb.next_time) {
-			cb.cb();
-			cb.next_time += cb.msec;
-		}
-	}
-
-	for(auto i : to_remove) {
-		callbacks.erase(callbacks.begin() + i);
-	}
-	to_remove.clear();
-}
-
-void Window::remove_repeating(int index) {
-	to_remove.insert(index);
-}
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction = f;
@@ -154,42 +127,15 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	});
 }
 
-void Window::vsync() {
-}
-
-//static uint64_t lastTime;
-
 void Window::flip() {
+	if(eglDisplay != EGL_NO_DISPLAY) {
+		eglSwapBuffers(eglDisplay, eglSurface);
+		//eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &screenWidth);
+		//eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &screenHeight);
+	}
 	auto t = chrono::high_resolution_clock::now();
-#ifdef FPS_COUNTER
-	auto tm = utils::getms();
-	auto d = tm - lastTime;
-	if(d > 0)
-		fps = fps * 0.8 + (1000 / d) * 0.2;
-	lastTime = tm;
-	text(utils::format("%d", (int)fps), 0,0);
-#endif
-	/*if(bmCounter) {
-		bmCounter--;
-		if(!bmCounter) {
-			glfwCloseWindow();
-			winOpen = false;
-			auto ms = chrono::duration_cast<chrono::microseconds>(t - benchStart).count();
-			fprintf(stderr, "TIME: %ldus per frame\n", ms / 100);
-		}
-		return;
-	}*/
-
-	//GLSWAP
-
 	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 	tween::Tween::updateTweens(ms / 1000000.0f);
-	Resources::getInstance().update();
-}
-
-void Window::benchmark() {
-	benchStart = chrono::high_resolution_clock::now();
-	bmCounter = 100;
 }
 
 bool Window::mouse_pressed() {

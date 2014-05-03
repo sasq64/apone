@@ -103,7 +103,6 @@ public:
 
 	constexpr static const double FPS = 1.0/60.0;
 
-	void benchmark(); 
 	void resize(int w, int h) {
 		_width = w;
 		_height = h;
@@ -112,9 +111,68 @@ public:
 	static std::deque<int> key_buffer;
 	static std::deque<click> click_buffer;
 
-	int call_repeatedly(std::function<void(void)> f, int msec);
-	void remove_repeating(int i = -1);
-	void call_once(std::function<void(void)> f);
+
+	void setup(int w, int h) {
+
+		if(winOpen)
+			return;
+
+		_width = w;
+		_height = h;
+
+		LOGD("Window %dx%d", _width, _height);
+
+		update_matrix();
+
+		glLineWidth(2.0);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		lastTime = -1;
+		winOpen = true;
+
+		startTime = chrono::high_resolution_clock::now();
+		frameBuffer = 0;
+	}
+
+	int call_repeatedly(std::function<void(void)> f, int msec) {
+		callbacks.push_back(Callback(f, msec));
+		return callbacks.size()-1;
+	}
+
+	void update_callbacks() {
+
+		while(safeFuncs.size() > 0) {
+			safeMutex.lock();
+			auto &f = safeFuncs.front();
+			f();
+			safeFuncs.pop_front();
+			safeMutex.unlock();
+		}
+
+		auto ms = utils::getms();
+		for(auto &cb : callbacks) {
+			if(cb.msec == 0 || ms >= cb.next_time) {
+				cb.cb();
+				cb.next_time += cb.msec;
+			}
+		}
+
+		for(auto i : to_remove) {
+			callbacks.erase(callbacks.begin() + i);
+		}
+		to_remove.clear();
+	}
+
+	void remove_repeating(int index) {
+		to_remove.insert(index);
+	}
+
+	void benchmark() {
+		benchStart = chrono::high_resolution_clock::now();
+		bmCounter = 100;
+	}
+
 
 	void lock() {
 		lockIt = true;
@@ -143,7 +201,7 @@ public:
 private:
 
 
-	void update_callbacks();
+	//void update_callbacks();
 
 	struct Callback {
 		Callback(std::function<void(void)> cb, int msec) : cb(cb), msec(msec) {

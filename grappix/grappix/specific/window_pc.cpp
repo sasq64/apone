@@ -98,10 +98,6 @@ void Window::open(int w, int h, bool fs) {
 #endif
 
 	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
-	LOGD("%dx%d win -> %d", _width, _height, win);
-	if(win) {
-	}
-	update_matrix();
 
 #ifndef EMSCRIPTEN
 	int rc = glewInit();
@@ -114,7 +110,7 @@ void Window::open(int w, int h, bool fs) {
   #endif
 #endif
 
-	//initPrograms();
+	setup(_width, _height);
 
 	glfwSwapInterval(1);
 
@@ -122,21 +118,12 @@ void Window::open(int w, int h, bool fs) {
 	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
-	glLineWidth(2.0);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	lastTime = -1;
-	winOpen = true;
-
 	glfwSetKeyCallback(key_fn);
 	glfwSetMouseButtonCallback(mouse_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(resize_fn);
 #endif
 	glfwEnable(GLFW_MOUSE_CURSOR);
-	startTime = chrono::high_resolution_clock::now();
-	frameBuffer = 0;
 
 	atexit([](){
 		if(!renderLoopFunction) {
@@ -146,6 +133,7 @@ void Window::open(int w, int h, bool fs) {
 			}
 		}	
 	});
+
 };
 
 #ifdef EMSCRIPTEN
@@ -158,56 +146,6 @@ static void runMainLoop() {
 		renderLoopFunction(rate);
 }
 #endif
-/*
-void Window::render_loop(function<void()> f, int fps) {
-	renderLoopFunction = f;
-#ifdef EMSCRIPTEN
-	lastMs = utils::getms();
-	emscripten_set_main_loop(runMainLoop, fps, false);
-#else
-	atexit([](){
-		while(screen.is_open()) {
-			renderLoopFunction();
-		}
-	});
-
-#endif
-}
-*/
-
-
-int Window::call_repeatedly(std::function<void(void)> f, int msec) {
-	callbacks.push_back(Callback(f, msec));
-	return callbacks.size()-1;
-}
-
-void Window::update_callbacks() {
-
-	while(safeFuncs.size() > 0) {
-		safeMutex.lock();
-		auto &f = safeFuncs.front();
-		f();
-		safeFuncs.pop_front();
-		safeMutex.unlock();
-	}
-
-	auto ms = utils::getms();
-	for(auto &cb : callbacks) {
-		if(cb.msec == 0 || ms >= cb.next_time) {
-			cb.cb();
-			cb.next_time += cb.msec;
-		}
-	}
-
-	for(auto i : to_remove) {
-		callbacks.erase(callbacks.begin() + i);
-	}
-	to_remove.clear();
-}
-
-void Window::remove_repeating(int index) {
-	to_remove.insert(index);
-}
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction = f;
@@ -270,11 +208,6 @@ void Window::flip() {
 	int fs;
 	emscripten_get_canvas_size(&_width, &_height, &fs);
 #endif
-}
-
-void Window::benchmark() {
-	benchStart = chrono::high_resolution_clock::now();
-	bmCounter = 100;
 }
 
 unordered_map<int, int> Window::translate = {

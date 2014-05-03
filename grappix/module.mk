@@ -16,7 +16,7 @@ DIRS += $(GRAPPIX_DIR)grappix $(GRAPPIX_DIR)grappix/freetype-gl $(GRAPPIX_DIR)gr
 CFLAGS +=  -DWITH_FREETYPE
 
 ifeq ($(HOST),android)
-  DIRS += $(GRAPPIX_DIR)grappix/android
+  FILES += $(GRAPPIX_DIR)grappix/specific/window_android.cpp $(GRAPPIX_DIR)grappix/specific/eglutil.cpp
   LIBS += -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
   DIRS += $(GRAPPIX_DIR)grappix/pc
@@ -25,7 +25,7 @@ else ifeq ($(HOST),apple)
   LIBS += -lglfw -framework OpenGL -lGLEW
 else ifeq ($(HOST),raspberrypi)
   VC := /opt/raspberry/vc
-  DIRS += $(GRAPPIX_DIR)grappix/pi
+  FILES += $(GRAPPIX_DIR)grappix/specific/window_pi.cpp $(GRAPPIX_DIR)grappix/specific/eglutil.cpp
   LIBS += -lz -lEGL -lGLESv2 -lvcos -lvchiq_arm -lbcm_host
   CFLAGS += -I$(VC)/include -I$(VC)/include/interface/vcos/pthreads -I$(VC)/include/interface/vmcs_host/linux
 
@@ -33,7 +33,7 @@ else ifeq ($(HOST),raspberrypi)
   LDFLAGS += -L$(VC)/lib
   # -L/home/sasq/raspberrypi/arm
 else
-  DIRS += $(GRAPPIX_DIR)grappix/pc
+  FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
   LIBS += -lglfw -lGL -lGLEW
 endif
 
