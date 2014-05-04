@@ -12,10 +12,12 @@
 	//uniform vec2 uvs[4];
 
 	void main() {
-		//vec4 v = vertex * vScale;// + vPosition;
-		vec4 v = matrix * vertex;
-		v.z = 0.5;
+		//vec4 v = vertex * vScale + vPosition;
+		//gl_Position = vec4(v.x * vScreenScale.x - 1.0, 1.0 - v.y * vScreenScale.y, 0.5, 1);
+		////vec4 v = vertex;// * vScale + vPosition;
+		gl_Position = matrix * vertex;
+		//v.z = 0.5;
 		//v = v * vScreenScale;
-		gl_Position = v; //vec4(v.x, v.y, v.z, v.w);
+		//gl_Position = v; //vec4(v.x, v.y, v.z, v.w);
 		UV = uv;
 	}

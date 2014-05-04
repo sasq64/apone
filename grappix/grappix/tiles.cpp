@@ -244,7 +244,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	matrix = make_scale(1.0, -1.0) * matrix;
 	matrix = make_translate(-1.0, 1.0, 0.5) * matrix;
 
-	program.setUniform("matrix", matrix);
+	program.setUniform("matrix", matrix.transpose());
 
 	// program.setUniform("vScreenScale", 2.0 / target.width(), 2.0 / target.height(), 0, 1);
 	// program.setUniform("vScale", 1.0, 1.0, 0, 1);

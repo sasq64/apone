@@ -14,7 +14,7 @@
 //#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "Grappix", __VA_ARGS__))
 //#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Grappix", __VA_ARGS__))
 
-bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
+bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay, EGLSurface &eglSurface, EGLNativeWindowType nativeWin);
 
 
 using namespace std;
@@ -196,21 +196,18 @@ public:
 	int initScreen(ANativeWindow *nativeWindow) {
 
 		if(eglContext == nullptr) {
+			initEGL(eglConfig, eglContext, eglDisplay, eglSurface, nativeWindow);
+		} else {
+			eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, nativeWindow, nullptr);
+			if(eglSurface == EGL_NO_SURFACE) {
+				LOGI("NO SURFACE!");
+			}
 
-			initEGL(eglConfig, eglContext, eglDisplay);
-
-			/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
-			 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
-			 * As soon as we picked a EGLConfig, we can safely reconfigure the
-			 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
-			EGLint visid;
-			eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &visid);
-
-			LOGI("Native id %d", visid);
-			ANativeWindow_setBuffersGeometry(nativeWindow, 0, 0, visid);
-
+			if(eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
+				LOGI("NO MAKE CURRENT!");
+			}
 		}
-
+/*
 		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, nativeWindow, NULL);
 
 
@@ -220,7 +217,7 @@ public:
 			LOGI("Unable to eglMakeCurrent");
 			return -1;
 		}
-
+*/
 		EGLint w, h;
 
 		eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &w);
@@ -320,7 +317,6 @@ protected:
 	ANativeWindow *nativeWindow;
 
 	EGLConfig eglConfig;
-
 	EGLContext eglContext;
 	EGLDisplay eglDisplay;
 	EGLSurface eglSurface;

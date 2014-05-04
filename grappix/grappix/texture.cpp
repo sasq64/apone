@@ -65,9 +65,10 @@ Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 	//glBindFramebuffer(GL_FRAMEBUFFER, old_fbo);
 	//glBindFramebuffer(GL_FRAMEBUFFER, fbuf);
 
-	/*
-GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-if(status != GL_FRAMEBUFFER_COMPLETE) {
+	//LOGD("ERROR %d", glGetError());
+	//GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	//LOGD("STATUS %d", status);
+/*if(status != GL_FRAMEBUFFER_COMPLETE) {
 	glfwSleep(100);
 }
 */

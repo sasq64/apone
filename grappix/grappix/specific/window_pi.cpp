@@ -13,7 +13,8 @@
 
 using namespace std;
 
-bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
+//bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
+bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay, EGLSurface &eglSurface, EGLNativeWindowType nativeWin);
 
 namespace grappix {
 
@@ -60,6 +61,10 @@ void Window::open(int w, int h, bool fs) {
 	// You can hardcode the resolution here:
 	//display_width = 640;
 	//display_height = 480;
+	LOGD("Display %dx%d", display_width, display_height);
+
+	//display_width = 640;
+	//display_height = 480;
 
 	dst_rect.x = 0;
 	dst_rect.y = 0;
@@ -78,23 +83,24 @@ void Window::open(int w, int h, bool fs) {
 	dispman_display, 0/*layer*/, &dst_rect, 0/*src*/,
 	&src_rect, DISPMANX_PROTECTION_NONE, nullptr /*alpha*/, 
 	nullptr/*clamp*/, DISPMANX_NO_ROTATE);
+	LOGD("Dispelement %d", dispman_element);
 
 	nativewindow.element = dispman_element;
 	nativewindow.width = display_width;
 	nativewindow.height = display_height;
 	vc_dispmanx_update_submit_sync(dispman_update);
 
-	initEGL(eglConfig, eglContext, eglDisplay);
+	initEGL(eglConfig, eglContext, eglDisplay, eglSurface, &nativewindow);
 
-	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &nativewindow, NULL);
-
+	//eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &nativewindow, NULL);
+/*
 	LOGI("Surface %p", eglSurface);
 
 	if (eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
 		LOGI("Unable to eglMakeCurrent");
 		return;
 	}
-
+*/
 
 	setup(display_width, display_height);
 
@@ -112,7 +118,7 @@ void Window::open(int w, int h, bool fs) {
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction = f;
 
-	atexit([](){
+	//atexit([](){
 		auto lastMs = utils::getms();
 		while(screen.is_open()) {
 			screen.update_callbacks();
@@ -124,7 +130,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 			//	utils::sleepms(5);
 			//}
 		}
-	});
+	//});
 }
 
 void Window::flip() {

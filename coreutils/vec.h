@@ -8,7 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-//#include "utils/format.h"
+#include "format.h"
 
 namespace utils {
 
@@ -412,6 +412,10 @@ template <class T> struct vec4 {
 	const T& operator[](const int &i) const {
 		return data[i];
 		//throw std::out_of_range("Only 0 or 1 are valid indexes");
+	}
+
+	std::string to_string() const {
+		return format<T>("[%.2f %.2f %.2f %.2f]", x, y, z, w); 
 	}
 
 	union

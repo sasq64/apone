@@ -110,7 +110,7 @@ public:
 
 	void setUniform(const std::string &name, const utils::mat4f &m) {
 		auto h = getUniformLocation(name);
-		glUniformMatrix4fv(h, 1, true, &m[0][0]);
+		glUniformMatrix4fv(h, 1, GL_FALSE, &m[0][0]);
 	}
 
 	void setUniform(const std::string &name, float f0) {

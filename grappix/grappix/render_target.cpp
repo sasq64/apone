@@ -152,6 +152,18 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	program.setUniform("vPosition", x * globalScale, y * globalScale);
 
 
+	mat4f matrix = make_scale(globalScale * radius, globalScale * radius);
+	//matrix = make_rotate_z(xrot) * matrix;
+	//xrot += 0.5;
+	matrix = make_translate(x * globalScale, y * globalScale) * matrix;
+
+	//matrix = make_perspective(M_PI, 1.0, 0, 10) * matrix;
+
+	matrix = toScreen * matrix;
+
+	program.setUniform("matrix", matrix.transpose());
+
+
 	GLuint posHandle = program.getAttribLocation("vertex");
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posHandle);
@@ -203,10 +215,10 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	matrix = make_translate(x + w/2, y + h/2) * matrix;
 
 	//matrix = make_perspective(M_PI, 1.0, 0, 10) * matrix;
-	
+
 	matrix = toScreen * matrix;
 
-	program.setUniform("matrix", matrix);
+	program.setUniform("matrix", matrix.transpose());
 
 
 
@@ -282,9 +294,8 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 
 	if(texture >= 0)
 		glBindTexture(GL_TEXTURE_2D, texture);
-
 	//mat4f m = make_rotate_x(2.0);
-	program.setUniform("matrix", toScreen);
+	program.setUniform("matrix", toScreen.transpose());
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 0);

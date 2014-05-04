@@ -19,9 +19,9 @@ ifeq ($(HOST),android)
   FILES += $(GRAPPIX_DIR)grappix/specific/window_android.cpp $(GRAPPIX_DIR)grappix/specific/eglutil.cpp
   LIBS += -lz -llog -landroid -lEGL -lGLESv2
 else ifeq ($(HOST),emscripten)
-  DIRS += $(GRAPPIX_DIR)grappix/pc
+  FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
 else ifeq ($(HOST),apple)
-  DIRS += $(GRAPPIX_DIR)grappix/pc
+  FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
   LIBS += -lglfw -framework OpenGL -lGLEW
 else ifeq ($(HOST),raspberrypi)
   VC := /opt/raspberry/vc

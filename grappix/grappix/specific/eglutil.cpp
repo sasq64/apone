@@ -2,14 +2,17 @@
 #include <EGL/egl.h>
 #include <coreutils/log.h>
 
+#ifdef ANDROID
+int32_t ANativeWindow_setBuffersGeometry(ANativeWindow* window, int32_t width, int32_t height, int32_t format);
+#endif
 
-bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay) {
+bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay, EGLSurface &eglSurface, EGLNativeWindowType nativeWin) {
 
-	EGLint format;
+	//EGLint format;
 	EGLint numConfigs;
 	EGLConfig config;
 	EGLConfig configList[32];
-	EGLContext context;
+	//EGLContext context;
 
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
@@ -50,13 +53,61 @@ bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDispla
 		EGL_CONTEXT_CLIENT_VERSION, 2, 
 		EGL_NONE, EGL_NONE
 	};
+/*
+   EGLint attribList[] =
+   {
+       EGL_RED_SIZE,       8,
+       EGL_GREEN_SIZE,     8,
+       EGL_BLUE_SIZE,      8,
+       EGL_ALPHA_SIZE,     8,
+       EGL_DEPTH_SIZE,     8,
+       EGL_STENCIL_SIZE,   EGL_DONT_CARE,
+       EGL_SAMPLE_BUFFERS, 0,
+       EGL_NONE
+   };
+ 
 
-	eglContext = eglCreateContext(eglDisplay, config, NULL, attribs);
+   if (!eglGetConfigs(eglDisplay, NULL, 0, &numConfigs)) {
+   		LOGD("Fail get");
+		return false;
+   }
 
-	LOGI("Context %p", eglContext);
-	if(!eglContext) {
+   if(!eglChooseConfig(eglDisplay, attribList, &config, 1, &numConfigs)) {
+   		LOGD("Fail choose");
+		return false;
+   }
+*/
+	eglContext = eglCreateContext(eglDisplay, config, nullptr, attribs);
+	if(eglContext == EGL_NO_CONTEXT) {
 		LOGI("NO CONTEXT!");
 		return false;
 	}
+
+
+#ifdef ANDROID
+	/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
+	 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
+	 * As soon as we picked a EGLConfig, we can safely reconfigure the
+	 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
+	EGLint visid;
+	eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &visid);
+
+	LOGI("Native id %d", visid);
+	ANativeWindow_setBuffersGeometry(nativeWin, 0, 0, visid);
+#endif
+
+   eglSurface = eglCreateWindowSurface(eglDisplay, config, nativeWin, nullptr);
+   if(eglSurface == EGL_NO_SURFACE) {
+		LOGI("NO SURFACE!");
+      return false;
+   }
+
+	if(eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
+		LOGI("NO MAKE CURRENT!");
+		return false;
+	}
+
+	eglConfig = config;
+	LOGD("EGL INIT DONE");
 	return true;
 }

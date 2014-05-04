@@ -128,6 +128,13 @@ template <class T> struct mat4 {
 		return true;
 	}
 
+	std::string to_string() const {
+		return data[0].to_string() + "\n" +
+		data[1].to_string() + "\n" +
+		data[2].to_string() + "\n" +
+		data[3].to_string() + "\n";
+	}
+
 private:
 	union {
 		vec4<T> data[4];

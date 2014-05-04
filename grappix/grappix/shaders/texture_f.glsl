@@ -8,7 +8,7 @@
 	void main() {
 		vec4 c = texture2D(sTexture, UV);
 		// NOTE: Should ONLY be enabled for draw calls requiring it!
-		if(c.a < 0.1)
-			discard;
+		//if(c.a < 0.1)
+		//	discard;
 		gl_FragColor = c;
 	}
