@@ -11,7 +11,7 @@ To use the modules in this project, you are encouraged to include the makefiles 
 C++ MODS. This gives you a lot of functionality; they both let you write smaller makefiles
 and facilitates cross platform development.
 
-Currently supported are *Linux*, *Mac OS*, *Android* and *emscripten*.
+Currently supported are *Linux*, *Mac OS*, *Android*, *Raspberry PI* and *emscripten*.
 
 ## The Build System
 
@@ -88,6 +88,14 @@ apt-get install git g++
 apt-get install libfreetype6-dev libasound2-dev libglew-dev libglfw-dev libcurl4-gnutls-dev
 apt-get install libsdl1.2-dev
 
+### Raspberry PI
+
+Build using HOST=raspberrypi make
+
+Requires
+
+* Raspberry PI cross compiler in your path (arm-linux-gnueabihf-gcc etc)
+* A copy of lib, usr/lib, usr/include and vc from a Rasbian Jessie installation
 
 ### Android
 

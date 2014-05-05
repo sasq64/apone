@@ -73,14 +73,22 @@ else ifeq ($(HOST),emscripten)
  	COMP_CFLAGS += -Wno-warn-absolute-paths
 else ifeq ($(HOST),raspberrypi)
 
-	ifeq ($(PI),)
- 		PI := /opt/raspberry
- 	endif
+   PREFIX := arm-linux-gnueabihf-
 
-	CFLAGS += -DRASPBERRYPI -DLINUX
- 	PREFIX := arm-linux-gnueabihf-
-	CFLAGS += --sysroot=$(PI)
-	LDFLAGS += --sysroot=$(PI)
+  ifeq ($(PI_SDK),)
+	PI_CC := $(realpath $(shell which $(PREFIX)gcc))
+	ifneq ($(PI_CC),)
+	  PI_SDK := $(realpath $(dir $(PI_CC))/../../..)
+	else
+	  $(error Can not find Rasberry PI compiler $(PREFIX)-gcc in path)
+	endif
+  endif
+
+  $(info Rasberry PI SDK at $(PI_SDK))
+ 
+  CFLAGS += -DRASPBERRYPI -DLINUX
+  CFLAGS += --sysroot=$(PI_SDK)
+  LDFLAGS += --sysroot=$(PI_SDK)
 
 else ifeq ($(HOST),linux)
   CFLAGS += -DLINUX

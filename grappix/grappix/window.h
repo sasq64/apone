@@ -12,6 +12,7 @@
 #include <functional>
 #include <tuple>
 #include <mutex>
+#include <thread>
 
 namespace grappix {
 
@@ -234,6 +235,8 @@ private:
 	std::deque<std::function<void()>> safeFuncs;
 
 	static std::unordered_map<int, int> translate;
+
+	std::thread keyboardThread;
 };
 
 

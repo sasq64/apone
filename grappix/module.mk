@@ -24,7 +24,7 @@ else ifeq ($(HOST),apple)
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
   LIBS += -lglfw -framework OpenGL -lGLEW
 else ifeq ($(HOST),raspberrypi)
-  VC := /opt/raspberry/vc
+  VC := $(PI_SDK)/vc
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pi.cpp $(GRAPPIX_DIR)grappix/specific/eglutil.cpp
   LIBS += -lz -lEGL -lGLESv2 -lvcos -lvchiq_arm -lbcm_host
   CFLAGS += -I$(VC)/include -I$(VC)/include/interface/vcos/pthreads -I$(VC)/include/interface/vmcs_host/linux

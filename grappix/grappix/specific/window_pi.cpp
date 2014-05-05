@@ -2,10 +2,15 @@
 #include "../tween.h"
 #include "../resources.h"
 
+#include <coreutils/format.h>
+
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unordered_map>
 #include <functional>
 
@@ -25,6 +30,9 @@ Window::Window() : RenderTarget(), winOpen(false), bmCounter(0), lockIt(false) {
 void Window::open(bool fs) {
 	open(0,0,fs);
 }
+
+std::deque<int> Window::key_buffer;
+static uint8_t pressed_keys[256];
 
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
@@ -103,6 +111,30 @@ void Window::open(int w, int h, bool fs) {
 */
 
 	setup(display_width, display_height);
+	memset(pressed_keys, 0, sizeof(pressed_keys));
+	keyboardThread = thread([=]() {
+		uint8_t buf[8];
+		int k = ::open("/dev/hidraw0", O_RDONLY);
+		fprintf(stderr, "Reading kbd");
+		while(true) {
+			read(k, buf, 8);
+			for(int i=2; i<5; i++) {
+				auto k = buf[i];
+				if(k) {
+					if(!pressed_keys[k]) {
+						fprintf(stderr, utils::format("Got key %02x\n", k).c_str());
+						key_buffer.push_back(k);
+					}
+					pressed_keys[k] = 2;
+				}
+			}
+			for(int i=0; i<256; i++) {
+				if(pressed_keys[i])
+					pressed_keys[i]--;
+			}
+		}
+	});
+	keyboardThread.detach();
 
 	atexit([](){
 		if(!renderLoopFunction) {
@@ -153,18 +185,53 @@ tuple<int, int> Window::mouse_position() {
 }
 
 bool Window::key_pressed(key k) {
-	return false;
+	auto rawkey = translate[k];
+	return (pressed_keys[rawkey] != 0);
 }
 
 bool Window::key_pressed(char k) {
-	return false;
+	int rawkey = k - 'A' + 0x4;
+	return (pressed_keys[rawkey] != 0);
 }
 
 Window::click Window::get_click(bool peek) {
+/*	if(click_buffer.size() > 0) {
+		auto k = click_buffer.front();
+		if(!peek)
+			click_buffer.pop_front();
+		return k;
+	}*/
 	return NO_CLICK;
 }
 
+unordered_map<int, int> Window::translate = {
+	{ ENTER, 0x28 },
+	{ SPACE, 0x2C },
+	{ RIGHT, 0x4f },
+	{ LEFT, 0x50 },
+	{ DOWN, 0x51 },
+	{ UP, 0x52 },
+	{ ESCAPE, 0x29 },
+	{ BACKSPACE, 0x2a },
+};
+
 Window::key Window::get_key(bool peek) {
+	if(key_buffer.size() > 0) {
+		auto k = key_buffer.front();
+		if(!peek)
+			key_buffer.pop_front();
+		if(k >= 0x04 && k <= 0x20)
+			k += ('A'-0x04);
+		else {
+			for(auto t : translate) {
+				LOGD("?? %02x", t.second);
+				if(t.second == k)
+					return (key)t.first;
+			}
+		}
+		LOGD(">> %02x", (key)k);
+		return (key)k;
+	}
 	return NO_KEY;
 };
 
