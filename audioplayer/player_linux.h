@@ -12,10 +12,10 @@
 
 class InternalPlayer {
 public:
-	InternalPlayer(int hz = 44100) : quit(false) {
+	InternalPlayer(int hz = 44100) : quit(false), paused(false) {
 	}
 
-	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false) {
+	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
 		playerThread = std::thread {&InternalPlayer::run, this};
 
 	}
