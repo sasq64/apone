@@ -3,6 +3,7 @@
 
 #include "format.h"
 #include <string>
+#include <cstring>
 #include <unordered_map>
 
 namespace logging {
@@ -41,11 +42,16 @@ void setOutputFile(const std::string &fileName);
 
 void useLogSpace(const std::string &spaceName, bool on = true);
 
-#define LOGV(...) logging::log2(__FILE__, __LINE__, logging::VERBOSE, __VA_ARGS__)
-#define LOGD(...) logging::log2(__FILE__, __LINE__, logging::DEBUG, __VA_ARGS__)
-#define LOGI(...) logging::log2(__FILE__, __LINE__, logging::INFO, __VA_ARGS__)
-#define LOGW(...) logging::log2(__FILE__, __LINE__, logging::WARNING, __VA_ARGS__)
-#define LOGE(...) logging::log2(__FILE__, __LINE__, logging::ERROR, __VA_ARGS__)
+const char *basename(const char *x);
+
+#define BASE(x) basename(x) 
+//<(strrchr(x, '/') ? strchr(x, '/')+1 : x)
+
+#define LOGV(...) logging::log2(BASE(__FILE__), __LINE__, logging::VERBOSE, __VA_ARGS__)
+#define LOGD(...) logging::log2(BASE(__FILE__), __LINE__, logging::DEBUG, __VA_ARGS__)
+#define LOGI(...) logging::log2(BASE(__FILE__), __LINE__, logging::INFO, __VA_ARGS__)
+#define LOGW(...) logging::log2(BASE(__FILE__), __LINE__, logging::WARNING, __VA_ARGS__)
+#define LOGE(...) logging::log2(BASE(__FILE__), __LINE__, logging::ERROR, __VA_ARGS__)
 
 class LogSpace {
 public:
