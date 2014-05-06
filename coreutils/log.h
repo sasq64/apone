@@ -42,9 +42,9 @@ void setOutputFile(const std::string &fileName);
 
 void useLogSpace(const std::string &spaceName, bool on = true);
 
-const char *basename(const char *x);
+const char *xbasename(const char *x);
 
-#define BASE(x) basename(x) 
+#define BASE(x) logging::xbasename(x) 
 //<(strrchr(x, '/') ? strchr(x, '/')+1 : x)
 
 #define LOGV(...) logging::log2(BASE(__FILE__), __LINE__, logging::VERBOSE, __VA_ARGS__)

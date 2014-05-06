@@ -47,6 +47,8 @@ public:
 			staticInternalPlayer->pause(false);
 	}
 
+	void touch() const {}
+
 	//void writeAudio(int16_t *samples, int sampleCount) {
 	//	internalPlayer->writeAudio(samples, sampleCount);
 	//}

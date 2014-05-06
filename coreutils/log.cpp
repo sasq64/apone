@@ -32,7 +32,7 @@ LogLevel defaultLevel = DEBUG;
 static FILE *logFile = nullptr;
 unordered_map<string, pair<string, bool>> LogSpace::spaces;
 
-const char *basename(const char *x) {
+const char *xbasename(const char *x) {
 	const char *slash = x;
 	while(*x) {
 		if(*x++ == '/') slash = x;
