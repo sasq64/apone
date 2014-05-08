@@ -40,14 +40,14 @@ std::string utf8_encode(const std::wstring &s);
 std::wstring utf8_decode(const std::string &s);
 
 template <typename T>
-std::vector<T> split(const T &s, const T &delim = T(" "), bool include = false) {
+std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 	std::vector<T> args;
 	auto l = delim.length();
 	if(l == 0) return args;
 	int pos = 0;
 	while(true) {
 		auto newpos = s.find(delim, pos);
-		if(newpos == std::string::npos) {
+		if((limit && args.size() == limit) || newpos == std::string::npos) {
 			args.push_back(s.substr(pos));
 			break;
 		}

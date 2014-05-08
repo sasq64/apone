@@ -80,6 +80,8 @@ public:
 	}
 
 	uint8_t *getPtr();
+	const std::vector<uint8_t>& getData();
+
 	const std::string &getName() const { return fileName; }
 	int getSize() const { 
 		if(size < 0) {

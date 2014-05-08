@@ -160,4 +160,11 @@ uint8_t *File::getPtr() {
 	return &data[0];
 }
 
+const std::vector<uint8_t>& File::getData() {
+	close();
+	if(!loaded)
+		readAll();
+	return data;
+}
+
 }
