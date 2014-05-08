@@ -1,6 +1,6 @@
 #include "luainterpreter.h"
 
-//exern "C" {
+//extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>

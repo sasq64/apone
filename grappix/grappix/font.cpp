@@ -290,7 +290,8 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, i
 }
 
 void Font::render_text(const RenderTarget &target, const std::string &text, int x, int y, uint32_t col, float scale) const {
-
+	if(text == "")
+		return;
 	auto buf = cache.get(text);
 	if(buf.text == "") {
 		buf = make_text(text);

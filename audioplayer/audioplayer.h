@@ -34,6 +34,10 @@ public:
 		staticInternalPlayer = internalPlayer;
 	}
 
+	static void play(std::function<void(int16_t *, int)> cb, int hz = 44100) {
+		staticInternalPlayer = std::make_shared<InternalPlayer>(cb, hz);
+	}
+
 	void pause() { internalPlayer->pause(true); }
 	void resume() { internalPlayer->pause(false); }
 
