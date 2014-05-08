@@ -26,6 +26,7 @@ int psid_tunes(int* default_tune);
 #include "../../ChipPlayer.h"
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
+#include <crypto/md5.h>
 
 #include <set>
 #include <algorithm>
@@ -45,8 +46,140 @@ static bool videomode_is_forced;
 static int sid;
 static bool sid_is_forced;
 
+ template <typename T> const T get(const vector<uint8_t> &v, int offset) {}
+
+template <> const uint16_t get(const vector<uint8_t> &v, int offset) {
+	return (v[offset] <<8) | v[offset+1];
+}
+
+template <> const uint32_t get(const vector<uint8_t> &v, int offset) {
+	return (v[offset] <<24) | (v[offset+1]<<16) | (v[offset+2] <<8) | v[offset+3];
+}
+
+enum {
+	MAGICID = 0,
+	PSID_VERSION = 4,
+	DATA_OFFSET = 6,
+	LOAD_ADDRESS  = 8,
+	INIT_ADDRESS = 0xA,
+	PLAY_ADDRESS = 0xC,
+	SONGS = 0xE,
+	START_SONG = 0x10,
+	SPEED = 0x12,
+	FLAGS = 0x76
+};
+
 class VicePlayer : public ChipPlayer {
 public:
+
+	vector<uint8_t> calculateMD5(vector<uint8_t> data) {
+		
+		uint8_t speed = (data[0] == 'R') ? 60 : 0;
+		uint16_t version = get<uint16_t>(data, PSID_VERSION);
+
+		uint16_t initAdr = get<uint16_t>(data, INIT_ADDRESS);
+		uint16_t playAdr = get<uint16_t>(data, PLAY_ADDRESS);
+		uint16_t songs = get<uint16_t>(data, SONGS);
+
+		uint32_t speedBits = get<uint32_t>(data, SPEED);
+		uint16_t flags = get<uint16_t>(data, FLAGS);
+
+		MD5 md5;
+
+		auto offset = (version == 2) ? 126 : 120;
+
+		md5.add(data, offset);
+
+		md5.add(initAdr);
+		md5.add(playAdr);
+		md5.add(songs);	
+
+		for(int i=0; i<songs; i++) {
+			if((speedBits & (1 << i)) != 0) {
+				md5.add((uint8_t)60);
+			} else {
+				md5.add(speed);
+			}
+		}
+
+		if((flags & 0x8) != 0) {
+			md5.add((uint8_t)2);
+		}
+
+		return md5.get();
+	}
+
+#if 0
+	private byte[] calculateMD5(vector<uint8_t> data) {
+		ByteBuffer src = ByteBuffer.wrap(module, 0, size);		
+		src.order(ByteOrder.BIG_ENDIAN);
+		
+		uint8_t speed =(data[0] == 'R' ? 60 : 0);
+
+		uint16_t version = get<uint16_t>(data, 4);
+
+		byte[] id = new byte[4];
+		src.get(id);
+		int version = src.getShort();
+		src.position(8);
+		/*short loadAdress =*/ src.getShort();
+		short initAdress = src.getShort();
+		short playAdress = src.getShort();
+		short songs = src.getShort();
+		/*short startSong =*/ src.getShort();
+		int speedBits = src.getInt();
+		src.position(0x76);
+		int flags = src.getShort();
+		
+		int offset = 120;
+		if (version == 2) {
+			offset = 126;
+		}
+		
+		int speed = 0;
+		if (id[0] == 'R') {
+			speed = 60;
+		}
+		
+		Log.d(TAG, "speed %08x, flags %04x left %d songs %d init %x", speed, flags, size - offset, songs, initAdress);
+		
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			
+			md.update(module, offset, size - offset);
+			
+			ByteBuffer dest = ByteBuffer.allocate(128);
+			dest.order(ByteOrder.LITTLE_ENDIAN);
+			
+			dest.putShort(initAdress);
+			dest.putShort(playAdress);
+			dest.putShort(songs);
+			
+			for (int i = 0; i < songs; i ++) {
+				if ((speedBits & (1 << i)) != 0) {
+					dest.put((byte) 60);
+				} else {
+					dest.put((byte) speed);
+				}
+			}
+			
+			if ((flags & 0x8) != 0) {
+				dest.put((byte) 2);
+			}
+
+			byte[] d = dest.array();
+			md.update(d, 0, dest.position());
+			
+			byte[] md5 = md.digest();
+			Log.d(TAG, "%d %02x %02x DIGEST %02x %02x %02x %02x", d.length, d[0], d[1], md5[0], md5[1], md5[2], md5[3]);
+			return md5;
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+#endif
+
+
 	static bool init(const string &c64Dir) {
 		maincpu_early_init();
 		machine_setup_context();
@@ -77,26 +210,26 @@ public:
 
 	static void c64_song_init()
 	{
-	    /* Set default, potentially overridden by reset. */
-	    resources_set_int("MachineVideoStandard", videomode_is_ntsc ? MACHINE_SYNC_NTSC : MACHINE_SYNC_PAL);
-	    
-	    /* Default to 6581 in case tune doesn't specify. */
-	    resources_set_int("SidModel", sid);
+		/* Set default, potentially overridden by reset. */
+		resources_set_int("MachineVideoStandard", videomode_is_ntsc ? MACHINE_SYNC_NTSC : MACHINE_SYNC_PAL);
+		
+		/* Default to 6581 in case tune doesn't specify. */
+		resources_set_int("SidModel", sid);
 
-	    /* Reset C64, which also initializes PSID for us. */
-	    machine_trigger_reset(MACHINE_RESET_MODE_SOFT);
+		/* Reset C64, which also initializes PSID for us. */
+		machine_trigger_reset(MACHINE_RESET_MODE_SOFT);
 
-	    /* Now force video mode if we are asked to. */
-	    if (videomode_is_forced)
-	    {
-	        resources_set_int("MachineVideoStandard", videomode_is_ntsc ? MACHINE_SYNC_NTSC : MACHINE_SYNC_PAL);
-	    }
-	    
-	    /* Force the SID model if told to in the settings */
-	    if (sid_is_forced)
-	    {
-	        resources_set_int("SidModel", sid);
-	    }
+		/* Now force video mode if we are asked to. */
+		if (videomode_is_forced)
+		{
+			resources_set_int("MachineVideoStandard", videomode_is_ntsc ? MACHINE_SYNC_NTSC : MACHINE_SYNC_PAL);
+		}
+		
+		/* Force the SID model if told to in the settings */
+		if (sid_is_forced)
+		{
+			resources_set_int("SidModel", sid);
+		}
 
 	}
 
@@ -104,6 +237,16 @@ public:
 		int ret = psid_load_file(sidFile.c_str());
 		LOGD("Loaded %s -> %d", sidFile, ret);
 		if (ret == 0) {
+
+			File f { sidFile };
+			auto data = f.getData();
+			auto md5 = calculateMD5(data);
+			uint32_t key = get<uint32_t>(md5, 0);
+			LOGD("MD5: [%02x] %08x", md5, key);
+			auto sl = VicePlugin::findLengths(key);
+			if(sl.size() > 0) {
+				LOGD("Length %d", sl[0]);
+			}
 
 			int defaultSong;
 			int songs = psid_tunes(&defaultSong);
@@ -132,7 +275,7 @@ public:
 	virtual void seekTo(int song, int seconds) override {
 		if(song >= 0) {
 			psid_set_tune(song+1);
-    		c64_song_init();
+			c64_song_init();
 		}
 	}
 
@@ -141,6 +284,7 @@ public:
 
 VicePlugin::VicePlugin(const string &dataDir) {
 	VicePlayer::init(dataDir.c_str());
+	readLengths();
 }
 
 VicePlugin::VicePlugin(const unsigned char *data) {
@@ -159,6 +303,30 @@ VicePlugin::VicePlugin(const unsigned char *data) {
 	fwrite(&data[8192+4096], 1, 8192, fp);
 	fclose(fp);
 	VicePlayer::init("c64");
+
+	readLengths();
+}
+
+void VicePlugin::readLengths() {
+
+	File f { "data/songlengths.dat" };
+
+	if(f.exists()) {
+		auto data = f.getData();
+
+		auto len = get<uint32_t>(data, 0);
+		LOGD("Found %d songs", len);
+
+		mainHash.resize(6*len);
+		memcpy(&mainHash[0], &data[4], 6*len);
+
+		auto offs = 4 + 6*len;
+		auto elen = (data.size() - offs) / 2;
+
+		extraLengths.resize(elen*2);
+		for(int i=0; i<(int)elen; i++)
+			extraLengths[i] = get<uint16_t>(data, offs+i*2);
+	}
 }
 
 VicePlugin::~VicePlugin() {
@@ -178,6 +346,60 @@ bool VicePlugin::canHandle(const std::string &name) {
 
 ChipPlayer *VicePlugin::fromFile(const std::string &fileName) {
 	return new VicePlayer { fileName };
+}
+vector<uint8_t> VicePlugin::mainHash;
+vector<uint16_t> VicePlugin::extraLengths;
+
+vector<uint16_t> VicePlugin::findLengths(uint32_t key) {
+
+	vector<uint16_t> songLengths;
+	//long key = ((md5[0]&0xff) << 24) | ((md5[1]&0xff) << 16) | ((md5[2]&0xff) << 8) | (md5[3] & 0xff);
+	//key &= 0xffffffffL;
+
+	int first = 0;
+	int upto = mainHash.size() / 6;
+	int found = -1;
+	
+
+	//short lens [] = new short [128];
+	
+	//Log.d(TAG, "MD5 %08x", key);
+	while (first < upto) {
+		int mid = (first + upto) / 2;  // Compute mid point.
+
+		uint32_t hash = get<uint32_t>(mainHash, mid*6);
+		//long hash = ((mainHash[mid*6]&0xff) << 24) | ((mainHash[mid*6+1]&0xff) << 16) | ((mainHash[mid*6+2]&0xff) << 8) | (mainHash[mid*6+3] & 0xff);
+		//hash &= 0xffffffffL;
+
+		//Log.d(TAG, "offs %x, hash %08x", mid, hash);
+		if (key < hash) {
+			upto = mid;     // repeat search in bottom half.
+		} else if (key > hash) {
+			first = mid + 1;  // Repeat search in top half.
+		} else {
+			found = mid;
+			//int len = ((mainHash[mid*6+4]&0xff)<<8) | (mainHash[mid*6+5]&0xff);
+			uint16_t len = get<uint16_t>(mainHash, mid*6+4);
+			LOGD("LEN: %x", len);
+			if((len & 0x8000) != 0) {
+				len &= 0x7fff;
+				int xl = 0;
+				while((xl & 0x8000) == 0) {
+					xl = extraLengths[len++];
+					songLengths.push_back(xl & 0x7fff);
+				}
+				
+				//for(int i=0; i<n; i++) {
+				//	Log.d(TAG, "LEN: %02d:%02d", songLengths[i]/60, songLengths[i]%60);
+				//}
+			} else {
+				LOGD("SINGLE LEN: %02d:%02d", len/60, len%60);
+				songLengths.push_back(len);
+			}
+			break;
+		}
+	}
+	return songLengths;
 }
 
 }
