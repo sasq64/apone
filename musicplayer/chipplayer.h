@@ -1,7 +1,7 @@
 #ifndef CHIP_PLAYER_H
 #define CHIP_PLAYER_H
 
-//#include <coreutils/log.h>
+#include <coreutils/log.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -36,6 +36,7 @@ public:
 			cb(changedMeta, this);
 		}
 		changedMeta.clear();
+		LOGD("Meta Done");
 	}
 
 	template <typename... A> void setMeta(const std::string &what, int value, const A& ...args) {
@@ -44,12 +45,14 @@ public:
 #else
 		metaData[what] = std::to_string(value);
 #endif
+		LOGD("Meta %s=%s", what, metaData[what]);
 		changedMeta.push_back(what);
 		setMeta(args...);
 	}
 
 	template <typename... A> void setMeta(const std::string &what, const std::string &value, const A& ...args) {
 		metaData[what] = value;
+		LOGD("Meta %s=%s", what, metaData[what]);
 		changedMeta.push_back(what);
 		setMeta(args...);
 	}

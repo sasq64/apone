@@ -1,7 +1,7 @@
 #ifndef SC68PLAYER_H
 #define SC68PLAYER_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 namespace chipmachine {
 

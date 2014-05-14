@@ -23,7 +23,7 @@ int psid_tunes(int* default_tune);
 }
 
 #include "VicePlugin.h"
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <crypto/md5.h>
@@ -243,19 +243,24 @@ public:
 			auto md5 = calculateMD5(data);
 			uint32_t key = get<uint32_t>(md5, 0);
 			LOGD("MD5: [%02x] %08x", md5, key);
-			auto sl = VicePlugin::findLengths(key);
-			if(sl.size() > 0) {
-				LOGD("Length %d", sl[0]);
-			}
+			songLengths = VicePlugin::findLengths(key);
 
 			int defaultSong;
 			int songs = psid_tunes(&defaultSong);
+			//LOGD("DEFSONG: %d", defaultSong);
+			currentLength = 0;
+			currentPos = 0;
+			if(songLengths.size() > defaultSong) {
+				currentLength = songLengths[defaultSong-1];
+			}
+			LOGD("Length:%d", currentLength);
 
 			setMeta(
 				"title", psid_get_name(),
 				"composer", psid_get_author(),
 				"copyright", psid_get_copyright(),
 				"songs", songs,
+				"length", currentLength,
 				"startSong", defaultSong-1
 			);
 
@@ -267,19 +272,26 @@ public:
 		psid_set_tune(-1);
 	}
 
-	virtual int getSamples(int16_t *target, int size) {
-		psid_play(target, size);
-		return size;
-	}
-
-	virtual void seekTo(int song, int seconds) override {
+	virtual void seekTo(int song, int seconds = -1) {
 		if(song >= 0) {
 			psid_set_tune(song+1);
 			c64_song_init();
+			currentLength = songLengths[song];
+			setMeta("length", currentLength);
 		}
 	}
 
-
+	virtual int getSamples(int16_t *target, int size) {
+		currentPos += (size/2);
+		//LOGD("%d vs %d", currentPos, currentLength*44100);
+		if(currentPos > currentLength*44100)
+			return -1;
+		psid_play(target, size);
+		return size;
+	}
+	uint32_t currentLength;
+	uint32_t currentPos;
+	std::vector<uint16_t> songLengths;
 };
 
 VicePlugin::VicePlugin(const string &dataDir) {

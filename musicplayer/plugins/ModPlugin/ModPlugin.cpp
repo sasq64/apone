@@ -1,7 +1,7 @@
 
 #include "ModPlugin.h"
 #include "modplug.h"
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
 #include <set>

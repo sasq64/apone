@@ -1,7 +1,7 @@
 #ifndef GME_PLAYER_H
 #define GME_PLAYER_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 namespace chipmachine {
 

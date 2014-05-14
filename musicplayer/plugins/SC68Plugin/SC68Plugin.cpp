@@ -1,6 +1,6 @@
 
 #include "SC68Plugin.h"
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 
 #include <coreutils/log.h>
 #include <coreutils/utils.h>

@@ -1,7 +1,7 @@
 #ifndef VICE_PLAYER_H
 #define VICE_PLAYER_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 #include <string>
 #include <vector>
@@ -22,7 +22,7 @@ public:
 
 private:
 	static std::vector<uint8_t> mainHash;
-	static std::vector<uint16_t> extraLengths;
+	static std::vector<uint16_t> extraLengths;	
 };
 
 }

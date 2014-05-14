@@ -2,7 +2,7 @@
 #ifndef PSXPLUGIN_H
 #define PSXPLUGIN_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 namespace chipmachine {
 

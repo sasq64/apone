@@ -1,7 +1,7 @@
 #ifndef MODPLAYER_H
 #define MODPLAYER_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 namespace chipmachine {
 

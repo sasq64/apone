@@ -97,7 +97,7 @@ void Window::open(int w, int h, bool fs) {
 	}
 #endif
 
-	int win = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	/*int win =*/ glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
 
 #ifndef EMSCRIPTEN
 	int rc = glewInit();

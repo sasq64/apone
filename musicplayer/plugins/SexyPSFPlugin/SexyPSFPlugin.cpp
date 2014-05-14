@@ -4,7 +4,7 @@ extern "C" {
 #include "SexyPSFPlugin.h"
 #include "../../common/Fifo.h"
 
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 #include <coreutils/utils.h>
 
 static Fifo *sexyFifo;

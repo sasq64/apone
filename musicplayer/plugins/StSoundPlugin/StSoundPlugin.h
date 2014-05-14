@@ -1,7 +1,7 @@
 #ifndef STPLAYER_H
 #define STPLAYER_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 
 class StSoundPlugin : public ChipPlugin {

@@ -172,7 +172,7 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	glDisableVertexAttribArray(posHandle);
 }
 
-static float xrot = 0;
+//static float xrot = 0;
 
 void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, Program &program) const {
 //	static float uvs2[] = { 0,0,1,0,0,1,1,1 };

@@ -2,7 +2,7 @@
 #define CHIP_PLUGIN_H
 
 #include <string>
-#include "ChipPlayer.h"
+#include "chipplayer.h"
 
 namespace chipmachine {
 

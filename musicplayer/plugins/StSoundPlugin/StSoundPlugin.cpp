@@ -1,7 +1,7 @@
 
 #include "StSoundPlugin.h"
 #include "StSoundLibrary/StSoundLibrary.h"
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
 //#include <set>

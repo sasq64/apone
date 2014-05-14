@@ -11,8 +11,8 @@ ifeq ($(CPP_MODS),)
   $(error Can not find 'cpp-mods'. Please set CPP_MODS to point to that directory)
 endif
 
-INCLUDES += $(THIS_DIR)
-
+#INCLUDES += $(THIS_DIR)
+INCLUDES += $(THIS_DIR)..
 #include $(CPP_MODS)/coreutils/module.mk
 
 endif

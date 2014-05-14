@@ -1,7 +1,7 @@
 #ifndef UADEPLUGIN_H
 #define UADEPLUGIN_H
 
-#include "../../ChipPlugin.h"
+#include "../../chipplugin.h"
 
 namespace chipmachine {
 

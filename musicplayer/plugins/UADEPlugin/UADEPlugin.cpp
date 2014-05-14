@@ -1,7 +1,7 @@
 
 #include "UADEPlugin.h"
 
-#include "../../ChipPlayer.h"
+#include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
 #include <coreutils/log.h>
