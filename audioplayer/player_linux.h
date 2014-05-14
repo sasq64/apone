@@ -43,7 +43,7 @@ public:
 			exit(1);
 		}
 
-		std::vector<int16_t> buffer(16384);
+		std::vector<int16_t> buffer(4096);
 		while(!quit) {
 			if(!paused) {
 				callback(&buffer[0], buffer.size());
