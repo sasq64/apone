@@ -247,11 +247,12 @@ public:
 
 			int defaultSong;
 			int songs = psid_tunes(&defaultSong);
-			//LOGD("DEFSONG: %d", defaultSong);
+			defaultSong--;
+			LOGD("DEFSONG: %d", defaultSong);
 			currentLength = 0;
 			currentPos = 0;
 			if(songLengths.size() > defaultSong) {
-				currentLength = songLengths[defaultSong-1];
+				currentLength = songLengths[defaultSong];
 			}
 			LOGD("Length:%d", currentLength);
 
@@ -261,7 +262,7 @@ public:
 				"copyright", psid_get_copyright(),
 				"songs", songs,
 				"length", currentLength,
-				"startSong", defaultSong-1
+				"startSong", defaultSong
 			);
 
 			c64_song_init();
