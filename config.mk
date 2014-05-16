@@ -78,9 +78,9 @@ else ifeq ($(HOST),raspberrypi)
   ifeq ($(PI_SDK),)
 	PI_CC := $(realpath $(shell which $(PREFIX)gcc))
 	ifneq ($(PI_CC),)
-	  PI_SDK := $(realpath $(dir $(PI_CC))/../../..)
+    PI_SDK := $(realpath $(dir $(PI_CC))/../../..)
 	else
-	  $(error Can not find Rasberry PI compiler $(PREFIX)-gcc in path)
+    $(error Can not find Rasberry PI compiler $(PREFIX)gcc in path)
 	endif
   endif
 
