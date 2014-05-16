@@ -58,6 +58,8 @@ public:
 	Holder() {}
 	Holder(std::shared_ptr<Tween> t) : tween(t) {}
 	void cancel();
+	bool done();
+	void finish();
 private:
 	std::shared_ptr<Tween> tween;
 };
@@ -114,6 +116,14 @@ public:
 	}
 
 
+	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	Tween& from(T &target, T value) {
+		for(int i=0; i<target.size(); i++) {
+			from(target[i], value[i]);
+		}
+		return *this;
+	}
+
 	template <typename T, typename U> Tween& from(T &target, U value) {
 
 		to(target, value);
@@ -129,6 +139,12 @@ public:
 	Tween& on_complete(std::function<void()> f) {
 		onCompleteFunc = f;
 		return *this;
+	}
+
+	void finish() {
+		for(auto &a : args) {
+			a->set(a->startValue + fmod(a->delta, a->maxValue));
+		}
 	}
 
 	bool step() { // t : 0 -> 1

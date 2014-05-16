@@ -142,6 +142,8 @@ template <class T> struct vec2 {
 		return sqrt(x * x + y * y);
 	}
 
+	int size() const { return 2; }
+
 	union
 	{
 		T data[2];

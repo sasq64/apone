@@ -69,5 +69,19 @@ void Holder::cancel() {
 	}
 }
 
+void Holder::finish() {
+	if(!tween) return;
+	tween->finish();
+	auto it = Tween::allTweens.begin();
+	while(it != Tween::allTweens.end()) {
+		if(*it == tween) {
+			LOGD("Tween finished");
+			Tween::allTweens.erase(it);
+			break;
+		}
+		++it;
+	}
+}
+
 //}
 }
