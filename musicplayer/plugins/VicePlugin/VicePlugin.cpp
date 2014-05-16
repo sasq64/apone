@@ -251,7 +251,7 @@ public:
 			LOGD("DEFSONG: %d", defaultSong);
 			currentLength = 0;
 			currentPos = 0;
-			if(songLengths.size() > defaultSong) {
+			if((int)songLengths.size() > defaultSong) {
 				currentLength = songLengths[defaultSong];
 			}
 			LOGD("Length:%d", currentLength);
@@ -277,7 +277,12 @@ public:
 		if(song >= 0) {
 			psid_set_tune(song+1);
 			c64_song_init();
-			currentLength = songLengths[song];
+			currentLength = 0;
+			currentPos = 0;
+			if((int)songLengths.size() > song) {
+				currentLength = songLengths[song];
+			}
+			LOGD("Length:%d", currentLength);
 			setMeta("length", currentLength);
 		}
 	}

@@ -86,7 +86,7 @@ else ifeq ($(HOST),raspberrypi)
 
   $(info Rasberry PI SDK at $(PI_SDK))
  
-  CFLAGS += -DRASPBERRYPI -DLINUX
+  CFLAGS += -DRASPBERRYPI -DLINUX -march=armv6 -mfpu=vfp -mfloat-abi=hard
   CFLAGS += --sysroot=$(PI_SDK)
   LDFLAGS += --sysroot=$(PI_SDK)
 
