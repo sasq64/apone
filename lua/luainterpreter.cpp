@@ -35,18 +35,51 @@ void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *f
     lua_setglobal(L, name.c_str());
 }
 
+
+static const struct luaL_Reg printlib[] = {
+	{ "print", LuaInterpreter::l_my_print },
+	{ NULL, NULL } /* end of array */
+};
+
+int LuaInterpreter::l_my_print(lua_State* L) {
+
+	LuaInterpreter *li = (LuaInterpreter*)lua_touserdata(L, lua_upvalueindex(1));
+    int nargs = lua_gettop(L);
+    for (int i=1; i <= nargs; ++i) {
+		if(li->outputFunction)
+			li->outputFunction(lua_tostring(L, i));
+		else
+			LOGD("LUA:%s", lua_tostring(L, i));
+    }
+	if(li->outputFunction)
+		li->outputFunction("\n");
+    //std::cout << std::endl;
+    return 0;
+}
+
 LuaInterpreter::LuaInterpreter() {
 	L = luaL_newstate();
 	luaL_openlibs(L);
-}
+	lua_getglobal(L, "_G");
+	lua_pushlightuserdata(L, this);
+	luaL_setfuncs(L, printlib, 1);
+	lua_pop(L, 1);}
 
 LuaInterpreter::~LuaInterpreter() {
 	lua_close(L);
 }
 
-void LuaInterpreter::load(const string &code) {
-	luaL_loadbuffer(L, code.c_str(), code.length(), "line");
-	lua_call(L,0,0);
+bool LuaInterpreter::load(const string &code) {
+	if(luaL_loadbuffer(L, code.c_str(), code.length(), "line") == LUA_OK) {
+		int rc = lua_pcall(L, 0, 0, 0);
+		if(rc != LUA_OK) {
+			const char *s = lua_tostring(L, -1);
+			LOGD("MSG:%s", s);
+			lua_pop(L, 1);
+		}
+	} else
+		return false;
+	return true;
 }
 
 /*
@@ -101,7 +134,7 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 		return 3;
 	});
 
-	lua.registerFunction<void, string, int>("testVFunc", [=](string s, int x) {
+	lua.registerFunction<void, int>("testVFunc", [=](int x) {
 		LOGD("Got '%s' and %d", s, x);
 	});
 
