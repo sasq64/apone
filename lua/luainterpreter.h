@@ -4,8 +4,8 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <memory>
 
-//#include <lua.h>
 struct lua_State;
 
 template <class R> R popArg(struct lua_State *) {
@@ -14,35 +14,68 @@ template <class R> R popArg(struct lua_State *) {
 template <> double popArg(struct lua_State *);
 template <> int popArg(struct lua_State *);
 
-/*
-template <class... ARGS> struct FunctionCaller {
-	FunctionCaller(std::function<void(const ARGS& ... )> f) : func(f) {
+template <class T> T getArg(struct lua_State *L, int index) {
+}
+
+template <> int getArg(struct lua_State *L, int index);
+template <> std::string getArg(struct lua_State *L, int index);
+
+
+struct FunctionCaller {
+	virtual int call() = 0;
+};
+
+
+int pushArg(struct lua_State *L, int r);
+
+template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
+	FunctionCallerImpl(struct lua_State *L, std::function<R(const ARGS& ... )> f) : L(L), func(f) {
 	}
 
-	template <class T> void getArg(int index, T &target) {
+	template <class A> int apply() {
+		return pushArg(L, func(getArg<A>(L, 1)));
 	}
 
-	int getArg(lua_State *L, int index, int &target);// {
-//			target = lua_tointeger(L, index);
-//		}
-
-	ARGS getArgs(lua_State *L) {
-		a = getArg<A>(L, 0);
-		b = getArg<B>(L, 1);
+	template <class A, class B> int apply() {
+		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2)));
 	}
 
-	template <class A, class B> void call() {
-		func(getArg<A>(L, 0), getArg<B>(L, 1));
+	template <class A, class B, class C> int apply() {
+		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 2)));
 	}
 
-
-	void call() {
-		func(getArgs());
+	int call() override {
+		return apply<ARGS...>();
 	}
 
+	struct lua_State *L;
+	std::function<R(const ARGS& ... )> func;
+};
+
+template <class... ARGS> struct FunctionCallerImpl<void, ARGS...> : public FunctionCaller {
+	FunctionCallerImpl(struct lua_State *L, std::function<void(const ARGS& ... )> f) : L(L), func(f) {
+	}
+
+	template <class A> void apply() {
+		func(getArg<A>(L, 1));
+	}
+
+	template <class A, class B> void apply() {
+		func(getArg<A>(L, 1), getArg<B>(L, 2));
+	}
+
+	template <class A, class B, class C> void apply() {
+		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3));
+	}
+
+	int call() override {
+		apply<ARGS...>();
+		return 0;
+	}
+
+	struct lua_State *L;
 	std::function<void(const ARGS& ... )> func;
 };
-*/
 
 
 class LuaInterpreter {
@@ -52,31 +85,30 @@ public:
 
 	void load(const std::string &code);
 
-	//uint32_t call(const std::string &f, uint32_t v);
-
 	void pushArg(const int& a);
 	void pushArg(const double& a);
+	void pushArg(const std::string& a);
+
 	void getGlobal(const std::string &g);
 	void luaCall(int nargs, int nret);
 
-	std::vector<std::function<void()>> funcs;
+	std::vector<std::shared_ptr<FunctionCaller>> functions;
 
-/*
-	template <class... A> void registerFunction(const std::string &name, std::function<void(const A& ... )> f) {
 
-		functions.push_back([=]() {
+	static int proxy_func(lua_State *L);
 
-			f(
-		});
+	void createLuaClosure(const std::string &name, FunctionCaller *fc);
 
-		lua_pushlightuserdata(L, this);
-	    lua_pushcclosure(L, proxy_func, 1);
-	    lua_setglobal(L, name.c_str());
+	// template <class R, class... A> void registerFunction(const std::string &name, std::function<R(A ... )> f) {
+	// 	FunctionCaller *fc = new FunctionCallerImpl<R, A...>(L, f);
+	// 	createLuaClosure(name, fc);
+	//}
 
-		std::function<int(lua_State *)> f2;
-		lua_register(L, name.c_str(), f2);
+	template <class R, class A, class B> void registerFunction(const std::string &name, std::function<R(A, B)> f) {
+		FunctionCaller *fc = new FunctionCallerImpl<R, A, B>(L, f);
+		createLuaClosure(name, fc);
 	}
-*/
+
 	template <class F, class... A> void pushArg(const F& first, const A& ... tail) {
 		pushArg(first);
 		pushArg(tail...);

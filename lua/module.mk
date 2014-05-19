@@ -4,7 +4,7 @@ LUA_INCLUDED = 1
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 LUADIR := $(THIS_DIR)/lua-5.2.3/src/
-lua_CFLAGS := -O2 -Wall -DLUA_COMPAT_ALL -Wno-parentheses-equality
+lua_CFLAGS := -O2 -Wall -DLUA_COMPAT_ALL -DLUA_USE_POSIX -Wno-parentheses-equality
 INCLUDES += $(THIS_DIR).. $(LUADIR)
 lua_CC := $(CXX)
 
