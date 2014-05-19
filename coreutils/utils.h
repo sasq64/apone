@@ -114,6 +114,7 @@ std::string path_extention(const std::string &name);
 std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
 
+bool isalpha(const std::string &s);
 
 // SLICE
 

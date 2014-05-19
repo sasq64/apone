@@ -131,6 +131,16 @@ uint64_t getms() {
 #endif
 }
 
+
+bool isalpha(const string &s) {
+	for(const auto &c : s) {
+		LOGD("c %c", c);
+		if(!::isalpha(c))
+			return false;
+	}
+	return true;
+}
+
 void makedir(const std::string &name) {
 
 #ifdef WIN32
