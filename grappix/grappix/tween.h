@@ -9,21 +9,9 @@
 #include <limits>
 #include <memory>
 
-//namespace grappix {
-
 namespace tween {
 
-double linear(double t, double s);
-double smoothStep(double t, double s);
-double easeInSine (double t, double b);
-double easeOutSine(double t, double b);
-double easeInOutSine(double t, double b);
-double easeInBack (double t, double b);
-double easeOutBack(double t, double b);
-double easeInOutBack(double t, double b);
-
-class TweenAttrBase {
-public:
+struct TweenAttrBase {
 
 	TweenAttrBase(double target, double value) : startValue(target), delta(value - target), maxValue(std::numeric_limits<double>::max()) {}
 
@@ -32,10 +20,8 @@ public:
 	double startValue;
 	double delta;
 	double delay;
-
 	double maxValue;
 
-	std::function<void()> func;
 	std::function<double(double, double)> tweenFunc;
 
 };
@@ -53,10 +39,10 @@ public:
 
 class Tween;
 
-class Holder {
+class TweenHolder {
 public:
-	Holder() {}
-	Holder(std::shared_ptr<Tween> t) : tween(t) {}
+	TweenHolder() {}
+	TweenHolder(std::shared_ptr<Tween> t) : tween(t) {}
 	void cancel();
 	bool done();
 	void finish();
@@ -66,13 +52,13 @@ private:
 
 class Tween {
 public:
-	Tween() : delay(0.0), startTime(currentTime), tweenFunc(smoothStep) {}
+	Tween() : delay(0.0), startTime(currentTime), tweenFunc(smoothStep_fn) {}
 
 	Tween& operator=(const Tween &other) = delete;
 	Tween(const Tween& other) = delete;
 
-	operator Holder() {
-		return Holder(Tween::allTweens.back());
+	operator TweenHolder() {
+		return TweenHolder(Tween::allTweens.back());
 	}
 
 	Tween& seconds(float s) {
@@ -86,17 +72,14 @@ public:
 	}
 
 	Tween& linear() {
-		tweenFunc = tween::linear;
+		tweenFunc = linear_fn;
 		return *this;
 	}
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	Tween& to(T &target, T value) {
+	Tween& to(T &target, T value, int cycles = 1) {
 		for(int i=0; i<target.size(); i++) {
-			args.emplace_back(std::make_shared<TweenAttr<T>>(target[i], value[i]));
-			auto &a = args.back();
-			a->tweenFunc = tweenFunc;
-			a->delay = delay;
+			to(target[i], value[i], cycles);
 		}
 		return *this;
 	}
@@ -128,8 +111,7 @@ public:
 
 		to(target, value);
 		auto &a = args.back();
-
-		LOGD("Negating delta %f and startValue %f -> %f", a->delta, a->startValue, a->startValue + a->delta);
+		//LOGD("Negating delta %f and startValue %f -> %f", a->delta, a->startValue, a->startValue + a->delta);
 		a->startValue += a->delta;
 		a->delta = -a->delta;
 		a->set(a->startValue);
@@ -172,10 +154,8 @@ public:
 			if(!(*it)->step()) {
 				if((*it)->onCompleteFunc)
 					callbacks.push_back((*it)->onCompleteFunc);
-				//allTweens.erase(it++);
 				it = allTweens.erase(it);
 			} else {
-				//LOGD("Tween going");
 				it++;
 			}
 		}
@@ -183,6 +163,16 @@ public:
 			cb();
 		}
 	}
+private:
+
+	static double linear_fn(double t, double s);
+	static double smoothStep_fn(double t, double s);
+	static double easeInSine_fn (double t, double b);
+	static double easeOutSine_fn(double t, double b);
+	static double easeInOutSine_fn(double t, double b);
+	static double easeInBack_fn (double t, double b);
+	static double easeOutBack_fn(double t, double b);
+	static double easeInOutBack_fn(double t, double b);
 
 	double delay;
 	double startTime;
@@ -194,16 +184,14 @@ public:
 	std::function<void()> onCompleteFunc;
 
 	static double currentTime;
+public:
 	static std::vector<std::shared_ptr<Tween>> allTweens;
 };
-
-//int to(float totalTime, const std::initializer_list<TweenAttr> &il);
 
 
 Tween& make_tween();
 
 
-}
-//}
+} // namespace tween
 
 #endif // TWEEN_H
