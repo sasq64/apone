@@ -220,6 +220,9 @@ Window::key Window::get_key(bool peek) {
 		auto k = key_buffer.front();
 		if(!peek)
 			key_buffer.pop_front();
+		if(k >= 0x3a && k <= 0x45)
+			k += (F1-0x3a);
+		else
 		if(k >= 0x04 && k <= 0x20)
 			k += ('A'-0x04);
 		else {
