@@ -12,6 +12,10 @@ template <> int getArg(struct lua_State *L, int index) {
 	return lua_tointeger(L, index);
 }
 
+template <> float getArg(struct lua_State *L, int index) {
+	return lua_tonumber(L, index);
+}
+
 template <> std::string getArg(struct lua_State *L, int index) {
 	return string(lua_tostring(L, index));
 }
@@ -22,14 +26,11 @@ int pushArg(struct lua_State *L, int r) {
 };
 
 int LuaInterpreter::proxy_func(lua_State *L) {
-	LOGD("Proxy func, stack %d", lua_gettop(L));
 	FunctionCaller *fc = (FunctionCaller*)(lua_touserdata(L, lua_upvalueindex(1)));
-	LOGD("FC %p", fc);
 	return fc->call();
 }
 
 void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *fc) {
-	LOGD("FC %p", fc);
 	lua_pushlightuserdata(L, fc);
     lua_pushcclosure(L, proxy_func, 1);
     lua_setglobal(L, name.c_str());
@@ -38,7 +39,7 @@ void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *f
 
 static const struct luaL_Reg printlib[] = {
 	{ "print", LuaInterpreter::l_my_print },
-	{ NULL, NULL } /* end of array */
+	{ nullptr, nullptr }
 };
 
 int LuaInterpreter::l_my_print(lua_State* L) {
@@ -53,7 +54,6 @@ int LuaInterpreter::l_my_print(lua_State* L) {
     }
 	if(li->outputFunction)
 		li->outputFunction("\n");
-    //std::cout << std::endl;
     return 0;
 }
 
@@ -82,14 +82,18 @@ bool LuaInterpreter::load(const string &code) {
 	return true;
 }
 
-/*
-uint32_t LuaInterpreter::call(const std::string &f, uint32_t v) {
-	lua_getglobal(L, f.c_str());
-	lua_pushnumber(L, v);
-	lua_call(L, 1, 1);
-	double res = lua_tonumber(L, 1);
-	return (uint32_t)res;
-}*/
+bool LuaInterpreter::loadFile(const string &fileName) {
+	if(luaL_loadfile(L, fileName.c_str()) == LUA_OK) {
+		int rc = lua_pcall(L, 0, 0, 0);
+		if(rc != LUA_OK) {
+			const char *s = lua_tostring(L, -1);
+			LOGD("MSG:%s", s);
+			lua_pop(L, 1);
+		}
+	} else
+		return false;
+	return true;
+}
 
 void LuaInterpreter::pushArg(const int& a) {
 	lua_pushnumber(L, a);
@@ -129,14 +133,14 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 
 	LuaInterpreter lua;
 
-	lua.registerFunction<int, string, int>("testFunc", [=](string s, int x) -> int {
+	lua.registerFunction<int, string, int, float>("testFunc", [=](string s, int x, float f) -> int {
 		LOGD("Got '%s' and %d", s, x);
 		return 3;
 	});
 
-	lua.registerFunction<void, int>("testVFunc", [=](int x) {
-		LOGD("Got '%s' and %d", s, x);
-	});
+	//lua.registerFunction<void, int>("testVFunc", [=](string s, int x) {
+	//	LOGD("Got '%s' and %d", s, x);
+	//});
 
 	const string luaCode = R"(
 	function test (a, b)
