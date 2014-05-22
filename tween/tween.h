@@ -22,7 +22,7 @@ struct TweenAttrBase {
 	double delay;
 	double maxValue;
 
-	std::function<double(double, double)> tweenFunc;
+	std::function<double(double)> tweenFunc;
 
 };
 
@@ -45,6 +45,7 @@ public:
 	TweenHolder(std::shared_ptr<Tween> t) : tween(t) {}
 	void cancel();
 	bool done();
+	bool valid();
 	void finish();
 private:
 	std::shared_ptr<Tween> tween;
@@ -73,6 +74,16 @@ public:
 
 	Tween& linear() {
 		tweenFunc = linear_fn;
+		return *this;
+	}
+
+	Tween& sine() {
+		tweenFunc = sine_fn;
+		return *this;
+	}
+
+	Tween& repeating() {
+		do_rep = true;
 		return *this;
 	}
 
@@ -136,11 +147,15 @@ public:
 			if(t < 0.0)
 				continue;
 			if(t > 1.0) {
-				ended++;
-				a->set(a->startValue + fmod(a->delta, a->maxValue));
-				continue;
+				if(do_rep)
+					t -= 1.0;
+				else {
+					ended++;
+					a->set(a->startValue + fmod(a->delta, a->maxValue));
+					continue;
+				}
 			}
-			a->set(a->startValue + fmod(a->tweenFunc(t, a->delta), a->maxValue));
+			a->set(a->startValue + fmod(a->tweenFunc(t) * a->delta, a->maxValue));
 		}
 		return ended < args.size();
 	};
@@ -165,22 +180,26 @@ public:
 	}
 private:
 
-	static double linear_fn(double t, double s);
-	static double smoothStep_fn(double t, double s);
-	static double easeInSine_fn (double t, double b);
-	static double easeOutSine_fn(double t, double b);
-	static double easeInOutSine_fn(double t, double b);
-	static double easeInBack_fn (double t, double b);
-	static double easeOutBack_fn(double t, double b);
-	static double easeInOutBack_fn(double t, double b);
+	static double linear_fn(double t);
+	static double smoothStep_fn(double t);
+	static double easeInSine_fn (double t);
+	static double easeOutSine_fn(double t);
+	static double easeInOutSine_fn(double t);
+	static double easeInBack_fn (double t);
+	static double easeOutBack_fn(double t);
+	static double easeInOutBack_fn(double t);
+
+	static double sine_fn(double t);
 
 	double delay;
 	double startTime;
 	double totalTime;
 	double dspeed;
 
+	bool do_rep = false;
+
 	std::vector<std::shared_ptr<TweenAttrBase>> args;
-	std::function<double(double, double)> tweenFunc;
+	std::function<double(double)> tweenFunc;
 	std::function<void()> onCompleteFunc;
 
 	static double currentTime;
