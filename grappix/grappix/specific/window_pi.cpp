@@ -1,7 +1,7 @@
 #include "../window.h"
-#include "../tween.h"
 #include "../resources.h"
 
+#include <tween/tween.h>
 #include <coreutils/format.h>
 
 #include <EGL/egl.h>

@@ -1,7 +1,7 @@
 #include "../window.h"
-#include "../tween.h"
 #include "../resources.h"
 #include "../GL_Header.h"
+#include <tween/tween.h>
 #include <GL/glfw.h>
 #include <stdio.h>
 #include <unordered_map>

@@ -38,6 +38,7 @@ else
 endif
 
 include $(CPP_MODS)/image/module.mk
+include $(CPP_MODS)/tween/module.mk
 include $(GRAPPIX_DIR)freetype/module.mk
 include $(CPP_MODS)/coreutils/module.mk
 

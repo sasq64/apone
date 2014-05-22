@@ -1,6 +1,6 @@
 #include "../window.h"
-#include "../tween.h"
 #include "../resources.h"
+#include <tween/tween.h>
 #include <stdio.h>
 #include <unordered_map>
 #include <EGL/egl.h>
