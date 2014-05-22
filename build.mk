@@ -58,6 +58,7 @@ endif
 ifeq ($(HOST),android)
 	include $(BUILD_MK_DIR)android/build.mk
 else ifeq ($(HOST),emscripten)
+	CCACHE=
 	ifneq ($(DATA_FILES),)
  		LDFLAGS += $(addprefix --preload-file ,$(DATA_FILES))
  	endif

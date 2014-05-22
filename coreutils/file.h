@@ -138,6 +138,13 @@ public:
 		throw io_exception{};
 	}
 
+	template <typename T> void write(const T &t) {
+		open(WRITE);
+		if(fwrite(&t, sizeof(T), 1, writeFP) > 0)
+			return;
+		throw io_exception{};
+	}
+
 	void readAll(); // throw(file_not_found_exception, io_exception);
 
 private:
