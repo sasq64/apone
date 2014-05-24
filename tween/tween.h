@@ -16,6 +16,7 @@ struct TweenAttrBase {
 	TweenAttrBase(double target, double value) : startValue(target), delta(value - target), maxValue(std::numeric_limits<double>::max()) {}
 
 	virtual void set(double v) = 0;
+	virtual bool compare(void *p) { return false; }
 
 	double startValue;
 	double delta;
@@ -34,6 +35,10 @@ public:
 
 	virtual void set(double v) override {
 		*target = static_cast<T>(v);
+	}
+
+	virtual bool compare(void *p) override {
+		return p == (void*)target;
 	}
 };
 
@@ -96,6 +101,18 @@ public:
 	}
 
 	template <typename T, typename U> Tween& to(T &target, U value, int cycles = 1) {
+	
+		for(auto &t : allTweens) {
+			auto it = t->args.begin();
+			while(it != t->args.end()) {
+				if(it->get()->compare((void*)&target)) {
+					LOGD("ALREADY TWEENING!");
+					it = t->args.erase(it);
+				} else
+					it++;
+			}
+		}
+
 		args.emplace_back(std::make_shared<TweenAttr<T>>(target, value));
 		auto &a = args.back();
 
