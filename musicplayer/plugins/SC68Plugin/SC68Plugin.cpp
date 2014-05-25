@@ -182,7 +182,7 @@ private:
 static const set<string> supported_ext { "sndh", "sc68", "snd" };
 
 bool SC68Plugin::canHandle(const std::string &name) {
-	return supported_ext.count(utils::path_extention(name)) > 0;
+	return supported_ext.count(utils::path_extension(name)) > 0;
 }
 
 ChipPlayer *SC68Plugin::fromFile(const std::string &fileName) {

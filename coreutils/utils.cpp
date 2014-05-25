@@ -201,7 +201,7 @@ string path_filename(const string &name) {
 	return name.substr(slashPos);
 }
 
-string path_extention(const string &name) {
+string path_extension(const string &name) {
 	auto dotPos = name.rfind('.');
 	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
@@ -214,7 +214,7 @@ string path_extention(const string &name) {
 
 }
 
-string path_suffix(const string &name) { return path_extention(name); }
+string path_suffix(const string &name) { return path_extension(name); }
 
 string path_prefix(const string &name) {
 	auto slashPos = name.rfind(path_separator);
@@ -411,14 +411,14 @@ TEST_CASE("utils::path", "Path name operations") {
 	REQUIRE(path_basename(test1) == "file");
 	REQUIRE(path_directory(test1) == "c:/path/to/my");
 	REQUIRE(path_filename(test1) == "file.ext");
-	REQUIRE(path_extention(test1) == "ext");
+	REQUIRE(path_extension(test1) == "ext");
 
-	REQUIRE(path_extention(test2) == "gz");
+	REQUIRE(path_extension(test2) == "gz");
 	REQUIRE(path_basename(test2) == "file.ext");
 
 	REQUIRE(path_directory(test2) == "");
 	REQUIRE(path_filename(test3) == "");
-	REQUIRE(path_extention(test3) == "");
+	REQUIRE(path_extension(test3) == "");
 	REQUIRE(path_basename(test3) == "");
 	REQUIRE(path_directory(test3) == "/my/pa.th");
 }

@@ -49,7 +49,7 @@ public:
 		if(path_suffix(fileName) == "mdat") {
 			uade_set_amiga_loader(UADEPlayer::amigaloader, this, state);
 			baseName = path_basename(fileName);
-			string uadeFileName = path_directory(fileName) + "/" + path_extention(fileName) + "." + "music";
+			string uadeFileName = path_directory(fileName) + "/" + path_extension(fileName) + "." + "music";
 			LOGD("Translated %s to %s", fileName, uadeFileName);
 			File file { uadeFileName };
 			File file2 { fileName };

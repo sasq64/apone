@@ -110,7 +110,7 @@ std::vector<std::string> text_wrap(const std::string &text, int width, int subse
 std::string path_basename(const std::string &name);
 std::string path_directory(const std::string &name);
 std::string path_filename(const std::string &name);
-std::string path_extention(const std::string &name);
+std::string path_extension(const std::string &name);
 std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
 

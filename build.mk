@@ -35,6 +35,11 @@ ifdef USE_CCACHE
 CCACHE=ccache
 endif
 
+ifdef USE_CLANG
+ CC = clang
+ CXX = clang++
+endif
+
 CGC_PATH := $(realpath $(shell which $(CGC)))
 
 ifndef TARGETDIR

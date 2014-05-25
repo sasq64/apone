@@ -106,7 +106,7 @@ private:
 static const set<string> supported_ext { "mod", "xm", "s3m" , "oct", /*"okt", "okta", sucks here, use UADE */ "it", "ft", "far", "ult", "669", "dmf", "mdl", "stm", "okt", "gdm", "mt2", "mtm", "j2b", "imf", "ptm", "ams" };
 
 bool ModPlugin::canHandle(const std::string &name) {
-	return supported_ext.count(utils::path_extention(name)) > 0;
+	return supported_ext.count(utils::path_extension(name)) > 0;
 }
 
 ChipPlayer *ModPlugin::fromFile(const std::string &fileName) {
