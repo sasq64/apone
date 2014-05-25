@@ -4,10 +4,12 @@
 #include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
-//#include <set>
+#include <set>
 //#include <unordered_map>
 
 using namespace std;
+
+namespace chipmachine {
 
 class StSoundPlayer : public ChipPlayer {
 public:
@@ -58,13 +60,15 @@ private:
 	YMMUSIC *ymMusic;
 };
 
-//static const set<string> supported_ext { "mod", "xm", "s3m" , "okt", "it", "ft" };
+static const set<string> supported_ext { "ym" };
 
 bool StSoundPlugin::canHandle(const std::string &name) {
-	return utils::path_extention(name) == "ym";
+	return supported_ext.count(utils::path_extention(name)) > 0;
 }
 
 ChipPlayer *StSoundPlugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
 	return new StSoundPlayer {file.getPtr(), file.getSize()};
 };
+
+}
