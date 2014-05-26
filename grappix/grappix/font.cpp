@@ -175,8 +175,7 @@ TextBuf Font::make_text(const string &text) const {
 			x += texture_glyph_get_kerning(glyph, lastChar);
 		lastChar = c;
 
-		float x0  = x + 
-		glyph->offset_x;
+		float x0  = x + glyph->offset_x;
 		float y0  = y + font->height;//gl;//+ glyph->offset_y;
 		float x1  = x0 + glyph->width;
 		float y1  = y0 - glyph->offset_y;
@@ -217,10 +216,19 @@ TextBuf Font::make_text(const string &text) const {
 		//break;
 	}
 
+
+
 	TextBuf tbuf;
 	//vector<GLuint> vbuf(2);
 	tbuf.text = text;
 	tbuf.size = i/4;
+	tbuf.rec[0] = verts[0];
+	tbuf.rec[1] = verts[1];
+	tbuf.rec[2] = verts[verts.size()-4];
+	tbuf.rec[3] = verts[verts.size()-3];
+
+	LOGD("Text %s covers %f to %f", text, tbuf.rec[0], tbuf.rec[2]);
+
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tbuf.vbuf[1]);
@@ -229,6 +237,7 @@ TextBuf Font::make_text(const string &text) const {
 
 	return tbuf;
 }
+
 
 void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, int y, uint32_t color, float scale) const {
 
@@ -298,6 +307,17 @@ void Font::render_text(const RenderTarget &target, const std::string &text, int 
 		cache.put(text, buf);
 	}
 	render_text(target, buf, x, y, col, scale);
+}
+
+int Font::get_width(const string &text, float scale) {
+	if(text == "")
+		return 0;
+	auto buf = cache.get(text);
+	if(buf.text == "") {
+		buf = make_text(text);
+		cache.put(text, buf);
+	}
+	return (buf.rec[2] - buf.rec[0]) * scale;
 }
 
 
