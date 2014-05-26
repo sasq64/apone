@@ -5,8 +5,14 @@ THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 LUADIR := $(THIS_DIR)/lua-5.2.3/src/
 lua_CFLAGS := -O2 -Wall -DLUA_COMPAT_ALL -DLUA_USE_POSIX -Wno-parentheses-equality
-INCLUDES += $(THIS_DIR).. $(LUADIR)
-lua_CC := $(CXX)
+lua_INCLUDES += $(LUADIR)
+
+lua_CC := g++
+ifdef USE_CLANG
+ ifneq ($(HOST),raspberrypi)
+  lua_CC := clang++
+ endif
+endif
 
 
 lua_FILES := $(THIS_DIR)/luainterpreter.cpp \
@@ -42,6 +48,8 @@ $(LUADIR)lstrlib.c \
 $(LUADIR)ltablib.c \
 $(LUADIR)loadlib.c \
 $(LUADIR)linit.c
+
+INCLUDES += $(THIS_DIR)..
 
 MODULES += lua
 

@@ -66,7 +66,6 @@ ifeq ($(HOST),android)
 	include $(THIS_DIR)android/config.mk
 
 else ifeq ($(HOST),emscripten)
-	USE_CLANG :=
 	CC := emcc
 	CXX := em++
  	TARGET_EXT := .html
@@ -75,7 +74,6 @@ else ifeq ($(HOST),emscripten)
 else ifeq ($(HOST),raspberrypi)
 
    PREFIX := arm-linux-gnueabihf-
-   USE_CLANG :=
 
   ifeq ($(PI_SDK),)
 	PI_CC := $(realpath $(shell which $(PREFIX)gcc))
@@ -100,11 +98,3 @@ endif
 ifneq ($(ARM),)
 	CFLAGS += -DARM
 endif
-
-ifdef USE_CLANG
-	cc = clang
-	cxx = clang++
-endif
-
-
-

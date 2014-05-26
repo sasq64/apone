@@ -31,14 +31,22 @@ ifndef RANLIB
 RANLIB=ranlib
 endif
 
-ifdef USE_CCACHE
-CCACHE=ccache
-endif
 
 ifdef USE_CLANG
- CC = clang
- CXX = clang++
+ ifneq ($(HOST),raspberrypi)
+  CC := clang
+  CXX := clang++
+ endif
 endif
+
+ifdef USE_CCACHE
+CCACHE=ccache
+ ifeq ($(CC),clang)
+   CFLAGS += -Qunused-arguments
+ endif
+endif
+
+
 
 CGC_PATH := $(realpath $(shell which $(CGC)))
 
