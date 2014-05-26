@@ -33,6 +33,7 @@ void Window::open(bool fs) {
 
 std::deque<int> Window::key_buffer;
 static uint8_t pressed_keys[256];
+static uint8_t modifiers = 0;
 
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
@@ -113,11 +114,13 @@ void Window::open(int w, int h, bool fs) {
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
 	keyboardThread = thread([=]() {
-		uint8_t buf[8];
+		vector<uint8_t> buf(8);
 		int k = ::open("/dev/hidraw0", O_RDONLY);
 		fprintf(stderr, "Reading kbd");
 		while(true) {
-			read(k, buf, 8);
+			read(k, &buf[0], 8);
+			LOGD("[%02x]", buf);
+			modifiers = buf[0];
 			for(int i=2; i<5; i++) {
 				auto k = buf[i];
 				if(k) {
@@ -184,7 +187,36 @@ tuple<int, int> Window::mouse_position() {
 	return make_tuple(-1,-1);
 }
 
+#define LCTRL 1
+#define LSHIFT 2
+#define LALT 4
+#define LWIN 8
+#define RCTRL 0x10
+#define RSHIFT 0x20
+#define RALT 0x40
+#define RWIN 0x80
+
 bool Window::key_pressed(key k) {
+	//LOGD("CHECK KEY %d %02x", k, modifiers);
+	if(k >= 0x200 && k <= 0x300) {
+		switch(k) {
+		case SHIFT_LEFT:
+			return (modifiers & LSHIFT) != 0;
+		case SHIFT_RIGHT:
+			return (modifiers & RSHIFT) != 0;
+		case ALT_LEFT:
+			return (modifiers & LALT) != 0;
+		case ALT_RIGHT:
+			return (modifiers & RALT) != 0;
+		case CTRL_LEFT:
+			return (modifiers & LCTRL) != 0;
+		case CTRL_RIGHT:
+			return (modifiers & RCTRL) != 0;
+		case WINDOWS:
+			return (modifiers & (LWIN|RWIN)) != 0;
+		}
+		return false;
+	}
 	auto rawkey = translate[k];
 	return (pressed_keys[rawkey] != 0);
 }
@@ -207,6 +239,8 @@ Window::click Window::get_click(bool peek) {
 unordered_map<int, int> Window::translate = {
 	{ ENTER, 0x28 },
 	{ SPACE, 0x2C },
+	{ PAGEUP, 0x4b },
+	{ PAGEDOWN, 0x4e },
 	{ RIGHT, 0x4f },
 	{ LEFT, 0x50 },
 	{ DOWN, 0x51 },
