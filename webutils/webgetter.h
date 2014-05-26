@@ -7,6 +7,7 @@
 #ifdef EMSCRIPTEN
 #else
 #include <mutex>
+#include <future>
 #include <thread>
 #endif
 #include <memory>
@@ -63,6 +64,8 @@ public:
 
 	bool inCache(const std::string &url) const;
 private:
+	int counter = 0;
+	std::future<void> f[4];
 	std::string workDir;
 	std::string baseURL;
 };

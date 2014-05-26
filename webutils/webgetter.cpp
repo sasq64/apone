@@ -140,7 +140,7 @@ bool WebGetter::inCache(const std::string &url) const {
 }
 
 void WebGetter::getURL(const std::string &url, std::function<void(const Job &job)> callback) {
-	std::async(std::launch::async, [&]() {
+	f[counter++] = std::async(std::launch::async, [=]() {
 		try {
 			Job job;
 			//Job job(baseURL + url, workDir);
