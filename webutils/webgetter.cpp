@@ -43,10 +43,12 @@ void WebGetter::Job::urlGet(const std::string &url) {
 	int rc = 0;
 	if(!File::exists(target)) {
 
+		auto u = urlencode(url, " #");
+
 		LOGI("Downloading %s", url);
 		CURL *curl;
 		curl = curl_easy_init();
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
