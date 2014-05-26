@@ -28,7 +28,7 @@ public:
 				"title", track0->game,
 				"composer", track0->author,
 				"copyright", track0->copyright,
-				"length", track0->length,
+				"length", track0->length > 0 ? track0->length / 1000 : 0,
 				"songTitle", track0->song,
 				"format", track0->system,
 				"songs", gme_track_count(emu)
