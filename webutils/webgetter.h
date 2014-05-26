@@ -58,13 +58,13 @@ public:
 	WebGetter(const std::string &workDir) ;
 	Job* getURL(const std::string &url);
 
-	void getURL(const std::string &url, std::function<void(const Job&)>);
+	void getURL(const std::string url, std::function<void(const Job&)>);
 
 	void setBaseURL(const std::string &base) { baseURL = base; }
 
 	bool inCache(const std::string &url) const;
 private:
-	int counter = 0;
+	std::atomic<int> counter;
 	std::future<void> f[4];
 	std::string workDir;
 	std::string baseURL;

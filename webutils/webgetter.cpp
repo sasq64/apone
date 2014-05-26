@@ -113,6 +113,7 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 
 WebGetter::WebGetter(const string &workDir) : workDir(workDir) {
 	makedir(workDir.c_str());
+	counter = 0;
 }
 
 
@@ -139,11 +140,10 @@ bool WebGetter::inCache(const std::string &url) const {
 	return File::exists(target);
 }
 
-void WebGetter::getURL(const std::string &url, std::function<void(const Job &job)> callback) {
-	f[counter++] = std::async(std::launch::async, [=]() {
+void WebGetter::getURL(const std::string url, std::function<void(const Job &job)> callback) {
+	f[counter] = std::async(std::launch::async, [=]() {
 		try {
 			Job job;
-			//Job job(baseURL + url, workDir);
 			job.setTargetDir(workDir);
 			job.urlGet(baseURL + url);
 			callback(job);
@@ -151,5 +151,6 @@ void WebGetter::getURL(const std::string &url, std::function<void(const Job &job
 			std::terminate();
 		}
 	});
+	counter = (counter+1)%4;
 }
 
