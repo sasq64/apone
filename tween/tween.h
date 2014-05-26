@@ -84,6 +84,7 @@ public:
 
 	Tween& sine() {
 		tweenFunc = sine_fn;
+		backto = true;
 		return *this;
 	}
 
@@ -166,7 +167,10 @@ public:
 			if(t > 1.0) {
 				if(do_rep)
 					t -= 1.0;
-				else {
+				else if(backto) {
+					ended++;
+					a->set(a->startValue);
+				}else {
 					ended++;
 					a->set(a->startValue + fmod(a->delta, a->maxValue));
 					continue;
@@ -214,6 +218,7 @@ private:
 	double dspeed;
 
 	bool do_rep = false;
+	bool backto = false;
 
 	std::vector<std::shared_ptr<TweenAttrBase>> args;
 	std::function<double(double)> tweenFunc;
