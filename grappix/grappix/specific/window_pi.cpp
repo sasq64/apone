@@ -254,7 +254,11 @@ Window::key Window::get_key(bool peek) {
 		auto k = key_buffer.front();
 		if(!peek)
 			key_buffer.pop_front();
-		if(k >= 0x3a && k <= 0x45)
+		if(k >= 0x1e && k <= 0x26) {
+			k += ('1' - 0x1e);
+		} else if(k == 0x27)
+			k = '0';
+		else if(k >= 0x3a && k <= 0x45)
 			k += (F1-0x3a);
 		else
 		if(k >= 0x04 && k <= 0x20)
