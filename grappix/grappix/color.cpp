@@ -3,13 +3,8 @@
 namespace grappix {
 
 Color<float> make_color(uint32_t color) {
-	Color<float> c;
-	c.red = ((color>>16)&0xff) / 255.0;
-	c.green = ((color>>8)&0xff) / 255.0;
-	c.blue = (color&0xff) / 255.0;
-	c.alpha = (color>>24) / 255.0;
-	return c;
-}
+	return Color<float>(color);
+} 
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {
 	auto a0 = (col0>>24)&0xff;
