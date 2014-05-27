@@ -16,15 +16,40 @@ namespace grappix {
 class RenderTarget;
 
 template <typename T, typename V> class VBLCache {
+
+struct Entry {
+	Entry() {}
+	Entry(const V &v) : value(v), age(1) {}
+	V value;
+	int age;
+};
+
 public:
 	void put(const T &id, const V &value) {
-		map[id] = value;
+		map[id] = Entry(value);
 	}
 	V get(const T &id) {
-		return map[id];
+		auto &r = map[id];
+		r.age++;
+		return r.value;
 	}
+
+	void cleanup() {		
+		auto it = map.begin();
+		while(it != map.end()) {
+			if(it->second.age == 0) {
+				it->second.value.destroy();
+				map.erase(it++);
+				LOGD("Erasing");
+			} else {
+				it->second.age--;
+				it++;
+			}
+		}
+	}
+
 private:
-	std::unordered_map<T, V> map;
+	std::unordered_map<T, Entry> map;
 };
 
 
@@ -34,6 +59,9 @@ struct TextBuf {
 	std::vector<GLuint> vbuf;
 	std::string text;
 	float rec[4];
+	void destroy() {
+		glDeleteBuffers(2, &vbuf[0]);
+	}
 };
 
 class Font {
@@ -55,6 +83,10 @@ public:
 	void render_text(const RenderTarget &target, const std::string &text, int x = 0, int y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
 
 	int get_width(const std::string &text, float scale);
+
+	void update_cache() {
+		cache.cleanup();
+	}
 
 private:
 

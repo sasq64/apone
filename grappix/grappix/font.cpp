@@ -9,6 +9,7 @@
 #include "staticfont.h"
 #include "render_target.h"
 
+#include <coreutils/utils.h>
 #include <coreutils/log.h>
 
 #define _USE_MATH_DEFINES
@@ -77,7 +78,10 @@ TextBuf Font::make_text2(const string &text) const {
 	int i = 0;
 	float x = 0;
 	float y = 0;
-	for(auto c : text) {
+
+	auto t2 = utils::utf8_decode(text);
+
+	for(auto c : t2) {
 
         texture_glyph2_t *glyph = 0;
         for(unsigned int j=0; j<static_font.glyphs_count; ++j) {
@@ -164,8 +168,12 @@ TextBuf Font::make_text(const string &text) const {
 	char lastChar = 0;
 	int i = 0;
 	float x = 0;
-	float y = 0;
 	texture_font_t *font = (texture_font_t*)ref->font;
+
+	float y = font->ascender;
+
+	//auto t2 = utils::utf8_decode(text);
+
 	for(auto c : text) {
 
 		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
@@ -175,11 +183,14 @@ TextBuf Font::make_text(const string &text) const {
 			x += texture_glyph_get_kerning(glyph, lastChar);
 		lastChar = c;
 
+		//LOGD("%d vs %d", glyph->height, font->height);
+
 		float x0  = x + glyph->offset_x;
-		float y0  = y + font->height;//gl;//+ glyph->offset_y;
 		float x1  = x0 + glyph->width;
-		float y1  = y0 - glyph->offset_y;
-		//LOGD("%d %d", glyph->height, glyph->offset_y);
+
+		float y1  = y - glyph->offset_y;
+		float y0  = y1 + glyph->height;
+		//LOGD("%f %f %f", glyph->height, glyph->offset_y, font->height);
 
 		float s0 = glyph->s0;
 		float t0 = glyph->t0;
@@ -227,7 +238,7 @@ TextBuf Font::make_text(const string &text) const {
 	tbuf.rec[2] = verts[verts.size()-4];
 	tbuf.rec[3] = verts[verts.size()-3];
 
-	LOGD("Text %s covers %f to %f", text, tbuf.rec[0], tbuf.rec[2]);
+	//LOGD("Text %s covers %f to %f", text, tbuf.rec[0], tbuf.rec[2]);
 
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
@@ -308,6 +319,10 @@ void Font::render_text(const RenderTarget &target, const std::string &text, int 
 	}
 	render_text(target, buf, x, y, col, scale);
 }
+
+void clean_cache() {
+}
+
 
 int Font::get_width(const string &text, float scale) {
 	if(text == "")
