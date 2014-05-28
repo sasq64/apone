@@ -102,6 +102,8 @@ public:
 			is_demu = true;
 			break;
 		}
+
+		LOGD("CORE %d, PLAYER %p", core, m_player);
 	}
 
 	//JNIEXPORT void JNICALL Java_com_ssb_droidsound_plugins_AdPlugin_N_1unload(JNIEnv *env, jobject obj, jlong song)
@@ -139,6 +141,9 @@ public:
 		//jshort *target = env->GetShortArrayElements(sArray, nullptr);	
 		short temp_buffer[128];
 		memset(temp_buffer,0,256);
+
+		if(!m_player)
+			return -1;
 		
 		if (!samples)
 		{

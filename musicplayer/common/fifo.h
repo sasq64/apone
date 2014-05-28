@@ -1,0 +1,79 @@
+#ifndef DS_FIFO_H
+#define DS_FIFO_H
+
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
+
+class Fifo {
+
+public:
+	Fifo(int size) {
+		buffer = NULL;
+		if(size > 0) {
+			buffer = (uint8_t *)malloc(size);
+		}
+		bufPtr = buffer;
+		position = 0;
+	}
+	~Fifo() {
+		if(buffer)
+			free(buffer);
+	}
+	void putBytes(uint8_t *src, int bytelen) {
+		if(src)
+			memcpy(bufPtr, src, bytelen);
+		processBytes(bufPtr, bytelen);
+		bufPtr += bytelen;
+	}
+	void putShorts(short *src, int shortlen) {
+		putBytes((uint8_t*)src, shortlen*2);
+	}
+	int getBytes(uint8_t *dest, int bytelen) {
+		int filled = bufPtr - buffer;
+		if(bytelen > filled)
+			bytelen = filled;
+
+		memcpy(dest, buffer, bytelen);
+		if(filled > bytelen)
+			memmove(buffer, &buffer[bytelen], filled - bytelen);
+		bufPtr = &buffer[filled - bytelen];
+
+		return bytelen;
+	}
+
+	int getShorts(short *dest, int shortlen) {
+		return getBytes((uint8_t*)dest, shortlen*2) / 2;
+	}
+
+	void processBytes(uint8_t *src, int bytelen) {
+		int soundPos = -1;
+		short *samples = (short*)src;
+		for(int i=0; i<bytelen/2; i++) {
+			short s = samples[i];
+			if(s > 256 || s < -256)
+				soundPos = i;
+		}
+
+		if(soundPos >= 0)
+			lastSoundPos = position + soundPos;
+
+		position += (bytelen/2);
+	}
+
+	int filled() { return bufPtr - buffer; }
+
+	int getSilence() { return position - lastSoundPos; }
+
+	uint8_t *ptr() { return bufPtr; }
+
+private:
+	//int size;
+	int lastSoundPos;
+	int position;
+	uint8_t *buffer;
+	uint8_t *bufPtr;
+
+};
+
+#endif

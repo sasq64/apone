@@ -2,7 +2,7 @@ extern "C" {
 #include "sexypsf/driver.h"
 }
 #include "SexyPSFPlugin.h"
-#include "../../common/Fifo.h"
+#include "../../common/fifo.h"
 
 #include "../../chipplayer.h"
 #include <coreutils/utils.h>
@@ -12,7 +12,7 @@ static Fifo *sexyFifo;
 void sexyd_update(unsigned char *pSound, long lBytes)
 {
 	if(sexyFifo)
-		sexyFifo->putBytes((char*)pSound, lBytes);
+		sexyFifo->putBytes((uint8_t*)pSound, lBytes);
 }
 
 namespace chipmachine {
