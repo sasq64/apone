@@ -2,8 +2,8 @@
 
 namespace grappix {
 
-Color<float> make_color(uint32_t color) {
-	return Color<float>(color);
+Color make_color(uint32_t color) {
+	return Color(color);
 } 
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {

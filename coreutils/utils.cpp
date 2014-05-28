@@ -141,6 +141,10 @@ bool isalpha(const string &s) {
 	return true;
 }
 
+float clamp(float x, float a0, float a1) {
+	return min(max(x, a0), a1); 
+}
+
 void makedir(const std::string &name) {
 
 #ifdef WIN32

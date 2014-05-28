@@ -81,11 +81,11 @@ template <class... ARGS> struct FunctionCallerImpl<void, ARGS...> : public Funct
 	}
 
 	template <class A, class B, class C> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3));
+		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3));
 	}
 
 	template <class A, class B, class C, class D> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3), getArg<B>(L, 4));
+		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3), getArg<D>(L, 4));
 	}
 
 	int call() override {

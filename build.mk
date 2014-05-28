@@ -135,6 +135,8 @@ $(1)_OBJS := $$(addprefix $$($(1)_OBJDIR), $$($(1)_OBJS))
 $(1)_CFLAGS += $$(addprefix -I, $$(sort $$(realpath $$($(1)_INCLUDES))))
 $(1)_CXXFLAGS += $$($(1)_CFLAGS)
 
+CFLAGS += -D$(1)_MODULE_ENABLED
+
 $$(OBJDIR)/$(1).a : CXXFLAGS := $$($(1)_CXXFLAGS) $$(CXXFLAGS)
 $$(OBJDIR)/$(1).a : CFLAGS := $$($(1)_CFLAGS) $$(CFLAGS)
 
