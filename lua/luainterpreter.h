@@ -19,6 +19,7 @@ template <class T> T getArg(struct lua_State *L, int index) {
 }
 
 template <> int getArg(struct lua_State *L, int index);
+template <> uint32_t getArg(struct lua_State *L, int index);
 template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
 

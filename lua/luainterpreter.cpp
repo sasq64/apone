@@ -12,6 +12,10 @@ template <> int getArg(struct lua_State *L, int index) {
 	return lua_tointeger(L, index);
 }
 
+template <> uint32_t getArg(struct lua_State *L, int index) {
+	return lua_tointeger(L, index);
+}
+
 template <> float getArg(struct lua_State *L, int index) {
 	return lua_tonumber(L, index);
 }

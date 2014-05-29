@@ -290,8 +290,8 @@ public:
 	virtual int getSamples(int16_t *target, int size) {
 		currentPos += (size/2);
 		//LOGD("%d vs %d", currentPos, currentLength*44100);
-		if(currentLength > 0 && currentPos > currentLength*44100)
-			return -1;
+		//if(currentLength > 0 && currentPos > currentLength*44100)
+		//	return -1;
 		psid_play(target, size);
 		return size;
 	}

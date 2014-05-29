@@ -62,7 +62,8 @@ public:
 		if(song >= 0) {
 			gme_info_t* track;
 			gme_track_info(emu, &track, song);
-			setMeta("songTitle", track->song);
+			setMeta("songTitle", track->song,
+					"length", track->length > 0 ? track->length / 1000 : 0);
 
 			/* gme_err_t err = */ gme_start_track(emu, song);
 			started = true;
