@@ -116,13 +116,13 @@ void Resources::load_text(const std::string &fileName, std::function<void(const 
 	res.file_name = fileName;
 	res.on_load = func;
 	res.loaded = true;
-	res.watchfd = inotify_add_watch(infd, fileName.c_str(), IN_DELETE_SELF|IN_CLOSE_WRITE|IN_MOVE_SELF);
-	LOGD("WATCH %d added", res.watchfd);
+	//res.watchfd = inotify_add_watch(infd, fileName.c_str(), IN_DELETE_SELF|IN_CLOSE_WRITE|IN_MOVE_SELF);
+	//LOGD("WATCH %d added", res.watchfd);
 
 	auto dn = path_directory(fileName);
 	if(dirnames.count(dn) == 0) {
 		LOGD("WATCHING %s", dn);
-		dirnames[dn] = inotify_add_watch(infd, dn.c_str(), IN_CREATE|IN_DELETE|IN_MOVED_TO|IN_CLOSE_WRITE);
+		dirnames[dn] = inotify_add_watch(infd, dn.c_str(), /* IN_CREATE|IN_DELETE| */ IN_MOVED_TO|IN_CLOSE_WRITE);
 	}
 
 	resources[res.name] = res;
@@ -187,7 +187,7 @@ void Resources::update() {
 						r.on_load(s);
 					}
 				}
-			} else {
+			} /* else {
 				for(auto &p : resources) {
 					auto &r = p.second;
 					if(r.watchfd == evt->wd) {
@@ -199,7 +199,7 @@ void Resources::update() {
 						r.on_load(s);
 					}
 				}
-			}
+			} */
 
 
 			rc -= (sizeof(inotify_event) + evt->len);

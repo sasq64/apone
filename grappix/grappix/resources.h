@@ -31,7 +31,7 @@ private:
 	struct Resource {
 		std::string name;
 		std::string file_name;
-		int watchfd;
+		//int watchfd;
 		std::function<void(image::bitmap &b)> generator;
 		std::function<void(const std::string &name)> on_load;
 		//std::vector<uint8_t> data;
