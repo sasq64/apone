@@ -5,16 +5,19 @@
 #include <cstring>
 #include <cstdint>
 
+#include <coreutils/log.h>
+
 class Fifo {
 
 public:
 	Fifo(int size) {
+		volume = 1.0;
 		buffer = NULL;
 		if(size > 0) {
 			buffer = (uint8_t *)malloc(size);
 		}
 		bufPtr = buffer;
-		position = 0;
+		lastSoundPos = position = 0;
 	}
 	~Fifo() {
 		if(buffer)
@@ -49,25 +52,43 @@ public:
 	void processBytes(uint8_t *src, int bytelen) {
 		int soundPos = -1;
 		short *samples = (short*)src;
+
+		if(volume != 1.0) {
+			for(int i=0; i<bytelen/2; i++) {
+				samples[i] = (samples[i] * volume);
+			}
+		}
 		for(int i=0; i<bytelen/2; i++) {
 			short s = samples[i];
 			if(s > 256 || s < -256)
 				soundPos = i;
 		}
-
 		if(soundPos >= 0)
 			lastSoundPos = position + soundPos;
 
 		position += (bytelen/2);
 	}
 
+
+	void clear() {
+		volume = 1.0;
+		bufPtr = buffer;
+		lastSoundPos = position = 0;
+
+	}
+
 	int filled() { return bufPtr - buffer; }
 
 	int getSilence() { return position - lastSoundPos; }
+	void setVolume(float v) { volume = v; }
 
 	uint8_t *ptr() { return bufPtr; }
 
 private:
+	float volume;
+
+	//short startLoop[44100*10];
+	//int loopPos;
 	//int size;
 	int lastSoundPos;
 	int position;
