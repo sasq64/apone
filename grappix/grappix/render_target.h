@@ -48,6 +48,11 @@ public:
 	void rectangle(float x, float y, float w, float h, uint32_t color, float scale = 1.0);
 
 
+	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	void draw(const T &t, Program &program) const {
+		draw_texture(t.id(), 0.0F, 0.0F, t.width(), t.height(), nullptr, program);
+	}
+
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type, typename V>
 	void draw(const T &t, const V &pos) const {
 		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height());

@@ -179,6 +179,7 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 
 	//uvs = nullptr;//uvs2;
 
+
 	if(recBuf == -1) {
 		static vector<float> p {
 			-1, 1, 0, 0,
@@ -228,7 +229,11 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 	else
 		program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
 
+
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	if(texture >= 0)
+		glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, Program &program) const {
