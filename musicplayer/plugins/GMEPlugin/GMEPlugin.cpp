@@ -25,11 +25,11 @@ public:
 			//meta["title"] = track0->game;
 
 			setMeta(
-				"title", track0->game,
+				"game", track0->game,
 				"composer", track0->author,
 				"copyright", track0->copyright,
 				"length", track0->length > 0 ? track0->length / 1000 : 0,
-				"songTitle", track0->song,
+				"title", track0->song,
 				"format", track0->system,
 				"songs", gme_track_count(emu)
 			);
@@ -62,7 +62,7 @@ public:
 		if(song >= 0) {
 			gme_info_t* track;
 			gme_track_info(emu, &track, song);
-			setMeta("songTitle", track->song,
+			setMeta("title", track->song,
 					"length", track->length > 0 ? track->length / 1000 : 0);
 
 			/* gme_err_t err = */ gme_start_track(emu, song);

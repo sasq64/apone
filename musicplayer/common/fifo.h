@@ -26,7 +26,6 @@ public:
 	void putBytes(uint8_t *src, int bytelen) {
 		if(src)
 			memcpy(bufPtr, src, bytelen);
-		processBytes(bufPtr, bytelen);
 		bufPtr += bytelen;
 	}
 	void putShorts(short *src, int shortlen) {
@@ -49,7 +48,18 @@ public:
 		return getBytes((uint8_t*)dest, shortlen*2) / 2;
 	}
 
-	void processBytes(uint8_t *src, int bytelen) {
+	void processShorts(short *src, int shortlen) {
+		processBytes((uint8_t*)src, shortlen*2);
+	}
+
+	void processBytes(uint8_t *s, int bytelen) {
+
+		uint8_t *src = s;
+		if(src == nullptr)
+			src = bufPtr;
+
+		putBytes(s, bytelen);
+
 		int soundPos = -1;
 		short *samples = (short*)src;
 

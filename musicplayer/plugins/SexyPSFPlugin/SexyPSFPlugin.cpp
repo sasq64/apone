@@ -24,6 +24,18 @@ public:
 		strcpy(temp, fileName.c_str());
 		sexyFifo = &fifo;
 		psfInfo = sexy_load(temp);
+
+		if(psfInfo) {
+			setMeta(
+				"title", psfInfo->title ? psfInfo->title : "",
+				"composer", psfInfo->artist ? psfInfo->artist : "",
+				"game", psfInfo->game ? psfInfo->game : "",
+				"length", psfInfo->length / 1000,
+				"copyright", psfInfo->copyright ? psfInfo->copyright : "",
+				"format", "Playstation"
+				);
+		}
+
 		delete [] temp;
 	}
 
