@@ -28,7 +28,7 @@
 #include "soundlib/Sndfile.h"
 #include "soundlib/AudioReadTarget.h"
 #include "soundlib/FileReader.h"
-#include "test/test.h"
+//#include "test/test.h"
 
 namespace openmpt {
 
