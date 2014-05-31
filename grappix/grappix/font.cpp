@@ -158,7 +158,7 @@ TextBuf Font::make_text(const string &text) const {
 	if(!ref->font)
 		return make_text2(text);
 
-	LOGD("Make text");
+	//LOGD("Make text");
 
 	//auto tl = text.length();
 	//vector<GLfloat> p;

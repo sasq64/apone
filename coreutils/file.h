@@ -64,6 +64,18 @@ public:
 	bool exists();
 	static bool exists(const std::string &fileName);
 
+	static void copy(const std::string &from, const std::string &to) {
+		File f0 { from };
+		File f1 { to };
+		f0.readAll();
+
+		const auto &data = f0.getData();
+
+		f1.write(&data[0], data.size());
+		f0.close();
+		f1.close();
+	}
+
 	static std::string resolvePath(const std::string &fileName) {
 		char temp[PATH_MAX];
 		if(::realpath(fileName.c_str(), temp))

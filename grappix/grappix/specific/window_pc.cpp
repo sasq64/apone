@@ -134,6 +134,8 @@ void Window::open(int w, int h, bool fs) {
 		}	
 	});
 
+	flip();
+
 };
 
 #ifdef EMSCRIPTEN

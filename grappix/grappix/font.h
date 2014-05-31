@@ -40,7 +40,7 @@ public:
 			if(it->second.age == 0) {
 				it->second.value.destroy();
 				map.erase(it++);
-				LOGD("Erasing");
+				//LOGD("Erasing");
 			} else {
 				it->second.age--;
 				it++;
