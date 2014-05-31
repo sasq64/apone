@@ -13,6 +13,15 @@
 
 namespace chipmachine {
 
+class player_exception : public std::exception {
+public:
+	player_exception(const std::string &msg = "") : msg(msg) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
+};
+
+
 class ChipPlayer {
 public:
 	typedef std::function<void(const std::vector<std::string> &meta, ChipPlayer*)> Callback;

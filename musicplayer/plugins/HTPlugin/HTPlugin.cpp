@@ -3,6 +3,7 @@
 
 #include "ht/misc.h"
 
+#include "../../PSFFile.h"
 #include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
@@ -37,14 +38,10 @@ public:
 		int load_result = psf_load( temp, &psf_file_system, version, sdsf_loader, &lstate, 0, 0 );
 		if (load_result < 0)
 		{
-			return;
+			throw player_exception();
 		}
 
 		void * sega_state = malloc( sega_get_state_size( version - 0x10 ) ); 
-		if (!sega_state)
-		{
-			return;
-		}
 
 		sega_clear_state( sega_state, version - 0x10);
 
@@ -86,6 +83,22 @@ public:
 		sdsfinfo->emu = sega_state;
 		sdsfinfo->yam = yam;
 		sdsfinfo->version = version;
+
+		PSFFile psf { fileName };
+		if(psf.valid()) {
+			auto &tags = psf.tags();
+
+			int seconds = psf.songLength();
+
+			setMeta("composer", tags["artist"],
+				"title", tags["title"],
+				"game", tags["game"],
+				"format", "Dreamcast",
+				"length", seconds
+			);
+		}
+
+
 
 		this->state = sdsfinfo;
 	}
@@ -129,7 +142,11 @@ bool HTPlugin::canHandle(const std::string &name) {
 }
 
 ChipPlayer *HTPlugin::fromFile(const std::string &fileName) {
-	return new HTPlayer { fileName };
+	try {
+		return new HTPlayer { fileName };
+	} catch(player_exception &e) {
+		return nullptr;
+	}
 };
 
 }
