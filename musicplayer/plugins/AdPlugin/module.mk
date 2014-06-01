@@ -3,7 +3,6 @@ ADPLUGIN_INCLUDED = 1
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 LOCAL_SRC_FILES := \
-	    resampler.c \
 		AdPlugin.cpp \
 		opl/dbopl.cpp \
 		libbinio/binfile.cpp \
