@@ -17,7 +17,7 @@ extern "C" {
 }
 #include "lazyusf/misc.h"
 
-int32_t sample_rate;
+#include "resampler.h"
 
 using namespace std;
 
@@ -55,6 +55,15 @@ public:
 		usf_set_fifo_full( usf_state->emu_state, usf_state->enable_fifo_full );
 
 		usf_render(usf_state->emu_state, 0, 0, &sample_rate);
+		LOGD("######### RATE %d", sample_rate);
+		resampler_init();
+		for(auto &r : resampler) {
+			r = resampler_create();
+			resampler_set_quality(r, RESAMPLER_QUALITY_CUBIC);
+			resampler_set_rate(r,  (float)sample_rate / 44100.0);
+			//resampler_set_rate(r,  44100.0 / (float)sample_rate);
+			resampler_clear(r);
+		}
 	}
 
 
@@ -63,11 +72,44 @@ public:
 	}
 
 	virtual int getSamples(int16_t *target, int noSamples) override {
-		usf_render(usf_state->emu_state, target, noSamples/2, &sample_rate);
-		return noSamples;
+
+		static int16_t temp[8192];
+		int sr;
+		int samples_written = 0;
+
+		while(samples_written < noSamples) {
+
+			auto free_count = resampler_get_free_count(resampler[0]);
+			if(free_count > 0)
+				usf_render(usf_state->emu_state, temp, free_count, &sr);
+			if(sr != sample_rate) {
+				resampler_set_rate(resampler[0], 44100.0 / (float)sample_rate);
+				resampler_set_rate(resampler[1], 44100.0 / (float)sample_rate);
+				sample_rate = sr;
+				LOGD("######### NEW RATE %d", sample_rate);
+			}
+
+			for(unsigned i = 0; i<free_count; i++) {
+				resampler_write_sample(resampler[0], temp[i*2]);
+				resampler_write_sample(resampler[1], temp[i*2+1]);
+			}
+
+			while(samples_written < noSamples && resampler_get_sample_count(resampler[0]) > 0) {
+				auto s0 = resampler_get_sample(resampler[0]);
+				resampler_remove_sample(resampler[0]);
+				auto s1 = resampler_get_sample(resampler[1]);
+				resampler_remove_sample(resampler[1]);
+				target[samples_written++] = s0;
+				target[samples_written++] = s1;
+			}
+		}
+
+		return samples_written;
 	}
 private:
 	usf_loader_state *usf_state;
+	void *resampler[2];
+	int32_t sample_rate;
 };
 
 static const set<string> supported_ext { "usf", "miniusf" };

@@ -2,7 +2,7 @@ ifeq ($(USFPLUGIN_INCLUDED),)
 USFPLUGIN_INCLUDED = 1
 THIS_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
-usfplugin_FILES := \
+usfplugin_FILES := $(THIS_DIR)resampler.c \
 		$(THIS_DIR)USFPlugin.cpp \
 		$(THIS_DIR)lazyusf/psflib.c \
 		$(THIS_DIR)lazyusf/audio.c \
