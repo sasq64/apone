@@ -79,8 +79,8 @@ public:
 	Font(const std::string &ttfName, int size, int flags = DISTANCE_MAP);
 
 	TextBuf make_text(const std::string &text) const;
-	void render_text(const RenderTarget &target, const TextBuf &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
-	void render_text(const RenderTarget &target, const std::string &text, int x = 0, int y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
+	void render_text(const RenderTarget &target, const TextBuf &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
+	void render_text(const RenderTarget &target, const std::string &text, float x = 0, float y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
 
 	int get_width(const std::string &text, float scale);
 
@@ -89,6 +89,8 @@ public:
 	}
 
 private:
+
+	int size;
 
 	class FontRef {
 	public:

@@ -351,11 +351,11 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void RenderTarget::text(const Font &font, const std::string &text, int x, int y, uint32_t col, float scale) const {
+void RenderTarget::text(const Font &font, const std::string &text, float x, float y, uint32_t col, float scale) const {
 	font.render_text(*this, text, x, y, col, scale);
 }
 
-void RenderTarget::text(const std::string &text, int x, int y, uint32_t col, float scale) const {
+void RenderTarget::text(const std::string &text, float x, float y, uint32_t col, float scale) const {
 
 	if(!font)
 		font = make_shared<Font>(true);

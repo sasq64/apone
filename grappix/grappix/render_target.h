@@ -85,13 +85,13 @@ public:
 	float scale() const { return globalScale; }
 	float scale(float s) { globalScale = s; return s; }
 
-	void text(const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
-	void text(const char c, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const {
+	void text(const std::string &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
+	void text(const char c, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const {
 		static char s[2] = {0,0};
 		s[0] = c;
 		text(s, x, y, color, scale);
 	}
-	void text(const Font &font, const std::string &text, int x = 0, int y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
+	void text(const Font &font, const std::string &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	void render(T renderable) {

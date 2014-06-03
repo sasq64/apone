@@ -22,7 +22,7 @@ namespace grappix {
 
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
-Font::Font(bool stfont) {
+Font::Font(bool stfont) : size(32) {
 	ref = make_shared<FontRef>(0, 0, "", 0.0);
 	texture_atlas_t *atlas = new texture_atlas_t();
 	ref->atlas = atlas;
@@ -39,7 +39,7 @@ Font::Font(bool stfont) {
 const static wchar_t *fontLetters = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
 
-Font::Font(const string &ttfName, int size, int flags) {
+Font::Font(const string &ttfName, int size, int flags) : size(size) {
 
 	int tsize = flags & 0xffffc0;
 	if(tsize == 0) tsize = 128;
@@ -250,13 +250,15 @@ TextBuf Font::make_text(const string &text) const {
 }
 
 
-void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, int y, uint32_t color, float scale) const {
+void Font::render_text(const RenderTarget &target, const TextBuf &text, float x, float y, uint32_t color, float scale) const {
 
 	//LOGD("[%f]", uvs);
 	//auto _width = screen.size().first;
 	//auto _height = screen.size().second;
 
 	//LOGD("Render text %d %d", vbuf[0], vbuf[1]);
+
+	scale = scale * 32.0 / (float)size;
 
 	glBindBuffer(GL_ARRAY_BUFFER, text.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, text.vbuf[1]);
@@ -309,7 +311,7 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, int x, i
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Font::render_text(const RenderTarget &target, const std::string &text, int x, int y, uint32_t col, float scale) const {
+void Font::render_text(const RenderTarget &target, const std::string &text, float x, float y, uint32_t col, float scale) const {
 	if(text == "")
 		return;
 	auto buf = cache.get(text);
