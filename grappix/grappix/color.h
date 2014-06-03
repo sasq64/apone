@@ -8,6 +8,7 @@ namespace grappix {
 
 template <typename T = float> class Base_Color {
 public:
+	Base_Color() {}
 	Base_Color(uint32_t c) {
 		setColor(c);
 	}
