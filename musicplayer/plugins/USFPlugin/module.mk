@@ -32,7 +32,8 @@ usfplugin_FILES := $(THIS_DIR)resampler.c \
 		$(THIS_DIR)lazyusf/rsp_hle/plugin.c
 
 
-usfplugin_CFLAGS = -O3 -ftree-vectorizer-verbose=1 -ffast-math -finline-functions -funswitch-loops -fpredictive-commoning -fgcse-after-reload -ftree-vectorize -fipa-cp-clone
+usfplugin_CFLAGS = -O3 -ffast-math -finline-functions -funswitch-loops
+# -ftree-vectorizer-verbose=1 -fpredictive-commoning -fgcse-after-reload -ftree-vectorize -fipa-cp-clone
 #-DARCH_MIN_ARM_NEON -mfpu=neon 
 usfplugin_INCLUDES := $(THIS_DIR) $(THIS_DIR)/lazyusf $(THIS_DIR)/lazyusf/rsp_hle
 		

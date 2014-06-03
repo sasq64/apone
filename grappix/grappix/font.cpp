@@ -334,6 +334,7 @@ int Font::get_width(const string &text, float scale) {
 		buf = make_text(text);
 		cache.put(text, buf);
 	}
+	scale = scale * 32.0 / (float)size;
 	return (buf.rec[2] - buf.rec[0]) * scale;
 }
 
