@@ -6,8 +6,9 @@
 #include <mutex>
 #include <array>
 
-#include <rfftw.h>
-
+//#include <rfftw.h>
+//#include <fftw3.h>
+#include "fftw-3.3.4/api/fftw3.h"
 
 class SpectrumAnalyzer {
 public:
@@ -20,13 +21,15 @@ private:
 
 	std::vector<uint8_t> eq;
 
-	fftw_real fftin[fft_size], fftout[fft_size];
-	rfftw_plan fftwp;
-
+	//fftw_real fftin[fft_size], fftout[fft_size];
+	double fftin[fft_size];
+	fftw_complex fftout[fft_size];
+	fftw_plan fftwp;
 public:
 
 	SpectrumAnalyzer() : eq(eq_slots) {
-		fftwp = rfftw_create_plan(fft_size, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+		//fftwp = rfftw_create_plan(fft_size, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+		fftwp = fftw_plan_dft_r2c_1d(fft_size, fftin, fftout, FFTW_ESTIMATE);
 	}
 
 	const std::array<uint16_t, eq_slots> getLevels() {

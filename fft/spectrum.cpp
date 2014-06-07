@@ -19,13 +19,15 @@ void SpectrumAnalyzer::addAudio(int16_t *samples, int len) {
 		for(int i=0; i<fft_size; i++) {
 			fftin[i] = ((float)samples[pos+i*2] + (float)samples[pos+i*2+1])/(65536.0);
 		}
-		rfftw_one(fftwp, fftin, fftout);
+		//rfftw_one(fftwp, fftin, fftout);
+		fftw_execute(fftwp);
+
 		pos += fft_size*2;
 
-		power[0] = fftout[0]*fftout[0];  /* DC component */
+		power[0] = fftout[0][0]*fftout[0][0];  /* DC component */
 		for(int k = 1; k < (fft_size+1)/2; ++k)  /* (k < fft_size/2 rounded up) */
-			power[k] = fftout[k]*fftout[k] + fftout[fft_size-k]*fftout[fft_size-k];
-		power[fft_size/2] = fftout[fft_size/2]*fftout[fft_size/2];  /* Nyquist freq. */
+			power[k] = fftout[0][k]*fftout[0][k] + fftout[0][fft_size-k]*fftout[0][fft_size-k];
+		power[fft_size/2] = fftout[0][fft_size/2]*fftout[0][fft_size/2];  /* Nyquist freq. */
 		float sum = 0;
 		int j = 0;
 
