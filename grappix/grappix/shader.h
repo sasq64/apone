@@ -72,7 +72,7 @@ public:
 		return p.program == program;
 	}
 
-	Program clone() {
+	Program clone() const {
 		return Program(vSource, fSource);
 	}
 
@@ -87,7 +87,7 @@ public:
 		return fSource;
 	}
 
-	GLuint getAttribLocation(const std::string &name) {
+	GLuint getAttribLocation(const std::string &name) const {
 		GLuint a;
 		if(attributes.count(name) == 0) {
 			a = glGetAttribLocation(program, name.c_str());
@@ -97,7 +97,7 @@ public:
 		}
 		return a;
 	}
-	GLuint getUniformLocation(const std::string &name) {
+	GLuint getUniformLocation(const std::string &name) const {
 		GLuint u;
 		if(uniforms.count(name) == 0) {
 			u = glGetUniformLocation(program, name.c_str());
@@ -108,53 +108,53 @@ public:
 		return u;
 	}
 
-	void setUniform(const std::string &name, const utils::mat4f &m) {
+	void setUniform(const std::string &name, const utils::mat4f &m) const {
 		auto h = getUniformLocation(name);
 		glUniformMatrix4fv(h, 1, GL_FALSE, &m[0][0]);
 	}
 
-	void setUniform(const std::string &name, float f0) {
+	void setUniform(const std::string &name, float f0) const {
 		auto h = getUniformLocation(name);
 		glUniform1f(h, f0);
 	}
 
-	void setUniform(const std::string &name, float f0, float f1) {
+	void setUniform(const std::string &name, float f0, float f1) const {
 		auto h = getUniformLocation(name);
 		glUniform2f(h, f0, f1);
 	}
 
-	void setUniform(const std::string &name, float f0, float f1, float f2) {
+	void setUniform(const std::string &name, float f0, float f1, float f2) const {
 		auto h = getUniformLocation(name);
 		glUniform3f(h, f0, f1, f2);
 	}
 
-	void setUniform(const std::string &name, float f0, float f1, float f2, float f3) {
+	void setUniform(const std::string &name, float f0, float f1, float f2, float f3) const {
 		auto h = getUniformLocation(name);
 		glUniform4f(h, f0, f1, f2, f3);
 	}
 
-	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) {
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const {
 		GLuint h = getAttribLocation(name);
 		glVertexAttribPointer(h, size, type, normalized, stride, ptr);
 		glEnableVertexAttribArray(h);
 	}
 
-	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) {
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) const {
 		GLuint h = getAttribLocation(name);
 		glVertexAttribPointer(h, size, type, normalized, stride, reinterpret_cast<const GLvoid*>(offset));
 		glEnableVertexAttribArray(h);
 	}
 
-	void use() { glUseProgram(program); }
+	void use() const { glUseProgram(program); }
 
-	GLint id() { return program; }
+	GLint id() const { return program; }
 
 	//std::unordered_map<uint32_t, GLint> programs;
 	//std::vector<std::string> flags;
 
 //private:
-	std::unordered_map<std::string, GLuint> uniforms;
-	std::unordered_map<std::string, GLuint> attributes;
+	mutable std::unordered_map<std::string, GLuint> uniforms;
+	mutable std::unordered_map<std::string, GLuint> attributes;
 	std::string vSource;
 	std::string fSource;
 
@@ -163,7 +163,7 @@ public:
 	GLint pixelShader;
 };
 
-Program& get_program(program_name program);
+const Program& get_program(program_name program);
 
 //Program get_program_obj(program_name program);
 }
