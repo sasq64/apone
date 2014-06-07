@@ -236,8 +236,8 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 		glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-/*
-void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, const Program &program) const {
+
+void RenderTarget::draw_textures(GLint texture, float *points, int count, float w, float h, float *uvs, const Program &program) const {
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);
@@ -315,7 +315,6 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 }
-*/
 
 void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, const Program &program) {
 

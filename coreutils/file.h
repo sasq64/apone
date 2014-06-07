@@ -14,6 +14,7 @@
 #include <iostream>
 
 //#include "utils/format.h"
+#include "utils.h"
 
 namespace utils {
 
@@ -95,6 +96,10 @@ public:
 	const std::vector<uint8_t>& getData();
 
 	const std::string &getName() const { return fileName; }
+
+	const std::string getDirectory() const { return path_directory(resolvePath(fileName)); }
+
+
 	int getSize() const { 
 		if(size < 0) {
 			struct stat ss;

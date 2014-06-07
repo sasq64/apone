@@ -16,46 +16,19 @@ using namespace utils;
 
 namespace grappix {
 
+template <> std::string load_data(utils::File &f) {
+	return f.read();
+};
+
+
 Resources::Resources() {
 }
 
 Resources::~Resources() {
 }
 
-//Resources::Resources(const Resources &) = delete;
-
-void Resources::register_image(const string &name, function<void(bitmap &b)> generator) {
-
-	string fname = format("resources/%s.png", name);
-	Resource res;
-	res.name = name;
-	res.file_name = fname;
-	res.generator = generator;
-
-	if(File::exists(fname)) {
-		res.image = load_png(fname);
-	} else {
-		//auto res = images.emplace(piecewise_construct, forward_as_tuple(name), forward_as_tuple(w, h));
-		generator(res.image);
-		//save_png(res.image, fname);
-	}
-	res.loaded = true;
-	resources[name] = res;
-};
-
-void Resources::on_load(const string &name, function<void(const string &name)> f) {
-	auto &r = resources[name];
-	r.on_load = f;
-	if(r.loaded)
-		f(name);
-}
 
 bool Resources::done() { return true; }
-
-const bitmap& Resources::get_image(const string &name) {
-	const auto &r = resources[name];
-	return r.image;
-}
 
 void Resources::update() {
 }
@@ -79,8 +52,25 @@ using namespace utils;
 
 namespace grappix {
 
+template <> std::string load_data(utils::File &f) {
+	return f.read();
+};
+
+template <> image::bitmap load_data(utils::File &f) {
+	return image::load_png(f.getName());
+}
+
+template <> void save_data(utils::File &f, const std::string &data) {
+	f.write(data);
+}
+
+template <> void save_data(utils::File &f, const image::bitmap &data) {
+	image::save_png(data, f.getName());
+}
+
+
 Resources::Resources() : delay_counter(0) {
-	makedir("resources");
+	//makedir("resources");
 	infd = inotify_init();
 	LOGD("INOTIFY FD = %d", infd);
 	//watchfd = inotify_add_watch(infd, "resources", IN_CREATE|IN_DELETE|IN_CLOSE_WRITE);
@@ -89,62 +79,16 @@ Resources::Resources() : delay_counter(0) {
 Resources::~Resources() {
 }
 
-//Resources::Resources(const Resources &) = delete;
-
-void Resources::register_image(const string &name, function<void(bitmap &b)> generator) {
-
-	string fname = format("resources/%s.png", name);
-	Resource res;
-	res.name = name;
-	res.file_name = fname;
-	res.generator = generator;
-
-	if(File::exists(fname)) {
-		res.image = load_png(fname);
-	} else {
-		//auto res = images.emplace(piecewise_construct, forward_as_tuple(name), forward_as_tuple(w, h));
-		generator(res.image);
-		save_png(res.image, fname);
-	}
-	res.loaded = true;
-	resources[name] = res;
-};
-
-void Resources::load_text(const std::string &fileName, std::function<void(const std::string &contents)> func) {
-	Resource res;
-	res.name = fileName;
-	res.file_name = fileName;
-	res.on_load = func;
-	res.loaded = true;
-	//res.watchfd = inotify_add_watch(infd, fileName.c_str(), IN_DELETE_SELF|IN_CLOSE_WRITE|IN_MOVE_SELF);
-	//LOGD("WATCH %d added", res.watchfd);
-
-	auto dn = path_directory(fileName);
-	if(dirnames.count(dn) == 0) {
-		LOGD("WATCHING %s", dn);
-		dirnames[dn] = inotify_add_watch(infd, dn.c_str(), /* IN_CREATE|IN_DELETE| */ IN_MOVED_TO|IN_CLOSE_WRITE);
-	}
-
-	resources[res.name] = res;
-	File f { fileName };
-	auto s = f.read();
-	f.close();
-	res.on_load(s);
-}
-
-void Resources::on_load(const string &name, function<void(const string &name)> f) {
-	auto &r = resources[name];
-	r.on_load = f;
-	if(r.loaded)
-		f(name);
+void Resources::setNotify(const std::string &fileName) {
+ 	auto dn = path_directory(fileName);
+ 	if(dirnames.count(dn) == 0) {
+ 		LOGD("WATCHING %s", dn);
+ 		dirnames[dn] = inotify_add_watch(infd, dn.c_str(), /* IN_CREATE|IN_DELETE| */ IN_MOVED_TO|IN_CLOSE_WRITE);
+ 	}
 }
 
 bool Resources::done() { return true; }
 
-const bitmap& Resources::get_image(const string &name) {
-	const auto &r = resources[name];
-	return r.image;
-}
 
 void Resources::update() {
 	if(delay_counter++ < 30)
@@ -176,32 +120,13 @@ void Resources::update() {
 				}
 			}
 			if(fn != "") {
-				for(auto &p : resources) {
-					auto &r = p.second;
-					if(r.file_name == fn) {
-						LOGD("Reloading resource %s", r.file_name);
-						//r.image = load_png(r.file_name);
-						//r.on_load(r.name, *this);
-						File f { r.file_name };
-						auto s = f.read();
-						r.on_load(s);
-					}
+				LOGD("Checking for %s", fn);
+				if(resources.count(fn) > 0) {
+					auto r = resources[fn];
+					LOGD("RELOADING");
+					r->load();
 				}
-			} /* else {
-				for(auto &p : resources) {
-					auto &r = p.second;
-					if(r.watchfd == evt->wd) {
-						LOGD("Reloading resource %s", r.file_name);
-						//r.image = load_png(r.file_name);
-						//r.on_load(r.name, *this);
-						File f { r.file_name };
-						auto s = f.read();
-						r.on_load(s);
-					}
-				}
-			} */
-
-
+			} 
 			rc -= (sizeof(inotify_event) + evt->len);
 			ptr += (sizeof(inotify_event) + evt->len);
 		}

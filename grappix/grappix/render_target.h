@@ -89,7 +89,7 @@ public:
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, program);
 	}
 
-	//void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
+	void draw_textures(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
 	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
 
 	void clear(uint32_t color = 0xff000000);
