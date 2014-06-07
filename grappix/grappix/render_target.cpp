@@ -174,7 +174,7 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 
 //static float xrot = 0;
 
-void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, Program &program) const {
+void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, const Program &program) const {
 //	static float uvs2[] = { 0,0,1,0,0,1,1,1 };
 
 	//uvs = nullptr;//uvs2;
@@ -236,7 +236,8 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 		glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, Program &program) const {
+/*
+void RenderTarget::draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs, const Program &program) const {
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);
@@ -314,12 +315,14 @@ void RenderTarget::draw_texture(GLint texture, float *points, int count, float w
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 }
+*/
 
-void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, float scale) {
+void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, const Program &program) {
 
+	float scale = 1.0;
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
-	auto &program = get_program(FLAT_PROGRAM);
+	//auto &program = get_program(FLAT_PROGRAM);
 	program.use();
 
 	if(recBuf == -1) {

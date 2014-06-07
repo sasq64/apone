@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "font.h"
 #include "transform.h"
+#include "rectangle.h"
 #include <image/bitmap.h>
 
 #include <vector>
@@ -34,7 +35,7 @@ public:
 		circle(xy[0], xy[1], radius, color);
 	}
 	void circle(int x, int y, float radius, uint32_t color);
-
+/*
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	void rectangle(T pos, T size, uint32_t color, float scale = 1.0) {
 		rectangle(pos[0], pos[1], size[0], size[1], color, scale);
@@ -44,9 +45,24 @@ public:
 	void rectangle(T pos, int w, int h, uint32_t color, float scale = 1.0) {
 		rectangle(pos[0], pos[1], w, h, color, scale);
 	}
+*/
+	void rectangle(const Rectangle &rec, uint32_t color, const Program &program = get_program(FLAT_PROGRAM)) {
+		rectangle(rec.x, rec.y, rec.w, rec.h, color, program);
+	}
+	void rectangle(const Rectangle &rec, const Program &program = get_program(FLAT_PROGRAM)) {
+		rectangle(rec.x, rec.y, rec.w, rec.h, 0xffffffff, program);
+	}
+	void rectangle(float x, float y, float w, float h, uint32_t color, const Program &program = get_program(FLAT_PROGRAM));
 
-	void rectangle(float x, float y, float w, float h, uint32_t color, float scale = 1.0);
+	template <typename TEXTURE, class = typename std::enable_if<std::is_compound<TEXTURE>::value>::type>
+	void image(TEXTURE t, float x, float y, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
+		draw_texture(t.id(), x, y, t.width(), t.height(), nullptr, program);
+	}
 
+	template <typename TEXTURE, class = typename std::enable_if<std::is_compound<TEXTURE>::value>::type>
+	void image(TEXTURE t, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
+		draw_texture(t.id(), 0, 0, t.width(), t.height(), nullptr, program);
+	}
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	void draw(const T &t, Program &program) const {
@@ -59,27 +75,28 @@ public:
 	}
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type, typename V>
-	void draw(const T &t, const V &pos, float w, float h, Program &program = get_program(TEXTURED_PROGRAM) ) const {
+	void draw(const T &t, const V &pos, float w, float h, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), pos[0], pos[1], w, h, nullptr, program);
 	}
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	void draw(const T &t, float x0, float y0, float w, float h, float *uvs, Program &program = get_program(TEXTURED_PROGRAM) ) const {
+	void draw(const T &t, float x0, float y0, float w, float h, float *uvs, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, w, h, uvs, program);
 	}
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	void draw(const T &t, float x0 = 0, float y0 = 0, Program &program = get_program(TEXTURED_PROGRAM) ) const {
+	void draw(const T &t, float x0 = 0, float y0 = 0, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, program);
 	}
 
-	void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, Program &program = get_program(TEXTURED_PROGRAM) ) const;
-	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, Program &program = get_program(TEXTURED_PROGRAM) ) const;
+	//void draw_texture(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
+	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
 
 	void clear(uint32_t color = 0xff000000);
 
 	unsigned int width() const { return (unsigned int)_width; }
 	unsigned int height() const { return (unsigned int)_height; }
+	const Rectangle rec() const { return Rectangle(0,0,_width, _height); }
 	GLuint buffer() const { return frameBuffer; }
 
 	float scale() const { return globalScale; }
