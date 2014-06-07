@@ -58,7 +58,7 @@ private:
 
 class Tween {
 public:
-	Tween() : delay(0.0), startTime(currentTime), tweenFunc(smoothStep_fn) {}
+	Tween() : _delay(0.0), startTime(currentTime), tweenFunc(smoothStep_fn) {}
 
 	Tween& operator=(const Tween &other) = delete;
 	Tween(const Tween& other) = delete;
@@ -69,6 +69,11 @@ public:
 
 	Tween& seconds(float s) {
 		totalTime = s;
+		return *this;
+	}
+
+	Tween& delay(float d) {
+		_delay = d;
 		return *this;
 	}
 
@@ -123,7 +128,7 @@ public:
 		}
 
 		a->tweenFunc = tweenFunc;
-		a->delay = delay;
+		a->delay = _delay;
 		return *this;
 	}
 
@@ -212,7 +217,7 @@ private:
 
 	static double sine_fn(double t);
 
-	double delay;
+	double _delay;
 	double startTime;
 	double totalTime;
 	double dspeed;
