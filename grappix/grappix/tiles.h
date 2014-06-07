@@ -66,6 +66,11 @@ struct TileSet {
 
 	void render_tile(int tileno, RenderTarget &target, float x, float y, double s);
 
+	image::bitmap get_pixels() {
+		return texture.get_pixels();
+	}
+
+
 	Texture texture;
 
 	struct tile {
@@ -173,7 +178,7 @@ struct Sprite {
 	Sprite(std::vector<int> frames, float x = 0.0f, float y = 0.0f, float scale = 1.0f) : frames(frames), tileno(-1), x(x), y(y), scale(scale), frame(0) {
 		LOGD("Sprite created");
 	}
-	//~Sprite() { LOGD("Sprite destroyed"); }
+	~Sprite() { LOGD("Sprite destroyed"); }
 	std::vector<int> frames;
 
 	int tileno;
@@ -203,7 +208,7 @@ public:
 	double scrollx;
 	double scrolly;
 private:
-	std::set<std::weak_ptr<Sprite>, SpriteCompare> sprites;
+	std::multiset<std::weak_ptr<Sprite>, SpriteCompare> sprites;
 	TileSet tileSet;
 	int32_t pixel_width;
 	int32_t pixel_height;

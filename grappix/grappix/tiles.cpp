@@ -279,23 +279,25 @@ shared_ptr<Sprite> SpriteLayer::addSprite(vector<int> frames, float x, float y, 
 
 void SpriteLayer::render(RenderTarget &target, int x, int y) {
 
-	glBindTexture(GL_TEXTURE_2D, tileSet.texture.id());
+	//glBindTexture(GL_TEXTURE_2D, tileSet.texture.id());
 
 	if(pixel_width >= 0) {
-		//glScissor(x, target.height()-pixel_height-y, pixel_width, pixel_height);
-		//glEnable(GL_SCISSOR_TEST);
+		glScissor(x, target.height()-pixel_height-y, pixel_width, pixel_height);
+		glEnable(GL_SCISSOR_TEST);
 	}
 
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	//glEnable(GL_DEPTH_TEST);
 	auto i = sprites.begin();
 	while(i != sprites.end()) {
+		//LOGD("x");
 		auto s = i->lock();
 		if(s) {
 			auto &t = s->tileno < 0 ? (*tileSet.tiles)[s->frames[s->frame]] : (*tileSet.tiles)[s->tileno];
 			vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
-			target.draw_texture(-1, (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
+			target.draw_texture(tileSet.texture.id(), (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
+			LOGD("Render %d %d %d %d %d - %f %f", s->tileno, (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, t.s0, t.s1); 
+			//target.draw(tileSet.texture);
 			//tileSet.render_tile(s->tileno, target, s->x + x - scrollx, s->y + y - scrolly, s->scale);
 			++i;
 		} else 
@@ -304,7 +306,7 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 	if(pixel_width >= 0)
 		glDisable(GL_SCISSOR_TEST);
 
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 }
 
 void SpriteLayer::foreach(function<void(Sprite&)> f) {
