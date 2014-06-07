@@ -94,11 +94,15 @@ private:
 
 	class FontRef {
 	public:
-		FontRef(int w, int h, const std::string &ttfName, int size);
+		FontRef(int w, int h, const std::string &ttfName, int fsize);
 		~FontRef();
+		int w, h;
+		std::string ttfName;
 		void *atlas;
 		void *font;
 	};
+
+	static std::vector<std::weak_ptr<FontRef>> fontRefs;
 
 	TextBuf make_text2(const std::string &text) const;
 

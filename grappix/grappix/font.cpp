@@ -20,6 +20,8 @@ using namespace std;
 
 namespace grappix {
 
+std::vector<std::weak_ptr<Font::FontRef>> Font::fontRefs;
+
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 Font::Font(bool stfont) : size(32) {
@@ -45,7 +47,20 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 	if(tsize == 0) tsize = 128;
 	flags &= 0x3f;
 
+	for(auto &fr : fontRefs) {
+		auto r = fr.lock();
+		if(r) {
+			LOGD("%s(%d) vs %s(%d)",r->ttfName, r->w, ttfName, tsize);
+			if(r->ttfName == ttfName && r->w == tsize && r->h == tsize) {
+				ref = r;
+				LOGD("Reusing %s (%d)", ttfName, size);
+				return;
+			}
+		}
+	}
+
 	ref = make_shared<FontRef>(tsize, tsize, ttfName, size);
+	fontRefs.push_back(ref);
 
 	auto text = fontLetters;
 	if(flags & UPPER_CASE)
@@ -339,13 +354,13 @@ int Font::get_width(const string &text, float scale) {
 }
 
 
-Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int size) : atlas(nullptr), font(nullptr) {
+Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize) : w(w), h(h), ttfName(ttfName), atlas(nullptr), font(nullptr) {
 	LOGD("FONTREF CONSTRUCT");
 	texture_atlas_t *a = nullptr;
 	if(w > 0 && h > 0)
 		a = texture_atlas_new(w, h, 1);
-	if(a && size > 0) {
-		font = (texture_font_t*)texture_font_new(a, ttfName.c_str(), size);
+	if(a && fsize > 0) {
+		font = (texture_font_t*)texture_font_new(a, ttfName.c_str(), fsize);
 		LOGD("FONTREF DONE");
 	}
 	atlas = a;
