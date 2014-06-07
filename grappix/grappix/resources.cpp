@@ -43,11 +43,11 @@ void Resources::register_image(const string &name, function<void(bitmap &b)> gen
 	resources[name] = res;
 };
 
-void Resources::on_load(const string &name, function<void(const string &name, Resources&)> f) {
+void Resources::on_load(const string &name, function<void(const string &name)> f) {
 	auto &r = resources[name];
 	r.on_load = f;
 	if(r.loaded)
-		f(name, *this);
+		f(name);
 }
 
 bool Resources::done() { return true; }

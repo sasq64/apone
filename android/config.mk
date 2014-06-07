@@ -13,4 +13,6 @@ CFLAGS += -DANDROID -DGL_ES
 LDFLAGS += -fPIC -Wl,-shared -no-canonical-prefixes -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now 
 FIX_MANIFEST := $(THIS_DIR)fixManifest.py
 
+ARM = 1
+
 endif

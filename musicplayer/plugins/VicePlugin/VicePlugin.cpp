@@ -333,7 +333,7 @@ void VicePlugin::readLengths() {
 		auto data = f.getData();
 
 		auto len = get<uint32_t>(data, 0);
-		LOGD("Found %d songs", len);
+		LOGD("Found %d songs in songlengths.dat", len);
 
 		mainHash.resize(6*len);
 		memcpy(&mainHash[0], &data[4], 6*len);

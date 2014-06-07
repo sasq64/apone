@@ -116,7 +116,6 @@ void Window::open(int w, int h, bool fs) {
 	keyboardThread = thread([=]() {
 		vector<uint8_t> buf(8);
 		int k = ::open("/dev/hidraw0", O_RDONLY);
-		fprintf(stderr, "Reading kbd");
 		while(true) {
 			read(k, &buf[0], 8);
 			LOGD("[%02x]", buf);

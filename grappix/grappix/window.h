@@ -30,8 +30,8 @@ public:
 
 	Window();
 
-	void open(bool fs);
-	void open(int w = 0, int h = 0, bool fs = true);
+	void open(bool fs = true);
+	void open(int w, int h, bool fs = false);
 	void flip();
 	void vsync();
 
