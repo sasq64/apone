@@ -58,8 +58,8 @@ struct TileSet {
 	int add_solid(uint32_t color, uint32_t w, uint32_t h);
 
 	void set_tile(unsigned int no) {
-		while(tiles->size() < no)
-			tiles->emplace_back(0,0,0,0,0,0);
+		while(tiles.size() < no)
+			tiles.emplace_back(0,0,0,0,0,0);
 	}
 
 	int add_tile(int x, int y, int w, int h);
@@ -79,9 +79,13 @@ struct TileSet {
 		int w, h;
 	};
 
-	std::shared_ptr<std::vector<tile>> tiles;
+	std::vector<tile> tiles;
 	std::shared_ptr<image::ImagePacker> packer;
 };
+
+
+
+
 
 class TileSource {
 public:
@@ -139,7 +143,7 @@ public:
 
 	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
 	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
-	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, TileSource &source);
+	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, std::shared_ptr<TileSet> ts, TileSource &source);
 	void render(RenderTarget &target, float x = 0, float y = 0);
 
 	void setPixelSize(uint32_t px, uint32_t ph);
@@ -157,7 +161,7 @@ public:
 
 private:
 
-	TileSet tileset;
+	std::shared_ptr<TileSet> tileset;
 
 	uint32_t pixel_width;
 	uint32_t pixel_height;
@@ -173,12 +177,12 @@ private:
 
 struct Sprite {
 	Sprite(int tileno = 0, float x = 0.0f, float y = 0.0f, float scale = 1.0f) : tileno(tileno), x(x), y(y), scale(scale), frame(0) {
-		LOGD("Sprite created");
+		//LOGD("Sprite created");
 	}
 	Sprite(std::vector<int> frames, float x = 0.0f, float y = 0.0f, float scale = 1.0f) : frames(frames), tileno(-1), x(x), y(y), scale(scale), frame(0) {
-		LOGD("Sprite created");
+		//LOGD("Sprite created");
 	}
-	~Sprite() { LOGD("Sprite destroyed"); }
+	//~Sprite() { LOGD("Sprite destroyed"); }
 	std::vector<int> frames;
 
 	int tileno;
@@ -198,7 +202,7 @@ class SpriteLayer {
 	};
 public:
 	SpriteLayer() {}
-	SpriteLayer(const TileSet &ts, int32_t pw = -1, int32_t ph = -1) : scrollx(0), scrolly(0), tileSet(ts), pixel_width(pw), pixel_height(ph) {}
+	SpriteLayer(std::shared_ptr<TileSet> ts, int32_t pw = -1, int32_t ph = -1) : scrollx(0), scrolly(0), tileset(ts), pixel_width(pw), pixel_height(ph) {}
 	std::shared_ptr<Sprite> addSprite(std::vector<int> frames, float x = 0.0, float y = 0.0, float scale = 1.0);
 	std::shared_ptr<Sprite> addSprite(int tileno, float x = 0.0, float y = 0.0, float scale = 1.0);
 	void render(RenderTarget &target, int x = 0, int y = 0);
@@ -209,7 +213,7 @@ public:
 	double scrolly;
 private:
 	std::multiset<std::weak_ptr<Sprite>, SpriteCompare> sprites;
-	TileSet tileSet;
+	std::shared_ptr<TileSet> tileset;
 	int32_t pixel_width;
 	int32_t pixel_height;
 

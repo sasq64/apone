@@ -21,7 +21,7 @@ TileSet::TileSet(uint32_t texw, uint32_t texh) : texture(texw, texh)  {
 
 	packer = make_shared<SequentialPacker>(texw, texh);
 
-	tiles = make_shared<vector<tile>>();
+	//tiles = make_shared<vector<tile>>();
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
@@ -52,12 +52,12 @@ int TileSet::add(const bitmap &bm) {
 	float t1 = 1.0 - ypos*ph;
 	float t0 = t1 - ph*tileh;
 
-	tiles->emplace_back(s0, t0, s1, t1, tilew, tileh);
+	tiles.emplace_back(s0, t0, s1, t1, tilew, tileh);
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
 	glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, texture.height()-tileh-ypos, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, bm.flipped());
 
-	return tiles->size()-1;
+	return tiles.size()-1;
 }
 
 int TileSet::add_tile(int tx, int ty, int tw, int th) {
@@ -72,8 +72,8 @@ int TileSet::add_tile(int tx, int ty, int tw, int th) {
 	float t1 = 1.0 - ty*ph;
 	float t0 = t1 - ph*th;
 
-	tiles->emplace_back(s0, t0, s1, t1, tw, th);
-	return tiles->size()-1;
+	tiles.emplace_back(s0, t0, s1, t1, tw, th);
+	return tiles.size()-1;
 
 }
 
@@ -107,16 +107,16 @@ int TileSet::add_solid(uint32_t color, uint32_t w, uint32_t h) {
 	float t1 = 1.0 - ypos*ph;
 	float t0 = t1 - ph*h;
 
-	tiles->emplace_back(s0, t0, s1, t1, w, h);
+	tiles.emplace_back(s0, t0, s1, t1, w, h);
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, ypos, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
-	return tiles->size()-1;
+	return tiles.size()-1;
 }
 
 void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, double s) {
 
-	auto &t = (*tiles)[tileno];
+	auto &t = tiles[tileno];
 
 	vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
 	target.draw_texture(texture.id(), (int)x, (int)y, t.w, t.h, &uvs[0]);
@@ -125,7 +125,7 @@ void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, do
 //TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) : 
 //	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(nullptr) {}
 
-TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, TileSource &source) : 
+TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, shared_ptr<TileSet> ts, TileSource &source) : 
 	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(&source) {
 	}
 
@@ -206,7 +206,9 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 		for(int ix=0; ix<areaw; ix++) {
 			auto tileno = tileSource->getTile(ix+sx, iy+sy);
 			//LOGD("TILE %d", tileno);
-			auto &t = (*tileset.tiles)[tileno];
+			if(tileno < 0 || tileno >= tileset->tiles.size()) tileno = 0;
+
+			const auto &t = tileset->tiles[tileno];
 
 			uvs[i++] = t.s0;
 			uvs[i++] = t.t0;
@@ -230,7 +232,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
 	glViewport(0,0,target.width(), target.height());
-	glBindTexture(GL_TEXTURE_2D, tileset.texture.id());
+	glBindTexture(GL_TEXTURE_2D, tileset->texture.id());
 
 	//auto sx = globalScale * w/2;
 	//auto sy = globalScale * h/2;
@@ -279,7 +281,7 @@ shared_ptr<Sprite> SpriteLayer::addSprite(vector<int> frames, float x, float y, 
 
 void SpriteLayer::render(RenderTarget &target, int x, int y) {
 
-	//glBindTexture(GL_TEXTURE_2D, tileSet.texture.id());
+	//glBindTexture(GL_TEXTURE_2D, tileset->texture.id());
 
 	if(pixel_width >= 0) {
 		glScissor(x, target.height()-pixel_height-y, pixel_width, pixel_height);
@@ -293,12 +295,9 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 		//LOGD("x");
 		auto s = i->lock();
 		if(s) {
-			auto &t = s->tileno < 0 ? (*tileSet.tiles)[s->frames[s->frame]] : (*tileSet.tiles)[s->tileno];
+			auto &t = s->tileno < 0 ? tileset->tiles[s->frames[s->frame]] : tileset->tiles[s->tileno];
 			vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
-			target.draw_texture(tileSet.texture.id(), (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
-			LOGD("Render %d %d %d %d %d - %f %f", s->tileno, (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, t.s0, t.s1); 
-			//target.draw(tileSet.texture);
-			//tileSet.render_tile(s->tileno, target, s->x + x - scrollx, s->y + y - scrolly, s->scale);
+			target.draw(tileset->texture, (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
 			++i;
 		} else 
 			i = sprites.erase(i);
