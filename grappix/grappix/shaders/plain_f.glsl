@@ -1,7 +1,7 @@
 #ifdef GL_ES
 	precision mediump float;
 #endif
-	uniform vec4 vColor;
+	uniform vec4 color;
 	void main() {
-		gl_FragColor = vColor;	
+		gl_FragColor = color;	
 	}

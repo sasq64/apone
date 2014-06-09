@@ -26,6 +26,7 @@ int psid_tunes(int* default_tune);
 #include "../../chipplayer.h"
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 #include <crypto/md5.h>
 
 #include <set>
@@ -376,7 +377,7 @@ vector<uint16_t> VicePlugin::findLengths(uint32_t key) {
 
 	int first = 0;
 	int upto = mainHash.size() / 6;
-	int found = -1;
+	//int found = -1;
 	
 
 	//short lens [] = new short [128];
@@ -395,7 +396,7 @@ vector<uint16_t> VicePlugin::findLengths(uint32_t key) {
 		} else if (key > hash) {
 			first = mid + 1;  // Repeat search in top half.
 		} else {
-			found = mid;
+			//found = mid;
 			//int len = ((mainHash[mid*6+4]&0xff)<<8) | (mainHash[mid*6+5]&0xff);
 			uint16_t len = get<uint16_t>(mainHash, mid*6+4);
 			LOGD("LEN: %x", len);

@@ -164,4 +164,6 @@ INCLUDES += $(THIS_DIR)/..
 
 MODULES += vice
 
+include $(CPP_MODS)/crypto/module.mk
+
 endif

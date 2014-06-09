@@ -57,7 +57,14 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	glLineWidth(2.0);
 
 	auto c = make_color(color);
-	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
+	program.setUniform("color", c.red, c.green, c.blue, 1.0);
+
+
+	mat4f matrix = make_scale(globalScale, globalScale);
+	//matrix = make_translate(x + w/2, y + h/2) * matrix;
+	matrix = toScreen * matrix;
+	program.setUniform("matrix", matrix.transpose());
+
 
 	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
 	program.setUniform("vScale", globalScale, globalScale);
@@ -86,7 +93,7 @@ void RenderTarget::dashed_line(float x0, float y0, float x1, float y1, uint32_t 
 	glLineWidth(2.0);
 
 	auto c = make_color(color);
-	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
+	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
 	program.setUniform("vScale", globalScale, globalScale);
@@ -145,24 +152,12 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 		glBindBuffer(GL_ARRAY_BUFFER, circleBuf);
 
 	auto c = make_color(color);
-	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
-
-	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
-	program.setUniform("vScale", radius * globalScale, radius * globalScale);
-	program.setUniform("vPosition", x * globalScale, y * globalScale);
-
+	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 	mat4f matrix = make_scale(globalScale * radius, globalScale * radius);
-	//matrix = make_rotate_z(xrot) * matrix;
-	//xrot += 0.5;
 	matrix = make_translate(x * globalScale, y * globalScale) * matrix;
-
-	//matrix = make_perspective(M_PI, 1.0, 0, 10) * matrix;
-
 	matrix = toScreen * matrix;
-
 	program.setUniform("matrix", matrix.transpose());
-
 
 	GLuint posHandle = program.getAttribLocation("vertex");
 	glVertexAttribPointer(posHandle, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -340,11 +335,14 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 	}
 
 	auto c = make_color(color);
-	program.setUniform("vColor", c.red, c.green, c.blue, 1.0);
+	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
-	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
-	program.setUniform("vScale", scale * globalScale * w/2, scale * globalScale * h/2);
-	program.setUniform("vPosition", (x + w/2) * globalScale, ((y + h/2)) * globalScale);
+	mat4f matrix = make_scale(globalScale * w/2, globalScale * h/2);
+	matrix = make_translate(x + w/2, y + h/2) * matrix;
+	matrix = toScreen * matrix;
+
+	program.setUniform("matrix", matrix.transpose());
+
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
 
