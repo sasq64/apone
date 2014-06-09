@@ -13,6 +13,7 @@ Texture::Texture(const bitmap &bm) {
 
 	_width = bm.width();
 	_height = bm.height();
+	update_matrix();
 
 	tref = make_shared<texref>();
 
@@ -28,7 +29,7 @@ Texture::Texture(const bitmap &bm) {
 Texture::Texture(uint8_t *data, unsigned int w, unsigned int h) {
 	_width = w;
 	_height = h;
-
+	update_matrix();
 	LOGD("%dx%d", _width, _height);
 
 	tref = make_shared<texref>();
@@ -45,7 +46,7 @@ Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 
 	_width = width;
 	_height = height;
-
+	update_matrix();
 	// Create and bind a new framebuffer with emtpy attachment points (not yet useable)
 	glGenFramebuffers(1, &frameBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);

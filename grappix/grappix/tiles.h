@@ -212,6 +212,7 @@ public:
 	double scrollx;
 	double scrolly;
 private:
+	void purgeSprites();
 	std::multiset<std::weak_ptr<Sprite>, SpriteCompare> sprites;
 	std::shared_ptr<TileSet> tileset;
 	int32_t pixel_width;

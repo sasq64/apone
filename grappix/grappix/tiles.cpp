@@ -206,7 +206,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 		for(int ix=0; ix<areaw; ix++) {
 			auto tileno = tileSource->getTile(ix+sx, iy+sy);
 			//LOGD("TILE %d", tileno);
-			if(tileno < 0 || tileno >= tileset->tiles.size()) tileno = 0;
+			if(tileno >= tileset->tiles.size()) tileno = 0;
 
 			const auto &t = tileset->tiles[tileno];
 
@@ -267,13 +267,26 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	glDisable(GL_SCISSOR_TEST);
 }
 
+void SpriteLayer::purgeSprites() {
+	auto i = sprites.begin();
+	while(i != sprites.end()) {
+		auto s = i->lock();
+		if(i->lock())
+			++i;
+		else 
+			i = sprites.erase(i);
+	}
+}
+
 shared_ptr<Sprite> SpriteLayer::addSprite(int tileno, float x, float y, float scale) {
+	purgeSprites();
 	auto s = make_shared<Sprite>(tileno, x, y, scale);
 	sprites.insert(s);
 	return s;
 }
 
 shared_ptr<Sprite> SpriteLayer::addSprite(vector<int> frames, float x, float y, float scale) {
+	purgeSprites();
 	auto s = make_shared<Sprite>(frames, x, y, scale);
 	sprites.insert(s);
 	return s;
