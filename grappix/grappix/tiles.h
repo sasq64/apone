@@ -1,6 +1,7 @@
 #ifndef TILES_H
 #define TILES_H
 
+#include "frame.h"
 #include "texture.h"
 #include <image/bitmap.h>
 #include <image/packer.h>
@@ -143,13 +144,14 @@ public:
 
 	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
 	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
-	TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, std::shared_ptr<TileSet> ts, TileSource &source);
-	void render(RenderTarget &target, float x = 0, float y = 0);
+	TileLayer(std::shared_ptr<TileSet> ts, TileSource &source, uint32_t tw = 0, uint32_t th = 0);
+	void render(RenderTarget &target);
 
-	void setPixelSize(uint32_t px, uint32_t ph);
+	//void setPixelSize(uint32_t px, uint32_t ph);
+	void setFrame(const Frame &f) { frame = f; }
 
-	uint32_t pixelWidth() { return pixel_width; }
-	uint32_t pixelHeight() { return pixel_height; }
+	//uint32_t pixelWidth() { return pixel_width; }
+	//uint32_t pixelHeight() { return pixel_height; }
 
 	uint32_t tileWidth() { return tile_width; }
 	uint32_t tileHeight() { return tile_height; }
@@ -163,8 +165,9 @@ private:
 
 	std::shared_ptr<TileSet> tileset;
 
-	uint32_t pixel_width;
-	uint32_t pixel_height;
+	//uint32_t pixel_width;
+	//uint32_t pixel_height;
+	Frame frame;
 
 	uint32_t tile_width;
 	uint32_t tile_height;
@@ -202,12 +205,15 @@ class SpriteLayer {
 	};
 public:
 	SpriteLayer() {}
-	SpriteLayer(std::shared_ptr<TileSet> ts, int32_t pw = -1, int32_t ph = -1) : scrollx(0), scrolly(0), tileset(ts), pixel_width(pw), pixel_height(ph) {}
+	SpriteLayer(std::shared_ptr<TileSet> ts) : scrollx(0), scrolly(0), tileset(ts) {}
 	std::shared_ptr<Sprite> addSprite(std::vector<int> frames, float x = 0.0, float y = 0.0, float scale = 1.0);
 	std::shared_ptr<Sprite> addSprite(int tileno, float x = 0.0, float y = 0.0, float scale = 1.0);
 	void render(RenderTarget &target, int x = 0, int y = 0);
-	void foreach(std::function<void(Sprite&)> f);
-	void setPixelSize(uint32_t px, uint32_t ph);
+	//void foreach(std::function<void(Sprite&)> f);
+	//void setPixelSize(uint32_t px, uint32_t ph);
+
+	void setFrame(const Rectangle &rec) { frame = Frame(rec); }
+	void setFrame(const Frame &f) { frame = f; }
 
 	double scrollx;
 	double scrolly;
@@ -215,8 +221,8 @@ private:
 	void purgeSprites();
 	std::multiset<std::weak_ptr<Sprite>, SpriteCompare> sprites;
 	std::shared_ptr<TileSet> tileset;
-	int32_t pixel_width;
-	int32_t pixel_height;
+
+	Frame frame;
 
 };
 

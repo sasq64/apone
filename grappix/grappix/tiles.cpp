@@ -125,10 +125,11 @@ void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, do
 //TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) : 
 //	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(nullptr) {}
 
-TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, shared_ptr<TileSet> ts, TileSource &source) : 
-	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(&source) {
+TileLayer::TileLayer(shared_ptr<TileSet> ts, TileSource &source, uint32_t tw, uint32_t th) :
+	scrollx(0), scrolly(0), scale(1.0), tileset(ts), tile_width(tw), tile_height(th), tileSource(&source) {
 	}
 
+/*
 void TileLayer::setPixelSize(uint32_t pw, uint32_t ph) {
 	pixel_width = pw;
 	pixel_height = ph;
@@ -137,11 +138,17 @@ void TileLayer::setPixelSize(uint32_t pw, uint32_t ph) {
 		multiBuf[0] = multiBuf[1] = -1;
 	}
 }
-
-void TileLayer::render(RenderTarget &target, float x0, float y0) {
+*/
+void TileLayer::render(RenderTarget &target) {
 
 	if(tileSource && !tileSource->ready())
 		return;
+
+	auto rec = frame.rec();
+	float x0 = rec.x;
+	float y0 = rec.y;
+	uint32_t pixel_width = rec.w;
+	uint32_t pixel_height = rec.h;
 
 	int areaw = (pixel_width+tile_width-1) / tile_width + 1;
 	int areah = (pixel_height+tile_height-1) / tile_height + 1;
@@ -222,7 +229,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	}
 
 	//glScissor(0, 100, 1533, 400);
-	glEnable(GL_SCISSOR_TEST);
+	//glEnable(GL_SCISSOR_TEST);
 
 	glBindBuffer(GL_ARRAY_BUFFER, multiBuf[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, count*8*4, uvs.size() * 4, &uvs[0]);
@@ -255,7 +262,7 @@ void TileLayer::render(RenderTarget &target, float x0, float y0) {
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, 0);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 
-	glScissor(x0, target.height()-pixel_height-y0, pixel_width, pixel_height);
+	//glScissor(x0, target.height()-pixel_height-y0, pixel_width, pixel_height);
 	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
 
 	//glDisableVertexAttribArray(uvHandle);
@@ -296,13 +303,15 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 
 	//glBindTexture(GL_TEXTURE_2D, tileset->texture.id());
 
-	if(pixel_width >= 0) {
-		glScissor(x, target.height()-pixel_height-y, pixel_width, pixel_height);
-		glEnable(GL_SCISSOR_TEST);
-	}
+	//if(pixel_width >= 0) {
+	//	glScissor(x, target.height()-pixel_height-y, pixel_width, pixel_height);
+	//	glEnable(GL_SCISSOR_TEST);
+	//}
 
 	//glClear(GL_DEPTH_BUFFER_BIT);
 	//glEnable(GL_DEPTH_TEST);
+	if(frame)
+		frame.set(target);
 	auto i = sprites.begin();
 	while(i != sprites.end()) {
 		//LOGD("x");
@@ -315,24 +324,26 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 		} else 
 			i = sprites.erase(i);
 	}
-	if(pixel_width >= 0)
-		glDisable(GL_SCISSOR_TEST);
+	if(frame)
+		frame.unset();
+	//if(pixel_width >= 0)
+	//	glDisable(GL_SCISSOR_TEST);
 
 	//glDisable(GL_DEPTH_TEST);
 }
 
-void SpriteLayer::foreach(function<void(Sprite&)> f) {
-	for(auto &ws : sprites) {
-		auto s = ws.lock();
-		if(s)
-			f(*s);
-	}
-}
+// void SpriteLayer::foreach(function<void(Sprite&)> f) {
+// 	for(auto &ws : sprites) {
+// 		auto s = ws.lock();
+// 		if(s)
+// 			f(*s);
+// 	}
+// }
 
-void SpriteLayer::setPixelSize(uint32_t pw, uint32_t ph) {
-	pixel_width = pw;
-	pixel_height = ph;
-}
+//void SpriteLayer::setPixelSize(uint32_t pw, uint32_t ph) {
+//	pixel_width = pw;
+//	pixel_height = ph;
+//}
 
 
 }
