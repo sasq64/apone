@@ -22,14 +22,14 @@ private:
 	std::vector<uint8_t> eq;
 
 	//fftw_real fftin[fft_size], fftout[fft_size];
-	double fftin[fft_size];
-	fftw_complex fftout[fft_size];
-	fftw_plan fftwp;
+	float fftin[fft_size];
+	fftwf_complex fftout[fft_size];
+	fftwf_plan fftwp;
 public:
 
 	SpectrumAnalyzer() : eq(eq_slots) {
 		//fftwp = rfftw_create_plan(fft_size, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
-		fftwp = fftw_plan_dft_r2c_1d(fft_size, fftin, fftout, FFTW_ESTIMATE);
+		fftwp = fftwf_plan_dft_r2c_1d(fft_size, fftin, fftout, FFTW_ESTIMATE);
 	}
 
 	const std::array<uint16_t, eq_slots> getLevels() {

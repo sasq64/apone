@@ -20,7 +20,7 @@ void SpectrumAnalyzer::addAudio(int16_t *samples, int len) {
 			fftin[i] = ((float)samples[pos+i*2] + (float)samples[pos+i*2+1])/(65536.0);
 		}
 		//rfftw_one(fftwp, fftin, fftout);
-		fftw_execute(fftwp);
+		fftwf_execute(fftwp);
 
 		pos += fft_size*2;
 
