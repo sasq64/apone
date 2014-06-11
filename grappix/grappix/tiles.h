@@ -67,12 +67,11 @@ struct TileSet {
 
 	void render_tile(int tileno, RenderTarget &target, float x, float y, double s);
 
-	image::bitmap get_pixels() {
-		return texture.get_pixels();
+	Texture get_texture() {
+		return texture;
 	}
 
-
-	Texture texture;
+	size_t size() { return tiles.size(); }
 
 	struct tile {
 		tile(float s0, float t0, float s1, float t1, int w, int h) : s0(s0), t0(t0), s1(s1), t1(t1), w(w), h(h) {}
@@ -81,6 +80,10 @@ struct TileSet {
 	};
 
 	std::vector<tile> tiles;
+
+private:
+	Texture texture;
+
 	std::shared_ptr<image::ImagePacker> packer;
 };
 
@@ -120,6 +123,18 @@ public:
 			tiles[i] = 0;
 	}
 
+	std::vector<uint32_t>::iterator begin() {
+		return tiles.begin();
+	}
+
+	std::vector<uint32_t>::iterator end() {
+		return tiles.end();
+	}
+
+	uint32_t get(int x, int y = 0) {
+		return tiles[x + y * _width];
+	}
+
 	uint32_t operator[](uint32_t o) const {
 		return tiles[o % _size];
 	}
@@ -128,12 +143,33 @@ public:
 		return tiles[o % _size];
 	}
 
+	void transform(std::function<void(int &x, int &y, int t)> func) {
+		decltype(tiles) newtiles;
+		newtiles.resize(tiles.size());
+		delta.resize(tiles.size());
+		for(int y=0; y<8; y++)
+			for(int x=0; x<8; x++) {
+				int xx = x;
+				int yy = y;
+				auto o = x+y*_width;
+				func(xx, yy, tiles[o]);
+				xx = (xx % _width);
+				yy = (yy % _height);
+				delta[o] = std::make_pair(xx - x, yy - y);
+				newtiles[o] = tiles[xx + yy * _width];
+			}
+
+		tiles = newtiles;
+	}
+
+	std::pair<short, short> get_delta(int i) { return delta[i]; }
 
 private:
 	uint32_t _width;
 	uint32_t _height;
 	size_t _size;
-	vector<uint32_t> tiles;
+	std::vector<uint32_t> tiles;
+	std::vector<std::pair<short, short>> delta;
 
 };
 

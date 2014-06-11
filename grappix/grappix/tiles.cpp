@@ -213,7 +213,7 @@ void TileLayer::render(RenderTarget &target) {
 		for(int ix=0; ix<areaw; ix++) {
 			auto tileno = tileSource->getTile(ix+sx, iy+sy);
 			//LOGD("TILE %d", tileno);
-			if(tileno >= tileset->tiles.size()) tileno = 0;
+			if(tileno >= tileset->size()) tileno = 0;
 
 			const auto &t = tileset->tiles[tileno];
 
@@ -239,7 +239,7 @@ void TileLayer::render(RenderTarget &target) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
 	glViewport(0,0,target.width(), target.height());
-	glBindTexture(GL_TEXTURE_2D, tileset->texture.id());
+	glBindTexture(GL_TEXTURE_2D, tileset->get_texture().id());
 
 	//auto sx = globalScale * w/2;
 	//auto sy = globalScale * h/2;
@@ -319,7 +319,7 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 		if(s) {
 			auto &t = s->tileno < 0 ? tileset->tiles[s->frames[s->frame]] : tileset->tiles[s->tileno];
 			vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
-			target.draw(tileset->texture, (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
+			target.draw(tileset->get_texture(), (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
 			++i;
 		} else 
 			i = sprites.erase(i);
