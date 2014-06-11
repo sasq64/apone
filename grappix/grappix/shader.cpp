@@ -24,6 +24,8 @@ extern int _shader_fontdf_f_glsl_len;
 
 namespace grappix {
 
+uint32_t Program::frame_counter = 0;
+
 GLuint loadShader(GLenum shaderType, const std::string &source) {
 	//LOGD("Compiling shader");
 	GLuint shader = glCreateShader(shaderType);

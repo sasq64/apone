@@ -145,9 +145,14 @@ public:
 		glEnableVertexAttribArray(h);
 	}
 
-	void use() const { glUseProgram(program); }
+	void use() const { 
+		glUseProgram(program);
+		setUniform("frame_counter", frame_counter);
+	}
 
 	GLint id() const { return program; }
+
+	static uint32_t frame_counter;
 
 	//std::unordered_map<uint32_t, GLint> programs;
 	//std::vector<std::string> flags;

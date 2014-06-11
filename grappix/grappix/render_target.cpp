@@ -313,7 +313,7 @@ void RenderTarget::draw_textures(GLint texture, float *points, int count, float 
 
 void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color, const Program &program) {
 
-	float scale = 1.0;
+	//float scale = 1.0;
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
 	//auto &program = get_program(FLAT_PROGRAM);
