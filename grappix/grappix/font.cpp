@@ -192,6 +192,8 @@ TextBuf Font::make_text(const string &text) const {
 	for(auto c : text) {
 
 		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
+		if(!glyph)
+			continue;
 		//LOGD("Glyph %p", glyph);
 		//if( glyph == NULL )
 		if(lastChar)

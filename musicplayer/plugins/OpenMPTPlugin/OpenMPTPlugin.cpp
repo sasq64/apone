@@ -7,6 +7,7 @@
 #include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 #include <set>
 #include <unordered_map>
 

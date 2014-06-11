@@ -4,6 +4,7 @@
 #include "../../chipplayer.h"
 
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 #include <coreutils/log.h>
 #include <uade/uade.h>
 

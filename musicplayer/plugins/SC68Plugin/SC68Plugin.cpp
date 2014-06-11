@@ -4,6 +4,7 @@
 
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 
 #include <string.h>
 
@@ -18,7 +19,7 @@ int unice68_get_depacked_size(const void * buffer, int * p_csize);
 #include <string>
 
 using namespace std;
-
+using namespace utils;
 
 static void write_debug(int level, void *cookie, const char *fmt, va_list list) {
 	static char temp[1024];	
