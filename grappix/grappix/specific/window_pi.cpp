@@ -1,5 +1,4 @@
 #include "../window.h"
-#include "../resources.h"
 
 #include <tween/tween.h>
 #include <coreutils/format.h>
@@ -173,10 +172,10 @@ void Window::flip() {
 		//eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &screenWidth);
 		//eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &screenHeight);
 	}
-	auto t = chrono::high_resolution_clock::now();
-	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	tween::Tween::updateTweens(ms / 1000000.0f);
-	Resources::getInstance().update();
+	//auto t = chrono::high_resolution_clock::now();
+	//auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	//tween::Tween::updateTweens(ms / 1000000.0f);
+	//Resources::getInstance().update();
 }
 
 bool Window::mouse_pressed() {

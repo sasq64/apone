@@ -1,5 +1,4 @@
 #include "../window.h"
-#include "../resources.h"
 #include "../GL_Header.h"
 #include <tween/tween.h>
 #include <GL/glfw.h>
@@ -177,7 +176,7 @@ void Window::vsync() {
 //static uint64_t lastTime;
 
 void Window::flip() {
-	auto t = chrono::high_resolution_clock::now();
+	//auto t = chrono::high_resolution_clock::now();
 #ifdef FPS_COUNTER
 	auto tm = utils::getms();
 	auto d = tm - lastTime;
@@ -202,9 +201,9 @@ void Window::flip() {
 		winOpen = false;			
 	}
 
-	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	tween::Tween::updateTweens(ms / 1000000.0f);
-	Resources::getInstance().update();
+	//auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	//tween::Tween::updateTweens(ms / 1000000.0f);
+	//Resources::getInstance().update();
 
 #ifdef EMSCRIPTEN
 	int fs;

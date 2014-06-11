@@ -43,6 +43,7 @@ bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDispla
 
 		if((conf & EGL_OPENGL_ES2_BIT) && (stype & EGL_WINDOW_BIT)) {
 			config = configList[i];
+			LOGD("Found config");
 			if(sbuffers > 0) {
 				break;
 			}
@@ -90,7 +91,7 @@ bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDispla
 	 * As soon as we picked a EGLConfig, we can safely reconfigure the
 	 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
 	EGLint visid;
-	eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &visid);
+	eglGetConfigAttrib(eglDisplay, config, EGL_NATIVE_VISUAL_ID, &visid);
 
 	LOGI("Native id %d", visid);
 	ANativeWindow_setBuffersGeometry(nativeWin, 0, 0, visid);

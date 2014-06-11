@@ -2,7 +2,8 @@
 #define GRAPPIX_WINDOW_H
 
 #include "texture.h"
-
+#include "resources.h"
+#include <tween/tween.h>
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <chrono>
@@ -144,6 +145,11 @@ public:
 
 	void update_callbacks() {
 
+		auto t = chrono::high_resolution_clock::now();
+		auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+		tween::Tween::updateTweens(ms / 1000000.0f);
+		Resources::getInstance().update();
+
 		while(safeFuncs.size() > 0) {
 			safeMutex.lock();
 			auto &f = safeFuncs.front();
@@ -152,7 +158,7 @@ public:
 			safeMutex.unlock();
 		}
 
-		auto ms = utils::getms();
+		ms = utils::getms();
 		for(auto &cb : callbacks) {
 			if(cb.msec == 0 || ms >= cb.next_time) {
 				cb.cb();
@@ -164,6 +170,9 @@ public:
 			callbacks.erase(callbacks.begin() + i);
 		}
 		to_remove.clear();
+
+		Program::frame_counter++;
+
 	}
 
 	void remove_repeating(int index) {

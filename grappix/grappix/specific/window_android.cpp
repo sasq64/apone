@@ -1,6 +1,6 @@
 #include "../window.h"
-#include "../resources.h"
-#include <tween/tween.h>
+//#include "../resources.h"
+//#include <tween/tween.h>
 #include <stdio.h>
 #include <unordered_map>
 #include <EGL/egl.h>
@@ -422,10 +422,10 @@ void Window::vsync() {
 
 void Window::flip() {
 	host.flip();
-	auto t = chrono::high_resolution_clock::now();
-	auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-	Resources::getInstance().update();
-	tween::Tween::updateTweens(ms / 1000000.0f);
+	//auto t = chrono::high_resolution_clock::now();
+	//auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	//Resources::getInstance().update();
+	//tween::Tween::updateTweens(ms / 1000000.0f);
 }
 
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
@@ -551,11 +551,10 @@ void extract_files(struct android_app* app) {
 	AAssetDir_close(assetDir);
 }
 
-static std::vector<std::pair<std::function<void(void*)>, void*>> callbacks;
-
-void add_callback(std::function<void(void*)> f, void *context) {
-	callbacks.push_back(std::make_pair(f, context));
-}
+//static std::vector<std::pair<std::function<void(void*)>, void*>> callbacks;
+//void add_callback(std::function<void(void*)> f, void *context) {
+//	callbacks.push_back(std::make_pair(f, context));
+//}
 
 void android_main(struct android_app* app) {
 
@@ -581,6 +580,7 @@ void android_main(struct android_app* app) {
 	auto lastMs = utils::getms();
 	bool lastFocus = host.getFocus();
 	while(grappix::screen.is_open()) {
+		screen.update_callbacks();
 		auto ms = utils::getms();
 		uint32_t rate = ms - lastMs;
 		lastMs = ms;
@@ -594,11 +594,11 @@ void android_main(struct android_app* app) {
 				screen.focus_lost_func();
 		}
 
-		for(auto f : callbacks) {
-			f.first(f.second);
-		}
+		//for(auto f : callbacks) {
+		//	f.first(f.second);
+		//}
 		//if(host.getFocus())
-			grappix::renderLoopFunction2(rate);
+		grappix::renderLoopFunction2(rate);
 	}
 	LOGD("App ending!");
 
