@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <sys/time.h>
-
+#include <stdlib.h>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif

@@ -1,7 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-//#include "file.h"
 #include "vec.h"
 
 #include <sys/stat.h>
@@ -28,6 +27,12 @@
 //#endif
 
 //#include "utils/format.h"
+
+#ifdef ANDROID
+#define stol(x) atol(x.c_str())
+#define stoll(x) atoll(x.c_str())
+#define stod(x) atof(x.c_str())
+#endif
 
 namespace utils {
 
@@ -193,5 +198,7 @@ void run_async(std::function<void()> f);
 
 
 };
+
+#include "file.h"
 
 #endif // UTILS_H

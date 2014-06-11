@@ -62,7 +62,8 @@ $(error You need ant to build android projects)
 endif
 
 ifeq ($(ANDROID_PROJECT),)
-$(error You need to set ANDROID_PROJECT to point to your android project directory)
+$(warn ANDROID_PROJECT not set, using './android' as project folder)
+ANDROID_PROJECT := android
 endif
 
 ifeq ($(APP_NAME),)
