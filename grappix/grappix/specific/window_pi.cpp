@@ -1,7 +1,11 @@
 #include "../window.h"
+#include "../resources.h"
 
 #include <tween/tween.h>
 #include <coreutils/format.h>
+#include <coreutils/utils.h>
+
+#include <linux/input.h>
 
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -31,8 +35,8 @@ void Window::open(bool fs) {
 }
 
 std::deque<int> Window::key_buffer;
-static uint8_t pressed_keys[256];
-static uint8_t modifiers = 0;
+static uint8_t pressed_keys[512];
+//static uint8_t modifiers = 0;
 
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
@@ -113,26 +117,55 @@ void Window::open(int w, int h, bool fs) {
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
 	keyboardThread = thread([=]() {
-		vector<uint8_t> buf(8);
-		int k = ::open("/dev/hidraw0", O_RDONLY);
+		vector<uint8_t> buf(64);
+		memset(&buf[0], 0x13, 64);
+		uint8_t n;
+		LOGD("Reading Keyboard");
+		int k = ::open("/dev/input/event1", O_RDONLY);
+		if(k < 0) {
+			LOGW("Could not open keyboard");
+			return;
+		}
 		while(true) {
-			read(k, &buf[0], 8);
-			LOGD("[%02x]", buf);
-			modifiers = buf[0];
-			for(int i=2; i<5; i++) {
-				auto k = buf[i];
-				if(k) {
-					if(!pressed_keys[k]) {
-						fprintf(stderr, utils::format("Got key %02x\n", k).c_str());
-						key_buffer.push_back(k);
-					}
-					pressed_keys[k] = 2;
+			int rc = read(k, &buf[0], sizeof(struct input_event) * 4);
+			auto *ptr = (struct input_event*)&buf[0];
+			if(rc >= sizeof(struct input_event))
+				LOGD("[%02x]", buf);
+			while(rc >= sizeof(struct input_event)) {
+
+				//int type = ptr[8];
+				//int code = ptr[10] | (ptr[11]<<8);
+				//int updown = ptr[12];
+				LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
+
+				if(ptr->type == EV_KEY) {
+					if(ptr->value)
+						key_buffer.push_back(ptr->code);
+					if(ptr->code < 512)
+						pressed_keys[ptr->code] = ptr->value;
 				}
+/*
+				modifiers = ptr[0];
+				for(int i=2; i<5; i++) {
+					auto k = ptr[i];
+					if(k) {
+						if(!pressed_keys[k]) {
+							fprintf(stderr, utils::format("Got key %02x\n", k).c_str());
+							key_buffer.push_back(k);
+						}
+						pressed_keys[k] = 2;
+					}
+				}
+				for(int i=0; i<256; i++) {
+					if(pressed_keys[i])
+						pressed_keys[i]--;
+				}
+*/
+				ptr++;
+				rc -= sizeof(struct input_event);
+
 			}
-			for(int i=0; i<256; i++) {
-				if(pressed_keys[i])
-					pressed_keys[i]--;
-			}
+			//utils::sleepms(100);
 		}
 	});
 	keyboardThread.detach();
@@ -196,26 +229,6 @@ tuple<int, int> Window::mouse_position() {
 #define RWIN 0x80
 
 bool Window::key_pressed(key k) {
-	//LOGD("CHECK KEY %d %02x", k, modifiers);
-	if(k >= 0x200 && k <= 0x300) {
-		switch(k) {
-		case SHIFT_LEFT:
-			return (modifiers & LSHIFT) != 0;
-		case SHIFT_RIGHT:
-			return (modifiers & RSHIFT) != 0;
-		case ALT_LEFT:
-			return (modifiers & LALT) != 0;
-		case ALT_RIGHT:
-			return (modifiers & RALT) != 0;
-		case CTRL_LEFT:
-			return (modifiers & LCTRL) != 0;
-		case CTRL_RIGHT:
-			return (modifiers & RCTRL) != 0;
-		case WINDOWS:
-			return (modifiers & (LWIN|RWIN)) != 0;
-		}
-		return false;
-	}
 	auto rawkey = translate[k];
 	return (pressed_keys[rawkey] != 0);
 }
@@ -236,16 +249,50 @@ Window::click Window::get_click(bool peek) {
 }
 
 unordered_map<int, int> Window::translate = {
-	{ ENTER, 0x28 },
-	{ SPACE, 0x2C },
-	{ PAGEUP, 0x4b },
-	{ PAGEDOWN, 0x4e },
-	{ RIGHT, 0x4f },
-	{ LEFT, 0x50 },
-	{ DOWN, 0x51 },
-	{ UP, 0x52 },
-	{ ESCAPE, 0x29 },
-	{ BACKSPACE, 0x2a },
+
+	{ 'A', KEY_A },
+	{ 'B', KEY_B },
+	{ 'C', KEY_C },
+	{ 'D', KEY_D },
+	{ 'E', KEY_E },
+	{ 'F', KEY_F },
+	{ 'G', KEY_G },
+	{ 'H', KEY_H },
+	{ 'I', KEY_I },
+	{ 'J', KEY_J },
+	{ 'K', KEY_K },
+	{ 'L', KEY_L },
+	{ 'M', KEY_M },
+	{ 'N', KEY_N },
+	{ 'O', KEY_O },
+	{ 'P', KEY_P },
+	{ 'Q', KEY_Q },
+	{ 'R', KEY_R },
+	{ 'S', KEY_S },
+	{ 'T', KEY_T },
+	{ 'U', KEY_U },
+	{ 'V', KEY_V },
+	{ 'W', KEY_W },
+	{ 'X', KEY_X },
+	{ 'Y', KEY_Y },
+	{ 'Z', KEY_Z },
+	{ '0', KEY_0 },
+	{ ENTER, KEY_ENTER },
+	{ SPACE, KEY_SPACE },
+	{ PAGEUP, KEY_PAGEUP },
+	{ PAGEDOWN, KEY_PAGEDOWN },
+	{ RIGHT, KEY_RIGHT },
+	{ LEFT, KEY_LEFT },
+	{ DOWN, KEY_DOWN },
+	{ UP, KEY_UP },
+	{ ESCAPE, KEY_ESC },
+	{ BACKSPACE, KEY_BACKSPACE },
+	{ SHIFT_LEFT, KEY_LEFTSHIFT },
+	{ SHIFT_RIGHT, KEY_RIGHTSHIFT },
+	{ ALT_LEFT, KEY_LEFTMETA },
+	{ ALT_RIGHT, KEY_RIGHTMETA },
+	{ CTRL_LEFT, KEY_LEFTCTRL},
+	{ CTRL_RIGHT, KEY_RIGHTCTRL }
 };
 
 Window::key Window::get_key(bool peek) {
@@ -253,23 +300,16 @@ Window::key Window::get_key(bool peek) {
 		auto k = key_buffer.front();
 		if(!peek)
 			key_buffer.pop_front();
-		if(k >= 0x1e && k <= 0x26) {
-			k += ('1' - 0x1e);
-		} else if(k == 0x27)
-			k = '0';
-		else if(k >= 0x3a && k <= 0x45)
-			k += (F1-0x3a);
-		else
-		if(k >= 0x04 && k <= 0x20)
-			k += ('A'-0x04);
+		if(k >= KEY_1 && k <= KEY_9)
+			k += ('1' - KEY_1);
+		else if(k >= KEY_F1 && k <= KEY_F10)
+			k += (F1-KEY_F1);
 		else {
 			for(auto t : translate) {
-				LOGD("?? %02x", t.second);
 				if(t.second == k)
 					return (key)t.first;
 			}
 		}
-		LOGD(">> %02x", (key)k);
 		return (key)k;
 	}
 	return NO_KEY;
