@@ -37,9 +37,9 @@ public:
 
 	struct STILSong {
 		STILSong() {}
-		STILSong(const std::vector<STIL> songs) : songs(songs) {}
-		std::string comment;
+		STILSong(const std::vector<STIL> songs, const std::string &c) : songs(songs), comment(c) {}
 		std::vector<STIL> songs;
+		std::string comment;
 	};
 
 	static std::unordered_map<std::string, STILSong> stilSongs;

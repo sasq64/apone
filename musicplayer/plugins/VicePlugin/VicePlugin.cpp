@@ -110,77 +110,6 @@ public:
 		return md5.get();
 	}
 
-#if 0
-	private byte[] calculateMD5(vector<uint8_t> data) {
-		ByteBuffer src = ByteBuffer.wrap(module, 0, size);		
-		src.order(ByteOrder.BIG_ENDIAN);
-		
-		uint8_t speed =(data[0] == 'R' ? 60 : 0);
-
-		uint16_t version = get<uint16_t>(data, 4);
-
-		byte[] id = new byte[4];
-		src.get(id);
-		int version = src.getShort();
-		src.position(8);
-		/*short loadAdress =*/ src.getShort();
-		short initAdress = src.getShort();
-		short playAdress = src.getShort();
-		short songs = src.getShort();
-		/*short startSong =*/ src.getShort();
-		int speedBits = src.getInt();
-		src.position(0x76);
-		int flags = src.getShort();
-		
-		int offset = 120;
-		if (version == 2) {
-			offset = 126;
-		}
-		
-		int speed = 0;
-		if (id[0] == 'R') {
-			speed = 60;
-		}
-		
-		Log.d(TAG, "speed %08x, flags %04x left %d songs %d init %x", speed, flags, size - offset, songs, initAdress);
-		
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			
-			md.update(module, offset, size - offset);
-			
-			ByteBuffer dest = ByteBuffer.allocate(128);
-			dest.order(ByteOrder.LITTLE_ENDIAN);
-			
-			dest.putShort(initAdress);
-			dest.putShort(playAdress);
-			dest.putShort(songs);
-			
-			for (int i = 0; i < songs; i ++) {
-				if ((speedBits & (1 << i)) != 0) {
-					dest.put((byte) 60);
-				} else {
-					dest.put((byte) speed);
-				}
-			}
-			
-			if ((flags & 0x8) != 0) {
-				dest.put((byte) 2);
-			}
-
-			byte[] d = dest.array();
-			md.update(d, 0, dest.position());
-			
-			byte[] md5 = md.digest();
-			Log.d(TAG, "%d %02x %02x DIGEST %02x %02x %02x %02x", d.length, d[0], d[1], md5[0], md5[1], md5[2], md5[3]);
-			return md5;
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
-	}
-#endif
-
-
 	static bool init(const string &c64Dir) {
 		maincpu_early_init();
 		machine_setup_context();
@@ -249,21 +178,36 @@ public:
 			int defaultSong;
 			int songs = psid_tunes(&defaultSong);
 			defaultSong--;
+			currentSong = defaultSong;
 			LOGD("DEFSONG: %d", defaultSong);
 			currentLength = 0;
 			currentPos = 0;
+			nextCheckPos = currentPos + 44100;
 			if((int)songLengths.size() > defaultSong) {
 				currentLength = songLengths[defaultSong];
 			}
 			LOGD("Length:%d", currentLength);
-			string msg = "NOTHING";
+			string msg = "NO STIL INFO";
+			string sub_title;
 			auto pos = sidFile.find("C64Music/");
+			currentInfo = 0;
 			if(pos != string::npos) {
 				auto p = sidFile.substr(pos+8);
 				LOGD("SIDFILE:%s", p);
 				if(VicePlugin::stilSongs.count(p)) {
-					auto stil = VicePlugin::stilSongs[p];
-					msg = stil.songs[0].title;
+					currentStil = VicePlugin::stilSongs[p];
+					msg = currentStil.comment;
+
+					for(int i=0; i<currentStil.songs.size(); i++) {
+						auto &s = currentStil.songs[i];
+						LOGD("#%d: %s", s.subsong, s.title);
+						if(s.subsong == defaultSong+1) {
+							currentInfo = i;
+							sub_title = s.title;//sub_title + s.title + " ";
+							if(msg == "") msg = s.comment;
+							break;
+						}
+					}
 				}
 			}
 			setMeta(
@@ -272,6 +216,7 @@ public:
 				"copyright", psid_get_copyright(),
 				"songs", songs,
 				"message", msg,
+				"sub_title", sub_title,
 				"length", currentLength,
 				"startSong", defaultSong
 			);
@@ -286,6 +231,7 @@ public:
 
 	virtual void seekTo(int song, int seconds = -1) {
 		if(song >= 0) {
+			currentSong = song;
 			psid_set_tune(song+1);
 			c64_song_init();
 			currentLength = 0;
@@ -293,13 +239,50 @@ public:
 			if((int)songLengths.size() > song) {
 				currentLength = songLengths[song];
 			}
-			LOGD("Length:%d", currentLength);
-			setMeta("length", currentLength);
+
+			LOGD("Length:%d, SONG %d", currentLength, song);
+			string sub_title;
+			string msg = currentStil.comment;
+			for(int i=0; i<currentStil.songs.size(); i++) {
+				auto &s = currentStil.songs[i];
+				LOGD("#%d: %s", s.subsong, s.title);
+				if(s.subsong == song+1) {
+					currentInfo = i;
+					sub_title = s.title; //sub_title + s.title + " ";
+					if(s.comment != "") msg = s.comment;
+					break;
+				}
+			}
+
+			setMeta("length", currentLength, "sub_title", sub_title, "message", msg);
+
 		}
 	}
 
 	virtual int getSamples(int16_t *target, int size) {
 		currentPos += (size/2);
+
+		if(currentPos > nextCheckPos) {
+			int sec = currentPos / 44100;
+			nextCheckPos = currentPos + 44100;
+			for(int i=currentInfo+1; i<currentStil.songs.size(); i++) {
+				auto &s = currentStil.songs[i];
+				if(s.subsong == currentSong+1) {
+					if(s.seconds > 0 && sec >= s.seconds) {
+						LOGD("Found new info");
+						currentInfo = i;
+						if(s.comment != "")
+							setMeta("sub_title", s.title, "message", s.comment);
+						else
+							setMeta("sub_title", s.title);
+						break;
+					}
+				}
+
+
+			}
+		}
+
 		//LOGD("%d vs %d", currentPos, currentLength*44100);
 		//if(currentLength > 0 && currentPos > currentLength*44100)
 		//	return -1;
@@ -308,7 +291,12 @@ public:
 	}
 	uint32_t currentLength;
 	uint32_t currentPos;
+	uint32_t nextCheckPos;
+	int currentInfo;
+	int currentSong;
 	std::vector<uint16_t> songLengths;
+
+	VicePlugin::STILSong currentStil;
 };
 
 VicePlugin::VicePlugin(const string &dataDir) {
@@ -346,6 +334,7 @@ void VicePlugin::readSTIL() {
 	string path;
 	string what;
 	string content;
+	string songComment;
 	bool currentSet = false;
 	//int seconds = 0;
 	int count = 0;
@@ -358,18 +347,22 @@ void VicePlugin::readSTIL() {
 			content = content + " " + lstrip(l);
 		} else {
 			if(what != "" && content != "") {
-				//LOGD("WHAT:%s = '%s'", what, content);
-				if(what == "TITLE")
-					current.title = content;
-				else if(what == "COMMENT")
-					current.comment = content;
-				else if(what == "AUTHOR")
-					current.author = content;
-				else if(what == "ARTIST")
-					current.artist = content;
-				else if(what == "NAME")
-					current.name = content;
-				currentSet = true;
+				if(songComment == "" && what == "COMMENT" && songs.size() == 0 && current.title == "" && current.name == "") {
+					songComment = content;
+				} else {
+					//LOGD("WHAT:%s = '%s'", what, content);
+					if(what == "TITLE")
+						current.title = content;
+					else if(what == "COMMENT")
+						current.comment = content;
+					else if(what == "AUTHOR")
+						current.author = content;
+					else if(what == "ARTIST")
+						current.artist = content;
+					else if(what == "NAME")
+						current.name = content;
+					currentSet = true;
+				}
 				what = "";
 				content = "";
 			}
@@ -387,8 +380,8 @@ void VicePlugin::readSTIL() {
 					//}
 				}
 				//LOGD("Adding '%s'", path);
-				stilSongs[path] = STILSong(songs);
-
+				stilSongs[path] = STILSong(songs, songComment);
+				songComment = "";
 				songs.clear();
 				path = l;
 				current.subsong = 1;
@@ -396,8 +389,13 @@ void VicePlugin::readSTIL() {
 				what = "";
 				content = "";
 			} else if(l[0] == '(') {
+
 				if(currentSet) {
-					songs.push_back(current);
+					if(songComment == "" && current.comment != "" && songs.size() == 0 && current.title == "" && current.name == "") {
+						songComment = content;
+					} else {
+						songs.push_back(current);
+					}
 					current = STIL();
 					currentSet = false;
 				}
