@@ -4,6 +4,7 @@
 #include <tween/tween.h>
 #include <coreutils/format.h>
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 
 #include <linux/input.h>
 
@@ -20,6 +21,7 @@
 #include <bcm_host.h>
 
 using namespace std;
+using namespace utils;
 
 //bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
 bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay, EGLSurface &eglSurface, EGLNativeWindowType nativeWin);
@@ -156,7 +158,7 @@ void Window::open(int w, int h, bool fs) {
 					auto k = ptr[i];
 					if(k) {
 						if(!pressed_keys[k]) {
-							fprintf(stderr, utils::format("Got key %02x\n", k).c_str());
+							fprintf(stderr, format("Got key %02x\n", k).c_str());
 							key_buffer.push_back(k);
 						}
 						pressed_keys[k] = 2;
@@ -171,7 +173,7 @@ void Window::open(int w, int h, bool fs) {
 				rc -= sizeof(struct input_event);
 
 			}
-			//utils::sleepms(100);
+			//sleepms(100);
 		}
 	});
 	keyboardThread.detach();
@@ -191,15 +193,15 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction = f;
 
 	//atexit([](){
-		auto lastMs = utils::getms();
+		auto lastMs = getms();
 		while(screen.is_open()) {
 			screen.update_callbacks();
-			auto ms = utils::getms();
+			auto ms = getms();
 			uint32_t rate = ms - lastMs;
 			lastMs = ms;
 			renderLoopFunction(rate);
 			//while(screen.locked()) {
-			//	utils::sleepms(5);
+			//	sleepms(5);
 			//}
 		}
 	//});
@@ -293,6 +295,7 @@ unordered_map<int, int> Window::translate = {
 	{ UP, KEY_UP },
 	{ ESCAPE, KEY_ESC },
 	{ BACKSPACE, KEY_BACKSPACE },
+	{ DELETE, KEY_DELETE },
 	{ SHIFT_LEFT, KEY_LEFTSHIFT },
 	{ SHIFT_RIGHT, KEY_RIGHTSHIFT },
 	{ ALT_LEFT, KEY_LEFTMETA },

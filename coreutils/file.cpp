@@ -114,7 +114,10 @@ vector<string> File::getLines() {
 	string to;
 
 	while(getline(ss, to)) {
-		lines.push_back(to.substr(0,to.length()-1));
+		auto l = to.length()-1;
+		while(to[l] == 10 || to[l] == 13)
+			to = to.substr(0, l--);
+		lines.push_back(to);
     }
     return lines;
 }

@@ -225,6 +225,7 @@ unordered_map<int, int> Window::translate = {
 	{ F11, GLFW_KEY_F11},
 	{ F12, GLFW_KEY_F12 },
 	{ BACKSPACE, GLFW_KEY_BACKSPACE },
+	{ DELETE, GLFW_KEY_DEL },
 	{ ENTER, GLFW_KEY_ENTER },
 	{ ESCAPE, GLFW_KEY_ESC },
 	{ SPACE, GLFW_KEY_SPACE },

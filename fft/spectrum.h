@@ -33,10 +33,12 @@ public:
 	}
 
 	const std::array<uint16_t, eq_slots> getLevels() {
+		std::lock_guard<std::mutex> guard(m);
 		return spectrum.front();
 	}
 
 	int size() {
+		std::lock_guard<std::mutex> guard(m);
 		return spectrum.size();
 	}
 
