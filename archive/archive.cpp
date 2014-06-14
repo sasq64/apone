@@ -1,8 +1,12 @@
 
-#include <vector>
-
 #include "archive.h"
-#include <ziplib/zip.h>
+#include "ziplib/zip.h"
+
+#include <vector>
+#include <cstring>
+#include <coreutils/log.h>
+#define _UNIX
+#include  "unrar/dll.hpp"
 
 using namespace std;
 using namespace utils;
@@ -66,8 +70,85 @@ private:
 };
 
 
+class RarFile : public Archive {
+public:
+	RarFile(const string &fileName, const string &workDir = ".") : workDir(workDir) {
+
+		memset(&archiveInfo, 0, sizeof(archiveInfo));
+		archiveInfo.CmtBuf = NULL;
+		archiveInfo.OpenMode = RAR_OM_EXTRACT;
+		archiveInfo.ArcName = (char*)fileName.c_str();
+		rarFile = RAROpenArchiveEx(&archiveInfo);
+		if(archiveInfo.OpenResult != 0) {
+			throw archive_exception("Bad RAR");
+		};
+		currentPos = -1;
+
+	}
+
+	~RarFile() {
+		RARCloseArchive(rarFile);
+	}
+
+	File extract(const string &name) {
+		//RARHeaderDataEx fileInfo;
+		//int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+		int PFCode = RARProcessFile(rarFile, RAR_EXTRACT, (char*)workDir.c_str(), NULL);
+
+		LOGD("extract %d", PFCode);
+
+		currentPos++;
+
+		File f { workDir + "/" + fileInfo.FileName };
+
+		int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+		LOGD("RHCode %d %s", RHCode, fileInfo.FileName);
+		if(RHCode !=0)
+			currentPos--;
+
+		return f;
+	}
+
+	virtual string nameFromPosition(int pos) const {
+		
+		LOGD("POS %d", pos);
+		while(currentPos < pos) {
+			int PFCode = RARProcessFile(rarFile, RAR_SKIP, NULL, NULL);
+			LOGD("PFCode %d", PFCode);
+
+			int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+			LOGD("RHCode %d %s", RHCode, fileInfo.FileName);
+			if(RHCode !=0)
+				return "";
+			currentPos++;
+		}
+		//int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+		LOGD("pos %d %s", currentPos, fileInfo.FileName);
+		//if(RHCode !=0)
+		//	return "";
+		return fileInfo.FileName;
+	}
+
+	virtual int totalFiles() const {
+		return -1;
+	}
+
+private:
+	RAROpenArchiveDataEx archiveInfo;
+	
+	HANDLE rarFile;
+	mutable int currentPos;
+	//struct zip *zipFile;
+	mutable RARHeaderDataEx fileInfo;
+	string workDir;
+};
+
+
 Archive *Archive::open(const std::string &fileName, const std::string &targetDir) {
-	return new ZipFile(fileName, targetDir);
+	if(utils::endsWith(fileName, ".zip"))
+		return new ZipFile(fileName, targetDir);
+	else if(utils::endsWith(fileName, ".rar"))
+		return new RarFile(fileName, targetDir);
 }
 
 bool Archive::canHandle(const std::string &name) {

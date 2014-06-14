@@ -5,6 +5,15 @@
 
 using namespace std;
 
+class archive_exception : public std::exception {
+public:
+    archive_exception(const char *ptr = "Archive Exception") : msg(ptr) {
+    }
+    virtual const char *what() const throw() { return msg; }
+ private:
+    const char *msg;
+};
+
 class Archive {
 public:
 
@@ -28,6 +37,9 @@ public:
  
     	const const_iterator& operator++ () {
     		position++;
+            auto s = archive->nameFromPosition(position);
+            if(s == "")
+                position = archive->totalFiles();
     		return *this;
     	}
     private:
