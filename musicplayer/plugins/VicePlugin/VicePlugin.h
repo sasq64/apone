@@ -18,11 +18,32 @@ public:
 	virtual ChipPlayer *fromFile(const std::string &fileName) override;
 
 	static void readLengths();
+	static void readSTIL();
 	static std::vector<uint16_t> findLengths(uint32_t key);
 
-private:
+//private:
 	static std::vector<uint8_t> mainHash;
 	static std::vector<uint16_t> extraLengths;	
+
+	struct STIL {
+		int subsong;
+		int seconds;
+		std::string title;
+		std::string name;
+		std::string artist;
+		std::string author;
+		std::string comment;
+	};
+
+	struct STILSong {
+		STILSong() {}
+		STILSong(const std::vector<STIL> songs) : songs(songs) {}
+		std::string comment;
+		std::vector<STIL> songs;
+	};
+
+	static std::unordered_map<std::string, STILSong> stilSongs;
+
 };
 
 }

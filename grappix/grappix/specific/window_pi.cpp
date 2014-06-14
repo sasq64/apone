@@ -116,6 +116,12 @@ void Window::open(int w, int h, bool fs) {
 
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
+
+	File idir { "/dev/input" };
+	for(auto f : idir.listFiles()) {
+		
+	}
+
 	keyboardThread = thread([=]() {
 		vector<uint8_t> buf(64);
 		memset(&buf[0], 0x13, 64);

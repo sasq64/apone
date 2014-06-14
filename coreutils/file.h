@@ -110,6 +110,8 @@ public:
 		return size;
 	}
 
+	//std::vector<File> listFiles();
+
 	bool isDir() const {
 		struct stat ss;
 		if(stat(fileName.c_str(), &ss) != 0)

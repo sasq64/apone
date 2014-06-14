@@ -43,15 +43,15 @@ template <> double stepper(sqlite3_stmt *s, int pos) {
 
 template <> const char * stepper(sqlite3_stmt *s, int pos) {
 	START()
-	if(t != SQLITE_TEXT)
-		throw std::invalid_argument("Not a string");
+	//if(t != SQLITE_TEXT)
+	//	throw std::invalid_argument("Not a string");
 	return (const char *)sqlite3_column_text(s, pos);
 }
 
 template <> std::string stepper(sqlite3_stmt *s, int pos) {
 	START()
-	if(t != SQLITE_TEXT)
-		throw std::invalid_argument("Not a string");// + std::to_string(t));
+	//if(t != SQLITE_TEXT)
+	//	throw std::invalid_argument(utils::format("Not a string %d %s", std::to_string(t), sqlite3_column_text(s, pos)));
 	return std::string((const char*)sqlite3_column_text(s, pos));
 }
 
