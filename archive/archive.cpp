@@ -73,7 +73,9 @@ private:
 class RarFile : public Archive {
 public:
 	RarFile(const string &fileName, const string &workDir = ".") : workDir(workDir) {
-
+		//fprintf(stderr, "CONSTR");
+		//fflush(stderr);
+		RAROpenArchiveDataEx archiveInfo;
 		memset(&archiveInfo, 0, sizeof(archiveInfo));
 		archiveInfo.CmtBuf = NULL;
 		archiveInfo.OpenMode = RAR_OM_EXTRACT;
@@ -82,48 +84,57 @@ public:
 		if(archiveInfo.OpenResult != 0) {
 			throw archive_exception("Bad RAR");
 		};
-		currentPos = -1;
+		currentPos = 0;
+		RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+
 
 	}
 
 	~RarFile() {
+		//fprintf(stderr, "DESTR");
+		//fflush(stderr);
 		RARCloseArchive(rarFile);
 	}
 
 	File extract(const string &name) {
 		//RARHeaderDataEx fileInfo;
 		//int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+
+		//int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+		//LOGD("RHCode %d %s", RHCode, fileInfo.FileName);
+		//if(RHCode !=0)
+		//	return File();
+
 		int PFCode = RARProcessFile(rarFile, RAR_EXTRACT, (char*)workDir.c_str(), NULL);
 
-		LOGD("extract %d", PFCode);
+		//LOGD("extract %d", PFCode);
+
+		RHCode = RARReadHeaderEx(rarFile, &fileInfo);
 
 		currentPos++;
 
 		File f { workDir + "/" + fileInfo.FileName };
-
-		int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
-		LOGD("RHCode %d %s", RHCode, fileInfo.FileName);
-		if(RHCode !=0)
-			currentPos--;
 
 		return f;
 	}
 
 	virtual string nameFromPosition(int pos) const {
 		
-		LOGD("POS %d", pos);
+		//LOGD("POS %d vs %d", pos , currentPos);
 		while(currentPos < pos) {
 			int PFCode = RARProcessFile(rarFile, RAR_SKIP, NULL, NULL);
-			LOGD("PFCode %d", PFCode);
+			//LOGD("PFCode %d", PFCode);
 
-			int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
-			LOGD("RHCode %d %s", RHCode, fileInfo.FileName);
-			if(RHCode !=0)
-				return "";
+			RHCode = RARReadHeaderEx(rarFile, &fileInfo);
+
 			currentPos++;
 		}
+
+		if(RHCode != 0)
+			return "";
+
 		//int RHCode = RARReadHeaderEx(rarFile, &fileInfo);
-		LOGD("pos %d %s", currentPos, fileInfo.FileName);
+		//LOGD("pos %d %s", currentPos, fileInfo.FileName);
 		//if(RHCode !=0)
 		//	return "";
 		return fileInfo.FileName;
@@ -134,21 +145,22 @@ public:
 	}
 
 private:
-	RAROpenArchiveDataEx archiveInfo;
 	
 	HANDLE rarFile;
 	mutable int currentPos;
 	//struct zip *zipFile;
 	mutable RARHeaderDataEx fileInfo;
+	mutable int RHCode;
 	string workDir;
 };
 
 
-Archive *Archive::open(const std::string &fileName, const std::string &targetDir) {
-	if(utils::endsWith(fileName, ".zip"))
+Archive *Archive::open(const std::string &fileName, const std::string &targetDir, int type) {
+	if(type == TYPE_ZIP || utils::endsWith(fileName, ".zip"))
 		return new ZipFile(fileName, targetDir);
-	else if(utils::endsWith(fileName, ".rar"))
+	else if(type == TYPE_RAR || utils::endsWith(fileName, ".rar"))
 		return new RarFile(fileName, targetDir);
+	return nullptr;
 }
 
 bool Archive::canHandle(const std::string &name) {

@@ -17,6 +17,13 @@ public:
 class Archive {
 public:
 
+    enum {
+        TYPE_ANY,
+        TYPE_ZIP,
+        TYPE_RAR
+    };
+
+    virtual ~Archive() {}
 	//virtual extractAll() = 0;
 	virtual utils::File extract(const std::string &name) = 0;
 	virtual std::string nameFromPosition(int pos) const = 0;
@@ -55,7 +62,7 @@ public:
     	return const_iterator(this, totalFiles());
     }
 
-	static Archive *open(const std::string &fileName, const std::string &targetDir = ".");
+	static Archive *open(const std::string &fileName, const std::string &targetDir = ".", int type = TYPE_ANY);
 	static bool canHandle(const std::string &name);
 
 };
