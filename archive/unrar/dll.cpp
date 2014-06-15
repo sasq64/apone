@@ -114,9 +114,8 @@ int PASCAL RARReadHeader(HANDLE hArcData,struct RARHeaderData *D)
           Data->Arc.Seek(Data->Arc.CurBlockPos,SEEK_SET);
           return(RARReadHeader(hArcData,D));
         }
-        else {
+        else
           return(ERAR_EOPEN);
-        }
       return(Data->Arc.BrokenFileHeader ? ERAR_BAD_DATA:ERAR_END_ARCHIVE);
     }
     if (Data->OpenMode==RAR_OM_LIST && (Data->Arc.NewLhd.Flags & LHD_SPLIT_BEFORE))
@@ -164,9 +163,8 @@ int PASCAL RARReadHeaderEx(HANDLE hArcData,struct RARHeaderDataEx *D)
           Data->Arc.Seek(Data->Arc.CurBlockPos,SEEK_SET);
           return(RARReadHeaderEx(hArcData,D));
         }
-        else {
+        else
           return(ERAR_EOPEN);
-        }
       return(Data->Arc.BrokenFileHeader ? ERAR_BAD_DATA:ERAR_END_ARCHIVE);
     }
     if (Data->OpenMode==RAR_OM_LIST && (Data->Arc.NewLhd.Flags & LHD_SPLIT_BEFORE))
@@ -226,7 +224,7 @@ int PASCAL ProcessFile(HANDLE hArcData,int Operation,char *DestPath,char *DestNa
   //{
     Data->Cmd.DllError=0;
     if (Data->OpenMode==RAR_OM_LIST || Data->OpenMode==RAR_OM_LIST_INCSPLIT ||
-        (Operation==RAR_SKIP && !Data->Arc.Solid))
+        Operation==RAR_SKIP && !Data->Arc.Solid)
     {
       if (Data->Arc.Volume &&
           Data->Arc.GetHeaderType()==FILE_HEAD &&
@@ -237,9 +235,8 @@ int PASCAL ProcessFile(HANDLE hArcData,int Operation,char *DestPath,char *DestNa
           Data->Arc.Seek(Data->Arc.CurBlockPos,SEEK_SET);
           return(0);
         }
-        else {
+        else
           return(ERAR_EOPEN);
-        }
       Data->Arc.SeekToNext();
     }
     else
@@ -349,7 +346,7 @@ int PASCAL RARGetDllVersion()
   return(RAR_DLL_VERSION);
 }
 
-/*
+
 static int RarErrorToDll(int ErrCode)
 {
   switch(ErrCode)
@@ -372,4 +369,3 @@ static int RarErrorToDll(int ErrCode)
       return(ERAR_UNKNOWN);
   }
 }
-*/

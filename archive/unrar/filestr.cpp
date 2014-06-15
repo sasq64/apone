@@ -38,7 +38,8 @@ bool ReadTextFile(const char *Name,StringList *List,bool Config,
 
   memset(&Data[DataSize],0,5);
 
-  if (SrcCharset==RCH_UNICODE || (SrcCharset==RCH_DEFAULT && IsUnicode((byte *)&Data[0],DataSize)))
+  if (SrcCharset==RCH_UNICODE ||
+      SrcCharset==RCH_DEFAULT && IsUnicode((byte *)&Data[0],DataSize))
   {
     // Unicode in native system format, can be more than 2 bytes per character.
     Array<wchar> DataW(Data.Size()/2+1);

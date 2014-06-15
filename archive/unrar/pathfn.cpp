@@ -549,7 +549,7 @@ void MakeNameUsable(char *Name,bool Extended)
 {
   for (char *s=Name;*s!=0;s=charnext(s))
   {
-    if (strchr(Extended ? "?*<>|\"":"?*",*s)!=NULL || (Extended && (byte)*s<32))
+    if (strchr(Extended ? "?*<>|\"":"?*",*s)!=NULL || Extended && (byte)*s<32)
       *s='_';
 #ifdef _EMX
     if (*s=='=')
@@ -573,17 +573,15 @@ char* UnixSlashToDos(char *SrcName,char *DestName,uint MaxLength)
       *DestName=0;
       return(DestName);
     }
-    else {
+    else
       strcpy(DestName,SrcName);
-    }
   for (char *s=SrcName;*s!=0;s=charnext(s))
   {
-    if (*s=='/') {
+    if (*s=='/')
       if (DestName==NULL)
         *s='\\';
       else
         DestName[s-SrcName]='\\';
-    }
   }
   return(DestName==NULL ? SrcName:DestName);
 }
@@ -597,17 +595,15 @@ char* DosSlashToUnix(char *SrcName,char *DestName,uint MaxLength)
       *DestName=0;
       return(DestName);
     }
-    else {
+    else
       strcpy(DestName,SrcName);
-    }
   for (char *s=SrcName;*s!=0;s=charnext(s))
   {
-    if (*s=='\\') {
+    if (*s=='\\')
       if (DestName==NULL)
         *s='/';
       else
         DestName[s-SrcName]='/';
-    }
   }
   return(DestName==NULL ? SrcName:DestName);
 }
@@ -621,17 +617,15 @@ wchar* UnixSlashToDos(wchar *SrcName,wchar *DestName,uint MaxLength)
       *DestName=0;
       return(DestName);
     }
-    else {
+    else
       strcpyw(DestName,SrcName);
-    }
   for (wchar *s=SrcName;*s!=0;s++)
   {
-    if (*s=='/') {
+    if (*s=='/')
       if (DestName==NULL)
         *s='\\';
       else
         DestName[s-SrcName]='\\';
-    }
   }
   return(DestName==NULL ? SrcName:DestName);
 }
