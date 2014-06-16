@@ -47,6 +47,10 @@ public:
 		else
 			openmpt_module_set_render_param(mod, OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH, 0);
 
+		auto p = utils::split(string(type_long), " / ");
+		if(p.size() > 1)
+			type_long = p[0].c_str();
+
 		setMeta(
 			"title", title,
 			"composer", artist,

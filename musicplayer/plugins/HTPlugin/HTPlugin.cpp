@@ -91,7 +91,7 @@ public:
 			int seconds = psf.songLength();
 
 			setMeta("composer", tags["artist"],
-				"title", tags["title"],
+				"sub_title", tags["title"],
 				"game", tags["game"],
 				"format", "Dreamcast",
 				"length", seconds

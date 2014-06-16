@@ -32,7 +32,7 @@ public:
 			int seconds = psf.songLength();
 
 			setMeta("composer", tags["artist"],
-				"title", tags["title"],
+				"sub_title", tags["title"],
 				"game", tags["game"],
 				"format", psf_version == 1 ? "Playstation" : "Playstation2",
 				"length", seconds
@@ -98,12 +98,10 @@ public:
 
 		void * psx_state = state->emu;
 
-		int rtn = 0;			
-
 		uint32_t samples_cnt = noSamples / 2;
 				
-		rtn = psx_execute( (void*)psx_state, 0x7FFFFFFF, target, &samples_cnt, 0 );
-		if (samples_cnt < (noSamples / 2))
+		/* int rtn = */ psx_execute( (void*)psx_state, 0x7FFFFFFF, target, &samples_cnt, 0 );
+		if ((int)samples_cnt < (noSamples / 2))
 		{
 			noSamples = samples_cnt * 2;
 		}

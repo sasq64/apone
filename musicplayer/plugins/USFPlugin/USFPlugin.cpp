@@ -44,7 +44,7 @@ public:
 			int seconds = psf.songLength();
 
 			setMeta("composer", tags["artist"],
-				"title", tags["title"],
+				"sub_title", tags["title"],
 				"game", tags["game"],
 				"format", "Nintendo 64",
 				"length", seconds
@@ -89,7 +89,7 @@ public:
 				LOGD("######### NEW RATE %d", sample_rate);
 			}
 
-			for(unsigned i = 0; i<free_count; i++) {
+			for(int i = 0; i<free_count; i++) {
 				resampler_write_sample(resampler[0], temp[i*2]);
 				resampler_write_sample(resampler[1], temp[i*2+1]);
 			}
