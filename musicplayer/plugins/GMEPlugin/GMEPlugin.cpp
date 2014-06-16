@@ -16,26 +16,25 @@ public:
 	GMEPlayer(const string &fileName) : emu(nullptr), started(false), ended(false) {
 
 		gme_err_t err = gme_open_file(fileName.c_str(), &emu, 44100);
-		if(!err) {
-		   	gme_info_t* track0;
-		    //gme_info_t* track1;
-			gme_track_info(emu, &track0, 0);
-			//int track_count = gme_track_count(emu);
+		if(err)
+			throw player_exception("Could not load GME music");
 
-			//meta["title"] = track0->game;
+	   	gme_info_t* track0;
+	    //gme_info_t* track1;
+		gme_track_info(emu, &track0, 0);
+		//int track_count = gme_track_count(emu);
 
-			setMeta(
-				"game", track0->game,
-				"composer", track0->author,
-				"copyright", track0->copyright,
-				"length", track0->length > 0 ? track0->length / 1000 : 0,
-				"sub_title", track0->song,
-				"format", track0->system,
-				"songs", gme_track_count(emu)
-			);
-		}
+		//meta["title"] = track0->game;
 
-
+		setMeta(
+			"game", track0->game,
+			"composer", track0->author,
+			"copyright", track0->copyright,
+			"length", track0->length > 0 ? track0->length / 1000 : 0,
+			"sub_title", track0->song,
+			"format", track0->system,
+			"songs", gme_track_count(emu)
+		);
 	}
 	~GMEPlayer() override {
 		if(emu)
@@ -99,7 +98,11 @@ bool GMEPlugin::canHandle(const std::string &name) {
 }
 
 ChipPlayer *GMEPlugin::fromFile(const std::string &name) {
-	return new GMEPlayer { name };
+	try {
+		return new GMEPlayer { name };
+	} catch(player_exception &e) {
+		return nullptr;
+	}
 };
 
 } // namespace chipmachine

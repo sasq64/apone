@@ -26,6 +26,9 @@ public:
 
 	mod = openmpt_module_create_from_memory(data, size, nullptr, nullptr, nullptr);
 
+	if(!mod)
+		throw player_exception("Could not load module");
+
 	//if(loopmode)
 	//	openmpt_module_set_repeat_count(mod, -1);
 
@@ -97,7 +100,11 @@ bool OpenMPTPlugin::canHandle(const std::string &name) {
 
 ChipPlayer *OpenMPTPlugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
-	return new OpenMPTPlayer {file.getPtr(), file.getSize()};
+	try {
+		return new OpenMPTPlayer {file.getPtr(), file.getSize()};
+	} catch(player_exception &e) {
+		return nullptr;
+	}
 };
 
 }
