@@ -55,6 +55,14 @@ public:
 		setNotify(fn);
 	}
 
+	template <typename T> void load(const std::string &fileName, std::function<void(T &data)> onLoad, const T& defaultVal) {
+		auto fn = utils::File::resolvePath(fileName);
+		auto r = std::make_shared<TypedResource<T>>(fn, onLoad, [=]() -> T { return defaultVal; });
+		resources[fn] = r;
+		r->load();
+		setNotify(fn);
+	}
+
 	void setNotify(const std::string &fileName);
 
 private:

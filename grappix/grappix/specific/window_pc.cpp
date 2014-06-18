@@ -196,7 +196,7 @@ void Window::flip() {
 		return;
 	}*/
 	glfwSwapBuffers();
-	if(glfwGetKey(GLFW_KEY_ESC) || !glfwGetWindowParam(GLFW_OPENED)) {
+	if((glfwGetKey(GLFW_KEY_ESC) && glfwGetKey(GLFW_KEY_LCTRL)) || !glfwGetWindowParam(GLFW_OPENED)) {
 		glfwCloseWindow();
 		winOpen = false;			
 	}

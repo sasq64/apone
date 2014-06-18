@@ -48,6 +48,8 @@ class TweenHolder {
 public:
 	TweenHolder() {}
 	TweenHolder(std::shared_ptr<Tween> t) : tween(t) {}
+	//~TweenHolder() {
+	//}
 	void cancel();
 	bool done();
 	bool valid();

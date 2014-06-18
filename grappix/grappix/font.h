@@ -2,6 +2,7 @@
 #define FONT_H
 
 //#include "render_target.h"
+#include "shader.h"
 #include <coreutils/log.h>
 #include <string>
 #include <vector>
@@ -92,11 +93,14 @@ private:
 
 	int size;
 
+	Program program;
+
 	class FontRef {
 	public:
-		FontRef(int w, int h, const std::string &ttfName, int fsize);
+		FontRef(int w, int h, const std::string &ttfName, int fsize, int flags);
 		~FontRef();
 		int w, h;
+		int flags;
 		std::string ttfName;
 		void *atlas;
 		void *font;

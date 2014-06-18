@@ -25,7 +25,7 @@ std::vector<std::weak_ptr<Font::FontRef>> Font::fontRefs;
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 Font::Font(bool stfont) : size(32) {
-	ref = make_shared<FontRef>(0, 0, "", 0.0);
+	ref = make_shared<FontRef>(0, 0, "", 0.0, 0);
 	texture_atlas_t *atlas = new texture_atlas_t();
 	ref->atlas = atlas;
 	atlas->width = static_font.tex_width;
@@ -43,6 +43,8 @@ const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZ012345678
 
 Font::Font(const string &ttfName, int size, int flags) : size(size) {
 
+	program = flags & DISTANCE_MAP ? get_program(FONT_PROGRAM_DF) : get_program(FONT_PROGRAM);
+
 	int tsize = flags & 0xffffc0;
 	if(tsize == 0) tsize = 128;
 	flags &= 0x3f;
@@ -51,7 +53,7 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 		auto r = fr.lock();
 		if(r) {
 			LOGD("%s(%d) vs %s(%d)",r->ttfName, r->w, ttfName, tsize);
-			if(r->ttfName == ttfName && r->w == tsize && r->h == tsize) {
+			if(r->ttfName == ttfName && r->w == tsize && r->h == tsize && r->flags == flags) {
 				ref = r;
 				LOGD("Reusing %s (%d)", ttfName, size);
 				return;
@@ -59,7 +61,7 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 		}
 	}
 
-	ref = make_shared<FontRef>(tsize, tsize, ttfName, size);
+	ref = make_shared<FontRef>(tsize, tsize, ttfName, size, flags);
 	fontRefs.push_back(ref);
 
 	auto text = fontLetters;
@@ -281,21 +283,22 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, text.vbuf[1]);
 
 
-	auto program = get_program(FONT_PROGRAM_DF).id();
+	//auto program = get_program(FONT_PROGRAM_DF).id();
 	//LOGD("Program %d", program);
-	glUseProgram(program);
+	//glUseProgram(program);
+	program.use();
 
-	GLuint vertHandle = glGetAttribLocation(program, "vertex");
-	GLuint uvHandle = glGetAttribLocation(program, "uv");
+	GLuint vertHandle = glGetAttribLocation(program.id(), "vertex");
+	GLuint uvHandle = glGetAttribLocation(program.id(), "uv");
 
 	//uint32_t color = 0x40ff80;
 
-	GLuint whHandle = glGetUniformLocation(program, "vScreenScale");
+	GLuint whHandle = glGetUniformLocation(program.id(), "vScreenScale");
 	glUniform4f(whHandle, 2.0 / target.width(), 2.0 / target.height(), 0, 1);
 
-	GLuint posHandle = glGetUniformLocation(program, "vPosition");
-	GLuint scaleHandle = glGetUniformLocation(program, "vScale");
-	GLuint colorHandle = glGetUniformLocation(program, "vColor");
+	GLuint posHandle = glGetUniformLocation(program.id(), "vPosition");
+	GLuint scaleHandle = glGetUniformLocation(program.id(), "vScale");
+	GLuint colorHandle = glGetUniformLocation(program.id(), "vColor");
 	float red = ((color>>16)&0xff) / 255.0;
 	float green = ((color>>8)&0xff) / 255.0;
 	float blue = (color&0xff) / 255.0;
@@ -356,7 +359,7 @@ int Font::get_width(const string &text, float scale) {
 }
 
 
-Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize) : w(w), h(h), ttfName(ttfName), atlas(nullptr), font(nullptr) {
+Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize, int flags) : w(w), h(h), flags(flags), ttfName(ttfName), atlas(nullptr), font(nullptr) {
 	LOGD("FONTREF CONSTRUCT");
 	texture_atlas_t *a = nullptr;
 	if(w > 0 && h > 0)

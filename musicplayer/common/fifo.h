@@ -94,6 +94,8 @@ public:
 
 	uint8_t *ptr() { return bufPtr; }
 
+	float getVolume() { return volume; }
+
 private:
 	float volume;
 
