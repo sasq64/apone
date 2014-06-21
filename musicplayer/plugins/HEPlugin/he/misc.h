@@ -8,6 +8,10 @@
 #include "mkhebios.h"
 #include "r3000.h"
 
+#include <coreutils/utils.h>
+#include <coreutils/file.h>
+#include <coreutils/log.h>
+
 static void * psf_file_fopen( const char * uri );
 static void * psf_file_fopen( const char * uri );
 static int psf_file_fseek( void * handle, int64_t offset, int whence );
@@ -117,8 +121,21 @@ static void * psf_file_fopen( const char * uri )
 	FILE *f;
 
 	fprintf(stderr, "PSF OPEN %s\n", uri);
-
 	f = fopen(uri, "r");
+
+    // ANTI WINDOWS HACK - Try the lower case version of the filename if it can't be found
+    if(!f) {
+        static char temp[2048];
+        strncpy(temp, uri, sizeof(temp));
+        char *p = strrchr(temp, '/');
+        if(!p) p = temp;
+        while(*p) {
+            *p = tolower(*p);
+            p++;
+        }
+        f = fopen(temp, "rb");
+    }
+
 	return f;
 }
 

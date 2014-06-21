@@ -837,7 +837,20 @@ int xsf_get_lib(char *filename, void **buffer, unsigned int *length)
 	uint32 size;
 	FILE *auxfile;
 
-	auxfile = fopen(filename, "rb");
+    fprintf(stderr, "LIB %s\n", filename);
+    auxfile = fopen(filename, "rb");
+
+    // ANTI WINDOWS HACK - Try the lower case version of the filename if it can't be found
+    if(!auxfile) {
+        char *p = strrchr(filename, '/');
+        if(!p) p = filename;
+        while(*p) {
+        	*p = tolower(*p);
+        	p++;
+        }
+        auxfile = fopen(filename, "rb");
+    }
+
 	if (!auxfile)
 	{
 	  return 0;

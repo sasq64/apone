@@ -19,6 +19,24 @@ public:
 
 	HTPlayer(const std::string &fileName) {
 
+
+
+		PSFFile psf { fileName };
+		if(psf.valid()) {
+			auto &tags = psf.tags();
+
+			auto lib = tags["_lib"];
+
+			int seconds = psf.songLength();
+
+			setMeta("composer", tags["artist"],
+				"sub_title", tags["title"],
+				"game", tags["game"],
+				"format", "Dreamcast",
+				"length", seconds
+			);
+		}
+
 		int version;
 	    	
 		sdsf_loader_state lstate;
@@ -83,22 +101,6 @@ public:
 		sdsfinfo->emu = sega_state;
 		sdsfinfo->yam = yam;
 		sdsfinfo->version = version;
-
-		PSFFile psf { fileName };
-		if(psf.valid()) {
-			auto &tags = psf.tags();
-
-			int seconds = psf.songLength();
-
-			setMeta("composer", tags["artist"],
-				"sub_title", tags["title"],
-				"game", tags["game"],
-				"format", "Dreamcast",
-				"length", seconds
-			);
-		}
-
-
 
 		this->state = sdsfinfo;
 	}

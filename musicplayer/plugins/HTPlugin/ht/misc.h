@@ -89,7 +89,23 @@ static void * psf_file_fopen( const char * uri )
 {
 	FILE *f;
 
+    fprintf(stderr, "OPEN %s\n", uri);
+
 	f = fopen(uri, "r");
+
+    // ANTI WINDOWS HACK - Try the lower case version of the filename if it can't be found
+    if(!f) {
+        static char temp[2048];
+        strncpy(temp, uri, sizeof(temp));
+        char *p = strrchr(temp, '/');
+        if(!p) p = temp;
+        while(*p) {
+            *p = tolower(*p);
+            p++;
+        }
+        f = fopen(temp, "rb");
+    }
+
 	return f;
 }
 
