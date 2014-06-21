@@ -210,6 +210,7 @@ $(OBJDIR)%_v.o: %_v.glsl
 	@cp $< .shader/$(<F)
 	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
 	@$(CXX) -O2 -c .shader/$(<F).cpp -o $@
+	rm -f .shader/$(<F) .shader/$(<F).cpp
 
 $(OBJDIR)%_f.o: %_f.glsl
 	@mkdir -p $(@D)
@@ -218,6 +219,7 @@ $(OBJDIR)%_f.o: %_f.glsl
 	@cp $< .shader/$(<F)
 	@$(XXD) -i .shader/$(<F) .shader/$(<F).cpp
 	@$(CXX) -O2 -c .shader/$(<F).cpp -o $@
+	rm -f .shader/$(<F) .shader/$(<F).cpp
 
 $(OBJDIR)%.d: %.c
 	@mkdir -p $(@D)
