@@ -1,8 +1,8 @@
 #ifdef GL_ES
 	precision mediump float;
 #endif
-	uniform vec4 vColor;
-	uniform vec4 vScale;
+	uniform vec4 color;
+	uniform float vScale;
 	uniform sampler2D sTexture;
 	//uniform float smoothing;
 	varying vec2 UV;
@@ -17,7 +17,7 @@
 	void main() {
 		float dist = texture2D(sTexture, UV).a;
 #ifdef GL_ES
-		float smoothing = 1.0 / (vScale.x * 16.0);
+		float smoothing = 1.0 / (vScale * 16.0);
 		float alpha = smoothstep(glyph_center-smoothing, glyph_center+smoothing, dist);
 #else
 		float width = fwidth(dist);
@@ -28,7 +28,7 @@
 		//gl_FragColor = vec4(1.0, 0.0, 0.0, alpha);
 		//vec3 rgb = mix(vec3(0,0,0), vec3(1.0,0.0,0.0), dist);
 		//gl_FragColor = vec4(rgb, 1.0);//floor(dist + 0.500));
-		gl_FragColor = vec4(vColor.rgb, vColor.a * alpha);
+		gl_FragColor = vec4(color.rgb, color.a * alpha);
 		//gl_FragColor = vec4(1.0, 0.0, 0.0, floor(dist + 0.500));
 		//gl_FragColor += vec4(0.0, 1.0, 0.0, floor(dist + 0.533));
 

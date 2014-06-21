@@ -121,44 +121,46 @@ void Program::createProgram() {
 
 	uniforms.clear();
 
-	if(vertexShader >= 0)
-		glDeleteShader(vertexShader);
-	if(pixelShader >= 0)
-		glDeleteShader(pixelShader);
+	//if(vertexShader >= 0)
+	//	glDeleteShader(vertexShader);
+	//if(pixelShader >= 0)
+	//	glDeleteShader(pixelShader);
 
-	if(program >= 0)
-		glDeleteProgram(program);
+	//if(program >= 0)
+	//	glDeleteProgram(program);
 
-	vertexShader = loadShader(GL_VERTEX_SHADER, vSource.c_str());
+	GLint vertexShader = loadShader(GL_VERTEX_SHADER, vSource.c_str());
 
 #ifdef GL_ES
-	pixelShader = loadShader(GL_FRAGMENT_SHADER, (string("\nprecision mediump float;\n") + fSource).c_str());
+	GLint pixelShader = loadShader(GL_FRAGMENT_SHADER, (string("\nprecision mediump float;\n") + fSource).c_str());
 #else
-	pixelShader = loadShader(GL_FRAGMENT_SHADER, fSource.c_str());
+	GLint pixelShader = loadShader(GL_FRAGMENT_SHADER, fSource.c_str());
 #endif
 
-	program = glCreateProgram();
-	if(program) {
-		glAttachShader(program, vertexShader);
-		glAttachShader(program, pixelShader);
-		glLinkProgram(program);
+	GLint p = glCreateProgram();
+	if(p) {
+		glAttachShader(p, vertexShader);
+		glAttachShader(p, pixelShader);
+		glLinkProgram(p);
 		GLint linkStatus = GL_FALSE;
-		glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+		glGetProgramiv(p, GL_LINK_STATUS, &linkStatus);
 		if(linkStatus != GL_TRUE) {
 			GLint bufLength = 0;
 			string msg;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
+			glGetProgramiv(p, GL_INFO_LOG_LENGTH, &bufLength);
 			if(bufLength) {
 				char buf[bufLength];
-				glGetProgramInfoLog(program, bufLength, NULL, buf);
+				glGetProgramInfoLog(p, bufLength, NULL, buf);
 				msg = buf;
 			}
 			LOGD("Link failed\n%s\n", msg.c_str());
-			glDeleteProgram(program);
+			glDeleteProgram(p);
 			throw shader_exception(msg);
 		}
+		program = make_shared<ProgRef>(p, vertexShader, pixelShader);
 	} else
 		throw shader_exception("Could not create program");
+
 }
 
 }

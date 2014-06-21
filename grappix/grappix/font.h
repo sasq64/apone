@@ -85,6 +85,10 @@ public:
 
 	int get_width(const std::string &text, float scale);
 
+	void set_program(const Program &p) {
+		program = p;
+	}
+
 	void update_cache() {
 		cache.cleanup();
 	}

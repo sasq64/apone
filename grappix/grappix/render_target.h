@@ -126,6 +126,8 @@ public:
 		return target;
 	}
 
+	const utils::mat4f& get_view_matrix() const { return toScreen; }
+
 protected:
 
 	void update_matrix() {

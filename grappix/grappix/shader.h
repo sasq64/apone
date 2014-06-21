@@ -4,7 +4,7 @@
 #include "GL_Header.h"
 //#include <coreutils/log.h>
 #include <coreutils/mat.h>
-
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -30,17 +30,33 @@ enum program_name {
 	FONT_PROGRAM_DF
 };
 
+struct ProgRef {
+	ProgRef(GLint id, GLint vs, GLint fs) : id(id), vs(vs), fs(fs) {}
+	~ProgRef() {
+		if(id > 0)
+			glDeleteProgram(id);
+		if(vs > 0)
+			glDeleteShader(vs);
+		if(fs > 0)
+			glDeleteShader(fs);
+
+	}
+	GLint id;
+	GLint vs;
+	GLint fs;
+};
+
 class Program {
 public:
-	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource), program(-3), vertexShader(-1), pixelShader(-1) {
+	Program(const std::string &vertexSource, const std::string &fragmentSource) : vSource(vertexSource), fSource(fragmentSource)  {
 		createProgram();
 	}
 
-	Program(GLint p) : program(p), vertexShader(-1), pixelShader(-1) {}
+	//Program(GLint p) : program(std::make_shared<ProgRef>(p)), vertexShader(-1), pixelShader(-1) {}
 
-	Program() : program(-2), vertexShader(-1), pixelShader(-1) {}
+	Program()  {}
 
-	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen), program(-4), vertexShader(-1), pixelShader(-1) {
+	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen) {
 		createProgram();
 	}
 
@@ -64,13 +80,11 @@ public:
 	} */
 
 	~Program() {
-		program = -5;
-		//LOGD("Destroy");
 	}
 
-	bool operator==(const Program &p) {
-		return p.program == program;
-	}
+	//bool operator==(const Program &p) {
+	//	return p.program == program;
+	//}
 
 	Program clone() const {
 		return Program(vSource, fSource);
@@ -90,7 +104,7 @@ public:
 	GLuint getAttribLocation(const std::string &name) const {
 		GLuint a;
 		if(attributes.count(name) == 0) {
-			a = glGetAttribLocation(program, name.c_str());
+			a = glGetAttribLocation(program->id, name.c_str());
 			attributes[name] = a;
 		} else {
 			a = attributes[name];
@@ -100,7 +114,7 @@ public:
 	GLuint getUniformLocation(const std::string &name) const {
 		GLuint u;
 		if(uniforms.count(name) == 0) {
-			u = glGetUniformLocation(program, name.c_str());
+			u = glGetUniformLocation(program->id, name.c_str());
 			uniforms[name] = u;
 		} else {
 			u = uniforms[name];
@@ -146,11 +160,11 @@ public:
 	}
 
 	void use() const { 
-		glUseProgram(program);
+		glUseProgram(program->id);
 		setUniform("frame_counter", frame_counter);
 	}
 
-	GLint id() const { return program; }
+	GLint id() const { return program->id; }
 
 	static uint32_t frame_counter;
 
@@ -163,9 +177,12 @@ public:
 	std::string vSource;
 	std::string fSource;
 
-	GLint program;
-	GLint vertexShader;
-	GLint pixelShader;
+	//GLint program;
+
+	std::shared_ptr<ProgRef> program;
+
+	//GLint vertexShader;
+	//GLint pixelShader;
 };
 
 const Program& get_program(program_name program);

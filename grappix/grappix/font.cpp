@@ -271,48 +271,29 @@ TextBuf Font::make_text(const string &text) const {
 
 void Font::render_text(const RenderTarget &target, const TextBuf &text, float x, float y, uint32_t color, float scale) const {
 
-	//LOGD("[%f]", uvs);
-	//auto _width = screen.size().first;
-	//auto _height = screen.size().second;
-
-	//LOGD("Render text %d %d", vbuf[0], vbuf[1]);
-
 	scale = scale * 32.0 / (float)size;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, target.buffer());
+	glViewport(0,0,target.width(), target.height());
+
+	program.use();
 
 	glBindBuffer(GL_ARRAY_BUFFER, text.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, text.vbuf[1]);
 
+	utils::mat4f matrix = make_scale(scale, scale);
+	matrix = make_translate(x, y) * matrix;
+	matrix = target.get_view_matrix() * matrix;
+	program.setUniform("matrix", matrix.transpose());
 
-	//auto program = get_program(FONT_PROGRAM_DF).id();
-	//LOGD("Program %d", program);
-	//glUseProgram(program);
-	program.use();
+	// Needed for DF shader
+	program.setUniform("vScale", scale);
 
-	GLuint vertHandle = glGetAttribLocation(program.id(), "vertex");
-	GLuint uvHandle = glGetAttribLocation(program.id(), "uv");
+	auto c = make_color(color);
+	program.setUniform("color", c.red, c.green, c.blue, c.alpha);
 
-	//uint32_t color = 0x40ff80;
-
-	GLuint whHandle = glGetUniformLocation(program.id(), "vScreenScale");
-	glUniform4f(whHandle, 2.0 / target.width(), 2.0 / target.height(), 0, 1);
-
-	GLuint posHandle = glGetUniformLocation(program.id(), "vPosition");
-	GLuint scaleHandle = glGetUniformLocation(program.id(), "vScale");
-	GLuint colorHandle = glGetUniformLocation(program.id(), "vColor");
-	float red = ((color>>16)&0xff) / 255.0;
-	float green = ((color>>8)&0xff) / 255.0;
-	float blue = (color&0xff) / 255.0;
-	float alpha = ((color>>24)&0xff) / 255.0;
-	glUniform4f(colorHandle, red, green, blue, alpha);
-	glUniform4f(scaleHandle, scale, scale, 0, 1);
-	glUniform4f(posHandle, x, y, 0, 1);
-	//scale *= 1.001;
-
-
-	glVertexAttribPointer(vertHandle, 2, GL_FLOAT, GL_FALSE, 16, 0);
-	glEnableVertexAttribArray(vertHandle);
-	glVertexAttribPointer(uvHandle, 2, GL_FLOAT, GL_FALSE, 16, (void*)8);
-	glEnableVertexAttribArray(uvHandle);
+	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
+	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
 
 	texture_atlas_t *atlas = (texture_atlas_t*)ref->atlas;
 	glBindTexture( GL_TEXTURE_2D, atlas->id );
@@ -324,8 +305,8 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 
 	//LOGD("Drew %d\n", tl);
 
-	glDisableVertexAttribArray(uvHandle);
-	glDisableVertexAttribArray(vertHandle);
+	//glDisableVertexAttribArray(uvHandle);
+	//glDisableVertexAttribArray(vertHandle);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

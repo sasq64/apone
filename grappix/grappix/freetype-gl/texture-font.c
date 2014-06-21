@@ -336,9 +336,7 @@ texture_font_delete( texture_font_t *self )
 
 
 // ----------------------------------------------- texture_font_load_glyphs ---
-size_t
-texture_font_load_glyphs( texture_font_t * self,
-                          const wchar_t * charcodes )
+size_t texture_font_load_glyphs( texture_font_t * self, const wchar_t * charcodes )
 {
     size_t i, x, y, width, height, depth, w, h;
     FT_Library library;
@@ -519,8 +517,8 @@ texture_font_load_glyphs( texture_font_t * self,
 
         // We want each glyph to be separated by at least one black pixel
         // (for example for shader used in demo-subpixel.c)
-        w = ft_bitmap_width/depth + 1;
-        h = ft_bitmap_rows + 1;
+        w = ft_bitmap_width/depth + 4;
+        h = ft_bitmap_rows + 4;
         region = texture_atlas_get_region( self->atlas, w, h );
         if ( region.x < 0 )
         {
@@ -528,8 +526,8 @@ texture_font_load_glyphs( texture_font_t * self,
             fprintf( stderr, "Texture atlas is full (line %d)\n",  __LINE__ );
             continue;
         }
-        w = w - 1;
-        h = h - 1;
+        w = w - 4;
+        h = h - 4;
         x = region.x;
         y = region.y;
         texture_atlas_set_region( self->atlas, x, y, w, h,
