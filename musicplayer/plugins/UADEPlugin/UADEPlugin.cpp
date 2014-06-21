@@ -45,7 +45,13 @@ public:
 
 	bool load(string fileName) {
 
-		state = uade_new_state(nullptr);
+		struct uade_config *config = uade_new_config();
+		uade_config_set_option(config, UC_ONE_SUBSONG, NULL);
+		uade_config_set_option(config, UC_IGNORE_PLAYER_CHECK, NULL);
+		uade_config_set_option(config, UC_NO_EP_END, NULL);
+		state = uade_new_state(config);
+	
+		musicStopped = false;
 
 		if(path_suffix(fileName) == "mdat") {
 			uade_set_amiga_loader(UADEPlayer::amigaloader, this, state);
@@ -59,6 +65,8 @@ public:
 			fileName = uadeFileName;
 		} else
 			uade_set_amiga_loader(nullptr, this, state);
+
+		currentFileName = fileName;
 
 		if(uade_play(fileName.c_str(), -1, state) == 1) {
 			songInfo = uade_get_song_info(state);
@@ -88,13 +96,29 @@ public:
 
 	virtual int getSamples(int16_t *target, int noSamples) override {
 		//int rc = get_samples((uint8_t*)target, noSamples * 2);
-		ssize_t rc = uade_read(target, noSamples*2, state); 
+		ssize_t rc = uade_read(target, noSamples*2, state);
+		struct uade_notification nf;
+		if(uade_read_notification(&nf, state)) {
+			if(nf.type == UADE_NOTIFICATION_SONG_END) {
+				LOGD("UADE SONG END: %d %d %d %s", nf.song_end.happy, nf.song_end.stopnow, nf.song_end.subsong, nf.song_end.reason);
+				setMeta("song", nf.song_end.subsong+1);
+				if(nf.song_end.stopnow)
+					musicStopped = true;
+			}
+			uade_cleanup_notification(&nf);
+		}
 		if(rc > 0)
 			return rc/2;
 		return rc;
 	}
 
 	virtual void seekTo(int song, int seconds) {
+		//if(musicStopped) {
+		//	if(uade_play(currentFileName.c_str(), -1, state) == 1) {
+		//		songInfo = uade_get_song_info(state);
+		//		musicStopped = false;
+		//	}
+		//}
 		uade_seek(UADE_SEEK_SUBSONG_RELATIVE, 0, song + songInfo->subsongs.min, state);
 		//set_song(song);	
 	}
@@ -104,6 +128,8 @@ private:
 	struct uade_state *state;
 	const struct uade_song_info *songInfo;
 	string baseName;
+	string currentFileName;
+	bool musicStopped;
 };
 
 bool UADEPlugin::canHandle(const std::string &name) {
