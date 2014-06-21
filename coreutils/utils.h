@@ -106,6 +106,7 @@ void makedirs(const std::string &name);
 
 bool endsWith(const std::string &name, const std::string &ext);
 void makeLower(std::string &s);
+std::string toLower(const std::string &s);
 
 std::string rstrip(const std::string &x, char c = ' ');
 std::string lstrip(const std::string &x, char c = ' ');

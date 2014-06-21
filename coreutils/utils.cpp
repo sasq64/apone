@@ -176,6 +176,12 @@ void makeLower(string &s) {
 		s[i] = tolower(s[i]);
 }
 
+string toLower(const string &s) {
+	string s2 = s;
+	makeLower(s2);
+	return s2;
+}
+
 string path_basename(const string &name) {
 	auto slashPos = name.rfind(path_separator);
 	if(slashPos == string::npos)
