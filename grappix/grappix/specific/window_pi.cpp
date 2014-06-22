@@ -51,6 +51,11 @@ static EGLContext eglContext;
 static EGLDisplay eglDisplay;
 static EGLSurface eglSurface;
 
+/*constexpr */ bool test_bit(const vector<uint8_t> &v, int n) {
+	return (v[n/8] & (1<<(n%8))) != 0; 
+}
+
+
 void Window::open(int w, int h, bool fs) {
 
 	if(winOpen)
@@ -119,61 +124,74 @@ void Window::open(int w, int h, bool fs) {
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
 
-	File idir { "/dev/input" };
-	for(auto f : idir.listFiles()) {
-		
-	}
 
 	keyboardThread = thread([=]() {
-		vector<uint8_t> buf(64);
-		memset(&buf[0], 0x13, 64);
-		uint8_t n;
-		LOGD("Reading Keyboard");
-		int k = ::open("/dev/input/event1", O_RDONLY);
-		if(k < 0) {
-			LOGW("Could not open keyboard");
-			return;
-		}
-		while(true) {
-			int rc = read(k, &buf[0], sizeof(struct input_event) * 4);
-			auto *ptr = (struct input_event*)&buf[0];
-			if(rc >= sizeof(struct input_event))
-				LOGD("[%02x]", buf);
-			while(rc >= sizeof(struct input_event)) {
 
-				//int type = ptr[8];
-				//int code = ptr[10] | (ptr[11]<<8);
-				//int updown = ptr[12];
-				LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
+		File idir { "/dev/input" };
+		vector<uint8_t> evbit((EV_MAX+7)/8);
+	    vector<uint8_t> keybit((KEY_MAX+7)/8);
 
-				if(ptr->type == EV_KEY) {
-					if(ptr->value)
-						key_buffer.push_back(ptr->code);
-					if(ptr->code < 512)
-						pressed_keys[ptr->code] = ptr->value;
+		int fd = -1;
+		vector<int> fdv;
+		for(auto f : idir.listFiles()) {
+			fd = ::open(f.getName().c_str(), O_RDONLY, 0);
+			ioctl(fd, EVIOCGBIT(0, evbit.size()), &evbit[0]);
+			if(test_bit(evbit, EV_KEY)) {
+				ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
+				if(test_bit(keybit, KEY_LEFT)) {
+					fdv.push_back(fd);
+					LOGD("LEFT KEY");
+				} else if(test_bit(keybit, BTN_LEFT)) {
+					fdv.push_back(fd);
+					LOGD("MOUSEB %s %d", f.getName(), fd);
 				}
-/*
-				modifiers = ptr[0];
-				for(int i=2; i<5; i++) {
-					auto k = ptr[i];
-					if(k) {
-						if(!pressed_keys[k]) {
-							fprintf(stderr, format("Got key %02x\n", k).c_str());
-							key_buffer.push_back(k);
+			}
+			//LOGD("%s, %02x -- %02x", f.getName(), evbit, keybit);
+		}
+
+		int maxfd = -1;
+
+		fd_set readset;
+		struct timeval tv;
+
+		vector<uint8_t> buf(64);
+
+		while(true) {
+			FD_ZERO(&readset);
+			for(auto fd : fdv) {
+				FD_SET(fd, &readset);
+				if(fd > maxfd)
+					maxfd = fd;
+			}
+			LOGD("Selecting");
+			tv.tv_sec = 1;
+			tv.tv_usec = 0;
+			int sr = select(maxfd+1, &readset, nullptr, nullptr, &tv);
+			if(sr > 0) {
+				LOGD("Got signal");
+				static uint8_t buf[2048];
+				for(auto fd : fdv) {
+					if(FD_ISSET(fd, &readset)) {
+						int rc = read(fd, &buf[0], sizeof(struct input_event) * 4);
+						auto *ptr = (struct input_event*)&buf[0];
+						if(rc >= sizeof(struct input_event))
+							LOGD("[%02x]", buf);
+						while(rc >= sizeof(struct input_event)) {
+							LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
+
+							if(ptr->type == EV_KEY) {
+								if(ptr->value)
+									key_buffer.push_back(ptr->code);
+								if(ptr->code < 512)
+									pressed_keys[ptr->code] = ptr->value;
+							}
+							ptr++;
+							rc -= sizeof(struct input_event);
+
 						}
-						pressed_keys[k] = 2;
 					}
 				}
-				for(int i=0; i<256; i++) {
-					if(pressed_keys[i])
-						pressed_keys[i]--;
-				}
-*/
-				ptr++;
-				rc -= sizeof(struct input_event);
-
 			}
-			//sleepms(100);
 		}
 	});
 	keyboardThread.detach();
