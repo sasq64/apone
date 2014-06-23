@@ -138,12 +138,8 @@ void Window::open(int w, int h, bool fs) {
 			ioctl(fd, EVIOCGBIT(0, evbit.size()), &evbit[0]);
 			if(test_bit(evbit, EV_KEY)) {
 				ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
-				if(test_bit(keybit, KEY_LEFT)) {
+				if(test_bit(keybit, KEY_LEFT) || test_bit(keybit, BTN_LEFT)) {
 					fdv.push_back(fd);
-					LOGD("LEFT KEY");
-				} else if(test_bit(keybit, BTN_LEFT)) {
-					fdv.push_back(fd);
-					LOGD("MOUSEB %s %d", f.getName(), fd);
 				}
 			}
 			//LOGD("%s, %02x -- %02x", f.getName(), evbit, keybit);
@@ -163,7 +159,6 @@ void Window::open(int w, int h, bool fs) {
 				if(fd > maxfd)
 					maxfd = fd;
 			}
-			LOGD("Selecting");
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
 			int sr = select(maxfd+1, &readset, nullptr, nullptr, &tv);
@@ -177,9 +172,8 @@ void Window::open(int w, int h, bool fs) {
 						if(rc >= sizeof(struct input_event))
 							LOGD("[%02x]", buf);
 						while(rc >= sizeof(struct input_event)) {
-							LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
-
 							if(ptr->type == EV_KEY) {
+								LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
 								if(ptr->value)
 									key_buffer.push_back(ptr->code);
 								if(ptr->code < 512)
@@ -187,7 +181,6 @@ void Window::open(int w, int h, bool fs) {
 							}
 							ptr++;
 							rc -= sizeof(struct input_event);
-
 						}
 					}
 				}
@@ -238,7 +231,7 @@ void Window::flip() {
 }
 
 bool Window::mouse_pressed() {
-	return false;
+	return (pressed_keys[BTN_MOUSE] != 0);;
 }
 
 tuple<int, int> Window::mouse_position() {
@@ -303,6 +296,8 @@ unordered_map<int, int> Window::translate = {
 	{ 'Y', KEY_Y },
 	{ 'Z', KEY_Z },
 	{ '0', KEY_0 },
+	{ BTN_LEFT, CLICK },
+	{ BTN_RIGHT, RIGHT_CLICK },
 	{ ENTER, KEY_ENTER },
 	{ SPACE, KEY_SPACE },
 	{ PAGEUP, KEY_PAGEUP },
