@@ -134,23 +134,33 @@ void Window::open(int w, int h, bool fs) {
 		int fd = -1;
 		vector<int> fdv;
 		for(auto f : idir.listFiles()) {
-			fd = ::open(f.getName().c_str(), O_RDONLY, 0);
-			ioctl(fd, EVIOCGBIT(0, evbit.size()), &evbit[0]);
-			if(test_bit(evbit, EV_KEY)) {
-				ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
-				if(test_bit(keybit, KEY_LEFT) || test_bit(keybit, BTN_LEFT)) {
-					fdv.push_back(fd);
-				}
+			if(!f.isDir()) {
+				fd = ::open(f.getName().c_str(), O_RDONLY, 0);
+				if(fd >= 0) {
+					ioctl(fd, EVIOCGBIT(0, evbit.size()), &evbit[0]);
+					if(test_bit(evbit, EV_KEY)) {
+						ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
+						if(test_bit(keybit, KEY_LEFT) || test_bit(keybit, BTN_LEFT)) {
+							fdv.push_back(fd);
+						}
+					}
+				} else
+					LOGW("Could not access %s", f.getName());
 			}
 			//LOGD("%s, %02x -- %02x", f.getName(), evbit, keybit);
 		}
+
+		LOGD("Found %d devices with keys", fdv.size());
+
+		if(fdv.size() == 0)
+			return;
 
 		int maxfd = -1;
 
 		fd_set readset;
 		struct timeval tv;
 
-		vector<uint8_t> buf(64);
+		vector<uint8_t> buf(256);
 
 		while(true) {
 			FD_ZERO(&readset);
@@ -164,13 +174,13 @@ void Window::open(int w, int h, bool fs) {
 			int sr = select(maxfd+1, &readset, nullptr, nullptr, &tv);
 			if(sr > 0) {
 				LOGD("Got signal");
-				static uint8_t buf[2048];
+				//static uint8_t buf[2048];
 				for(auto fd : fdv) {
 					if(FD_ISSET(fd, &readset)) {
 						int rc = read(fd, &buf[0], sizeof(struct input_event) * 4);
 						auto *ptr = (struct input_event*)&buf[0];
-						if(rc >= sizeof(struct input_event))
-							LOGD("[%02x]", buf);
+						//if(rc >= sizeof(struct input_event))
+						//	LOGD("[%02x]", buf);
 						while(rc >= sizeof(struct input_event)) {
 							if(ptr->type == EV_KEY) {
 								LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
@@ -296,6 +306,8 @@ unordered_map<int, int> Window::translate = {
 	{ 'Y', KEY_Y },
 	{ 'Z', KEY_Z },
 	{ '0', KEY_0 },
+	{ F11, F11 },
+	{ F12, F12 },
 	{ BTN_LEFT, CLICK },
 	{ BTN_RIGHT, RIGHT_CLICK },
 	{ ENTER, KEY_ENTER },
