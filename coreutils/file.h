@@ -131,6 +131,7 @@ public:
 	}
 
 	void copyFrom(File &otherFile);
+	void copyFrom(const std::string &other);
 
 	int read(uint8_t *target, int len);
 

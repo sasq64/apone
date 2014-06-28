@@ -140,6 +140,12 @@ void File::copyFrom(File &otherFile) {
 	fwrite(ptr, 1, size, writeFP);
 }
 
+void File::copyFrom(const std::string &other) {
+	File f { other };
+	copyFrom(f);
+	f.close();
+}
+
 void File::close() {
 	if(writeFP)
 		fclose(writeFP);
