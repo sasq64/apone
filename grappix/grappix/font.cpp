@@ -17,6 +17,7 @@
 
 #include <vector>
 using namespace std;
+using namespace utils;
 
 namespace grappix {
 
@@ -72,10 +73,18 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 
 	texture_atlas_t *atlas = (texture_atlas_t*)ref->atlas;
 	if(flags & DISTANCE_MAP) {
-		uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
-		LOGD("Distance map created");
-		free(atlas->data);
-		atlas->data = data;
+		File f { format("%s.%d.%d.dat", ttfName, size, tsize) };
+		if(f.exists()) {
+			f.read(atlas->data, atlas->width*atlas->height);
+			LOGD("Distance map loaded");
+		} else {
+			uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
+			LOGD("Distance map created");
+			free(atlas->data);
+			atlas->data = data;
+			f.write(atlas->data, atlas->width*atlas->height);
+		}
+		f.close();
 	}
     texture_atlas_upload(atlas);
 }
@@ -96,7 +105,7 @@ TextBuf Font::make_text2(const string &text) const {
 	float x = 0;
 	float y = 0;
 
-	auto t2 = utils::utf8_decode(text);
+	auto t2 = utf8_decode(text);
 
 	for(auto c : t2) {
 
@@ -189,7 +198,7 @@ TextBuf Font::make_text(const string &text) const {
 
 	float y = font->ascender;
 
-	//auto t2 = utils::utf8_decode(text);
+	//auto t2 = utf8_decode(text);
 
 	for(auto c : text) {
 
@@ -281,7 +290,7 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 	glBindBuffer(GL_ARRAY_BUFFER, text.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, text.vbuf[1]);
 
-	utils::mat4f matrix = make_scale(scale, scale);
+	mat4f matrix = make_scale(scale, scale);
 	matrix = make_translate(x, y) * matrix;
 	matrix = target.get_view_matrix() * matrix;
 	program.setUniform("matrix", matrix.transpose());
