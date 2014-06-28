@@ -70,11 +70,14 @@ public:
 
 		if(uade_play(fileName.c_str(), -1, state) == 1) {
 			songInfo = uade_get_song_info(state);
+			const char *modname = songInfo->modulename;
+			if(strcmp(modname, "<no songtitle>") == 0)
+				modname = "";
 			setMeta(
 				"songs", songInfo->subsongs.max - songInfo->subsongs.min + 1,
 				"startsong", songInfo->subsongs.def - songInfo->subsongs.min,
 				"length", songInfo->duration,
-				"title", songInfo->modulename,
+				"title", modname,
 				"format", songInfo->playername
 			);
 			//printf("UADE:%s %s\n", songInfo->playerfname, songInfo->playername);
@@ -112,7 +115,7 @@ public:
 		return rc;
 	}
 
-	virtual void seekTo(int song, int seconds) {
+	virtual bool seekTo(int song, int seconds) {
 		//if(musicStopped) {
 		//	if(uade_play(currentFileName.c_str(), -1, state) == 1) {
 		//		songInfo = uade_get_song_info(state);
@@ -120,7 +123,8 @@ public:
 		//	}
 		//}
 		uade_seek(UADE_SEEK_SUBSONG_RELATIVE, 0, song + songInfo->subsongs.min, state);
-		//set_song(song);	
+		//set_song(song);
+		return true;	
 	}
 
 private:

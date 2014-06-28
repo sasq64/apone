@@ -214,6 +214,7 @@ public:
 				"title", psid_get_name(),
 				"composer", psid_get_author(),
 				"copyright", psid_get_copyright(),
+				"format", "C64 Sid",
 				"songs", songs,
 				"message", msg,
 				"sub_title", sub_title,
@@ -229,7 +230,7 @@ public:
 		psid_set_tune(-1);
 	}
 
-	virtual void seekTo(int song, int seconds = -1) {
+	virtual bool seekTo(int song, int seconds = -1) {
 		if(song >= 0) {
 			currentSong = song;
 			psid_set_tune(song+1);
@@ -255,8 +256,9 @@ public:
 			}
 
 			setMeta("length", currentLength, "sub_title", sub_title, "message", msg);
-
+			return true;
 		}
+		return false;
 	}
 
 	virtual int getSamples(int16_t *target, int size) {

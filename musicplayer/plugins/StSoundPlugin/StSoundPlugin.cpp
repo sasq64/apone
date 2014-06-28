@@ -51,10 +51,11 @@ public:
 		return noSamples*2;
 	}
 
-	virtual void seekTo(int song, int seconds) {
+	virtual bool seekTo(int song, int seconds) {
 		//if(mod)
 		//	ModPlug_Seek(mod, seconds * 1000);
 		ymMusicSeek(ymMusic, seconds * 1000);
+		return true;
 	}
 
 private:

@@ -151,13 +151,13 @@ public:
 		return noSamples;
 	}
 
-	virtual void seekTo(int song, int seconds) {
+	virtual bool seekTo(int song, int seconds) {
 
 		if(song >= 0) {
 			currentTrack = song+1;
 			if(sc68_play(sc68, currentTrack, 0)) {
 				currentTrack = -1;
-				return;
+				return false;
 			}
 			trackChanged = true;
 		}
@@ -166,6 +166,7 @@ public:
 			int status;
 			sc68_seek(sc68, seconds * 1000, &status);
 		}
+		return true;
 	}
 
 	bool isValid() { return valid; }

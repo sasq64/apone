@@ -66,7 +66,7 @@ public:
 		setMeta(args...);
 	}
 
-	virtual void seekTo(int song, int seconds = -1) { printf("NOT IMPLEMENTED\n"); }
+	virtual bool seekTo(int song, int seconds = -1) { printf("NOT IMPLEMENTED\n"); return false; }
 
 	void onMeta(Callback callback) {
 		//LOGD("Setting callback in %p", this);

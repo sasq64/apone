@@ -61,7 +61,7 @@ public:
 		return noSamples;
 	}
 
-	virtual void seekTo(int song, int seconds) override {
+	virtual bool seekTo(int song, int seconds) override {
 		if(song >= 0) {
 
 			if(ended) {
@@ -83,6 +83,7 @@ public:
 		}
 		if(seconds >= 0)
 			gme_seek(emu, seconds);
+		return true;
 	}
 
 private:

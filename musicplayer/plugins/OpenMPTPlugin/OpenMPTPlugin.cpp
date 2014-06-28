@@ -76,13 +76,15 @@ public:
 		return len*2;
 	}
 
-	virtual void seekTo(int song, int seconds) {
+	virtual bool seekTo(int song, int seconds) {
 		if(mod) {
 			if(song >= 0)
 				openmpt_module_select_subsong(mod, song);
 			else
 				openmpt_module_set_position_seconds(mod, seconds);
+			return true;
 		}
+		return false;
 	}
 
 private:

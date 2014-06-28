@@ -56,8 +56,8 @@ public:
 		return fifo.getShorts(target, noSamples);
 	}
 
-	virtual void seekTo(int song, int seconds) {
-	}
+	//virtual void seekTo(int song, int seconds) {
+	//}
 
 private:
 	Fifo fifo;
