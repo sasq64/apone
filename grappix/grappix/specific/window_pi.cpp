@@ -85,15 +85,26 @@ void Window::open(int w, int h, bool fs) {
 	//display_width = 640;
 	//display_height = 480;
 
+
 	dst_rect.x = 0;
 	dst_rect.y = 0;
 	dst_rect.width = display_width;
 	dst_rect.height = display_height;
 
+	uint16_t dwa = 0;
+	uint16_t dha = 0;
+
+	if(display_width > 1280) {
+		display_width /= 2;
+		display_height /= 2;
+		dwa = display_width;
+		dha = display_height;
+	}
+
 	src_rect.x = 0;
 	src_rect.y = 0;
-	src_rect.width = display_width << 16;
-	src_rect.height = display_height << 16;
+	src_rect.width = display_width << 16 | dwa;
+	src_rect.height = display_height << 16 | dha;
 
 	dispman_display = vc_dispmanx_display_open(0 /* LCD */);
 	dispman_update = vc_dispmanx_update_start(0);
@@ -154,6 +165,9 @@ void Window::open(int w, int h, bool fs) {
 
 		if(fdv.size() == 0)
 			return;
+
+		// TO avoid spamming the shell, maybe
+		close(0);
 
 		int maxfd = -1;
 
