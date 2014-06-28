@@ -184,6 +184,11 @@ char parse_format(stringstream &ss, string &fmt) {
 	return letter;
 }
 
+void print_fmt(const std::string &ss) {
+	fputs(ss.c_str(), stdout);
+}
+
+
 
 string format(const string &fmt) {
 	string fcopy = fmt;

@@ -12,7 +12,7 @@
 
 class InternalPlayer {
 public:
-	InternalPlayer(int hz = 44100) : quit(false), paused(false) {
+	InternalPlayer(int hz = 44100) : quit(false), playback_handle(nullptr), paused(false) {
 	}
 
 	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
@@ -28,6 +28,9 @@ public:
 		quit = true;
 		if(playerThread.joinable())
 			playerThread.join();
+		if(playback_handle)
+			snd_pcm_close(playback_handle);
+		//fprintf(stderr, "DESTROYED\n");
 	}
 
 	void run() {

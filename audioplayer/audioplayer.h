@@ -38,6 +38,11 @@ public:
 		staticInternalPlayer = std::make_shared<InternalPlayer>(cb, hz);
 	}
 
+	static void close() {
+		staticInternalPlayer = nullptr;
+		//fprintf(stderr, "STATIC DESTROYED\n");
+	}
+
 	void pause() { internalPlayer->pause(true); }
 	void resume() { internalPlayer->pause(false); }
 

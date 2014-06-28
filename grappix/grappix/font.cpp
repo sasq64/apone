@@ -353,10 +353,10 @@ Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize, int 
 }
 Font::FontRef::~FontRef() {
 	//LOGD("FONTREF DESTROY");
-	//if(font)
-	//	texture_font_delete((texture_font_t*)font);
-	//if(atlas)
-	//	texture_atlas_delete((texture_atlas_t*)atlas);
+	if(font)
+		texture_font_delete((texture_font_t*)font);
+	if(atlas)
+		texture_atlas_delete((texture_atlas_t*)atlas);
 	font = nullptr;
 	atlas = nullptr;
 }

@@ -38,6 +38,7 @@ void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *f
 	lua_pushlightuserdata(L, fc);
     lua_pushcclosure(L, proxy_func, 1);
     lua_setglobal(L, name.c_str());
+    //functions.push_back(shared_ptr<FunctionCaller>(fc));
 }
 
 
@@ -51,10 +52,14 @@ int LuaInterpreter::l_my_print(lua_State* L) {
 	LuaInterpreter *li = (LuaInterpreter*)lua_touserdata(L, lua_upvalueindex(1));
     int nargs = lua_gettop(L);
     for (int i=1; i <= nargs; ++i) {
-		if(li->outputFunction)
-			li->outputFunction(lua_tostring(L, i));
-		else
-			LOGD("LUA:%s", lua_tostring(L, i));
+    	const char *s = lua_tostring(L, i);
+    	if(s) {
+			if(li->outputFunction)
+				li->outputFunction(s);
+			else
+				puts(s);
+		}
+			//LOGD("LUA:%s", lua_tostring(L, i));
     }
 	if(li->outputFunction)
 		li->outputFunction("\n");

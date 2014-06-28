@@ -25,6 +25,7 @@ template <> std::string getArg(struct lua_State *L, int index);
 
 
 struct FunctionCaller {
+	virtual ~FunctionCaller() {};
 	virtual int call() = 0;
 };
 
@@ -33,6 +34,12 @@ int pushArg(struct lua_State *L, int r);
 template <class T> int pushArg(struct lua_State *L, std::vector<T>);
 
 template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
+
+	virtual ~FunctionCallerImpl() {
+		fprintf(stderr, "FUNCTRION CALLER DESTROY\n");
+	};
+
+
 	FunctionCallerImpl(struct lua_State *L, std::function<R(ARGS ... )> f) : L(L), func(f) {
 	}
 

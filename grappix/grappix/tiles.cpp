@@ -129,16 +129,7 @@ TileLayer::TileLayer(shared_ptr<TileSet> ts, TileSource &source, uint32_t tw, ui
 	scrollx(0), scrolly(0), scale(1.0), tileset(ts), tile_width(tw), tile_height(th), tileSource(&source) {
 	}
 
-/*
-void TileLayer::setPixelSize(uint32_t pw, uint32_t ph) {
-	pixel_width = pw;
-	pixel_height = ph;
-	if(multiBuf[0] != -1) {
-		glDeleteBuffers(2, (GLuint*)multiBuf);
-		multiBuf[0] = multiBuf[1] = -1;
-	}
-}
-*/
+
 void TileLayer::render(RenderTarget &target) {
 
 	if(tileSource && !tileSource->ready())

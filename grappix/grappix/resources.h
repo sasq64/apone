@@ -106,7 +106,7 @@ private:
 	std::unordered_map<std::string, int> dirnames;
 #ifndef EMSCRIPTEN
 	int infd;
-	int watchfd;
+	//int watchfd;
 	int delay_counter;
 #endif
 };

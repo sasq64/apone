@@ -188,5 +188,7 @@ template <class... A> void print_fmt(const std::string &fmt, const A& ... args) 
 	fputs(ss.str().c_str(), stdout);
 }
 
+void print_fmt(const std::string &fmt);
+
 }
 #endif // FORMAT_H

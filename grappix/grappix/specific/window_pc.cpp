@@ -140,6 +140,7 @@ void Window::open(int w, int h, bool fs) {
 #ifdef EMSCRIPTEN
 static uint64_t lastMs = 0;
 static void runMainLoop() {
+	screen.update_callbacks();
 	auto ms = utils::getms();
 	uint32_t rate = ms - lastMs;
 	lastMs = ms;
