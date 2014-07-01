@@ -9,29 +9,39 @@
 struct lua_State;
 struct luaL_Reg;
 
+
+/*
 template <class R> R popArg(struct lua_State *) {
 }
 
 template <> double popArg(struct lua_State *);
 template <> int popArg(struct lua_State *);
+template <> std::vector<std::string> popArg(struct lua_State *);
+*/
 
-template <class T> T getArg(struct lua_State *L, int index) {
-}
-
+// GET ARG FUNCTIONS - Gets an arg (without popping) from the stack
+template <class T> T getArg(struct lua_State *L, int index) {}
 template <> int getArg(struct lua_State *L, int index);
 template <> uint32_t getArg(struct lua_State *L, int index);
 template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
+template <> std::vector<std::string> getArg(struct lua_State *L, int index);
 
+// PUSH ARG FUNCTIONS - Push an arg to the stack
+
+int pushArg(struct lua_State *L, const int &r);
+int pushArg(struct lua_State *L, const double& a);
+int pushArg(struct lua_State *L, const std::string& a);
+int pushArg(struct lua_State *L, const std::vector<std::string>& a);
+	//void pushArg(const int& a);
+	//void pushArg(const double& a);
+	//void pushArg(const std::string& a);
 
 struct FunctionCaller {
 	virtual ~FunctionCaller() {};
 	virtual int call() = 0;
 };
 
-
-int pushArg(struct lua_State *L, int r);
-template <class T> int pushArg(struct lua_State *L, std::vector<T>);
 
 template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
 
@@ -138,9 +148,9 @@ public:
 	bool load(const std::string &code);
 	bool loadFile(const std::string &name);
 
-	void pushArg(const int& a);
-	void pushArg(const double& a);
-	void pushArg(const std::string& a);
+	//void pushArg(const int& a);
+	//void pushArg(const double& a);
+	//void pushArg(const std::string& a);
 
 	void getGlobal(const std::string &g);
 	void luaCall(int nargs, int nret);
@@ -188,15 +198,18 @@ public:
 	}
 
 	template <class F, class... A> void pushArg(const F& first, const A& ... tail) {
-		pushArg(first);
-		pushArg(tail...);
+		pushArg(L, first);
+		pushArg(L, tail...);
 	}
 
 	template <class R, class... A> R call(const std::string &f, const A& ... args) {
 		getGlobal(f);
-		pushArg(args...);
+		pushArg(L, args...);
 		luaCall(sizeof...(args), 1);
-		return popArg<R>(L);
+		
+		auto x = getArg<R>(L, -1);
+		return x;
+		//return popArg<R>(L);
 	}
 
 	static int l_my_print(lua_State* L);

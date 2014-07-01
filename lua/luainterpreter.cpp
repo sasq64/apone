@@ -24,10 +24,46 @@ template <> std::string getArg(struct lua_State *L, int index) {
 	return string(lua_tostring(L, index));
 }
 
-int pushArg(struct lua_State *L, int r) {
-	lua_pushinteger(L, r);
+template <> std::vector<std::string> getArg(struct lua_State *L, int index) {
+
+	if(index < 0) index--;
+	std::vector<std::string> vec;
+	lua_pushnil(L);
+	while(lua_next(L, index) != 0) {
+		vec.push_back(lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
+	return vec;
+}
+
+
+int pushArg(struct lua_State *L, const int& a) {
+	lua_pushnumber(L, a);
 	return 1;
-};
+}
+
+int pushArg(struct lua_State *L, const double& a) {
+	lua_pushnumber(L, a);
+	return 1;
+}
+
+int pushArg(struct lua_State *L, const std::string& a) {
+	lua_pushstring(L, a.c_str());
+	return 1;
+}
+
+int pushArg(struct lua_State *L, const std::vector<std::string>& vec) {
+	//lua_pushstring(L, a.c_str());
+	lua_createtable(L, vec.size(), 0);
+	int i = 1;
+	for(const auto &v : vec) {
+		lua_pushnumber(L, i++);
+		lua_pushstring(L, v.c_str());
+		lua_settable(L, -3);
+	}
+	return 1;
+}
+
 
 int LuaInterpreter::proxy_func(lua_State *L) {
 	FunctionCaller *fc = (FunctionCaller*)(lua_touserdata(L, lua_upvalueindex(1)));
@@ -103,7 +139,7 @@ bool LuaInterpreter::loadFile(const string &fileName) {
 		return false;
 	return true;
 }
-
+/*
 void LuaInterpreter::pushArg(const int& a) {
 	lua_pushnumber(L, a);
 }
@@ -116,6 +152,17 @@ void LuaInterpreter::pushArg(const std::string& a) {
 	lua_pushstring(L, a.c_str());
 }
 
+void LuaInterpreter::pushArg(const std::vector<std::vector>& a) {
+	//lua_pushstring(L, a.c_str());
+	lua_createtable(L, vec.size(), 0);
+	int i = 1;
+	for(const auto &v : vec) {
+		lua_pushnumber(L, i++);
+		lua_pushstring(L, v.c_str());
+		lua_settable(L, -3);
+	}
+}
+*/
 void LuaInterpreter::getGlobal(const std::string &g) {
 	lua_getglobal(L, g.c_str());
 }
@@ -125,14 +172,26 @@ void LuaInterpreter::luaCall(int nargs, int nret) {
 	lua_call(L, nargs, nret);
 }
 
-
+/*
 template <> double popArg(struct lua_State *L) {
-	return lua_tonumber(L, 1);
+	return lua_tonumber(L, -1);
 }
 
 template <> int popArg(struct lua_State *L) {
-	return lua_tonumber(L, 1);
+	return lua_tonumber(L, -1);
 }
+
+template <> std::vector<std::string> popArg(struct lua_State *L) {
+
+	std::vector<std::string> vec;
+	lua_pushnil(L);
+	while(lua_next(L, -2) != 0) {
+		vec.push_back(lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
+	return vec;
+}
+*/
 
 #ifdef UNIT_TEST
 
