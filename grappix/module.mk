@@ -1,5 +1,6 @@
 ifeq ($(GRAPPIX_INCLUDED),)
 GRAPPIX_INCLUDED = 1
+
 GRAPPIX_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 CPP_MODS := $(realpath $(CPP_MODS))

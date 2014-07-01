@@ -282,7 +282,7 @@ Window::key Window::get_key(bool peek) {
 			if(t.second == k)
 				return (key)t.first;
 		}
-		LOGD("%d", (key)k);
+		//LOGD("%d", (key)k);
 		return (key)k;
 	}
 	return NO_KEY;

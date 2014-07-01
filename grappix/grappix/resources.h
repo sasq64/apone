@@ -12,7 +12,6 @@ template <typename T> T load_data(utils::File &f) {
 };
 
 template <> std::string load_data(utils::File &f);
-
 template <> image::bitmap load_data(utils::File &f);
 
 template <typename T> void save_data(utils::File &f, const T &data) {

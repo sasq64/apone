@@ -56,7 +56,7 @@ public:
 
 typedef Base_Color<float> Color;
 
-Color make_color(uint32_t color);
+//Color make_color(uint32_t color);
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha);
 

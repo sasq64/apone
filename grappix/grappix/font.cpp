@@ -26,6 +26,9 @@ std::vector<std::weak_ptr<Font::FontRef>> Font::fontRefs;
 uint8_t *make_distance_map(uint8_t *img, int width, int height);
 
 Font::Font(bool stfont) : size(32) {
+
+	program = get_program(FONT_PROGRAM_DF);
+
 	ref = make_shared<FontRef>(0, 0, "", 0.0, 0);
 	texture_atlas_t *atlas = new texture_atlas_t();
 	ref->atlas = atlas;
@@ -188,8 +191,6 @@ TextBuf Font::make_text(const string &text) const {
 
 	//auto tl = text.length();
 	//vector<GLfloat> p;
-	vector<GLfloat> verts;
-	vector<GLushort> indexes;
 
 	char lastChar = 0;
 	int i = 0;
@@ -199,6 +200,14 @@ TextBuf Font::make_text(const string &text) const {
 	float y = font->ascender;
 
 	//auto t2 = utf8_decode(text);
+
+	int tl = text.length();
+
+	vector<GLfloat> verts;
+	vector<GLushort> indexes;
+
+	verts.reserve(16*tl);
+	indexes.reserve(4*tl);
 
 	for(auto c : text) {
 
@@ -298,8 +307,8 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 	// Needed for DF shader
 	program.setUniform("vScale", scale);
 
-	auto c = make_color(color);
-	program.setUniform("color", c.red, c.green, c.blue, c.alpha);
+	//auto c = make_color(color);
+	program.setUniform("color", Color(color));
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
@@ -350,13 +359,13 @@ int Font::get_width(const string &text, float scale) {
 
 
 Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize, int flags) : w(w), h(h), flags(flags), ttfName(ttfName), atlas(nullptr), font(nullptr) {
-	LOGD("FONTREF CONSTRUCT");
+	//LOGD("FONTREF CONSTRUCT");
 	texture_atlas_t *a = nullptr;
 	if(w > 0 && h > 0)
 		a = texture_atlas_new(w, h, 1);
 	if(a && fsize > 0) {
 		font = (texture_font_t*)texture_font_new(a, ttfName.c_str(), fsize);
-		LOGD("FONTREF DONE");
+		//LOGD("FONTREF DONE");
 	}
 	atlas = a;
 }

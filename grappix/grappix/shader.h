@@ -2,6 +2,7 @@
 #define GRAPPIX_SHADER_H
 
 #include "GL_Header.h"
+#include "color.h"
 //#include <coreutils/log.h>
 #include <coreutils/mat.h>
 #include <memory>
@@ -146,6 +147,16 @@ public:
 		auto h = getUniformLocation(name);
 		glUniform4f(h, f0, f1, f2, f3);
 	}
+
+	void setUniform(const std::string &name, const Color &c) const {
+		auto h = getUniformLocation(name);
+		glUniform4f(h, c.r, c.g, c.b, c.a);
+	}
+
+	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	//void setUniform(const std::string &name, T t) const {
+	//	glUniform1fv();
+//	}
 
 	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const {
 		GLuint h = getAttribLocation(name);

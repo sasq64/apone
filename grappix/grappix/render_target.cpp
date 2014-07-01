@@ -31,7 +31,7 @@ GLint RenderTarget::multiBuf[2] = {-1, -1};
 void RenderTarget::clear(uint32_t color) {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glViewport(0,0,_width,_height);
-	auto c = make_color(color);
+	auto c = Color(color);
 	glClearColor(c.red, c.green, c.blue, c.alpha);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -56,7 +56,7 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 
 	glLineWidth(2.0);
 
-	auto c = make_color(color);
+	auto c = Color(color);
 	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 
@@ -92,7 +92,7 @@ void RenderTarget::dashed_line(float x0, float y0, float x1, float y1, uint32_t 
 
 	glLineWidth(2.0);
 
-	auto c = make_color(color);
+	auto c = Color(color);
 	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
@@ -151,7 +151,7 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	} else
 		glBindBuffer(GL_ARRAY_BUFFER, circleBuf);
 
-	auto c = make_color(color);
+	auto c = Color(color);
 	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 	mat4f matrix = make_scale(globalScale * radius, globalScale * radius);
@@ -334,7 +334,7 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 		glBindBuffer(GL_ARRAY_BUFFER, recBuf);
 	}
 
-	auto c = make_color(color);
+	auto c = Color(color);
 	program.setUniform("color", c.red, c.green, c.blue, 1.0);
 
 	mat4f matrix = make_scale(globalScale * w/2, globalScale * h/2);

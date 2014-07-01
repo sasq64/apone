@@ -89,6 +89,10 @@ void Resources::setNotify(const std::string &fileName) {
 
 bool Resources::done() { return true; }
 
+class Selector {
+	void addFD(int fd);
+	
+};
 
 void Resources::update() {
 	if(delay_counter++ < 30)

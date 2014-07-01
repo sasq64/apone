@@ -146,7 +146,7 @@ public:
 	void update_callbacks() {
 
 		auto t = chrono::high_resolution_clock::now();
-		auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+		uint32_t ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 		tween::Tween::updateTweens(ms / 1000000.0f);
 		Resources::getInstance().update();
 
