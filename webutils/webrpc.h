@@ -15,13 +15,13 @@ public:
 	class Job {
 	public:
 		Job() {};
-		Job(const std::string &url);
+		Job(const std::string &url, const std::string &data = "");
 		~Job();
 		bool isDone();
 		int getReturnCode();
 		std::string getData();
 	//private:
-		void urlCall(const std::string &url);
+		void urlCall(const std::string &url, const std::string &data = "");
 		static size_t writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 		//static size_t headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 
@@ -40,7 +40,10 @@ public:
 	}
 
 	void call(const std::string &method, const std::unordered_map<std::string, std::string>, std::function<void(const std::string &result)>);
+
 	void call(const std::string &method, std::function<void(const std::string &result)>);
+	void post(const std::string &method, const std::string &data);
+	void post(const std::string &method, const std::string &data, std::function<void(const std::string &result)>);
 
 private:
 	std::string baseUrl;

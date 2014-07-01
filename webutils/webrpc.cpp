@@ -11,9 +11,9 @@ using namespace utils;
 using namespace logging;
 using namespace std;
 
-WebRPC::Job::Job(const string &url) : done(false) {
+WebRPC::Job::Job(const string &url, const string &data) : done(false) {
 	LOGD("Job created");
-	jobThread = thread {&Job::urlCall, this, url};
+	jobThread = thread {&Job::urlCall, this, url, data};
 }
 
 WebRPC::Job::~Job() {
@@ -36,13 +36,17 @@ int WebRPC::Job::getReturnCode() {
 	return returnCode;
 }
 
-void WebRPC::Job::urlCall(const string &url) {
+void WebRPC::Job::urlCall(const string &url, const string &data) {
 
 	CURL *curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	//curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
+
+	if(data != "")
+		curl_easy_setopt(curl,  CURLOPT_POSTFIELDS, data.c_str());
+
 	int rc = curl_easy_perform(curl);
 	{
 		lock_guard<mutex>{m};
@@ -86,8 +90,8 @@ WebRPC::Job* WebRPC::call(const string &method) {
 	return new Job(baseUrl + method);
 }
 
-void WebRPC::call(const std::string &method, const std::unordered_map<std::string, std::string> args, std::function<void(const std::string &result)> callback) {
-	std::async(std::launch::async, [=]() {
+void WebRPC::call(const string &method, const unordered_map<string, string> args, function<void(const string &result)> callback) {
+	async(launch::async, [=]() {
 	//utils::run_async([=]() {
 		try {
 			string url = baseUrl + method;
@@ -105,14 +109,14 @@ void WebRPC::call(const std::string &method, const std::unordered_map<std::strin
 				callback(job.data);
 			else
 				errorCallback(job.returnCode, job.data);
-		} catch(std::exception &e) {
-			std::terminate();
+		} catch(exception &e) {
+			terminate();
 		}
 	});
 }
 
-void WebRPC::call(const std::string &method, std::function<void(const std::string &result)> callback) {
-	std::async(std::launch::async, [=]() {
+void WebRPC::call(const string &method, function<void(const string &result)> callback) {
+	async(launch::async, [=]() {
 	//utils::run_async([=]() {
 		try {
 			string url = baseUrl + method;
@@ -123,8 +127,43 @@ void WebRPC::call(const std::string &method, std::function<void(const std::strin
 				callback(job.data);
 			else
 				errorCallback(job.returnCode, job.data);
-		} catch(std::exception &e) {
-			std::terminate();
+		} catch(exception &e) {
+			terminate();
+		}
+	});
+}
+
+
+void WebRPC::post(const string &method, const string &data, function<void(const string &result)> callback) {
+	async(launch::async, [=]() {
+	//utils::run_async([=]() {
+		try {
+			string url = baseUrl + method;
+			LOGD("URL:%s", url);
+			Job job;
+			job.urlCall(url, data);
+			if(job.returnCode == CURLE_OK)
+				callback(job.data);
+			else
+				errorCallback(job.returnCode, job.data);
+		} catch(exception &e) {
+			terminate();
+		}
+	});
+}
+
+void WebRPC::post(const string &method, const string &data) {
+	async(launch::async, [=]() {
+	//utils::run_async([=]() {
+		try {
+			string url = baseUrl + method;
+			LOGD("URL:%s", url);
+			Job job;
+			job.urlCall(url, data);
+			if(job.returnCode != CURLE_OK)
+				errorCallback(job.returnCode, job.data);
+		} catch(exception &e) {
+			terminate();
 		}
 	});
 }
