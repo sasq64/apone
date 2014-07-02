@@ -171,6 +171,11 @@ bool endsWith(const string &name, const string &ext) {
 	return (pos == name.length() - ext.length());
 }
 
+bool startsWith(const string &name, const string &pref) {
+	auto pos = name.find(pref);
+	return (pos == 0);
+}
+
 void makeLower(string &s) {
 	for(uint i=0; i<s.length(); i++)
 		s[i] = tolower(s[i]);

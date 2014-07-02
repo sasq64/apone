@@ -105,6 +105,7 @@ void makedir(const std::string &name);
 void makedirs(const std::string &name);
 
 bool endsWith(const std::string &name, const std::string &ext);
+bool startsWith(const std::string &name, const std::string &pref);
 void makeLower(std::string &s);
 std::string toLower(const std::string &s);
 

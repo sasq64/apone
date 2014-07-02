@@ -107,7 +107,7 @@ void WebRPC::call(const string &method, const unordered_map<string, string> args
 			job.urlCall(url);
 			if(job.returnCode == CURLE_OK)
 				callback(job.data);
-			else
+			else if(errorCallback)
 				errorCallback(job.returnCode, job.data);
 		} catch(exception &e) {
 			terminate();
@@ -125,7 +125,7 @@ void WebRPC::call(const string &method, function<void(const string &result)> cal
 			job.urlCall(url);
 			if(job.returnCode == CURLE_OK)
 				callback(job.data);
-			else
+			else if(errorCallback)
 				errorCallback(job.returnCode, job.data);
 		} catch(exception &e) {
 			terminate();
@@ -144,7 +144,7 @@ void WebRPC::post(const string &method, const string &data, function<void(const 
 			job.urlCall(url, data);
 			if(job.returnCode == CURLE_OK)
 				callback(job.data);
-			else
+			else if(errorCallback)
 				errorCallback(job.returnCode, job.data);
 		} catch(exception &e) {
 			terminate();
@@ -160,7 +160,7 @@ void WebRPC::post(const string &method, const string &data) {
 			LOGD("URL:%s", url);
 			Job job;
 			job.urlCall(url, data);
-			if(job.returnCode != CURLE_OK)
+			if(job.returnCode != CURLE_OK && errorCallback)
 				errorCallback(job.returnCode, job.data);
 		} catch(exception &e) {
 			terminate();
