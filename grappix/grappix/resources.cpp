@@ -16,7 +16,7 @@ using namespace utils;
 
 namespace grappix {
 
-template <> std::string load_data(utils::File &f) {
+template <> std::shared_ptr<std::string> load_data(utils::File &f) {
 	return f.read();
 };
 
@@ -52,12 +52,12 @@ using namespace utils;
 
 namespace grappix {
 
-template <> std::string load_data(utils::File &f) {
-	return f.read();
+template <> std::shared_ptr<std::string> load_data(utils::File &f) {
+	return std::make_shared<std::string>(f.read());
 };
 
-template <> image::bitmap load_data(utils::File &f) {
-	return image::load_png(f.getName());
+template <> std::shared_ptr<image::bitmap> load_data(utils::File &f) {
+	return std::make_shared<image::bitmap>(image::load_png(f.getName()));
 }
 
 template <> void save_data(utils::File &f, const std::string &data) {
@@ -91,7 +91,7 @@ bool Resources::done() { return true; }
 
 class Selector {
 	void addFD(int fd);
-	
+
 };
 
 void Resources::update() {
@@ -130,7 +130,7 @@ void Resources::update() {
 					LOGD("RELOADING");
 					r->load();
 				}
-			} 
+			}
 			rc -= (sizeof(inotify_event) + evt->len);
 			ptr += (sizeof(inotify_event) + evt->len);
 		}
