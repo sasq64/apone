@@ -91,7 +91,7 @@ WebRPC::Job* WebRPC::call(const string &method) {
 }
 
 void WebRPC::call(const string &method, const unordered_map<string, string> args, function<void(const string &result)> callback) {
-	async(launch::async, [=]() {
+	f[counter] = async(launch::async, [=]() {
 	//utils::run_async([=]() {
 		try {
 			string url = baseUrl + method;
@@ -113,10 +113,11 @@ void WebRPC::call(const string &method, const unordered_map<string, string> args
 			terminate();
 		}
 	});
+	counter = (counter+1)%4;
 }
 
 void WebRPC::call(const string &method, function<void(const string &result)> callback) {
-	async(launch::async, [=]() {
+	f[counter] = async(launch::async, [=]() {
 	//utils::run_async([=]() {
 		try {
 			string url = baseUrl + method;
@@ -131,12 +132,12 @@ void WebRPC::call(const string &method, function<void(const string &result)> cal
 			terminate();
 		}
 	});
+	counter = (counter+1)%4;
 }
 
 
 void WebRPC::post(const string &method, const string &data, function<void(const string &result)> callback) {
-	async(launch::async, [=]() {
-	//utils::run_async([=]() {
+	f[counter] = async(launch::async, [=]() {
 		try {
 			string url = baseUrl + method;
 			LOGD("URL:%s", url);
@@ -150,11 +151,11 @@ void WebRPC::post(const string &method, const string &data, function<void(const 
 			terminate();
 		}
 	});
+	counter = (counter+1)%4;
 }
 
 void WebRPC::post(const string &method, const string &data) {
-	async(launch::async, [=]() {
-	//utils::run_async([=]() {
+	f[counter] = async(launch::async, [=]() {
 		try {
 			string url = baseUrl + method;
 			LOGD("URL:%s", url);
@@ -166,4 +167,6 @@ void WebRPC::post(const string &method, const string &data) {
 			terminate();
 		}
 	});
+	counter = (counter+1)%4;
+
 }

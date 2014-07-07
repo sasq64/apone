@@ -66,6 +66,9 @@ public:
 private:
 	std::atomic<int> counter;
 	std::future<void> f[4];
+	static std::atomic<int> scounter;
+	static std::future<void> sf[4];
+
 	std::string workDir;
 	std::string baseURL;
 };

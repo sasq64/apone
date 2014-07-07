@@ -7,6 +7,7 @@
 #include <mutex>
 #include <thread>
 #include <memory>
+#include <future>
 #include <unordered_map>
 #include <cstdio>
 
@@ -48,6 +49,8 @@ public:
 private:
 	std::string baseUrl;
 	std::function<void(int code, const std::string &msg)> errorCallback;
+	std::atomic<int> counter;
+	std::future<void> f[4];
 };
 
 #endif // WEBRPC_H

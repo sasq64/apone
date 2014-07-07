@@ -12,6 +12,10 @@ using namespace utils;
 using namespace logging;
 using namespace std;
 
+std::atomic<int> WebGetter::scounter(0);
+std::future<void> WebGetter::sf[4];
+
+
 WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir), datapos(-1) {
 	LOGD("Job created");
 	jobThread = thread {&Job::urlGet, this, url};
@@ -125,7 +129,7 @@ WebGetter::Job* WebGetter::getURL(const string &url) {
 
 
 void WebGetter::getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)> callback) {
-	std::async(std::launch::async, [&]() {
+	sf[scounter] = std::async(std::launch::async, [&]() {
 		try {
 			//vector<uint8_t> data;
 			Job job;
@@ -135,6 +139,7 @@ void WebGetter::getURLData(const std::string &url, std::function<void(const std:
 			std::terminate();
 		}
 	});
+	scounter = (scounter+1)%4;
 }
 
 bool WebGetter::inCache(const std::string &url) const {
