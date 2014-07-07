@@ -23,11 +23,11 @@ template <typename T = uint32_t> class basic_bitmap {
 		bool operator!= (const const_split_iterator& other) const {
 			return xpos != other.xpos || ypos != other.ypos;
 		}
- 
+
 		basic_bitmap operator* () const {
 			return bm.cut(xpos, ypos, width, height);
 		}
- 
+
 		const const_split_iterator& operator++ () {
 			xpos += width;
 			if(xpos > bm.width()-width) {
@@ -90,7 +90,13 @@ public:
 		pixels = make_shared<vector<T>>(width*height);
 	}
 
-	basic_bitmap(int width, int height, void *px) : w(width), h(height) {
+	basic_bitmap(int width, int height, const T& color) : w(width), h(height) {
+		//pixels.resize(width * height);
+		pixels = make_shared<vector<T>>(width*height);
+		std::fill(pixels->begin(), pixels->end(), color);
+	}
+
+	basic_bitmap(int width, int height, const T *px) : w(width), h(height) {
 		//pixels.resize(width * height);
 		pixels = make_shared<vector<T>>(width*height);
 		memcpy(&(*pixels)[0], px, sizeof(T) * width * height);
@@ -111,11 +117,11 @@ public:
 		bool operator!= (const iterator& other) const {
 			return i != other.i
 		}
- 
+
 		T operator* () const {
 			return bm.pixels[i];
 		}
- 
+
 		const iterator& operator++ () {
 			i++;
 		}
@@ -194,7 +200,7 @@ public:
 private:
 	std::shared_ptr<std::vector<T>> pixels;
 	mutable std::shared_ptr<std::vector<T>> flipPixels;
-	mutable bool dirty;
+	mutable bool dirty = true;
 	unsigned int w;
 	unsigned int h;
 };

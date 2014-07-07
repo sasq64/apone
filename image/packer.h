@@ -21,6 +21,8 @@ public:
 
 	virtual bool add(Rect &r) = 0;
 	virtual void remove(const Rect &r) = 0;
+
+	virtual Rect size() = 0;
 };
 
 class KDPacker : public ImagePacker {
@@ -84,7 +86,7 @@ public:
 			Rect r1 = r;
 			if(r.w == box.w && r.h == box.h) {
 				//LOGD("Exact fit");
-				used = true;				
+				used = true;
 			} else if(r.w == box.w) {
 				// Split horizontally
 				r0.h = box.h;
@@ -130,6 +132,8 @@ public:
 	void remove(const Rect &r) override{
 		root.remove(r);
 	}
+
+	virtual Rect size() { return root.r; }
 
 private:
 
