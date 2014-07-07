@@ -2,9 +2,12 @@
 
 namespace grappix {
 
+template <typename T> const Base_Color<T> Base_Color<T>::WHITE = Base_Color<T>(0xffffffff);
+template <> const Base_Color<float> Base_Color<float>::WHITE = Base_Color<float>(0xffffffff);
+
 Color make_color(uint32_t color) {
 	return Color(color);
-} 
+}
 
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha) {
 	auto a0 = (col0>>24)&0xff;

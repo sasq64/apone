@@ -52,6 +52,9 @@ public:
 
 	float& operator[](int i) { return data[i]; }
 	constexpr int size() const { return 4; }
+
+	static const Base_Color<T> WHITE;
+
 };
 
 typedef Base_Color<float> Color;
