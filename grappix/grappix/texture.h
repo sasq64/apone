@@ -31,10 +31,13 @@ private:
 		texref() {
 			//LOGD("GEN");
 			glGenTextures(1, &id);
+			fprintf(stderr, "gen %d\n", id); fflush(stderr);
 		}
-		texref(GLuint id) : id(id) {}
+		texref(GLuint id) : id(id) {			fprintf(stderr, "set %d\n", id); fflush(stderr);
+}
 		~texref() {
 			//LOGD("DEL");
+			fprintf(stderr, "del %d\n", id); fflush(stderr);
 			glDeleteTextures(1, &id);
 		}
 		GLuint id;

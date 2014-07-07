@@ -116,7 +116,7 @@ public:
 		renderable.render(_width, _height);
 	}
 
-	image::bitmap get_pixels() {
+	image::bitmap get_pixels() const {
 
 		image::bitmap target(_width, _height);
 

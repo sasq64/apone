@@ -1,8 +1,9 @@
 #include "tiles.h"
 #include "shader.h"
 #include "transform.h"
-
+#include "window.h"
 #include <coreutils/log.h>
+#include <image/image.h>
 #include <image/packer.h>
 #include <cmath>
 #include <vector>
@@ -15,7 +16,15 @@ namespace grappix {
 
 //TileSet::TileSet() {}
 
-TileSet::TileSet(shared_ptr<ImagePacker> packer) : packer(packer) {}
+TileSet::TileSet(shared_ptr<ImagePacker> packer) : packer(packer), texture(packer->size().w, packer->size().h) {
+
+	glBindTexture(GL_TEXTURE_2D, texture.id());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+}
 
 TileSet::TileSet(uint32_t texw, uint32_t texh) : texture(texw, texh)  {
 
@@ -24,8 +33,8 @@ TileSet::TileSet(uint32_t texw, uint32_t texh) : texture(texw, texh)  {
 	//tiles = make_shared<vector<tile>>();
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -43,16 +52,7 @@ int TileSet::add(const bitmap &bm) {
 	auto ypos = r.y;
 
 	//LOGD("Adding %dx%d to pos %d,%d", tilew, tileh, xpos, ypos);
-
-	double pw = 1.0/texture.width();
-	double ph = 1.0/texture.height();
-
-	float s0 = xpos * pw;
-	float s1 = s0 + pw*tilew;
-	float t1 = 1.0 - ypos*ph;
-	float t0 = t1 - ph*tileh;
-
-	tiles.emplace_back(s0, t0, s1, t1, tilew, tileh);
+	add(xpos, ypos, tilew, tileh);
 
 	glBindTexture(GL_TEXTURE_2D, texture.id());
 	glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, texture.height()-tileh-ypos, tilew, tileh, GL_RGBA, GL_UNSIGNED_BYTE, bm.flipped());
@@ -60,9 +60,7 @@ int TileSet::add(const bitmap &bm) {
 	return tiles.size()-1;
 }
 
-int TileSet::add_tile(int tx, int ty, int tw, int th) {
-
-	//auto p = 1.0 / utils::make_vec(texture.width(), texture.height());
+int TileSet::add(int tx, int ty, int tw, int th) {
 
 	double pw = 1.0f/texture.width();
 	double ph = 1.0f/texture.height();
@@ -77,62 +75,69 @@ int TileSet::add_tile(int tx, int ty, int tw, int th) {
 
 }
 
-void TileSet::set_image(const bitmap &bm) {
-	glBindTexture(GL_TEXTURE_2D, texture.id());
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bm.width(), bm.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, bm.flipped());
-}
-
-int TileSet::add_solid(uint32_t color, uint32_t w, uint32_t h) {
-
-	ImagePacker::Rect r(0, 0, w, h);
-	if(!packer->add(r))
-		throw tile_exception("Texture full");
-	auto xpos = r.x;
-	auto ypos = r.y;
-
-	LOGD("Adding solid %dx%d to pos %d,%d", w, h, xpos, ypos);
-
-	glBindTexture(GL_TEXTURE_2D, texture.id());
-
-	vector<uint32_t> pixels(w*h);
-	uint32_t *ptr = &pixels[0];
-	for(unsigned int i=0; i<w*h; i++)
-		ptr[i] = color;
-
-	double pw = 1.0f/texture.width();
-	double ph = 1.0f/texture.height();
-
-	float s0 = xpos * pw;
-	float s1 = s0 + pw*w;
-	float t1 = 1.0 - ypos*ph;
-	float t0 = t1 - ph*h;
-
-	tiles.emplace_back(s0, t0, s1, t1, w, h);
-
-	glTexSubImage2D(GL_TEXTURE_2D, 0, xpos, ypos, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
-
-	return tiles.size()-1;
-}
-
-void TileSet::render_tile(int tileno, RenderTarget &target, float x, float y, double s) {
+void TileSet::renderTile(int tileno, RenderTarget &target, float x, float y, double s) {
 
 	auto &t = tiles[tileno];
-
 	vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
 	target.draw_texture(texture.id(), (int)x, (int)y, t.w, t.h, &uvs[0]);
 }
 
-//TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) : 
+void save_data(File &f, const TileSet &data) {
+
+	const auto &bm = data.texture.get_pixels();
+	image::save_png(bm, f.getName());
+	File mf { f.getName() + ".tiles" };
+	for(const auto &t : data.tiles) {
+		mf.write(format("%f %f %f %f %d %d\n", t.s0, t.t0, t.s1, t.t1, t.w, t.h));
+	}
+	mf.close();
+}
+
+template <> shared_ptr<TileSet> load_data(File &f) {
+	auto ts = make_shared<TileSet>();
+	auto bm = image::load_png(f.getName());
+	ts->texture = Texture(bm);
+	File mf { f.getName() + ".tiles" };
+	for(const auto &t : mf.getLines()) {
+		auto p = split(t, " ");
+		ts->tiles.emplace_back(stof(p[0]), stof(p[1]), stof(p[2]), stof(p[3]), stol(p[4]), stol(p[5]));
+	}
+	mf.close();
+	return ts;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//TileLayer::TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts) :
 //	scrollx(0), scrolly(0), scale(1.0), tileset(ts), pixel_width(pw), pixel_height(ph), tile_width(tw), tile_height(th), tileSource(nullptr) {}
 
-TileLayer::TileLayer(shared_ptr<TileSet> ts, TileSource &source, uint32_t tw, uint32_t th) :
-	scrollx(0), scrolly(0), scale(1.0), tileset(ts), tile_width(tw), tile_height(th), tileSource(&source) {
+TileLayer::TileLayer(shared_ptr<TileSet> ts, shared_ptr<TileSource> source, uint32_t tw, uint32_t th) :
+	scrollx(0), scrolly(0), scale(1.0), tileset(ts), tile_width(tw), tile_height(th), tileSource(source) {
+		if(ts) {
+			if(tile_width == 0)
+				tile_width = ts->tiles[0].w;
+			if(tile_height == 0)
+				tile_height = ts->tiles[0].h;
+		}
+		frame = Frame(screen.rec());
 	}
 
 
 void TileLayer::render(RenderTarget &target) {
 
-	if(tileSource && !tileSource->ready())
+	if(!tileSource || !tileset) // && !tileSource->ready())
 		return;
 
 	auto rec = frame.rec();
@@ -203,7 +208,6 @@ void TileLayer::render(RenderTarget &target) {
 	for(int iy=0; iy<areah; iy++) {
 		for(int ix=0; ix<areaw; ix++) {
 			auto tileno = tileSource->getTile(ix+sx, iy+sy);
-			//LOGD("TILE %d", tileno);
 			if(tileno >= tileset->size()) tileno = 0;
 
 			const auto &t = tileset->tiles[tileno];
@@ -236,7 +240,7 @@ void TileLayer::render(RenderTarget &target) {
 	//auto sy = globalScale * h/2;
 	mat4f matrix(1.0);
 
-	
+
 	//matrix = make_rotate_z(50.0) * matrix;
 	//matrix = make_scale(sx, sy) * matrix;
 	matrix = make_translate(-xx, -yy) * matrix;
@@ -253,8 +257,14 @@ void TileLayer::render(RenderTarget &target) {
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, 0);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 
+	if(frame)
+		frame.set(target);
+
 	//glScissor(x0, target.height()-pixel_height-y0, pixel_width, pixel_height);
 	glDrawElements(GL_TRIANGLES, 6*count, GL_UNSIGNED_SHORT, 0);
+
+	if(frame)
+		frame.unset();
 
 	//glDisableVertexAttribArray(uvHandle);
 	//glDisableVertexAttribArray(posHandle);
@@ -271,7 +281,7 @@ void SpriteLayer::purgeSprites() {
 		auto s = i->lock();
 		if(i->lock())
 			++i;
-		else 
+		else
 			i = sprites.erase(i);
 	}
 }
@@ -291,6 +301,9 @@ shared_ptr<Sprite> SpriteLayer::addSprite(vector<int> frames, float x, float y, 
 }
 
 void SpriteLayer::render(RenderTarget &target, int x, int y) {
+
+	if(!tileset)
+		return;
 
 	//glBindTexture(GL_TEXTURE_2D, tileset->texture.id());
 
@@ -312,7 +325,7 @@ void SpriteLayer::render(RenderTarget &target, int x, int y) {
 			vector<float> uvs = { t.s0, t.t0, t.s1, t.t0, t.s0, t.t1, t.s1, t.t1 };
 			target.draw(tileset->get_texture(), (int)s->x + x - scrollx, (int)s->y + y - scrolly, t.w * s->scale, t.h * s->scale, &uvs[0]);
 			++i;
-		} else 
+		} else
 			i = sprites.erase(i);
 	}
 	if(frame)
