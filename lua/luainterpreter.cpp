@@ -42,6 +42,11 @@ int pushArg(struct lua_State *L, const int& a) {
 	return 1;
 }
 
+int pushArg(struct lua_State *L, const unsigned int& a) {
+	lua_pushnumber(L, a);
+	return 1;
+}
+
 int pushArg(struct lua_State *L, const double& a) {
 	lua_pushnumber(L, a);
 	return 1;
@@ -165,6 +170,10 @@ void LuaInterpreter::pushArg(const std::vector<std::vector>& a) {
 */
 void LuaInterpreter::getGlobal(const std::string &g) {
 	lua_getglobal(L, g.c_str());
+}
+
+void LuaInterpreter::setGlobal(const string &name) {
+	lua_setglobal(L, name.c_str());
 }
 
 void LuaInterpreter::luaCall(int nargs, int nret) {

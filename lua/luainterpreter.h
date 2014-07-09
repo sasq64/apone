@@ -30,9 +30,16 @@ template <> std::vector<std::string> getArg(struct lua_State *L, int index);
 // PUSH ARG FUNCTIONS - Push an arg to the stack
 
 int pushArg(struct lua_State *L, const int &r);
+int pushArg(struct lua_State *L, const unsigned int &r);
 int pushArg(struct lua_State *L, const double& a);
 int pushArg(struct lua_State *L, const std::string& a);
 int pushArg(struct lua_State *L, const std::vector<std::string>& a);
+
+template <class F, class... A> void pushArg(struct lua_State *L, const F& first, const A& ... tail) {
+	pushArg(L, first);
+	pushArg(L, tail...);
+}
+
 	//void pushArg(const int& a);
 	//void pushArg(const double& a);
 	//void pushArg(const std::string& a);
@@ -153,6 +160,7 @@ public:
 	//void pushArg(const std::string& a);
 
 	void getGlobal(const std::string &g);
+	void setGlobal(const std::string &g);
 	void luaCall(int nargs, int nret);
 	void setOuputFunction(std::function<void(const std::string &)> f) {
 		outputFunction = f;
@@ -197,10 +205,6 @@ public:
 		createLuaClosure(name, new FunctionCallerImpl<R, A, B, C, D, E, F>(L, f));
 	}
 
-	template <class F, class... A> void pushArg(const F& first, const A& ... tail) {
-		pushArg(L, first);
-		pushArg(L, tail...);
-	}
 
 	template <class R, class... A> R call(const std::string &f, const A& ... args) {
 		getGlobal(f);
@@ -210,6 +214,11 @@ public:
 		auto x = getArg<R>(L, -1);
 		return x;
 		//return popArg<R>(L);
+	}
+
+	template <class T> void set_global(const std::string &name, T arg) {
+		pushArg(L, arg);
+		setGlobal(name);
 	}
 
 	static int l_my_print(lua_State* L);
