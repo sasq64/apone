@@ -20,7 +20,7 @@ static std::string logSource = "Grappix";
 #endif
 
 #ifndef LOG_PUTS // const char *
-#define LOG_PUTS(x) (fwrite(x, 1, strlen(x), stdout), putchar(10))
+#define LOG_PUTS(x) (fwrite(x, 1, strlen(x), stdout), putchar(10), fflush(stdout))
 #endif
 
 #endif
@@ -51,7 +51,7 @@ void log(LogLevel level, const std::string &text) {
 		LOG_PUTS(cptr);
 	}
 	if(logFile) {
-		
+
 		//std::time_t t = chrono::system_clock::to_time_t(system_clock::now());
 		//const std::string s = put_time(t, "%H:%M:%S - ");
 		time_t now  = time(nullptr);

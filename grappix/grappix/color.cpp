@@ -3,7 +3,19 @@
 namespace grappix {
 
 template <typename T> const Base_Color<T> Base_Color<T>::WHITE = Base_Color<T>(0xffffffff);
+template <typename T> const Base_Color<T> Base_Color<T>::RED = Base_Color<T>(0xffff0000);
+template <typename T> const Base_Color<T> Base_Color<T>::GREEN = Base_Color<T>(0xff00ff00);
+template <typename T> const Base_Color<T> Base_Color<T>::BLUE = Base_Color<T>(0xff0000ff);
+template <typename T> const Base_Color<T> Base_Color<T>::YELLOW = Base_Color<T>(0xffffff00);
+template <typename T> const Base_Color<T> Base_Color<T>::BLACK = Base_Color<T>(0xff000000);
+
 template <> const Base_Color<float> Base_Color<float>::WHITE = Base_Color<float>(0xffffffff);
+template <> const Base_Color<float> Base_Color<float>::RED = Base_Color<float>(0xffff0000);
+template <> const Base_Color<float> Base_Color<float>::GREEN = Base_Color<float>(0xff00ff00);
+template <> const Base_Color<float> Base_Color<float>::BLUE = Base_Color<float>(0xff0000ff);
+template <> const Base_Color<float> Base_Color<float>::YELLOW = Base_Color<float>(0xffffff00);
+template <> const Base_Color<float> Base_Color<float>::BLACK = Base_Color<float>(0xff000000);
+//template <> const Base_Color<float> Base_Color<float>::WHITE = Base_Color<float>(0xffffffff);
 
 Color make_color(uint32_t color) {
 	return Color(color);

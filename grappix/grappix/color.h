@@ -54,6 +54,11 @@ public:
 	constexpr int size() const { return 4; }
 
 	static const Base_Color<T> WHITE;
+	static const Base_Color<T> RED;
+	static const Base_Color<T> GREEN;
+	static const Base_Color<T> BLUE;
+	static const Base_Color<T> YELLOW;
+	static const Base_Color<T> BLACK;
 
 };
 

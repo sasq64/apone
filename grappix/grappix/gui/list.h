@@ -9,7 +9,7 @@ namespace grappix {
 
 class VerticalLayout {
 public:
-	VerticalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea), visibleItems(visibleItems) {
+	VerticalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
 		itemSize = screenArea / Rectangle(1, visibleItems);
 	}
 
@@ -21,7 +21,25 @@ public:
 	}
 private:
 	Rectangle screenArea;
-	int visibleItems;
+	//int visibleItems;
+	Rectangle itemSize;
+};
+
+class HorizontalLayout {
+public:
+	HorizontalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
+		itemSize = screenArea / Rectangle(visibleItems, 1);
+	}
+
+	Rectangle layout(double position) {
+		Rectangle res = itemSize;
+		res.y = screenArea.y;
+		res.x = (screenArea.w) * position + screenArea.x;
+		return res;
+	}
+private:
+	Rectangle screenArea;
+	//int visibleItems;
 	Rectangle itemSize;
 };
 
@@ -76,7 +94,7 @@ public:
 		select(selected_item);
 	}
 
-	void set_total(uint32_t t) { 
+	void set_total(uint32_t t) {
 		totalItems = t;
 		select(selected_item);
 	}
@@ -102,7 +120,7 @@ public:
 			p = 0;
 
 		if(p != position) {
-			tween::make_tween().to(position, p).seconds(0.2); 
+			tween::make_tween().to(position, p).seconds(0.2);
 		}
 	}
 
@@ -111,8 +129,27 @@ public:
 	void pagedown() { select(selected_item + visibleItems); }
 	void pageup() { select(selected_item - visibleItems); }
 
-private:
+	virtual bool on_key(grappix::Window::key k) {
+		switch(k) {
+		case Window::UP:
+			select(selected()-1);
+			break;
+		case Window::DOWN:
+			select(selected()+1);
+			break;
+		case Window::PAGEUP:
+			pageup();
+			break;
+		case Window::PAGEDOWN:
+			pagedown();
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
 
+private:
 
 	Renderer *renderer;
 	std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc;
@@ -126,6 +163,7 @@ private:
 
 
 typedef Base_List<VerticalLayout> VerticalList;
+typedef Base_List<HorizontalLayout> HorizontalList;
 
 }
 

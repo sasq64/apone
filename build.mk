@@ -238,7 +238,7 @@ $(OBJDIR)%.d: %.cc
 
 $(OBJDIR)icon.o: icon.rc
 	windres $< -O coff -o $@
-	
+
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
@@ -249,7 +249,7 @@ $(TARGETDIR)$(TARGET).a: $(TARGETDIR) $(OBJFILES) $(DEPS)
 	rm -rf $(TARGETDIR)$(TARGET).a
 	$(AR) r $(TARGETDIR)$(TARGET).a $(OBJFILES)
 	$(RANLIB) $(TARGETDIR)$(TARGET).a
-	 
+
 $(TARGETDIR)$(TARGET): $(OBJFILES) $(LIBMODS) $(DEPS)
 	$(LD) -o $(TARGETDIR)$(TARGET) $(LDFLAGS) $(OBJFILES) $(LIBMODS) $(LIBS)
 
@@ -301,7 +301,7 @@ $(TARGETDIR)$(TARGET).bin: $(TARGETDIR)$(TARGET).elf
 
 clean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT)
-	
+
 cleandep:
 	rm -f $(OBJFILES:.o=.d)
 
@@ -309,4 +309,4 @@ superclean:
 	rm -rf $(OBJDIR) $(TARGETDIR)$(TARGET)$(TARGET_EXT) $(addsuffix /*~, $(DIRS)) *.elf *~
 
 run: start_rule
-	$(realpath $(TARGETDIR))/$(TARGET)$(TARGET_EXT)
+	$(realpath $(TARGETDIR))/$(TARGET)$(TARGET_EXT) $(RUN_ARGS)
