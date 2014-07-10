@@ -167,6 +167,14 @@ public:
 
 	void readAll(); // throw(file_not_found_exception, io_exception);
 
+	static const std::string cacheDir() { 
+		const char *home = getenv("HOME");
+		auto d = format("%s/.cache", home);
+		if(!exists(d))
+			utils::makedir(d);
+		return d;
+	}
+
 private:
 	void open(Mode mode);
 
