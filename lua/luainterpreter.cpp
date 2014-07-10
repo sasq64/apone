@@ -119,13 +119,14 @@ LuaInterpreter::~LuaInterpreter() {
 	lua_close(L);
 }
 
-bool LuaInterpreter::load(const string &code) {
-	if(luaL_loadbuffer(L, code.c_str(), code.length(), "line") == LUA_OK) {
+bool LuaInterpreter::load(const string &code, const string &name) {
+	if(luaL_loadbuffer(L, code.c_str(), code.length(), name.c_str()) == LUA_OK) {
 		int rc = lua_pcall(L, 0, 0, 0);
 		if(rc != LUA_OK) {
 			const char *s = lua_tostring(L, -1);
-			LOGD("MSG:%s", s);
+			//LOGD("MSG:%s", s);
 			lua_pop(L, 1);
+			throw lua_exception(s);
 		}
 	} else
 		return false;

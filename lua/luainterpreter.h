@@ -9,6 +9,14 @@
 struct lua_State;
 struct luaL_Reg;
 
+class lua_exception : public std::exception {
+public:
+	lua_exception(const std::string &msg) : msg(msg) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
+};
+
 
 /*
 template <class R> R popArg(struct lua_State *) {
@@ -152,7 +160,7 @@ public:
 	LuaInterpreter();
 	~LuaInterpreter();
 
-	bool load(const std::string &code);
+	bool load(const std::string &code, const std::string &name = "");
 	bool loadFile(const std::string &name);
 
 	//void pushArg(const int& a);
