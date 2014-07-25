@@ -13,7 +13,6 @@
 #include <sstream>
 #include <iostream>
 
-//#include "utils/format.h"
 #include "utils.h"
 
 namespace utils {
@@ -166,6 +165,15 @@ public:
 	}
 
 	void readAll(); // throw(file_not_found_exception, io_exception);
+
+	void clear() {
+		close();
+		remove();
+	}
+
+	void writeln(const std::string &line) {
+		write(line + "\n");
+	}
 
 	static const std::string cacheDir() { 
 		const char *home = getenv("HOME");

@@ -60,7 +60,7 @@ template <class T> struct vec2 {
 		return vec2(x / v.x, y / v.y);
 	}
 
-	vec2 operator*(T n) const {
+	template <typename A> vec2 operator*(const A &n) const {
 		return vec2(x * n, y * n);
 	}
 
@@ -73,7 +73,7 @@ template <class T> struct vec2 {
 	//}
 
 
-	vec2 operator/(T n) const {
+	template <typename A> vec2 operator/(const A &n) const {
 		return vec2(x / n, y / n);
 	}
 
@@ -204,7 +204,7 @@ template <class T> struct vec3 {
 		return vec3(x * v.x, y * v.y, z * v.z);
 	}
 
-	vec3 operator*(T n) const {
+	template <typename A> vec3 operator*(const A &n) const {
 		return vec3(x * n, y * n, z * n);
 	}
 
@@ -212,7 +212,7 @@ template <class T> struct vec3 {
 		return vec3(x / v.x, y / v.y, z / v.z);
 	}
 
-	vec3 operator/(T n) const {
+	template <typename A> vec3 operator/(const A &n) const {
 		return vec3(x / n, y / n, z / n);
 	}
 
@@ -346,7 +346,7 @@ template <class T> struct vec4 {
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
 
-	vec4 operator*(T n) const {
+	template <typename A> vec4 operator*(const A &n) const {
 		return vec4(x * n, y * n, z * n, w * n);
 	}
 
@@ -354,7 +354,7 @@ template <class T> struct vec4 {
 		return vec4(x / v.x, y / v.y, z / v.z, w / v.w);
 	}
 
-	vec4 operator/(T n) const {
+	template <typename A> vec4 operator/(const A &n) const {
 		return vec4(x / n, y / n, z / n, w / n);
 	}
 
