@@ -235,6 +235,7 @@ TextBuf Font::make_text(const string &text) const {
 		float s1 = glyph->s1;
 		float t1 = glyph->t1;
 
+
 		verts.push_back(x0);
 		verts.push_back(y1);
 		verts.push_back(s0);
@@ -272,9 +273,9 @@ TextBuf Font::make_text(const string &text) const {
 	tbuf.text = text;
 	tbuf.size = i/4;
 	tbuf.rec[0] = verts[0];
-	tbuf.rec[1] = verts[1];
+	tbuf.rec[1] = 0;//verts[1];
 	tbuf.rec[2] = verts[verts.size()-4];
-	tbuf.rec[3] = verts[verts.size()-3];
+	tbuf.rec[3] = font->height;//verts[verts.size()-3];
 
 	//LOGD("Text %s covers %f to %f", text, tbuf.rec[0], tbuf.rec[2]);
 
@@ -347,15 +348,28 @@ void clean_cache() {
 
 
 int Font::get_width(const string &text, float scale) {
+	return get_size(text, scale).x;
+	// if(text == "")
+	// 	return 0;
+	// auto buf = cache.get(text);
+	// if(buf.text == "") {
+	// 	buf = make_text(text);
+	// 	cache.put(text, buf);
+	// }
+	// scale = scale * 32.0 / (float)size;
+	// return (buf.rec[2] - buf.rec[0]) * scale;
+}
+
+vec2i Font::get_size(const string &text, float scale) {
 	if(text == "")
-		return 0;
+		return vec2i(0,0);
 	auto buf = cache.get(text);
 	if(buf.text == "") {
 		buf = make_text(text);
 		cache.put(text, buf);
 	}
 	scale = scale * 32.0 / (float)size;
-	return (buf.rec[2] - buf.rec[0]) * scale;
+	return vec2i(buf.rec[2] - buf.rec[0], buf.rec[3] - buf.rec[1]) * scale;
 }
 
 

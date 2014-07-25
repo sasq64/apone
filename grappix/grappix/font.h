@@ -3,6 +3,7 @@
 
 //#include "render_target.h"
 #include "shader.h"
+#include <coreutils/vec.h>
 #include <coreutils/log.h>
 #include <string>
 #include <vector>
@@ -84,6 +85,7 @@ public:
 	void render_text(const RenderTarget &target, const std::string &text, float x = 0, float y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
 
 	int get_width(const std::string &text, float scale);
+	utils::vec2i get_size(const std::string &text, float scale);
 
 	void set_program(const Program &p) {
 		program = p;
