@@ -18,10 +18,19 @@ public:
 	JSon(const std::string &s) : obj(json_tokener_parse(s.c_str())), jtype(json_object_get_type(obj)) {
 	}
 
+	JSon() {
+		obj = json_object_new_object();
+		jtype = json_type_object;
+	}
+
 	JSon(json_object *obj) : obj(obj), jtype(json_object_get_type(obj)) {}
 
 	static JSon parse(const std::string &s) {
 		return JSon(s);
+	}
+
+	std::string to_string() {
+		return json_object_to_json_string(obj);
 	}
 
 	size_t size() {
@@ -32,10 +41,54 @@ public:
 
 	bool is_array() { return jtype == json_type_array; }
 
+	//JSon operator=(const std::string &val) {
+	//}
+
 	JSon operator()(const std::string &key) const {
 		if(jtype != json_type_object)
 			throw json_exception("Not an object");
 		return JSon(json_object_object_get(obj, key.c_str()));
+	}
+/*
+	JSon operator()(const std::string &key) {
+		if(jtype != json_type_object)
+			throw json_exception("Not an object");
+		auto *j = json_object_object_get(obj, key.c_str());
+		if(j == nullptr) {
+			j = json_object_object_new();
+			json_object_object_add(obj, key.c_str(), j);
+		}
+		return JSon(j);
+	}
+*/
+
+	JSon add_array(const std::string &key) {
+		if(jtype != json_type_object)
+			throw json_exception("Not an object");
+		auto *j = json_object_new_array();
+		json_object_object_add(obj, key.c_str(), j);
+		return JSon(j);
+	}
+
+	void add(const std::string &key, const std::string &val) {
+		if(jtype != json_type_object)
+			throw json_exception("Not an object");
+		auto *j = json_object_new_string(val.c_str());
+		json_object_object_add(obj, key.c_str(), j);
+	}
+
+	void add(const std::string &key, uint64_t v) {
+		if(jtype != json_type_object)
+			throw json_exception("Not an object");
+		auto *j = json_object_new_int64(v);
+		json_object_object_add(obj, key.c_str(), j);
+	}
+
+	void add(const std::string &val) {
+		if(jtype != json_type_array)
+			throw json_exception("Not an array");
+		auto *j = json_object_new_string(val.c_str());
+		json_object_array_add(obj, j);
 	}
 
 	JSon operator()(const uint32_t index) const {
