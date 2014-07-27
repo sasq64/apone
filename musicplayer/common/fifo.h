@@ -70,7 +70,7 @@ public:
 		}
 		for(int i=0; i<bytelen/2; i++) {
 			short s = samples[i];
-			if(s > 256 || s < -256)
+			if(s > 16 || s < -16)
 				soundPos = i;
 		}
 		if(soundPos >= 0)
