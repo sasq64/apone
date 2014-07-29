@@ -335,7 +335,7 @@ void RenderTarget::rectangle(float x, float y, float w, float h, uint32_t color,
 	}
 
 	auto c = Color(color);
-	program.setUniform("color", c.red, c.green, c.blue, 1.0);
+	program.setUniform("color", c.red, c.green, c.blue, c.alpha);
 
 	mat4f matrix = make_scale(globalScale * w/2, globalScale * h/2);
 	matrix = make_translate(x + w/2, y + h/2) * matrix;

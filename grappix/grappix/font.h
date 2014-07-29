@@ -84,8 +84,8 @@ public:
 	void render_text(const RenderTarget &target, const TextBuf &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 	void render_text(const RenderTarget &target, const std::string &text, float x = 0, float y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
 
-	int get_width(const std::string &text, float scale);
-	utils::vec2i get_size(const std::string &text, float scale);
+	int get_width(const std::string &text, float scale) const;
+	utils::vec2i get_size(const std::string &text, float scale) const;
 
 	void set_program(const Program &p) {
 		program = p;

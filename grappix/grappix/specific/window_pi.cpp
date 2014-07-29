@@ -363,6 +363,7 @@ Window::key Window::get_key(bool peek) {
 	return NO_KEY;
 };
 
-Window screen;
+std::shared_ptr<Window> screenptr = make_shared<Window>();
+Window& screen = *screenptr;
 
 }

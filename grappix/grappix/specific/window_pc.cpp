@@ -61,8 +61,8 @@ void Window::open(int w, int h, bool fs) {
 	LOGD("glfwInit");
 	glfwInit();
 #ifdef EMSCRIPTEN
-	if(w < 0) w = 640;
-	if(h < 0) h = 480;
+	if(w <= 0) w = 640;
+	if(h <= 0) h = 480;
 	_width = w;
 	_height = h;
 	fs = false;
@@ -288,6 +288,9 @@ Window::key Window::get_key(bool peek) {
 	return NO_KEY;
 };
 
-Window screen;
+//Window screen;
+
+std::shared_ptr<Window> screenptr = make_shared<Window>();
+Window& screen = *screenptr;
 
 }

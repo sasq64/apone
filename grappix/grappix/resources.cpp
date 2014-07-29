@@ -17,7 +17,7 @@ using namespace utils;
 namespace grappix {
 
 template <> std::shared_ptr<std::string> load_data(utils::File &f) {
-	return f.read();
+	return std::make_shared<std::string>(f.read());
 };
 
 

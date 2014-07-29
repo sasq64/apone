@@ -93,6 +93,11 @@ void save_data(File &f, const TileSet &data) {
 	mf.close();
 }
 
+
+#ifdef ANDROID
+#define stof(x) strtod(x.c_str(), nullptr)
+#endif
+
 template <> shared_ptr<TileSet> load_data(File &f) {
 	auto ts = make_shared<TileSet>();
 	auto bm = image::load_png(f.getName());
@@ -299,6 +304,7 @@ shared_ptr<Sprite> SpriteLayer::addSprite(vector<int> frames, float x, float y, 
 	sprites.insert(s);
 	return s;
 }
+
 
 void SpriteLayer::render(RenderTarget &target, int x, int y) {
 

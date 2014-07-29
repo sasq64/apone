@@ -152,6 +152,8 @@ public:
 		tween::Tween::updateTweens(ms / 1000000.0f);
 		Resources::getInstance().update();
 
+		utils::perform_callbacks();
+
 		while(safeFuncs.size() > 0) {
 			safeMutex.lock();
 			auto &f = safeFuncs.front();
@@ -255,7 +257,8 @@ constexpr Window::key as_key(const char c) {
 	return static_cast<Window::key>(c); 
 }
 
-extern Window screen;
+extern Window &screen;
+extern std::shared_ptr<Window> screenptr;
 }
 
 #endif // GRAPPIX_WINDOW_H

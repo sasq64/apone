@@ -347,7 +347,7 @@ void clean_cache() {
 }
 
 
-int Font::get_width(const string &text, float scale) {
+int Font::get_width(const string &text, float scale) const {
 	return get_size(text, scale).x;
 	// if(text == "")
 	// 	return 0;
@@ -360,7 +360,7 @@ int Font::get_width(const string &text, float scale) {
 	// return (buf.rec[2] - buf.rec[0]) * scale;
 }
 
-vec2i Font::get_size(const string &text, float scale) {
+vec2i Font::get_size(const string &text, float scale) const {
 	if(text == "")
 		return vec2i(0,0);
 	auto buf = cache.get(text);

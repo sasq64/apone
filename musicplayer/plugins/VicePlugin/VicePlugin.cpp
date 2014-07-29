@@ -204,6 +204,8 @@ public:
 						if(s.subsong == defaultSong+1) {
 							currentInfo = i;
 							sub_title = s.title;//sub_title + s.title + " ";
+							if(sub_title == "") sub_title = s.name;
+
 							if(msg == "") msg = s.comment;
 							break;
 						}
@@ -250,6 +252,7 @@ public:
 				if(s.subsong == song+1) {
 					currentInfo = i;
 					sub_title = s.title; //sub_title + s.title + " ";
+					if(sub_title == "") sub_title = s.name;
 					if(s.comment != "") msg = s.comment;
 					break;
 				}
