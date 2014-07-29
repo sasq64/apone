@@ -124,10 +124,17 @@ void WebRPC::call(const string &method, function<void(const string &result)> cal
 			LOGD("URL:%s", url);
 			Job job;
 			job.urlCall(url);
-			if(job.returnCode == CURLE_OK)
-				callback(job.data);
-			else if(errorCallback)
-				errorCallback(job.returnCode, job.data);
+			auto data = job.data;
+			auto returnCode = job.returnCode;
+			if(job.returnCode == CURLE_OK) {
+				schedule_callback([=]() {
+					callback(data);
+				});
+			} else if(errorCallback) {
+				schedule_callback([=]() {
+					errorCallback(returnCode, data);
+				});
+			}
 		} catch(exception &e) {
 			terminate();
 		}
@@ -143,10 +150,17 @@ void WebRPC::post(const string &method, const string &data, function<void(const 
 			LOGD("URL:%s", url);
 			Job job;
 			job.urlCall(url, data);
-			if(job.returnCode == CURLE_OK)
-				callback(job.data);
-			else if(errorCallback)
-				errorCallback(job.returnCode, job.data);
+			auto data = job.data;
+			auto returnCode = job.returnCode;
+			if(job.returnCode == CURLE_OK) {
+				schedule_callback([=]() {
+					callback(data);
+				});
+			} else if(errorCallback) {
+				schedule_callback([=]() {
+					errorCallback(returnCode, data);
+				});
+			}
 		} catch(exception &e) {
 			terminate();
 		}
@@ -161,8 +175,13 @@ void WebRPC::post(const string &method, const string &data) {
 			LOGD("URL:%s", url);
 			Job job;
 			job.urlCall(url, data);
-			if(job.returnCode != CURLE_OK && errorCallback)
-				errorCallback(job.returnCode, job.data);
+			if(job.returnCode != CURLE_OK && errorCallback) {
+				auto data = job.data;
+				auto returnCode = job.returnCode;
+				schedule_callback([=]() {
+					errorCallback(returnCode, data);
+				});
+			}
 		} catch(exception &e) {
 			terminate();
 		}

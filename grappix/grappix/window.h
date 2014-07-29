@@ -116,6 +116,8 @@ public:
 
 	void setup(int w, int h) {
 
+		utils::perform_callbacks();
+
 		if(winOpen)
 			return;
 

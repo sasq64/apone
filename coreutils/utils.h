@@ -192,11 +192,14 @@ struct asyncthread {
 	std::atomic<bool> done;
 };
 
+
+void schedule_callback(std::function<void()> f);
+void perform_callbacks();
+
 //static std::vector<asyncthread> atlist;
 
-void cleanup_async();
-
-void run_async(std::function<void()> f);
+//void cleanup_async();
+//void run_async(std::function<void()> f);
 
 
 };

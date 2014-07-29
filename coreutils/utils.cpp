@@ -312,10 +312,29 @@ string utf8_encode(const wstring &s) {
 	return out;
 }
 
+static bool performCalled = false;
+static vector<function<void()>> callbacks;
+
+void schedule_callback(std::function<void()> f) {
+	if(performCalled)
+		callbacks.push_back(f);
+	else
+		f();
+}
+
+void perform_callbacks() {
+	performCalled = true;
+	for(const auto &f : callbacks) {
+		f();
+	}
+	callbacks.clear();
+}
+
+
 //static std::vector<std::shared_ptr<asyncthread>> atlist;
 
 
-
+/*
 vector<thread> flist;
 vector<thread::id> donelist;
 mutex doneMutex;
@@ -359,7 +378,7 @@ void run_async(std::function<void()> f) {
 
 //#endif
 }
-
+*/
 }
 
 #ifdef UNIT_TEST
