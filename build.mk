@@ -31,6 +31,10 @@ ifndef RANLIB
 RANLIB=ranlib
 endif
 
+ifndef APP_NAME
+APP_NAME := $(TARGET)
+endif
+
 
 ifdef USE_CLANG
  ifneq ($(HOST),raspberrypi)
@@ -80,6 +84,8 @@ else ifeq ($(HOST),emscripten)
 	CC := emcc
 	CXX := em++
 endif
+
+CFLAGS += -DAPP_NAME=$(APP_NAME)
 
 CFLAGS += $(addprefix -I, $(sort $(realpath $(INCLUDES))))
 CXXFLAGS += $(CFLAGS)

@@ -175,6 +175,11 @@ public:
 			LOGD("MD5: [%02x] %08x", md5, key);
 			songLengths = VicePlugin::findLengths(key);
 
+			string realPath = sidFile;
+			if(sidFile.find("C64Music%2f") != string::npos) {
+				realPath = utils::urldecode(sidFile, ":/\\?;");
+			}
+
 			int defaultSong;
 			int songs = psid_tunes(&defaultSong);
 			defaultSong--;
@@ -189,16 +194,16 @@ public:
 			LOGD("Length:%d", currentLength);
 			string msg = "NO STIL INFO";
 			string sub_title;
-			auto pos = sidFile.find("C64Music/");
+			auto pos = realPath.find("C64Music/");
 			currentInfo = 0;
 			if(pos != string::npos) {
-				auto p = sidFile.substr(pos+8);
+				auto p = realPath.substr(pos+8);
 				LOGD("SIDFILE:%s", p);
 				if(VicePlugin::stilSongs.count(p)) {
 					currentStil = VicePlugin::stilSongs[p];
 					msg = currentStil.comment;
 
-					for(int i=0; i<currentStil.songs.size(); i++) {
+					for(int i=0; i<(int)currentStil.songs.size(); i++) {
 						auto &s = currentStil.songs[i];
 						LOGD("#%d: %s", s.subsong, s.title);
 						if(s.subsong == defaultSong+1) {
@@ -246,7 +251,7 @@ public:
 			LOGD("Length:%d, SONG %d", currentLength, song);
 			string sub_title;
 			string msg = currentStil.comment;
-			for(int i=0; i<currentStil.songs.size(); i++) {
+			for(int i=0; i<(int)currentStil.songs.size(); i++) {
 				auto &s = currentStil.songs[i];
 				LOGD("#%d: %s", s.subsong, s.title);
 				if(s.subsong == song+1) {
@@ -270,7 +275,7 @@ public:
 		if(currentPos > nextCheckPos) {
 			int sec = currentPos / 44100;
 			nextCheckPos = currentPos + 44100;
-			for(int i=currentInfo+1; i<currentStil.songs.size(); i++) {
+			for(int i=currentInfo+1; i<(int)currentStil.songs.size(); i++) {
 				auto &s = currentStil.songs[i];
 				if(s.subsong == currentSong+1) {
 					if(s.seconds > 0 && sec >= s.seconds) {
@@ -330,11 +335,15 @@ VicePlugin::VicePlugin(const unsigned char *data) {
 	readLengths();
 }
 
+static File find_file(const std::string &name) {
+	return File::findFile(current_exe_path() + ":" + File::getAppDir(), name);
+}
+
 void VicePlugin::readSTIL() {
 
 	STIL current;
 	vector<STIL> songs;
-	File f { "data/STIL.txt" };
+	File f = find_file("data/STIL.txt");
 	//int subsong = -1;
 	string path;
 	string what;
@@ -342,7 +351,7 @@ void VicePlugin::readSTIL() {
 	string songComment;
 	bool currentSet = false;
 	//int seconds = 0;
-	int count = 0;
+	//int count = 0;
 	for(auto l : f.getLines()) {
 		//LOGD("'%c' : %s", l[0], l);
 		if(l == "" || l[0] == '#')
@@ -440,7 +449,7 @@ void VicePlugin::readSTIL() {
 
 void VicePlugin::readLengths() {
 
-	File f { "data/songlengths.dat" };
+	File f = find_file("data/songlengths.dat");
 
 	if(f.exists()) {
 		auto data = f.getData();

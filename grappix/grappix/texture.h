@@ -3,7 +3,6 @@
 
 #include "render_target.h"
 #include <image/bitmap.h>
-
 #include <memory>
 
 namespace grappix {
@@ -20,7 +19,9 @@ public:
 
 	Texture() {}
 
-	template <typename T> Texture(T size) : Texture(size[0], size[1]) {}
+	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+		Texture(T size) : Texture(size[0], size[1]) {}
+
 	Texture(unsigned int width, unsigned int height, Format fmt = RGBA32);
 	Texture(const image::bitmap &bm);
 	Texture(uint8_t *data, unsigned int w, unsigned int h);
@@ -29,15 +30,11 @@ private:
 
 	struct texref {
 		texref() {
-			//LOGD("GEN");
 			glGenTextures(1, &id);
-			fprintf(stderr, "gen %d\n", id); fflush(stderr);
 		}
-		texref(GLuint id) : id(id) {			fprintf(stderr, "set %d\n", id); fflush(stderr);
-}
+		texref(GLuint id) : id(id) {}
+
 		~texref() {
-			//LOGD("DEL");
-			fprintf(stderr, "del %d\n", id); fflush(stderr);
 			glDeleteTextures(1, &id);
 		}
 		GLuint id;

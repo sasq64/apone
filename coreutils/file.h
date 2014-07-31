@@ -36,6 +36,11 @@ private:
 
 #define THROW(e, args...) throw e(args, __FILE__, __LINE__)
 
+#define XSF(x) SF(x)
+#define SF(x) #x
+
+#define APP_NAME_STR XSF(APP_NAME)
+
 class File {
 public:
 
@@ -48,7 +53,7 @@ public:
 	File();
 	File(const std::string &name, Mode mode  = NONE);
 	File(const File &parent, const std::string &name, Mode mode  = NONE);
-	File(const std::string &parent, const std::string &name, Mode mode  = NONE);
+	File(const std::string &parent, const std::string &name, Mode mode = NONE);
 	~File() {
 		if(readFP)
 			fclose(readFP);
@@ -175,15 +180,47 @@ public:
 		write(line + "\n");
 	}
 
-	static const std::string cacheDir() { 
+	static const std::string getCacheDir() { 
 		const char *home = getenv("HOME");
-		auto d = format("%s/.cache", home);
+		auto d = format("%s/.cache/" APP_NAME_STR, home);
 		if(!exists(d))
-			utils::makedir(d);
-		return d;
+			utils::makedirs(d);
+		return d + "/";
 	}
 
+	static const std::string getAppDir() {
+		return appDir;
+	}
+
+	static void setAppDir(const std::string &a) {
+		appDir = a;
+	}
+
+	//static void setUserDir(const std::string &u) {
+	//	userDir = u;
+	//}
+
+	static const std::string getUserDir() {
+		const char *home = getenv("HOME");
+		auto d = format("%s/" APP_NAME_STR, home);
+		if(!exists(d))
+			utils::makedirs(d);
+		return d + "/";
+	}
+
+	static File findFile(const std::string &path, const std::string &name);
+	
+	static std::string userThenAppPath() {
+		return getUserDir() + ":" + getAppDir();
+	}
+
+	static File NO_FILE;
+
 private:
+
+	static std::string appDir;
+	static std::string userDir;
+
 	void open(Mode mode);
 
 	std::string fileName;

@@ -11,6 +11,8 @@ using namespace utils;
 using namespace logging;
 using namespace std;
 
+std::atomic<int> WebRPC::ongoingCalls;
+
 WebRPC::Job::Job(const string &url, const string &data) : done(false) {
 	LOGD("Job created");
 	jobThread = thread {&Job::urlCall, this, url, data};
@@ -38,6 +40,11 @@ int WebRPC::Job::getReturnCode() {
 
 void WebRPC::Job::urlCall(const string &url, const string &data) {
 
+	//{
+	//	lock_guard<mutex>{m};
+		ongoingCalls++;
+	//}
+
 	CURL *curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	//curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
@@ -48,11 +55,16 @@ void WebRPC::Job::urlCall(const string &url, const string &data) {
 		curl_easy_setopt(curl,  CURLOPT_POSTFIELDS, data.c_str());
 
 	int rc = curl_easy_perform(curl);
+
+	curl_easy_cleanup(curl);
+
 	{
 		lock_guard<mutex>{m};
+		ongoingCalls--;
 		returnCode = rc;
 		done = true;
 	}
+
 }
 
 size_t WebRPC::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {

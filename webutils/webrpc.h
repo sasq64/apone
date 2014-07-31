@@ -13,6 +13,9 @@
 
 class WebRPC {
 public:
+
+	static std::atomic<int> ongoingCalls;
+
 	class Job {
 	public:
 		Job() {};
@@ -45,6 +48,8 @@ public:
 	void call(const std::string &method, std::function<void(const std::string &result)>);
 	void post(const std::string &method, const std::string &data);
 	void post(const std::string &method, const std::string &data, std::function<void(const std::string &result)>);
+
+	static int inProgress() { return ongoingCalls; }
 
 private:
 	std::string baseUrl;

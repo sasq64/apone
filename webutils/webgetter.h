@@ -17,6 +17,9 @@
 
 class WebGetter {
 public:
+
+	static std::atomic<int> ongoingCalls;
+
 	class Job {
 	public:
 		Job() : datapos(0) {}
@@ -63,6 +66,9 @@ public:
 	void setBaseURL(const std::string &base) { baseURL = base; }
 
 	bool inCache(const std::string &url) const;
+
+	static int inProgress() { return ongoingCalls; }
+
 private:
 	std::atomic<int> counter;
 	std::future<void> f[4];

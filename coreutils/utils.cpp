@@ -312,6 +312,19 @@ string utf8_encode(const wstring &s) {
 	return out;
 }
 
+std::string current_exe_path() {
+#ifdef LINUX
+	static char buf[1024];
+	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
+	if(rc >= 0) {
+		buf[rc] = 0;
+		return path_directory(buf);
+	} return "";
+#else
+	return "";
+#endif
+}
+
 static bool performCalled = false;
 static vector<function<void()>> callbacks;
 

@@ -20,6 +20,12 @@ namespace utils {
 
 using namespace std;
 
+File File::NO_FILE;
+
+string File::appDir = "/usr/share/" APP_NAME_STR;
+string File::userDir;
+
+
 File::File() : size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {}
 
 File::File(const string &name, Mode mode) : fileName(rstrip(name, '/')), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
@@ -30,9 +36,9 @@ File::File(const string &name, Mode mode) : fileName(rstrip(name, '/')), size(-1
 		open(mode);
 };
 
-File::File(const File &parent, const std::string &name, Mode mode) : File(parent.getName() + "/" + name, mode) {}
+File::File(const File &parent, const string &name, Mode mode) : File(parent.getName() + "/" + name, mode) {}
 
-File::File(const std::string &parent, const std::string &name, Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
+File::File(const string &parent, const string &name, Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
 
 vector<File> File::listFiles() {
 	DIR *dir;
@@ -140,7 +146,7 @@ void File::copyFrom(File &otherFile) {
 	fwrite(ptr, 1, size, writeFP);
 }
 
-void File::copyFrom(const std::string &other) {
+void File::copyFrom(const string &other) {
 	File f { other };
 	copyFrom(f);
 	f.close();
@@ -169,11 +175,25 @@ uint8_t *File::getPtr() {
 	return &data[0];
 }
 
-const std::vector<uint8_t>& File::getData() {
+const vector<uint8_t>& File::getData() {
 	close();
 	if(!loaded)
 		readAll();
 	return data;
+}
+
+File File::findFile(const string &path, const string &name) {
+	auto parts = split(path, ":");
+	for(string p : parts) {
+		if(p[p.length()-1] != '/')
+			p += "/";
+		File f { p + name };
+		LOGD("Checking '%s'", f.getName());
+		if(f.exists())
+			return f;
+	}
+	LOGD("NOT FOUND");
+	return NO_FILE;
 }
 
 }

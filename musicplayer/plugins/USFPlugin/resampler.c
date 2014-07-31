@@ -2,7 +2,8 @@
 #include <string.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
-#if (defined(_M_IX86) || defined(__i386__) || defined(_M_X64) || defined(__amd64__))
+//#if (defined(_M_IX86) || defined(__i386__) || defined(_M_X64) || defined(__amd64__))
+#ifdef __SSE__
 #include <xmmintrin.h>
 #define RESAMPLER_SSE
 #endif

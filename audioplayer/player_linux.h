@@ -53,6 +53,9 @@ public:
 				writeAudio(&buffer[0], buffer.size());
 			}
 		}
+		if(playback_handle)
+			snd_pcm_close(playback_handle);
+		playback_handle = nullptr;
 	}
 
 	void writeAudio(int16_t *samples, int sampleCount) {

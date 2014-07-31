@@ -23,6 +23,11 @@ public:
 		jtype = json_type_object;
 	}
 
+	~JSon() {
+		//if(obj)
+		//	json_object_object_del(obj, nullptr);
+	}
+
 	JSon(json_object *obj) : obj(obj), jtype(json_object_get_type(obj)) {}
 
 	static JSon parse(const std::string &s) {

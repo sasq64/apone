@@ -121,6 +121,8 @@ std::string path_extension(const std::string &name);
 std::string path_suffix(const std::string &name);
 std::string path_prefix(const std::string &name);
 
+std::string current_exe_path();
+
 bool isalpha(const std::string &s);
 
 float clamp(float x, float a0 = 0.0, float a1 = 1.0);

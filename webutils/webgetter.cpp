@@ -15,6 +15,8 @@ using namespace std;
 std::atomic<int> WebGetter::scounter(0);
 std::future<void> WebGetter::sf[4];
 
+std::atomic<int> WebGetter::ongoingCalls;
+
 
 WebGetter::Job::Job(const string &url, const string &targetDir) : loaded(false), targetDir(targetDir), datapos(-1) {
 	LOGD("Job created");
@@ -47,6 +49,8 @@ void WebGetter::Job::urlGet(const std::string &url) {
 	int rc = 0;
 	if(!File::exists(target)) {
 
+		ongoingCalls++;
+
 		auto u = urlencode(url, " #");
 
 		LOGI("Downloading %s", url);
@@ -60,8 +64,10 @@ void WebGetter::Job::urlGet(const std::string &url) {
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 		rc = curl_easy_perform(curl);
 		LOGI("Curl returned %d", rc);
+		ongoingCalls--;
 		if(file)
 			file->close();
+		curl_easy_cleanup(curl);
 	} else {
 		LOGI("Getting %s from cache", target);
 	}
