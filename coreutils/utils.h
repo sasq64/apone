@@ -21,17 +21,30 @@
 #include <thread>
 #include <atomic>
 
-//#include <math.h>
-//#ifndef M_PI
-//#define M_PI 3.14159265358979323846
-//#endif
-
-//#include "utils/format.h"
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #ifdef ANDROID
-#define stol(x) atol(x.c_str())
-#define stoll(x) atoll(x.c_str())
-#define stod(x) atof(x.c_str())
+
+// Android (for complicated reasons) misses some standard string conversion functions
+
+namespace std {
+
+long stol(const std::string &x);
+long long stoll(const std::string &x);
+long long stod(const std::string &x);
+
+template <typename T>
+std::string to_string(T value)
+{
+    std::ostringstream os ;
+    os << value ;
+    return os.str() ;
+}
+
+}
 #endif
 
 namespace utils {
@@ -64,8 +77,8 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 	return args;
 }
 template <typename T>
-std::vector<T> split(const T &s, const char *delim, bool inc = false) {
-	return split(s, std::string(delim), inc);
+std::vector<T> split(const T &s, const char *delim, int limit = 0) {
+	return split(s, std::string(delim), limit);
 }
 
 
@@ -96,6 +109,9 @@ V join(const Container<V, A> &strings, const char *separator) {
 	return out;
 }
 
+void replace_char(std::string &s, char c, char r);
+void replace_char(char *s, char c, char r);
+
 std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
 
@@ -111,8 +127,9 @@ std::string toLower(const std::string &s);
 
 std::string rstrip(const std::string &x, char c = ' ');
 std::string lstrip(const std::string &x, char c = ' ');
+std::string lrstrip(const std::string &x, char c = ' ');
 //std::string wordwrap( std::string str, size_t width);
-std::vector<std::string> text_wrap(const std::string &text, int width, int subseqWidth = -1);
+std::vector<std::string> text_wrap(const std::string &text, int width, int initialWidth = -1);
 
 std::string path_basename(const std::string &name);
 std::string path_directory(const std::string &name);
@@ -202,7 +219,16 @@ void perform_callbacks();
 
 //void cleanup_async();
 //void run_async(std::function<void()> f);
+/*
 
+HRESULT SHGetKnownFolderPath(
+  _In_      REFKNOWNFOLDERID rfid,
+  _In_      DWORD dwFlags,
+  _In_opt_  HANDLE hToken,
+  _Out_     PWSTR *ppszPath
+);
+
+*/
 
 };
 

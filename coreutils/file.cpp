@@ -197,3 +197,43 @@ File File::findFile(const string &path, const string &name) {
 }
 
 }
+
+#ifdef UNIT_TEST
+
+#include "catch.hpp"
+
+TEST_CASE("utils::File", "File operations") {
+
+	using namespace utils;
+	using namespace std;
+
+	// Delete to be safe
+	std::remove("temp.text");
+
+	// File
+	File file { "temp.text" };
+
+	REQUIRE(file.getName() == "temp.text");
+
+	file.write("First line\nSecond line");
+	file.close();
+	REQUIRE(file.exists());
+	REQUIRE(file.getSize() > 5);
+	REQUIRE(file.getSize() < 50);
+
+	file = File { "temp.text" };
+
+	file.readAll();
+	REQUIRE(file.getPtr() != 0);
+
+	vector<string> lines = file.getLines();
+
+	REQUIRE(lines.size() == 2);
+
+	file.remove();
+
+	REQUIRE(!file.exists());
+
+}
+
+#endif

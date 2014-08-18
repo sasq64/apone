@@ -188,6 +188,14 @@ public:
 		return d + "/";
 	}
 
+	static const std::string getConfigDir() { 
+		const char *home = getenv("HOME");
+		auto d = format("%s/.config/" APP_NAME_STR, home);
+		if(!exists(d))
+			utils::makedirs(d);
+		return d + "/";
+	}
+
 	static const std::string getAppDir() {
 		return appDir;
 	}
@@ -201,7 +209,10 @@ public:
 	//}
 
 	static const std::string getUserDir() {
-		const char *home = getenv("HOME");
+		std::string home = getenv("HOME");
+	#ifdef WIN32
+		replace_char(home, '\\', '/');
+	#endif
 		auto d = format("%s/" APP_NAME_STR, home);
 		if(!exists(d))
 			utils::makedirs(d);
@@ -210,10 +221,6 @@ public:
 
 	static File findFile(const std::string &path, const std::string &name);
 	
-	static std::string userThenAppPath() {
-		return getUserDir() + ":" + getAppDir();
-	}
-
 	static File NO_FILE;
 
 private:

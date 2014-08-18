@@ -19,14 +19,21 @@
 
 #include <mutex>
 
+#ifdef ANDROID
+namespace std {
+	long stol(const string &x) { return atol(x.c_str()); }
+	long long stoll(const string &x) { return atoll(x.c_str()); }
+	long long stod(const string &x) { return atof(x.c_str()); }
+}
+#endif
+
 namespace utils {
 
 using namespace std;
 
-
 string rstrip(const string &x, char c) {
 	auto l = x.length();
-	while(x[l-1] == c)
+	while(l > 1 && x[l-1] == c)
 		l--;
 	if(l == x.length())
 		return x;
@@ -35,20 +42,31 @@ string rstrip(const string &x, char c) {
 
 string lstrip(const string &x, char c) {
 	size_t l = 0;
-	while(x[l] == c)
+	while(x[l] && x[l] == c)
 		l++;
 	if(l == 0)
 		return x;
 	return x.substr(l);
 }
 
-vector<string> text_wrap(const string &t, int width, int subseqWidth) {
+string lrstrip(const string &x, char c) {
+	size_t l = 0;
+	while(x[l] && x[l] == c)
+		l++;
+	size_t r = l;
+	while(x[r] && x[r] != c)
+		r++;
+	return x.substr(l, r-l);
+}
+
+vector<string> text_wrap(const string &t, int width, int initialWidth) {
 
 	vector<string> lines;
 	size_t start = 0;
 	size_t end = width;
-	if(subseqWidth < 0)
-		subseqWidth = width;
+	int subseqWidth = width;
+	if(initialWidth >= 0)
+		width = initialWidth;
 
 	string text = t;
 	for(auto &c : text) {
@@ -312,6 +330,18 @@ string utf8_encode(const wstring &s) {
 	return out;
 }
 
+void replace_char(std::string &s, char c, char r) {
+	replace_char(&s[0], c, r);
+}
+
+void replace_char(char *s, char c, char r) {
+	while(*s) {
+		if(*s == c)
+			*s = r;
+		s++;
+	}
+}
+
 std::string current_exe_path() {
 #ifdef LINUX
 	static char buf[1024];
@@ -343,55 +373,6 @@ void perform_callbacks() {
 	callbacks.clear();
 }
 
-
-//static std::vector<std::shared_ptr<asyncthread>> atlist;
-
-
-/*
-vector<thread> flist;
-vector<thread::id> donelist;
-mutex doneMutex;
-
-void cleanup_async() {
-	lock_guard<mutex> guard(doneMutex);
-	for(auto &id : donelist) {
-		auto it = flist.begin();
-		while(it != flist.end()) {
-			if(it->get_id() == id) {
-				LOGD("Removing finished async thread");
-				it = flist.erase(it);
-			} else
-				it++;
-		}
-	}
-	donelist.clear();
-}
-
-void run_async(std::function<void()> f) {
-
-	flist.emplace_back([=]() {
-		f();
-		{ lock_guard<mutex> guard(doneMutex);
-			donelist.push_back(std::this_thread::get_id());
-		}
-
-	});
-	//flist.back().detach();
-
-//#ifndef ANDROID
-	//std::async(std::launch::async, f);
-//#else
-	// atlist.emplace_back();
-	// auto &at = atlist.back();
-	// at->t = thread { [=]() {
-	// 	LOGD("In thread");
-	// 	f();
-	// 	at->done = true;
-	// } };
-
-//#endif
-}
-*/
 }
 
 #ifdef UNIT_TEST
@@ -410,41 +391,6 @@ TEST_CASE("utils::text", "Text operations") {
 		LOGD("Line:%s", l);
 	}
 }
-/*
-TEST_CASE("utils::File", "File operations") {
-
-	using namespace utils;
-	using namespace std;
-
-	// Delete to be safe
-	std::remove("temp.text");
-
-	// File
-	File file { "temp.text" };
-
-	REQUIRE(file.getName() == "temp.text");
-
-	file.write("First line\nSecond line");
-	file.close();
-	REQUIRE(file.exists());
-	REQUIRE(file.getSize() > 5);
-	REQUIRE(file.getSize() < 50);
-
-	file = File { "temp.text" };
-
-	file.readAll();
-	REQUIRE(file.getPtr() != 0);
-
-	vector<string> lines = file.getLines();
-
-	REQUIRE(lines.size() == 2);
-
-	file.remove();
-
-	REQUIRE(!file.exists());
-
-}
-*/
 
 TEST_CASE("utils::path", "Path name operations") {
 
