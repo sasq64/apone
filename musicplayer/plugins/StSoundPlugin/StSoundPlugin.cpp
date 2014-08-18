@@ -19,8 +19,12 @@ public:
 		ymMusic = ymMusicCreate();
 		ymMusicLoadMemory(ymMusic, data, size);
 
-		//ymMusicInfo_t info;
-		//ymMusicGetInfo(pMusic,&info);
+		ymMusicInfo_t info;
+		ymMusicGetInfo(ymMusic,&info);
+		setMeta("title", info.pSongName,
+			"composer", info.pSongAuthor,
+			"length", info.musicTimeInSec);
+		LOGD("TYPE %s PLAYER %s", info.pSongType, info.pSongPlayer);
 		//printf("Name.....: %s\n",info.pSongName);
 		//printf("Author...: %s\n",info.pSongAuthor);
 		//printf("Comment..: %s\n",info.pSongComment);

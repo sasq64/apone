@@ -12,6 +12,7 @@ extern "C" {
 #include "resources.h"
 #include "sound.h"
 #include "sysfile.h"
+#include "sid/sid.h"
 
 
 void psid_play(short *buf, int size);
@@ -42,10 +43,10 @@ using namespace std;
 using namespace utils;
 
 
-static bool videomode_is_ntsc;
-static bool videomode_is_forced;
-static int sid;
-static bool sid_is_forced;
+static bool videomode_is_ntsc = false;
+static bool videomode_is_forced = false;
+static int sid = 3;//SID_MODEL_DEFAULT;// SID_MODEL_8580;
+static bool sid_is_forced = true;
 
  template <typename T> const T get(const vector<uint8_t> &v, int offset) {}
 

@@ -28,6 +28,7 @@ public:
 		char author    [256];
 		char name      [256];
 		char copyright [ 32];
+		int length;
 	};
 protected:
 	blargg_err_t track_info_( track_info_t*, int track ) const;

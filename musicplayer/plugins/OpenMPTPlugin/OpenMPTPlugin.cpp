@@ -30,7 +30,7 @@ public:
 		throw player_exception("Could not load module");
 
 	//if(loopmode)
-	//	openmpt_module_set_repeat_count(mod, -1);
+		openmpt_module_set_repeat_count(mod, 99);
 
 		auto length = openmpt_module_get_duration_seconds(mod);
 		auto songs = openmpt_module_get_num_subsongs(mod);

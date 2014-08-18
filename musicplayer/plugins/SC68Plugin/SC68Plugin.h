@@ -12,6 +12,9 @@ public:
 	virtual bool canHandle(const std::string &name) override;
 	virtual ChipPlayer *fromFile(const std::string &fileName) override;
 
+	static bool identifyFile(const std::string &fileName);
+
+
 	void setDataDir(const std::string &dataDir) {
 		this->dataDir = dataDir;
 	}

@@ -35,7 +35,6 @@ public:
 
 
 		string head = string((char*)data, 0, 4);
-
 		if(head == "ICE!") {
 			int dsize = unice68_get_depacked_size(data, NULL);
 			LOGD("Unicing %d bytes to %d bytes", size, dsize);
@@ -54,6 +53,7 @@ public:
 			setMeta("format", "SC68");
 
 	}
+
 
 	bool load(uint8_t *ptr, int size) {
 
@@ -89,6 +89,15 @@ public:
 			sc68_shutdown();
 			return false;
 		}
+
+		sc68_music_info_t info;
+		if(sc68_music_info(sc68, &info, 0, 0) == 0) {
+			LOGD("%s - %s %d %d %d", info.artist, info.title, info.loop_ms, info.dsk.time_ms, info.trk.time_ms);
+		}
+
+		setMeta("title", info.title,
+			"composer", info.artist,
+			"length", info.trk.time_ms / 1000);
 
 		trackChanged = false;
 

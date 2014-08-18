@@ -104,7 +104,8 @@ static blargg_err_t parse_info( byte const* in, long size, Sap_Emu::info_t* out 
 	out->author    [0] = 0;
 	out->name      [0] = 0;
 	out->copyright [0] = 0;
-	
+	out->length = 0;
+
 	if ( size < 16 || memcmp( in, "SAP\x0D\x0A", 5 ) )
 		return gme_wrong_file_type;
 	
@@ -188,6 +189,12 @@ static blargg_err_t parse_info( byte const* in, long size, Sap_Emu::info_t* out 
 		{
 			parse_string( in, line_end, sizeof out->copyright, out->copyright );
 		}
+		else if ( !strncmp( "TIME", tag, tag_len ) )
+		{
+			int mins  = from_dec( in, in+2 );
+			int secs  = from_dec( in+3, in+5 ) + mins * 60;
+			out->length = secs * 1000;
+		}
 		
 		in = line_end + 2;
 	}
@@ -204,6 +211,7 @@ static void copy_sap_fields( Sap_Emu::info_t const& in, track_info_t* out )
 	Gme_File::copy_field_( out->game,      in.name );
 	Gme_File::copy_field_( out->author,    in.author );
 	Gme_File::copy_field_( out->copyright, in.copyright );
+	out->length = in.length;
 }
 
 blargg_err_t Sap_Emu::track_info_( track_info_t* out, int ) const
