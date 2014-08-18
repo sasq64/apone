@@ -30,6 +30,8 @@ public:
 
 	JSon(json_object *obj) : obj(obj), jtype(json_object_get_type(obj)) {}
 
+	bool valid() { return obj != nullptr; }
+
 	static JSon parse(const std::string &s) {
 		return JSon(s);
 	}

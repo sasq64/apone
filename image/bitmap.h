@@ -1,8 +1,6 @@
 #ifndef IMAGE_BITMAP_H
 #define IMAGE_BITMAP_H
 
-//#include <coreutils/log.h>
-
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -15,6 +13,7 @@ using namespace std;
 namespace image {
 
 template <typename T = uint32_t> class basic_bitmap {
+
 	class const_split_iterator  {
 	public:
 		const_split_iterator(const basic_bitmap &bm, int w, int h, int xpos = 0, int ypos = 0) : bm(bm), width(w), height(h), xpos(xpos), ypos(ypos) {}
@@ -72,19 +71,6 @@ public:
 
 	basic_bitmap() : w(0), h(0) {}
 
-	//basic_bitmap(basic_bitmap &&b) : pixels(std::move(b.pixels)), w(b.w), h(b.h) {}
-
-	//basic_bitmap& operator=(const basic_bitmap &b) {
-	//	return *this;
-	//}
-
-	//basic_bitmap& operator=(const basic_bitmap &&b) {
-	//	pixels = std::move(b.pixels);
-	//	w = b.w;
-	//	h = b.h;
-	//	return *this;
-	//}
-
 	basic_bitmap(int width, int height) : w(width), h(height) {
 		//pixels.resize(width * height);
 		pixels = make_shared<vector<T>>(width*height);
@@ -112,22 +98,7 @@ public:
 	}
 
 	T operator[](const int &i) const { return (*pixels)[i]; }
-/*
-	struct iterator {
-		bool operator!= (const iterator& other) const {
-			return i != other.i
-		}
 
-		T operator* () const {
-			return bm.pixels[i];
-		}
-
-		const iterator& operator++ () {
-			i++;
-		}
-
-	};
-*/
 	typename std::vector<T>::iterator begin() {
 		return pixels->begin();
 	};
@@ -162,11 +133,6 @@ public:
 			}
 		return dest;
 	}
-
-	//std::vector<basic_bitmap> split(int w, int h) {
-	//	std::vector<basic_bitmap> rv;
-	//	return rv;
-	//}
 
 	const T* data() const { return &(*pixels)[0]; }
 

@@ -26,6 +26,11 @@ bitmap load_png(const std::string &file_name) {
 	return bitmap(s->w, s->h, s->pixels);
 }
 
+void save_png(bitmap bitmap, const std::string &path) {
+	throw image_exception("Not implemented");
+}
+
+
 #else
 
 
@@ -109,8 +114,7 @@ bitmap load_png(const std::string &file_name) {
 	return bm;
 }
 
-void save_png(bitmap bitmap, const std::string &path)
-{
+void save_png(bitmap bitmap, const std::string &path) {
 	FILE * fp;
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;

@@ -89,6 +89,32 @@ public:
 		return *this;
 	}
 
+	Tween& smoothstep() {
+		tweenFunc = smoothStep_fn;
+		return *this;
+	}
+
+	Tween& easeinback() {
+		tweenFunc = easeInBack_fn;
+		return *this;
+	}
+
+	Tween& easeoutback() {
+		tweenFunc = easeOutBack_fn;
+		return *this;
+	}
+
+	Tween& easeinsine() {
+		tweenFunc = easeInSine_fn;
+		return *this;
+	}
+
+	Tween& easeoutsine() {
+		tweenFunc = easeOutSine_fn;
+		return *this;
+	}
+
+
 	Tween& sine() {
 		tweenFunc = sine_fn;
 		backto = true;

@@ -34,61 +34,70 @@ you can skip configuration and only include `build.mk`.
 
 This is a small makefile for a project that uses this system;
 
-	# First point to the cpp-mods directory
-	MODULE_DIR = ../cpp-mods
-	# then we include config.mk to set up variables and detect host etc
-	include $(MODULE_DIR)/config.mk
+```make
+# First point to the cpp-mods directory
+MODULE_DIR = ../cpp-mods
+# then we include config.mk to set up variables and detect host etc
+include $(MODULE_DIR)/config.mk
 
-	# then we define our compilation target and the sources to include
-	TARGET := test
-	LOCAL_FILES += test.cpp
-	# and finally we build everything by including the build rules
-	include $(MODULE_DIR)/build.mk
+# then we define our compilation target and the sources to include
+TARGET := test
+LOCAL_FILES += test.cpp
+# and finally we build everything by including the build rules
+include $(MODULE_DIR)/build.mk
+```
 
 A slightly more advanced example;
 
-	MODULE_DIR = ../cpp-mods
-	include $(MODULE_DIR)/config.mk
+```make
+MODULE_DIR = ../cpp-mods
+include $(MODULE_DIR)/config.mk
 
-	# Include the code modules that we want to use
-	include $(MODULE_DIR)/coreutils/module.mk
-	include $(MODULE_DIR)/sqlite3/module.mk
+# Include the code modules that we want to use
+include $(MODULE_DIR)/coreutils/module.mk
+include $(MODULE_DIR)/sqlite3/module.mk
 
-	CC := clang
-	CXX := clang++
+USE_CLANG := 1
 
-	TARGET := dbtest
-	LOCAL_FILES += dbtest.cpp
-	# Include all source files in the dbsrc/ directory
-	LOCAL_DIRS += dbsrc
+TARGET := dbtest
+LOCAL_FILES += dbtest.cpp
+# Include all source files in the dbsrc/ directory
+LOCAL_DIRS += dbsrc
 
-	# Include system specific sources depending on host system
-	ifeq ($(HOST),android)
-	LOCAL_FILES += android_sys.c
-	else
-	LOCAL_FILES += pc_sys.c
-	endif
+# Include system specific sources depending on host system
+ifeq ($(HOST),android)
+LOCAL_FILES += android_sys.c
+else
+LOCAL_FILES += pc_sys.c
+endif
 
-	include $(MODULE_DIR)/build.mk
+include $(MODULE_DIR)/build.mk
+```
 
 ### Setting flags
 
 #### Choosing the compiler
 
-Define `CC` and `CXX` to either clang or gcc after including `config.mk`
-You can also define `USE_CCACHE=1` to use ccache for compileation. 
+Define `USE_CLANG=1` to use clang instead of gcc. Will only switch compiler if the HOST supports it.
+
+You can also define `USE_CCACHE=1` to use ccache for compilation.
 
 ## Platform support
 
 ### Desktop (Linux, Mac)
 
 Build using `make`
+
 Requires gcc 4.7+ or clang 3.2+
-apt-get install git g++
-apt-get install libfreetype6-dev libasound2-dev libglew-dev libglfw-dev libcurl4-gnutls-dev
-apt-get install libsdl1.2-dev
+
+	apt-get install git g++
+	apt-get install libfreetype6-dev libasound2-dev libglew-dev libglfw-dev libcurl4-gnutls-dev
+	apt-get install libsdl1.2-dev
 
 ### Raspberry PI
+
+
+#### Cross compile
 
 Build using HOST=raspberrypi make
 
@@ -96,6 +105,12 @@ Requires
 
 * Raspberry PI cross compiler in your path (arm-linux-gnueabihf-gcc etc)
 * A copy of lib, usr/lib, usr/include and vc from a Rasbian Jessie installation
+
+#### Native compile
+
+* Similar requirements as Desktop/Linux, but you need at least Rasbian Jessie (not Wheezy) for
+  a modern enough compiler.
+* Also note that compiling on the Raspberry is very slow.
 
 ### Android
 

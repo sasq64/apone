@@ -2,10 +2,10 @@
 #include <cstdio>
 
 
-void json_parse(std::string &s) {
-	json_object *jobj = json_tokener_parse(s.c_str());
-
-}
+//void json_parse(std::string &s) {
+//	json_object *jobj = json_tokener_parse(s.c_str());
+//
+//}
 
 
 #ifdef UNIT_TEST

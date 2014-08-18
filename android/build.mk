@@ -1,17 +1,9 @@
-#
 
-#ifneq (,$(findstring clang,$(CC)))
-#  CC := $(subst $(ANDROID_PREFIX),,$(CC))
-#endif
-
-#ifneq (,$(findstring clang,$(CXX)))
-#  CXX := $(subst $(ANDROID_PREFIX),,$(CXX))
-#endif
-
-CXX := $(subst ccache,,$(CXX))
-CC := $(subst ccache,,$(CC))
-LD := $(subst ccache,,$(LD))
-CCACHE :=
+# Strip ccache from commands since it does not work with Android
+#CXX := $(subst ccache,,$(CXX))
+#CC := $(subst ccache,,$(CC))
+#LD := $(subst ccache,,$(LD))
+#CCACHE :=
 
 # Test for prerequisites
 

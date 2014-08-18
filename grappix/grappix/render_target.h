@@ -53,7 +53,7 @@ public:
 		rectangle(rec.x, rec.y, rec.w, rec.h, 0xffffffff, program);
 	}
 	void rectangle(float x, float y, float w, float h, uint32_t color, const Program &program = get_program(FLAT_PROGRAM));
-
+/*
 	template <typename TEXTURE, class = typename std::enable_if<std::is_compound<TEXTURE>::value>::type>
 	void image(TEXTURE t, float x, float y, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x, y, t.width(), t.height(), nullptr, program);
@@ -63,7 +63,7 @@ public:
 	void image(TEXTURE t, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), 0, 0, t.width(), t.height(), nullptr, program);
 	}
-
+*/
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	void draw(const T &t, Program &program) const {
 		draw_texture(t.id(), 0.0F, 0.0F, t.width(), t.height(), nullptr, program);
@@ -99,8 +99,8 @@ public:
 	const Rectangle rec() const { return Rectangle(0,0,_width, _height); }
 	GLuint buffer() const { return frameBuffer; }
 
-	float scale() const { return globalScale; }
-	float scale(float s) { globalScale = s; return s; }
+	//float scale() const { return globalScale; }
+	//float scale(float s) { globalScale = s; return s; }
 
 	void text(const std::string &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 	void text(const char c, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const {
@@ -117,9 +117,7 @@ public:
 	}
 
 	image::bitmap get_pixels() const {
-
 		image::bitmap target(_width, _height);
-
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, &target[0]);
 		target.flip();
