@@ -124,6 +124,11 @@ public:
 		return target;
 	}
 
+	template <typename T> void get_pixels(T *ptr) {
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+		glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_SHORT_5_6_5, ptr);	
+	}
+
 	const utils::mat4f& get_view_matrix() const { return toScreen; }
 
 protected:
