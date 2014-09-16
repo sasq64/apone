@@ -11,6 +11,7 @@
 
 #include <coreutils/utils.h>
 #include <coreutils/log.h>
+#include <coreutils/file.h>
 
 #define _USE_MATH_DEFINES
 #include <cmath>

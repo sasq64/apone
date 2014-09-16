@@ -10,7 +10,6 @@ using namespace image;
 #include <coreutils/format.h>
 #include <coreutils/log.h>
 
-
 using namespace std;
 using namespace utils;
 
@@ -39,6 +38,7 @@ void Resources::update() {
 
 #else
 
+#include <unistd.h>
 #include <sys/inotify.h>
 #include <sys/select.h>
 

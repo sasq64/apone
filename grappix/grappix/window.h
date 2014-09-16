@@ -148,8 +148,8 @@ public:
 	void update_callbacks() {
 
 		auto t = chrono::high_resolution_clock::now();
-		uint32_t ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-		tween::Tween::updateTweens(ms / 1000000.0f);
+		uint32_t us = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+		tween::Tween::updateTweens(us / 1000000.0f);
 		Resources::getInstance().update();
 
 		utils::perform_callbacks();
@@ -162,9 +162,9 @@ public:
 			safeMutex.unlock();
 		}
 
-		ms = utils::getms();
+		us = utils::getms();
 		for(auto &cb : callbacks) {
-			if(cb.msec == 0 || ms >= cb.next_time) {
+			if(cb.msec == 0 || us >= cb.next_time) {
 				cb.cb();
 				cb.next_time += cb.msec;
 			}

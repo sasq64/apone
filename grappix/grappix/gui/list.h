@@ -120,7 +120,7 @@ public:
 			p = 0;
 
 		if(p != position) {
-			tween::make_tween().to(position, p).seconds(0.2);
+			tween::Tween::make().to(position, p).seconds(0.2);
 		}
 	}
 

@@ -20,28 +20,30 @@ namespace grappix {
 class RenderTarget {
 public:
 
+	template <typename T> using is_compound = typename std::enable_if<std::is_compound<T>::value>::type;
+
 	RenderTarget() : frameBuffer(0), _width(0), _height(0), globalScale(1.0) {}
 	~RenderTarget() {}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void line(T p0, T p1, uint32_t color) {
 		line(p0[0], p0[1], p1[0], p1[1], color);
 	}
 	void line(float x0, float y0, float x1, float y1, uint32_t color);
 	void dashed_line(float x0, float y0, float x1, float y1, uint32_t color);
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void circle(T xy, float radius, uint32_t color) {
 		circle(xy[0], xy[1], radius, color);
 	}
 	void circle(int x, int y, float radius, uint32_t color);
 /*
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void rectangle(T pos, T size, uint32_t color, float scale = 1.0) {
 		rectangle(pos[0], pos[1], size[0], size[1], color, scale);
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void rectangle(T pos, int w, int h, uint32_t color, float scale = 1.0) {
 		rectangle(pos[0], pos[1], w, h, color, scale);
 	}
@@ -64,27 +66,27 @@ public:
 		draw_texture(t.id(), 0, 0, t.width(), t.height(), nullptr, program);
 	}
 */
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void draw(const T &t, Program &program) const {
 		draw_texture(t.id(), 0.0F, 0.0F, t.width(), t.height(), nullptr, program);
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type, typename V>
+	template <typename T, typename = is_compound<T>, typename V>
 	void draw(const T &t, const V &pos) const {
 		draw_texture(t.id(), pos[0], pos[1], t.width(), t.height());
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type, typename V>
+	template <typename T, typename = is_compound<T>, typename V>
 	void draw(const T &t, const V &pos, float w, float h, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), pos[0], pos[1], w, h, nullptr, program);
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void draw(const T &t, float x0, float y0, float w, float h, float *uvs, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, w, h, uvs, program);
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void draw(const T &t, float x0 = 0, float y0 = 0, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, program);
 	}
@@ -110,7 +112,7 @@ public:
 	}
 	void text(const Font &font, const std::string &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T, typename = is_compound<T>>
 	void render(T renderable) {
 		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 		renderable.render(_width, _height);
