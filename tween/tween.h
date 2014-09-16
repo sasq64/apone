@@ -2,129 +2,105 @@
 #define TWEEN_H
 
 #include <coreutils/log.h>
+#include <coreutils/callback.h>
 
 #include <cmath>
 #include <functional>
 #include <vector>
 #include <limits>
 #include <memory>
+#include <mutex>
 
 namespace tween {
 
-struct TweenAttrBase {
-
-	TweenAttrBase(double target, double value) : startValue(target), delta(value - target), maxValue(std::numeric_limits<double>::max()) {}
-
-	virtual void set(double v) = 0;
-	virtual bool compare(void *p) { return false; }
-
-	double startValue;
-	double delta;
-	double delay;
-	double maxValue;
-
-	std::function<double(double)> tweenFunc;
-
-};
-
-
-template <typename T> class TweenAttr : public TweenAttrBase {
-public:
-	TweenAttr(T &target, T value) : TweenAttrBase(target, value), target(&target) {}
-	T *target;
-
-	virtual void set(double v) override {
-		*target = static_cast<T>(v);
-	}
-
-	virtual bool compare(void *p) override {
-		return p == (void*)target;
-	}
+struct BaseRef {};
+template <typename OBJ> struct Ref : public BaseRef {
+	Ref(std::shared_ptr<OBJ> o) : object(o) {}
+	std::shared_ptr<OBJ> object;
 };
 
 class Tween;
 
-class TweenHolder {
-public:
-	TweenHolder() {}
-	TweenHolder(std::shared_ptr<Tween> t) : tween(t) {}
-	//~TweenHolder() {
-	//}
-	void cancel();
-	bool done();
-	bool valid();
-	void finish();
-private:
-	std::shared_ptr<Tween> tween;
+struct TweenAttrBase {
+
+	TweenAttrBase() {}
+
+	virtual void set(double v, Tween& t) = 0;
+	virtual bool compare(void *p) { return false; }
+
+	double delay = 0.0;
+};
+
+template <typename T> struct TweenAttr : public TweenAttrBase {
+
+	TweenAttr(T *target, T value, int cycles) : startValue(*target), delta(value - *target), maxValue(std::numeric_limits<T>::max()), target(target) {
+
+		if(cycles != 1) {
+			maxValue = delta+1;
+			delta = (delta+1)*cycles-1;
+		}		
+	}
+
+	T startValue;
+	T delta;
+	T maxValue;
+
+	T *target;
+
+	utils::CallbackCaller<T&, Tween, double> on_update_cb;
+
+	virtual void set(double v, Tween &t) override {
+
+		T newValue = startValue + static_cast<T>(fmod(v * delta, maxValue));
+		if(newValue != *target) {
+			*target = newValue;
+			on_update_cb.call(*target, t, v);
+		}
+	}
+
+	virtual bool compare(void *p) override {
+		return p == static_cast<void*>(target);
+	}
+};
+
+template <typename T> class TweenT;
+
+struct TweenImpl {
+
+	TweenImpl(double t, std::function<double(double)> f) : startTime(t), tween_func(f) {}
+
+	double startTime;
+	double totalTime;
+	double dspeed;
+
+	bool do_rep = false;
+	bool backto = false;
+
+	std::vector<std::shared_ptr<TweenAttrBase>> args;
+	std::function<double(double)> tween_func;
+	utils::CallbackCaller<Tween&, double> on_complete_cb;
 };
 
 class Tween {
+protected:
+	Tween(std::shared_ptr<TweenImpl> i) : impl(i) {}
 public:
-	Tween() : _delay(0.0), startTime(currentTime), tweenFunc(smoothStep_fn) {}
+	Tween(int dummy = 0) : impl(std::make_shared<TweenImpl>(currentTime, smoothStep_fn)) {}
+	//Tween& operator=(const Tween &other) = delete;
+	//Tween(const Tween& other) = delete;
 
-	Tween& operator=(const Tween &other) = delete;
-	Tween(const Tween& other) = delete;
+	static Tween make();
 
-	operator TweenHolder() {
-		return TweenHolder(Tween::allTweens.back());
-	}
-
-	Tween& seconds(float s) {
-		totalTime = s;
-		return *this;
-	}
-
-	Tween& delay(float d) {
-		_delay = d;
-		return *this;
-	}
-
-	Tween& speed(float s) {
-		dspeed = s;
-		return *this;
-	}
-
-	Tween& linear() {
-		tweenFunc = linear_fn;
-		return *this;
-	}
-
-	Tween& smoothstep() {
-		tweenFunc = smoothStep_fn;
-		return *this;
-	}
-
-	Tween& easeinback() {
-		tweenFunc = easeInBack_fn;
-		return *this;
-	}
-
-	Tween& easeoutback() {
-		tweenFunc = easeOutBack_fn;
-		return *this;
-	}
-
-	Tween& easeinsine() {
-		tweenFunc = easeInSine_fn;
-		return *this;
-	}
-
-	Tween& easeoutsine() {
-		tweenFunc = easeOutSine_fn;
-		return *this;
-	}
-
-
-	Tween& sine() {
-		tweenFunc = sine_fn;
-		backto = true;
-		return *this;
-	}
-
-	Tween& repeating() {
-		do_rep = true;
-		return *this;
-	}
+	Tween& seconds(float s);
+	Tween& speed(float s);
+	Tween& linear();
+	Tween& smoothstep();
+	Tween& easeinback();
+	Tween& easeoutback();
+	Tween& easeinsine();
+	Tween& easeoutsine();
+	Tween& sine();
+	Tween& repeating();
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	Tween& to(T &target, T value, int cycles = 1) {
@@ -134,32 +110,23 @@ public:
 		return *this;
 	}
 
-	template <typename T, typename U> Tween& to(T &target, U value, int cycles = 1) {
-	
+	template <typename T, typename U> TweenT<T> to(T &target, U value, int cycles = 1) {
+		auto *targetp = &target;
 		for(auto &t : allTweens) {
-			auto it = t->args.begin();
-			while(it != t->args.end()) {
-				if(it->get()->compare((void*)&target)) {
-					LOGD("ALREADY TWEENING!");
-					it = t->args.erase(it);
+			auto it = t->impl->args.begin();
+			while(it != t->impl->args.end()) {
+				if((*it)->compare((void*)targetp)) {
+					// Already tweening
+					it = t->impl->args.erase(it);
 				} else
 					it++;
 			}
 		}
 
-		args.emplace_back(std::make_shared<TweenAttr<T>>(target, value));
-		auto &a = args.back();
-
-		if(cycles != 1) {
-			a->maxValue = a->delta+1;
-			a->delta = (a->delta+1)*cycles-1;
-		}
-
-		a->tweenFunc = tweenFunc;
-		a->delay = _delay;
-		return *this;
+		auto taptr = std::make_shared<TweenAttr<T>>(targetp, static_cast<T>(value), cycles);
+		impl->args.emplace_back(taptr);
+		return TweenT<T>(impl, taptr);
 	}
-
 
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 	Tween& from(T &target, T value) {
@@ -169,70 +136,40 @@ public:
 		return *this;
 	}
 
-	template <typename T, typename U> Tween& from(T &target, U value) {
+	template <typename T, typename U> TweenT<T> from(T &target, U value) {
+		T realValue = target;
+		target = value;
+		return to(target, realValue);
+	}
 
-		to(target, value);
-		auto &a = args.back();
-		//LOGD("Negating delta %f and startValue %f -> %f", a->delta, a->startValue, a->startValue + a->delta);
-		a->startValue += a->delta;
-		a->delta = -a->delta;
-		a->set(a->startValue);
+	template <typename OBJ> void retain(std::shared_ptr<OBJ> obj) {
+		refs.push_back(std::make_shared<Ref<OBJ>>(obj));
+	}
+
+	template <typename T, typename U> Tween& fromTo(T &target, U v0, U v1, int cycles = 1) {
+		*target = static_cast<T>(v0);
+		return to(target, v1);
+	}
+
+	template <typename T, typename U> Tween& fromTo(T v0, U v1, int cycles = 1) {
+		auto p = std::make_shared<T>(v0);
+		retain(p);
+		return to(*(p.get()), v1);
+	}
+
+	template <typename F> Tween& onComplete(F&& f) {
+		impl->on_complete_cb.callme(std::forward<F>(f));
 		return *this;
 	}
 
-	Tween& on_complete(std::function<void()> f) {
-		onCompleteFunc = f;
-		return *this;
-	}
+	void cancel();
+	void finish();
 
-	void finish() {
-		for(auto &a : args) {
-			a->set(a->startValue + fmod(a->delta, a->maxValue));
-		}
-	}
+	static void updateTweens(double t);
 
-	bool step() { // t : 0 -> 1
-		size_t ended = 0;
-		for(auto &a : args) {
-			float t = (currentTime - startTime - a->delay) / totalTime;
-			if(t < 0.0)
-				continue;
-			if(t > 1.0) {
-				if(do_rep)
-					t -= 1.0;
-				else if(backto) {
-					ended++;
-					a->set(a->startValue);
-				}else {
-					ended++;
-					a->set(a->startValue + fmod(a->delta, a->maxValue));
-					continue;
-				}
-			}
-			a->set(a->startValue + fmod(a->tweenFunc(t) * a->delta, a->maxValue));
-		}
-		return ended < args.size();
-	};
+protected:
 
-	static void updateTweens(double t) {
-		std::vector<std::function<void()>> callbacks;
-		currentTime = t;
-		auto it = allTweens.begin();
-		//LOGD("We have %d tweens", allTweens.size());
-		while(it != allTweens.end()) {
-			if(!(*it)->step()) {
-				if((*it)->onCompleteFunc)
-					callbacks.push_back((*it)->onCompleteFunc);
-				it = allTweens.erase(it);
-			} else {
-				it++;
-			}
-		}
-		for(auto &cb : callbacks) {
-			cb();
-		}
-	}
-private:
+	bool step();
 
 	static double linear_fn(double t);
 	static double smoothStep_fn(double t);
@@ -242,30 +179,41 @@ private:
 	static double easeInBack_fn (double t);
 	static double easeOutBack_fn(double t);
 	static double easeInOutBack_fn(double t);
-
 	static double sine_fn(double t);
 
-	double _delay;
-	double startTime;
-	double totalTime;
-	double dspeed;
-
-	bool do_rep = false;
-	bool backto = false;
-
-	std::vector<std::shared_ptr<TweenAttrBase>> args;
-	std::function<double(double)> tweenFunc;
-	std::function<void()> onCompleteFunc;
+	std::shared_ptr<TweenImpl> impl;
 
 	static double currentTime;
+
+	std::vector<std::shared_ptr<BaseRef>> refs;
+
 public:
 	static std::vector<std::shared_ptr<Tween>> allTweens;
+	static std::mutex tweenMutex;
 };
 
+template <typename T> class TweenT : public Tween {
+public:
 
-Tween& make_tween();
+	TweenT(std::shared_ptr<TweenImpl> i, std::shared_ptr<TweenAttr<T>> ta) : Tween(i), ta(ta) {}
 
+	TweenT(const TweenT &t) {
+		impl = t.impl;
+	}
 
-} // namespace tween
+	template <typename F> TweenT& onUpdate(F &&f) {
+		ta->on_update_cb.callme(std::forward<F>(f));
+		return *this;
+	}
+
+	TweenT& delay(float d) {
+		ta->delay = d;
+		return *this;
+	}
+
+	std::shared_ptr<TweenAttr<T>> ta;
+};
+
+}; // namespace tween
 
 #endif // TWEEN_H
