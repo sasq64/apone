@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "vec.h"
+//#include "vec.h"
 
 #include <sys/stat.h>
 #include <stdint.h>
@@ -169,7 +169,7 @@ template <class T> slice<typename T::const_iterator> make_slice(T &vec, int star
 	return slice<typename T::const_iterator>(vec.begin() + start, vec.begin() + start + len);
 }
 
-// make_uniqie by STL
+// make_unique by STL
 
 
 template<class T> struct _Unique_if {
@@ -232,6 +232,6 @@ HRESULT SHGetKnownFolderPath(
 
 };
 
-#include "file.h"
+//#include "file.h"
 
 #endif // UTILS_H

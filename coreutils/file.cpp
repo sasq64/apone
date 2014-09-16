@@ -1,9 +1,9 @@
-
 #include "file.h"
 
 #include <sys/stat.h>
 
-#include "utils.h"
+#include "format.h"
+//#include "utils.h"
 #include "log.h"
 
 
@@ -11,9 +11,9 @@
 #include <windows.h>
 #endif
 #include <unistd.h>
-#include <cstring>
-#include <iostream>
-#include <sstream>
+//#include <cstring>
+//#include <iostream>
+//#include <sstream>
 #include <iomanip>
 #include <dirent.h>
 namespace utils {
@@ -194,6 +194,119 @@ File File::findFile(const string &path, const string &name) {
 	}
 	LOGD("NOT FOUND");
 	return NO_FILE;
+}
+
+const std::string File::getCacheDir() {
+    const char *home = getenv("HOME");
+    auto d = format("%s/.cache/" APP_NAME_STR, home);
+    if(!exists(d))
+        utils::makedirs(d);
+    return d + "/";
+}
+
+const std::string File::getConfigDir() {
+    const char *home = getenv("HOME");
+    auto d = format("%s/.config/" APP_NAME_STR, home);
+    if(!exists(d))
+        utils::makedirs(d);
+    return d + "/";
+}
+
+const std::string File::getUserDir() {
+    std::string home = getenv("HOME");
+#ifdef WIN32
+    replace_char(home, '\\', '/');
+#endif
+    auto d = format("%s/" APP_NAME_STR, home);
+    if(!exists(d))
+        utils::makedirs(d);
+    return d + "/";
+}
+
+
+int64_t File::getSize() {
+	if(size < 0) {
+		struct stat ss;
+		if(stat(fileName.c_str(), &ss) != 0)
+			throw io_exception {"Could not stat file"};
+		size = (uint64_t)ss.st_size;
+	}
+	return size;
+}
+
+bool File::isDir() const {
+	struct stat ss;
+	if(stat(fileName.c_str(), &ss) != 0)
+		throw io_exception {"Could not stat file"};
+	return S_ISDIR(ss.st_mode);
+}
+
+void File::remove() {
+	if(std::remove(fileName.c_str()) != 0)
+		throw io_exception {"Could not delete file"};
+}
+
+void File::remove(const std::string &fileName) {
+	if(std::remove(fileName.c_str()) != 0)
+		throw io_exception {"Could not delete file"};
+}
+
+std::string File::read() {
+	open(READ);
+	if(!loaded)
+		readAll();
+	return std::string((const char *)&data[0], (unsigned long)size);
+}
+
+void File::copy(const std::string &from, const std::string &to) {
+	File f0 { from };
+	File f1 { to };
+	f0.readAll();
+
+	const auto &data = f0.getData();
+
+	f1.write(&data[0], (int)data.size());
+	f0.close();
+	f1.close();
+}
+
+std::string File::resolvePath(const std::string &fileName) {
+	char temp[PATH_MAX];
+	if(::realpath(fileName.c_str(), temp))
+		return std::string(temp);
+	return fileName;
+}
+
+File File::cwd() {
+	char temp[PATH_MAX];
+	if(::getcwd(temp, sizeof(temp))) {
+		return File(temp);
+	}
+	throw io_exception {"Could not get current directory"};
+}
+
+File::~File() {
+	if(readFP)
+		fclose(readFP);
+	if(writeFP)
+		fclose(writeFP);
+}
+
+void File::setAppDir(const std::string &a) {
+	appDir = a;
+}
+
+const std::string File::getAppDir() {
+	return appDir;
+}
+
+void File::writeln(const std::string &line) {
+	write(line + "\n");
+}
+
+void File::clear() {
+	close();
+	remove();
 }
 
 }

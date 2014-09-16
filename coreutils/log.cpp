@@ -76,10 +76,10 @@ void log2(const char *fn, int line, LogLevel level, const std::string &text) {
 		log(level, std::string(temp).append(text));
 	}
 }
-
-void setLevel(LogLevel level) {
+	void setLevel(LogLevel level) {
 	defaultLevel = level;
 }
+
 void setOutputFile(const std::string &fileName) {
 	if(logFile)
 		fclose(logFile);

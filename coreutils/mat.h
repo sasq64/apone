@@ -42,8 +42,8 @@ template <class T> struct mat2 {
 		return m;
 	}
 
-	vec2<T> operator*(const vec2<T> &v) const {
-		return vec2<T>(data[0].dot(v), data[1].dot(v));
+	vec<T,2> operator*(const vec<T,2> &v) const {
+		return vec<T,2>{data[0].dot(v), data[1].dot(v)};
 	}
 
 	mat2<T> operator*(const mat2<T> &m) const {
@@ -55,11 +55,11 @@ template <class T> struct mat2 {
 		return r;
 	}
 
-	vec2<T>& operator[](const int &i) {
+	vec<T,2>& operator[](const int &i) {
 		return data[i];
 	}
 
-	const vec2<T>& operator[](const int &i) const {
+	const vec<T,2>& operator[](const int &i) const {
 		return data[i];
 	}
 
@@ -69,7 +69,7 @@ template <class T> struct mat2 {
 
 private:
 	union {
-		vec2<T> data[2];
+		vec<T,2> data[2];
 		T elements[4];
 	};
 };
@@ -103,8 +103,8 @@ template <class T> struct mat4 {
 		return m;
 	}
 
-	vec4<T> operator*(const vec4<T> &v) const {
-		return vec4<T>(data[0].dot(v), data[1].dot(v), data[2].dot(v), data[3].dot(v));
+	vec<T,4> operator*(const vec<T,4> &v) const {
+		return vec<T,4>(data[0].dot(v), data[1].dot(v), data[2].dot(v), data[3].dot(v));
 	}
 
 	mat4<T> operator*(const mat4<T> &m) const {
@@ -116,11 +116,11 @@ template <class T> struct mat4 {
 		return r;
 	}
 
-	vec4<T>& operator[](const int &i) {
+	vec<T,4>& operator[](const int &i) {
 		return data[i];
 	}
 
-	const vec4<T>& operator[](const int &i) const {
+	const vec<T,4>& operator[](const int &i) const {
 		return data[i];
 	}
 
@@ -137,7 +137,7 @@ template <class T> struct mat4 {
 
 private:
 	union {
-		vec4<T> data[4];
+		vec<T,4> data[4];
 		T elements[16];
 	};
 };
