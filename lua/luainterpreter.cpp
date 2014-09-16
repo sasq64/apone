@@ -213,7 +213,7 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 
 	lua.registerFunction<int, string, int, float>("testFunc", [=](string s, int x, float f) -> int {
 		LOGD("Got '%s' and %d", s, x);
-		return 3;
+		return 1 + x + f;
 	});
 
 	//lua.registerFunction<void, int>("testVFunc", [=](string s, int x) {
@@ -223,14 +223,14 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 	const string luaCode = R"(
 	function test (a, b)
 		testVFunc('arne', 199)
-		x = testFunc('hello', 13)
-		return a*2+b+x
+		x = testFunc('hello', 2, 3)
+		return x * 2 + a + b
 	end
 	)";
 
 	lua.load(luaCode);
 	auto res = lua.call<double>("test", 4, 2);
-	REQUIRE(res == 13);
+	REQUIRE(res == 18);
 
 }
 

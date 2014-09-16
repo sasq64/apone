@@ -8,11 +8,11 @@ int bindArg(Statement &s, int64_t arg)  {
 }
 
 int bindArg(Statement &s, const char *arg)  {
-	return sqlite3_bind_text(s.stmt, s.pos++, arg, strlen(arg), SQLITE_TRANSIENT);
+	return sqlite3_bind_text(s.stmt, s.pos++, arg, (int)strlen(arg), SQLITE_TRANSIENT);
 }
 
 int bindArg(Statement &s, const std::string &arg)  {
-	return sqlite3_bind_text(s.stmt, s.pos++, arg.c_str(), arg.length(), SQLITE_TRANSIENT);
+	return sqlite3_bind_text(s.stmt, s.pos++, arg.c_str(), (int)arg.length(), SQLITE_TRANSIENT);
 }
 
 #define START() \
@@ -31,7 +31,7 @@ template <> uint64_t stepper(sqlite3_stmt *s, int pos) {
 	START();
 	if(t != SQLITE_INTEGER)
 		throw std::invalid_argument("Not an integer");
-	return sqlite3_column_int(s, pos);
+	return (uint64_t)sqlite3_column_int(s, pos);
 }
 
 template <> double stepper(sqlite3_stmt *s, int pos) {

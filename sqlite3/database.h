@@ -41,7 +41,7 @@ template <typename T> int bindArg(Statement &s, const std::vector<T> &arg)  {
 }
 
 // Default stepper signals error
-template <typename T> T stepper(sqlite3_stmt *s, int pos) {
+template <typename T> T stepper(sqlite3_stmt *, int) {
 	throw db_exception("Uknown target type");
 }
 

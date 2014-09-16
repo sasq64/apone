@@ -13,8 +13,8 @@
 #include <memory>
 #include <exception>
 
-#include <netlink/socket.h>
-#include <netlink/socket_group.h>
+#include <netlink/netlink/socket.h>
+#include <netlink/netlink/socket_group.h>
 
 namespace bbs {
 

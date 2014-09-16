@@ -2,6 +2,7 @@
 #define ARCHIVE_H
 
 #include <coreutils/utils.h>
+#include <coreutils/file.h>
 
 using namespace std;
 
