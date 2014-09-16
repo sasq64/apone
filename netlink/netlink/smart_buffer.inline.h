@@ -21,7 +21,7 @@
 
 
 #ifdef DOXYGEN
-    #include <netlink/smart_buffer.h>
+    #include "smart_buffer.h"
     NL_NAMESPACE
 #endif
 

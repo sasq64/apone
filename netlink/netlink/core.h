@@ -28,7 +28,7 @@
 #ifndef __NL_CORE
 #define __NL_CORE
 
-#include "netlink/config.h"
+#include "config.h"
 
 #define NL_NAMESPACE_NAME NL
 
@@ -121,8 +121,8 @@ enum SocketType {
 NL_NAMESPACE_END
 
 
-#include "netlink/exception.h"
-#include "netlink/release_manager.h"
-#include "netlink/util.h"
+#include "exception.h"
+#include "release_manager.h"
+#include "util.h"
 
 #endif

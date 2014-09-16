@@ -22,7 +22,7 @@
 #ifndef __NL_UTIL
 #define __NL_UTIL
 
-#include <netlink/core.h>
+#include "core.h"
 
 NL_NAMESPACE
 
@@ -33,6 +33,6 @@ NL_NAMESPACE
 
 NL_NAMESPACE_END
 
-#include <netlink/util.inline.h>
+#include "util.inline.h"
 
 #endif

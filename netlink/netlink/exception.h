@@ -22,7 +22,7 @@
 #ifndef __NL_EXCEPTION
 #define __NL_EXCEPTION
 
-#include "netlink/core.h"
+#include "core.h"
 
 NL_NAMESPACE
 
@@ -38,7 +38,7 @@ class Exception {
     public:
 
         enum CODE {
-            #include "netlink/exception.code.inc"
+            #include "exception.code.inc"
         };
 
     private:

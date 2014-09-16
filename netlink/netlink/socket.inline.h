@@ -20,7 +20,7 @@
 */
 
 #ifdef DOXYGEN
-    #include <netlink/socket.h>
+    #include "socket.h"
     NL_NAMESPACE
 #endif
 

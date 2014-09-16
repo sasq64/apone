@@ -22,7 +22,7 @@
 #ifndef __NL_SOCKET
 #define __NL_SOCKET
 
-#include "netlink/core.h"
+#include "core.h"
 
 
 NL_NAMESPACE
@@ -98,7 +98,7 @@ class Socket {
 
 };
 
-#include <netlink/socket.inline.h>
+#include "socket.inline.h"
 
 NL_NAMESPACE_END
 

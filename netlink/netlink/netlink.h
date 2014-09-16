@@ -86,8 +86,8 @@
 
 
 
-#include <netlink/socket.h>
-#include <netlink/socket_group.h>
+#include "socket.h"
+#include "socket_group.h"
 
 
 #endif

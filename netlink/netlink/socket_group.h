@@ -22,8 +22,8 @@
 #ifndef __NL_SOCKET_GROUP
 #define __NL_SOCKET_GROUP
 
-#include <netlink/core.h>
-#include <netlink/socket.h>
+#include "core.h"
+#include "socket.h"
 
 NL_NAMESPACE
 
@@ -89,7 +89,7 @@ class SocketGroup {
         bool listen(unsigned milisec=0, void* reference = NULL);
 };
 
-#include <netlink/socket_group.inline.h>
+#include "socket_group.inline.h"
 
 NL_NAMESPACE_END
 

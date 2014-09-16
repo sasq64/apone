@@ -25,9 +25,9 @@
 
 #include <stdlib.h>
 
-#include <netlink/core.h>
-#include <netlink/util.h>
-#include <netlink/socket.h>
+#include "core.h"
+#include "util.h"
+#include "socket.h"
 
 
 NL_NAMESPACE
@@ -67,7 +67,7 @@ class SmartBuffer {
         void clear();
 };
 
-#include <netlink/smart_buffer.inline.h>
+#include "smart_buffer.inline.h"
 
 NL_NAMESPACE_END
 

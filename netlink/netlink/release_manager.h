@@ -22,7 +22,7 @@
 #ifndef __NL_RM
 #define __NL_RM
 
-#include <netlink/core.h>
+#include "core.h"
 
 #include <vector>
 
@@ -58,7 +58,7 @@ class ReleaseManager {
 };
 
 
-#include "netlink/release_manager.inline.h"
+#include "release_manager.inline.h"
 
 NL_NAMESPACE_END
 
