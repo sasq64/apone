@@ -66,6 +66,13 @@ public:
 		setMeta(args...);
 	}
 
+	template <typename... A> void setMeta(const std::string &what, const char *value, const A& ...args) {
+		metaData[what] = std::string(value);
+		LOGD("Meta %s=%s", what, metaData[what]);
+		changedMeta.push_back(what);
+		setMeta(args...);
+	}
+
 	virtual bool seekTo(int song, int seconds = -1) { printf("NOT IMPLEMENTED\n"); return false; }
 
 	void onMeta(Callback callback) {

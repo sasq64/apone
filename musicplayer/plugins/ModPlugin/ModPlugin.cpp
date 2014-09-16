@@ -113,7 +113,7 @@ bool ModPlugin::canHandle(const std::string &name) {
 
 ChipPlayer *ModPlugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
-	return new ModPlayer {file.getPtr(), file.getSize()};
+	return new ModPlayer {file.getPtr(), (int)file.getSize()};
 };
 
 }

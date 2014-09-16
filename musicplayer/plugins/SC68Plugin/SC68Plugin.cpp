@@ -198,7 +198,7 @@ bool SC68Plugin::canHandle(const std::string &name) {
 
 ChipPlayer *SC68Plugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
-	SC68Player *player = new SC68Player {file.getPtr(), file.getSize(), dataDir};
+	SC68Player *player = new SC68Player {file.getPtr(), (int)file.getSize(), dataDir};
 	if(player->isValid())
 		return player;
 	delete player;

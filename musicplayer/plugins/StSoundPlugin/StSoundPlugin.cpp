@@ -74,7 +74,7 @@ bool StSoundPlugin::canHandle(const std::string &name) {
 
 ChipPlayer *StSoundPlugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
-	return new StSoundPlayer {file.getPtr(), file.getSize()};
+	return new StSoundPlayer {file.getPtr(), (int)file.getSize()};
 };
 
 }

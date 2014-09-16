@@ -104,7 +104,7 @@ bool OpenMPTPlugin::canHandle(const std::string &name) {
 ChipPlayer *OpenMPTPlugin::fromFile(const std::string &fileName) {
 	utils::File file { fileName };
 	try {
-		return new OpenMPTPlayer {file.getPtr(), file.getSize()};
+		return new OpenMPTPlayer {file.getPtr(), (int)file.getSize()};
 	} catch(player_exception &e) {
 		return nullptr;
 	}
