@@ -1,483 +1,217 @@
-#ifndef UTILS_VEC_H
-#define UTILS_VEC_H
+#ifndef COREUTILS_VEC_H
+#define COREUTILS_VEC_H
 
+#include <type_traits>
 #include <initializer_list>
-#include <stdexcept>
-#include <math.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#include "format.h"
 
 namespace utils {
 
-
-typedef unsigned int uint;
-
-template <class T> struct vec2 {
-	// Constructors
-
-	vec2() : x(0), y(0) {}
-	vec2(T x, T y) : x(x), y(y) {}
-	vec2(std::pair<T, T> pair) : x(pair.first), y(pair.second) {}
-	vec2(std::initializer_list<T> &il) {
-		auto it = il.begin();
-		x = *it;
-		++it;
-		y = *it;
-	}
-
-	bool operator==(const vec2 &other) const {
-		return other.x == x && other.y == y;
-	}
-
-	bool operator!=(const vec2 &other) const {
-		return other.x != x || other.y != y;
-	}
-
-	vec2 operator+(const vec2 &v) const {
-		return vec2(x + v.x, y + v.y);
-	}
-
-	vec2 operator+(const T &i) const {
-		return vec2(x + i, y + i);
-	}
-
-	vec2 operator-(const vec2 &v) const {
-		return vec2(x - v.x, y - v.y);
-	}
-
-	vec2 operator-(const T &i) const {
-		return vec2(x - i, y - i);
-	}
-
-	vec2 operator*(const vec2 &v) const {
-		return vec2(x * v.x, y * v.y);
-	}
-
-	vec2 operator/(const vec2 &v) const {
-		return vec2(x / v.x, y / v.y);
-	}
-
-	template <typename A> vec2 operator*(const A &n) const {
-		return vec2(x * n, y * n);
-	}
-
-	T dot(const vec2 &v) const {
-		return x * v.x + y * v.y;
-	}
-
-	//template <typename S> vec2 operator/(const vec2<S> &v) const {
-	//	return vec2(x / v.x, y / v.y);
-	//}
-
-
-	template <typename A> vec2 operator/(const A &n) const {
-		return vec2(x / n, y / n);
-	}
-
-	vec2 operator+=(const vec2 &v) {
-		x += v.x;
-		y += v.y;
-		return *this;
-	}
-
-	vec2 operator+=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		x += xa;
-		y += ya;
-		return *this;
-	}
-
-	vec2 operator-=(const vec2 &v) {
-		x -= v.x;
-		y -= v.y;
-		return *this;
-	}
-
-	vec2 operator-=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		x -= xa;
-		y -= ya;
-		return *this;
-	}
-
-	template <typename U> operator vec2<U>() {
-		return vec2<U>(static_cast<U>(x), static_cast<U>(y));
-	};
-
-	T operator[](const int &i) const {
-		return data[i];
-		//throw std::out_of_range("Only 0 or 1 are valid indexes");
-	}
-
-	T& operator[](const int &i) {
-		return data[i];
-		//throw std::out_of_range("Only 0 or 1 are valid indexes");
-	}
-
-	T area() {
-		return x * y;
-	}
-
-	T angle() {
-		T l = sqrt(x * x + y * y);
-		T a = acos(x / l);
-		if(y < 0) a = (M_PI - a) + M_PI;
-			return a;
-	}
-
-	T dist2() {
-		return x * x + y * y;
-	}
-
-	T dist() {
-		return sqrt(x * x + y * y);
-	}
-
-	int size() const { return 2; }
-
-	union
-	{
-		T data[2];
+template <class T, int SIZE> struct vbase {
+	union {
+		T data[SIZE];
 		struct {
 			T x;
 			T y;
-		};
-		struct {
-			T s;
-			T t;
+			T z;
+			T w;
 		};
 	};
 };
 
-typedef vec2<float> vec2f;
-typedef vec2<int> vec2i;
-
-template <typename T> vec2<T> cossin(const vec2<T> &v) {
-	return vec2<T>(cos(v.x), sin(v.y));
-}
-
-template <typename T> vec2<T> sin(const vec2<T> &v) {
-	return vec2<T>(sinf(v.x), sinf(v.y));
-}
-
-
-template <class T> struct vec3 {
-	// Constructors
-
-	vec3() : x(0), y(0), z(0) {}
-	vec3(T x, T y, T z) : x(x), y(y), z(z) {}
-	vec3(std::initializer_list<T> &il) {
-		auto it = il.begin();
-		x = *it;
-		++it;
-		y = *it;
-		++it;
-		z = *it;
-	}
-
-	vec3 operator+(const vec3 &v) const {
-		return vec3(x + v.x, y + v.y, z + v.z);
-	}
-
-	vec3 operator+(const T &i) const {
-		return vec3(x + i, y + i, z + i);
-	}
-
-	vec3 operator-(const vec3 &v) const {
-		return vec3(x - v.x, y - v.y, z - v.z);
-	}
-
-	vec3 operator-(const T &i) const {
-		return vec3(x - i, y - i, z - i);
-	}
-
-	vec3 operator*(const vec3 &v) const {
-		return vec3(x * v.x, y * v.y, z * v.z);
-	}
-
-	template <typename A> vec3 operator*(const A &n) const {
-		return vec3(x * n, y * n, z * n);
-	}
-
-	vec3 operator/(const vec3 &v) const {
-		return vec3(x / v.x, y / v.y, z / v.z);
-	}
-
-	template <typename A> vec3 operator/(const A &n) const {
-		return vec3(x / n, y / n, z / n);
-	}
-
-	vec3 operator+=(const vec3 &v) {
-		x += v.x;
-		y += v.y;
-		z += v.z;
-		return *this;
-	}
-
-	vec3 operator+=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		++it;
-		auto za = *it;
-		x += xa;
-		y += ya;
-		z += za;
-		return *this;
-	}
-
-	vec3 operator-=(const vec3 &v) {
-		x -= v.x;
-		y -= v.y;
-		z -= v.z;
-		return *this;
-	}
-
-	vec3 operator-=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		++it;
-		auto za = *it;
-		x -= xa;
-		y -= ya;
-		z -= za;
-		return *this;
-	}
-
-	T operator[](const int &i) {
-		return data[i];
-		//throw std::out_of_range("Only 0 or 1 are valid indexes");
-	}
-
-
-	T angle() {
-		T l = sqrt(x * x + y * y + z * z);
-		T a = acos(x / l);
-		if(y < 0) a = (M_PI - a) + M_PI;
-			return a;
-	}
-
-	T dist2() {
-		return x * x + y * y + z * z;
-	}
-
-	T dist() {
-		return sqrt(x * x + y * y + z * z);
-	}
-
-	union
-	{
-		float data[3];
-		struct {
-			float x;
-			float y;
-			float z;
-		};
-		struct {
-			float s;
-			float t;
-			float u;
-		};
-		struct {
-			float r;
-			float g;
-			float b;
-		};
+// Pointless ?
+template <class T> struct vbase<T, 1> {
+	union {
+		T data[1];
 	};
 };
 
+template <class T> struct vbase<T, 2> {
+	vbase() {}
+	vbase(const T& x, const T& y) : data {x,y} {}
+	union {
+		T data[2];
+		struct { T x, y; };
+	};
 
-template <typename T> vec3<T> sin(const vec3<T> &v) {
-	return vec3<T>(sinf(v.x), sinf(v.y), sin(v.z));
-}
+	vbase operator*(const vbase &v) const {
+		return vbase(v.x + x, v.y + y);
+	}
+};
 
-typedef vec3<float> vec3f;
-typedef vec3<int> vec3i;
+template <class T> struct vbase<T, 3> {
+	vbase() {}
+	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
+	union {
+		T data[3];
+		struct { T x, y, z; };
+	};
+};
 
-template <class T> struct vec4 {
-	// Constructors
+template <class T> struct vbase<T, 4> {
+	vbase() {}
+	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
+	union {
+		T data[4];
+		struct { T x, y, z, w; };
+	};
+};
 
-	vec4() : x(0), y(0), z(0), w(0) {}
-	vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
-	vec4(std::initializer_list<T> &il) {
-		auto it = il.begin();
-		x = *it;
-		++it;
-		y = *it;
-		++it;
-		z = *it;
-		++it;
-		w = *it;
+template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
+
+	template <typename C, typename R> using is_compound = typename std::enable_if<std::is_compound<C>::value,R>::type;
+	template <typename C, typename R> using is_arithmetic = typename std::enable_if<std::is_arithmetic<C>::value,R>::type;
+	template <typename C, typename R> using has_index = typename std::conditional<false, decltype(std::declval<C>()[0]), R>::type;
+
+	vec() {}
+
+	vec(const T &x) : vbase<T,SIZE>(x) {}
+	vec(const T &x, const T &y) : vbase<T,SIZE>(x, y) {}
+	vec(const T &x, const T &y, const T &z) : vbase<T,SIZE>(x, y, z) {}
+	//vec(const T &t) : data[0](t) {}
+
+	vec(const std::initializer_list<T> &il) {
+		T *ptr = &vbase<T,SIZE>::data[0];
+		for(const T& t : il)
+			*ptr++ = t;
 	}
 
-	vec4 operator+(const vec4 &v) const {
-		return vec4(x + v.x, y + v.y, z + v.z, w + v.w);
+	bool operator==(const vec &v) const {
+		for(int i=0; i<SIZE; i++)
+			if(v[i] != vbase<T,SIZE>::data[i]) return false;
+		return true;
 	}
 
-	vec4 operator+(const T &i) const {
-		return vec4(x + i, y + i, z + i, w + i);
+	template <typename VEC> has_index<VEC, vec> operator+(const VEC &v) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] + v[i];
+		return r;
 	}
 
-	vec4 operator-(const vec4 &v) const {
-		return vec4(x - v.x, y - v.y, z - v.z, w - v.w);
+	template <typename I> is_arithmetic<I,vec> operator+(const I &t) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] + t;
+		return r;
 	}
 
-	vec4 operator-(const T &i) const {
-		return vec4(x - i, y - i, z - i, w - i);
+	template <typename VEC> has_index<VEC, vec> operator*(const VEC &v) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] * v[i];
+		return r;
 	}
 
-	vec4 operator*(const vec4 &v) const {
-		return vec4(x * v.x, y * v.y, z * v.z, w * v.w);
+	template <typename I> is_arithmetic<I,vec> operator*(const I &t) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] * t;
+		return r;
 	}
 
-	T dot(const vec4 &v) const {
-		return x * v.x + y * v.y + z * v.z + w * v.w;
+	template <typename VEC> has_index<VEC, vec> operator-(const VEC &v) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] - v[i];
+		return r;
 	}
 
-	template <typename A> vec4 operator*(const A &n) const {
-		return vec4(x * n, y * n, z * n, w * n);
+	template <typename I> is_arithmetic<I,vec> operator-(const I &t) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] - t;
+		return r;
 	}
 
-	vec4 operator/(const vec4 &v) const {
-		return vec4(x / v.x, y / v.y, z / v.z, w / v.w);
+	template <typename VEC> has_index<VEC, vec> operator/(const VEC &v) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] / v[i];
+		return r;
 	}
 
-	template <typename A> vec4 operator/(const A &n) const {
-		return vec4(x / n, y / n, z / n, w / n);
-	}
-
-	vec4 operator+=(const vec4 &v) {
-		x += v.x;
-		y += v.y;
-		z += v.z;
-		w += v.w;
-		return *this;
-	}
-
-	vec4 operator+=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		++it;
-		auto za = *it;
-		++it;
-		auto wa = *it;
-		x += xa;
-		y += ya;
-		z += za;
-		w += wa;
-		return *this;
-	}
-
-	vec4 operator-=(const vec4 &v) {
-		x -= v.x;
-		y -= v.y;
-		z -= v.z;
-		w -= v.w;
-		return *this;
-	}
-
-	vec4 operator-=(std::initializer_list<T> il) {
-		auto it = il.begin();
-		auto xa = *it;
-		++it;
-		auto ya = *it;
-		++it;
-		auto za = *it;
-		++it;
-		auto wa = *it;
-		x -= xa;
-		y -= ya;
-		z -= za;
-		w -= wa;
-		return *this;
-	}
-
-	T& operator[](const int &i) {
-		return data[i];
-		//throw std::out_of_range("Only 0 or 1 are valid indexes");
+	template <typename I> is_arithmetic<I,vec> operator/(const I &t) const {
+		vec r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = vbase<T,SIZE>::data[i] / t;
+		return r;
 	}
 
 	const T& operator[](const int &i) const {
-		return data[i];
-		//throw std::out_of_range("Only 0 or 1 are valid indexes");
+		return vbase<T,SIZE>::data[i];
 	}
-
-	std::string to_string() const {
-		return format<T>("[%.2f %.2f %.2f %.2f]", x, y, z, w); 
-	}
-
-	union
-	{
-		float data[4];
-		struct {
-			float x;  
-			float y;  
-			float z;
-			float w;
-		};
-		struct {
-			float s;  
-			float t;  
-			float u;
-			float q;
-		};
-		struct {
-			float r;  
-			float g;  
-			float b;
-			float a;
-		};
-	};
-};
-
-typedef vec4<float> vec4f;
-typedef vec4<int> vec4i;
-
-//template <typename U, typename V> vec2<U> make_vec(U x, V y) {
-//	return vec2<U>(x, y);
-//}
-
-template <typename T = float> struct rect {
-
-	rect() {}
-	rect(T x0, T y0, T x1, T y1) : x0(x0), y0(y0), x1(x1), y1(y1) {}
 
 	T& operator[](const int &i) {
-		return data[i];
+		return vbase<T,SIZE>::data[i];
 	}
 
-	union {
-		T data[4];
-		struct {
-			vec2<T> p0;
-			vec2<T> p1;
-		};
-		struct {
-			T x0;
-			T y0;
-			T x1;
-			T y1;
-		};
-	};
+	T dist2() {
+		T rc;
+		for(int i=0; i<SIZE; i++)
+			rc += vbase<T,SIZE>::data[i] * vbase<T,SIZE>::data[i];
+		return rc;
+	}
+
+	T dist() {
+		T rc;
+		for(int i=0; i<SIZE; i++)
+			rc += vbase<T,SIZE>::data[i] * vbase<T,SIZE>::data[i];
+		return sqrt(rc);
+	}
+
+	template <typename VEC> has_index<VEC, T> dot(const VEC &v) const {
+		T r = 0;
+		for(int i=0; i<SIZE; i++)
+			r += (vbase<T,SIZE>::data[i] * v[i]);
+		return r;
+	}
 };
 
-typedef rect<float> rectf;
-typedef rect<int> recti;
+typedef vec<float, 2> vec2f;
+typedef vec<float, 3> vec3f;
+typedef vec<float, 4> vec4f;
+
+typedef vec<int, 2> vec2i;
+typedef vec<int, 3> vec3i;
+typedef vec<int, 4> vec4i;
+
+/*
+template <class T, int SIZE> struct mat {
+
+	mat() {
+		for(int i=0; i<SIZE*SIZE; i++)
+			data[i/SIZE][i%SIZE] = i%(SIZE+1) ? 0.0 : 1.0;
+	}
+
+	vec<T, SIZE> operator*(const vec<T, SIZE> &v) const {
+		vec<T, SIZE> r;
+		for(int i=0; i<SIZE; i++)
+			r[i] = data[i].dot(v);
+		return r;
+	}
+
+	std::string to_string() {
+		std::string s;
+		for(int i=0; i<SIZE; i++) {
+			for(int j=0; j<SIZE; j++) {
+				s += std::to_string(data[i][j]);
+				s += " ";
+			}
+			s += "\n";
+		}
+
+			return s;
+	}
+
+	vec<T, SIZE> data[SIZE];
+};
+*/
+
+
+template <class T, class... S> vec<T, sizeof...(S)+1> make_vec(const T& a0, const S& ... args) {
+	return vec<T, sizeof...(S)+1>({a0, args...});
+};
+
 
 }
-
-#endif // UTILS_VEC_H
+#endif // COREUTILS_VEC_H
