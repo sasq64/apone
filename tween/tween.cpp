@@ -2,7 +2,7 @@
 
 namespace tween {
 
-std::vector<std::shared_ptr<Tween>> Tween::allTweens;
+std::vector<std::shared_ptr<TweenImpl>> Tween::allTweens;
 double Tween::currentTime = 0;
 std::mutex Tween::tweenMutex;
 
@@ -50,18 +50,28 @@ double Tween::easeInOutBack_fn(double t) {
 	return 1.0/2*((postFix)*t*((s+1)*t + s) + 2);
 }
 
+TweenImpl::~TweenImpl() {
+	if(!isTweening) {
+		Tween::addTween(*this);
+	}
+}
+
 Tween Tween::make() {
-	Tween::allTweens.push_back(std::make_shared<Tween>());
-	return *(Tween::allTweens.back());
+	return Tween(std::make_shared<TweenImpl>(currentTime, smoothStep_fn, false));
+}
+
+void Tween::addTween(const TweenImpl& ti) {
+	std::lock_guard<std::mutex> guard(tweenMutex);
+	allTweens.push_back(std::make_shared<TweenImpl>(ti));
+	allTweens.back()->isTweening = true;
 }
 
 void Tween::cancel() {
+	std::lock_guard<std::mutex> guard(tweenMutex);
 
 	auto it = Tween::allTweens.begin();
-
 	while(it != Tween::allTweens.end()) {
-		if((*it)->impl == impl) {
-			LOGD("Tween canceled");
+		if(*it == impl) {
 			Tween::allTweens.erase(it);
 			break;
 		}
@@ -69,34 +79,35 @@ void Tween::cancel() {
 	}
 }
 
-bool Tween::step() {
+bool TweenImpl::step() {
 		size_t ended = 0;
-		for(auto &a : impl->args) {
-			float t = (float)((currentTime - impl->startTime - a->delay) / impl->totalTime);
+		Tween tween;
+		for(auto &a : args) {
+			float t = (float)((Tween::currentTime - startTime - a->delay) / totalTime);
 			if(t < 0.0)
 				continue;
 			if(t > 1.0) {
-				if(impl->do_rep)
+				if(do_rep)
 					t -= 1.0;
-				else if(impl->backto) {
+				else if(backto) {
 					ended++;
-					a->set(0.0, *this);
+					a->set(0.0, tween);
 				} else {
 					ended++;
-					a->set(1.0, *this);
+					a->set(1.0, tween);
 					continue;
 				}
 			}
-			a->set(impl->tween_func(t), *this);
+			a->set(tween_func(t), tween);
 		}
-		return ended < impl->args.size();
+		return ended < args.size();
 	}
 
-void Tween::updateTweens(double t) {
-
-	static std::vector<std::shared_ptr<Tween>> doneTweens;
+int Tween::updateTweens(double t) {
 
 	std::lock_guard<std::mutex> guard(tweenMutex);
+
+	static std::vector<std::shared_ptr<TweenImpl>> doneTweens;
 
 	currentTime = t;
 	auto it = allTweens.begin();
@@ -110,9 +121,18 @@ void Tween::updateTweens(double t) {
 	}
 
 	for(auto &dt : doneTweens) {
-		dt->impl->on_complete_cb.call(*dt, 1.0);
+		Tween tw;
+		dt->on_complete_cb.call(tw, 1.0);
 	}
 	doneTweens.clear();
+
+	return (int)allTweens.size();
+}
+
+Tween::Tween(int dummy) : impl(std::make_shared<TweenImpl>(currentTime, smoothStep_fn)) {
+}
+
+Tween::Tween(std::shared_ptr<TweenImpl> i) : impl(i) {
 }
 
 void Tween::finish() {
@@ -172,13 +192,29 @@ Tween &Tween::repeating() {
 	impl->do_rep = true;
 	return *this;
 }
+
+void Tween::start() {
+	if(!impl->isTweening) {
+		impl->startTime = currentTime;
+		std::lock_guard<std::mutex> guard(tweenMutex);
+		allTweens.push_back(impl);
+		allTweens.back()->isTweening = true;
+	}
+}
+
 } // namespace tween
 
 #if (defined UNIT_TEST || defined TWEEN_UNIT_TEST)
 
 #include "catch.hpp"
+
 #include <coreutils/utils.h>
 #include <stdio.h>
+#include <mutex>
+#include <future>
+#include <atomic>
+
+
 TEST_CASE("tween::basic", "Basic tween") {
 
 	using tween::Tween;
@@ -194,13 +230,20 @@ TEST_CASE("tween::basic", "Basic tween") {
 		return 0;
 	};
 
-	Tween::make().linear().to(demo.score, 10).onUpdate(showScore).from(demo.energy, 250).onUpdate(showFood).seconds(2);
-	//.onUpdate(showScore);
+	Tween myt = Tween::make().linear().to(demo.score, 10).onUpdate(showScore).from(demo.energy, 250).onUpdate(showFood).seconds(2);
 
 	double t = 0;
 	for(int i=0; i<10; ++i) {
 		Tween::updateTweens(t += 0.1);
 	}
+	REQUIRE(demo.score == 0);
+	REQUIRE(demo.energy == 250);
+
+	myt.start();	
+	for(int i=0; i<10; ++i) {
+		Tween::updateTweens(t += 0.1);
+	}
+
 	REQUIRE(demo.score == 5);
 	REQUIRE(demo.energy == 125);
 	for(int i=0; i<50; ++i)
@@ -210,7 +253,7 @@ TEST_CASE("tween::basic", "Basic tween") {
 	REQUIRE(demo.energy == 0);
 
 	std::vector<float> v = { 0, 1, 10, 100 };
-	Tween h = Tween::make().to(v, {4,4,4,4}).seconds(4.0);
+	Tween::make().to(v, {4,4,4,4}).seconds(4.0);
 	for(int i=0; i<10; ++i)
 		Tween::updateTweens(t += 0.1);
 	REQUIRE(v[0] == 0.625);
@@ -224,7 +267,46 @@ TEST_CASE("tween::basic", "Basic tween") {
 	for(int i=0; i<20; ++i)
 		Tween::updateTweens(t += 0.1);
 
+	std::mutex m;
 
+	std::atomic<bool> run;
+	std::atomic<int> total;
+	std::atomic<int> done;
+	done = 0;
+	run = true;
+	total = 0;
+
+	REQUIRE(Tween::updateTweens(t) == 0);
+
+	auto l = [&run, &t]() {
+		auto t0 = utils::getms() - t * 1000;
+		while(run) {
+			auto t1 = utils::getms();
+			float t = (double)(t1-t0) / 1000.0;
+			Tween::updateTweens(t);
+			utils::sleepms(2);
+		}
+	};
+	std::thread tweenThread(l);
+
+	const int ITERATIONS = 500;
+	const int TOTAL = (2+3+4+5)*ITERATIONS;
+
+	for(int i=0; i<ITERATIONS; i++) {
+		Tween::make().fromTo(1,5).onUpdate([&](int x) { total += x; }).onComplete([&]() { done++; }).seconds(1);
+		utils::sleepms(i % 10);
+	}
+
+	LOGD("WAITING FOR TWEENS");
+	utils::sleepms(1500);
+	run = false;
+	LOGD("JOINING");
+	tweenThread.join();
+	std::lock_guard<std::mutex> guard(m);
+	int tot = total;
+	int dn = done;
+	REQUIRE(tot == TOTAL);
+	REQUIRE(dn == ITERATIONS);
 }
 
 #endif

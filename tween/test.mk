@@ -6,8 +6,8 @@ include $(TWEEN_DIR)../config.mk
 
 include $(TWEEN_DIR)module.mk
 
-CFLAGS += -DTWEEN_UNIT_TEST
-
+CFLAGS += -DTWEEN_UNIT_TEST -pthread -g -O3
+LDFLAGS += -pthread
 
 ifeq ($(TARGET),)
 TARGET := tweentest

@@ -13,22 +13,11 @@
 
 namespace tween {
 
-/*
-struct BaseRef {};
-template <typename OBJ> struct Ref : public BaseRef {
-	Ref(std::shared_ptr<OBJ> o) : object(o) {}
-	std::shared_ptr<OBJ> object;
-};
-*/
 class Tween;
 
 struct TweenAttrBase {
-
-	TweenAttrBase() {}
-
 	virtual void set(double v, Tween& t) = 0;
 	virtual bool compare(void *p) { return false; }
-
 	double delay = 0.0;
 };
 
@@ -68,7 +57,9 @@ template <typename T> class TweenT;
 
 struct TweenImpl {
 
-	TweenImpl(double t, std::function<double(double)> f) : startTime(t), tween_func(f) {}
+	TweenImpl(double t, std::function<double(double)> f, bool it = true) : startTime(t), tween_func(f), isTweening(it) {}
+
+	~TweenImpl();
 
 	double startTime;
 	double totalTime;
@@ -81,17 +72,24 @@ struct TweenImpl {
 	std::function<double(double)> tween_func;
 	utils::CallbackCaller<Tween&, double> on_complete_cb;
 	std::vector<std::shared_ptr<void>> refs;
+
+	bool isTweening = true;
+
+	bool step();
+
 };
 
 class Tween {
 protected:
-	Tween(std::shared_ptr<TweenImpl> i) : impl(i) {}
+	Tween(std::shared_ptr<TweenImpl> i);
 public:
-	Tween(int dummy = 0) : impl(std::make_shared<TweenImpl>(currentTime, smoothStep_fn)) {}
+	Tween(int dummy = 0);
 	//Tween& operator=(const Tween &other) = delete;
 	//Tween(const Tween& other) = delete;
 
 	static Tween make();
+
+	void start();
 
 	Tween& seconds(float s);
 	Tween& speed(float s);
@@ -113,13 +111,14 @@ public:
 	}
 
 	template <typename T, typename U> TweenT<T> to(T &target, U value, int cycles = 1) {
+		std::lock_guard<std::mutex> guard(tweenMutex);
 		auto *targetp = &target;
 		for(auto &t : allTweens) {
-			auto it = t->impl->args.begin();
-			while(it != t->impl->args.end()) {
+			auto it = t->args.begin();
+			while(it != t->args.end()) {
 				if((*it)->compare((void*)targetp)) {
-					// Already tweening
-					it = t->impl->args.erase(it);
+					// Already tweening this value
+					it = t->args.erase(it);
 				} else
 					it++;
 			}
@@ -167,28 +166,26 @@ public:
 	void cancel();
 	void finish();
 
-	static void updateTweens(double t);
+	static int updateTweens(double t);
+	static void addTween(const TweenImpl& ti);
 
 protected:
 
-	bool step();
-
 	static double linear_fn(double t);
 	static double smoothStep_fn(double t);
-	static double easeInSine_fn (double t);
+	static double easeInSine_fn(double t);
 	static double easeOutSine_fn(double t);
 	static double easeInOutSine_fn(double t);
-	static double easeInBack_fn (double t);
+	static double easeInBack_fn(double t);
 	static double easeOutBack_fn(double t);
 	static double easeInOutBack_fn(double t);
 	static double sine_fn(double t);
 
 	std::shared_ptr<TweenImpl> impl;
 
-	static double currentTime;
-
 public:
-	static std::vector<std::shared_ptr<Tween>> allTweens;
+	static double currentTime;
+	static std::vector<std::shared_ptr<TweenImpl>> allTweens;
 	static std::mutex tweenMutex;
 };
 
