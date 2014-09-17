@@ -181,42 +181,49 @@ Tween &Tween::repeating() {
 #include <stdio.h>
 TEST_CASE("tween::basic", "Basic tween") {
 
+	using tween::Tween;
+
 	struct { int score = 0; short energy = 0; } demo;
 
 	auto showScore = [&](int score) {
 		fprintf(stderr, "SCORE:%d\n", score);
 	};
 
-	auto showFood = [](int food, tween::Tween t, double v) -> int {
+	auto showFood = [](int food, Tween t, double v) -> int {
 		fprintf(stderr, "FOOD:%d (%f)\n", food, v);
 		return 0;
 	};
 
-	tween::Tween::make().linear().to(demo.score, 10).onUpdate(showScore).from(demo.energy, 250).onUpdate(showFood).seconds(2);
+	Tween::make().linear().to(demo.score, 10).onUpdate(showScore).from(demo.energy, 250).onUpdate(showFood).seconds(2);
 	//.onUpdate(showScore);
 
 	double t = 0;
 	for(int i=0; i<10; ++i) {
-		tween::Tween::updateTweens(t += 0.1);
+		Tween::updateTweens(t += 0.1);
 	}
 	REQUIRE(demo.score == 5);
 	REQUIRE(demo.energy == 125);
 	for(int i=0; i<50; ++i)
-		tween::Tween::updateTweens(t += 0.1);
+		Tween::updateTweens(t += 0.1);
 
 	REQUIRE(demo.score == 10);
 	REQUIRE(demo.energy == 0);
 
 	std::vector<float> v = { 0, 1, 10, 100 };
-	tween::Tween h = tween::Tween::make().to(v, {4,4,4,4}).seconds(4.0);
+	Tween h = Tween::make().to(v, {4,4,4,4}).seconds(4.0);
 	for(int i=0; i<10; ++i)
-		tween::Tween::updateTweens(t += 0.1);
+		Tween::updateTweens(t += 0.1);
 	REQUIRE(v[0] == 0.625);
 	REQUIRE(v[3] == 85);
 	for(int i=0; i<30; ++i)
-		tween::Tween::updateTweens(t += 0.1);
+		Tween::updateTweens(t += 0.1);
 	REQUIRE(v[1] == 4);
 	REQUIRE(v[2] == 4);
+
+	Tween::make().fromTo(10,20).onUpdate([](int x) { LOGD("%d", x); }).seconds(1);
+	for(int i=0; i<20; ++i)
+		Tween::updateTweens(t += 0.1);
+
 
 }
 

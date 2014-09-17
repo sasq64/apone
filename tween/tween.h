@@ -13,12 +13,13 @@
 
 namespace tween {
 
+/*
 struct BaseRef {};
 template <typename OBJ> struct Ref : public BaseRef {
 	Ref(std::shared_ptr<OBJ> o) : object(o) {}
 	std::shared_ptr<OBJ> object;
 };
-
+*/
 class Tween;
 
 struct TweenAttrBase {
@@ -79,6 +80,7 @@ struct TweenImpl {
 	std::vector<std::shared_ptr<TweenAttrBase>> args;
 	std::function<double(double)> tween_func;
 	utils::CallbackCaller<Tween&, double> on_complete_cb;
+	std::vector<std::shared_ptr<void>> refs;
 };
 
 class Tween {
@@ -143,15 +145,15 @@ public:
 	}
 
 	template <typename OBJ> void retain(std::shared_ptr<OBJ> obj) {
-		refs.push_back(std::make_shared<Ref<OBJ>>(obj));
+		impl->refs.push_back(std::shared_ptr<void>(obj));
 	}
 
-	template <typename T, typename U> Tween& fromTo(T &target, U v0, U v1, int cycles = 1) {
+	template <typename T, typename U> TweenT<T> fromTo(T &target, U v0, U v1, int cycles = 1) {
 		*target = static_cast<T>(v0);
 		return to(target, v1);
 	}
 
-	template <typename T, typename U> Tween& fromTo(T v0, U v1, int cycles = 1) {
+	template <typename T, typename U> TweenT<T> fromTo(T v0, U v1, int cycles = 1) {
 		auto p = std::make_shared<T>(v0);
 		retain(p);
 		return to(*(p.get()), v1);
@@ -184,8 +186,6 @@ protected:
 	std::shared_ptr<TweenImpl> impl;
 
 	static double currentTime;
-
-	std::vector<std::shared_ptr<BaseRef>> refs;
 
 public:
 	static std::vector<std::shared_ptr<Tween>> allTweens;

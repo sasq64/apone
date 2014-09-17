@@ -3,15 +3,15 @@
 
 
 ```c++
-	make_tween().to(position, vec2(5,5)).to(alpha, 1.0).seconds(1.5).on_complete([=]() {
+	Tween::make().to(position, vec2(5,5)).to(alpha, 1.0).seconds(1.5).onComplete([=]() {
 		removeObject();
 	});
 ```
 
 ```c++
-Tween& make_tween()
+Tween make_tween()
 ```
-Creates a tween object and returns a reference to it.
+Creates a tween object.
 
 ### Tween Member functions
 

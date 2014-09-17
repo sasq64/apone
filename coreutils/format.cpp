@@ -2,11 +2,6 @@
 
 #include "format.h"
 
-//#ifdef WIN32
-//#include <windows.h>
-//#endif
-//#include <unistd.h>
-//#include <cstring>
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
@@ -24,39 +19,32 @@ void format_stream(std::stringstream &ss, std::string &fmt, const char arg) {
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
 }
+
 void format_stream(std::stringstream &ss, std::string &fmt, const unsigned char arg) {
 	char letter;
 	if((letter = parse_format(ss, fmt))) {
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 	}
 }
+
 void format_stream(std::stringstream &ss, std::string &fmt, const signed char arg) {
 	char letter;
 	if((letter = parse_format(ss, fmt))) {
 		if(letter == 'd' || letter == 'x')
 			ss << (int)(arg&0xff);
 		else {
-			//printf("Printing char! %02x\n", (int)arg);
 			ss << arg;
 		}
 		}
 }
-
-/*void format_stream(std::stringstream &ss, std::string &fmt, const std::string &arg) {
-	if(parse_format(ss, fmt)) {
-		ss << arg;
-	}
-}*/
 
 void format_stream(stringstream &ss, string &fmt, const vector<int8_t> &bytes) {
 	if(parse_format(ss, fmt)) {
@@ -88,34 +76,6 @@ void format_stream(std::stringstream &ss, std::string &fmt) {
 	printf("Why are we here '%s'\n", fmt.c_str());
 	ss << fmt;
 }
-
-/*
-void format_stream(stringstream &ss, string &fmt, const slice<vector<int8_t>::const_iterator> &bytes) {
-	if(parse_format(ss, fmt)) {
-		bool first = true;
-		int w = ss.width();
-		for(auto b : bytes) {
-			if(!first) ss << " ";
-			ss.width(w);
-			ss << (b & 0xff);
-			first = false;
-		}
-	}
-}
-
-void format_stream(stringstream &ss, string &fmt, const slice<vector<uint8_t>::const_iterator> &bytes) {
-	if(parse_format(ss, fmt)) {
-		bool first = true;
-		int w = ss.width();
-		for(auto b : bytes) {
-			if(!first) ss << " ";
-			ss.width(w);
-			ss << (b & 0xff);
-			first = false;
-		}
-	}
-}
-*/
 
 char parse_format(stringstream &ss, string &fmt) {
 

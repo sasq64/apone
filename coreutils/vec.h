@@ -10,10 +10,7 @@ template <class T, int SIZE> struct vbase {
 	union {
 		T data[SIZE];
 		struct {
-			T x;
-			T y;
-			T z;
-			T w;
+			T x, y, z, w;
 		};
 	};
 };
@@ -79,6 +76,10 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 		for(int i=0; i<SIZE; i++)
 			if(v[i] != vbase<T,SIZE>::data[i]) return false;
 		return true;
+	}
+
+	template <typename VEC> has_index<VEC, vec> copy(const VEC &v) {
+
 	}
 
 	template <typename VEC> has_index<VEC, vec> operator+(const VEC &v) const {
