@@ -9,6 +9,14 @@
 
 namespace image {
 
+class packer_exception : public std::exception {
+public:
+	packer_exception(const std::string &msg) : msg(msg) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
+private:
+	std::string msg;
+};
+
 class ImagePacker {
 public:
 	struct Rect {
@@ -23,6 +31,37 @@ public:
 	virtual void remove(const Rect &r) = 0;
 
 	virtual Rect size() = 0;
+};
+
+class SequentialPacker : public ImagePacker {
+public:
+	SequentialPacker(int w, int h) : xpos(0), ypos(0), width(w), height(h) {}
+	bool add(Rect &r) override {
+
+		if(ypos + r.w > height)
+			return false;
+
+		r.x = xpos;
+		r.y = ypos;
+
+		xpos += r.w;
+		if(xpos >= width) {
+			xpos = 0;
+			ypos += r.h;
+		}
+		return true;
+	}
+	void remove(const Rect &r) override {
+		throw packer_exception("remove() not supported in SequentialPacker");
+	}
+
+	Rect size() { return Rect(0,0,width,height); }
+
+private:
+	int xpos;
+	int ypos;
+	int width;
+	int height;
 };
 
 class KDPacker : public ImagePacker {

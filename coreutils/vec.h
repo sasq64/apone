@@ -3,6 +3,8 @@
 
 #include <type_traits>
 #include <initializer_list>
+#include <utility>
+#include <cmath>
 
 namespace utils {
 
@@ -33,6 +35,7 @@ template <class T> struct vbase<T, 2> {
 	vbase operator*(const vbase &v) const {
 		return vbase(v.x + x, v.y + y);
 	}
+
 };
 
 template <class T> struct vbase<T, 3> {
@@ -53,18 +56,20 @@ template <class T> struct vbase<T, 4> {
 	};
 };
 
+template <typename C, typename R> using is_compound = typename std::enable_if<std::is_compound<C>::value,R>::type;
+template <typename C, typename R> using is_arithmetic = typename std::enable_if<std::is_arithmetic<C>::value,R>::type;
+template <typename C, typename R> using has_index = typename std::conditional<false, decltype(std::declval<C>()[0]), R>::type;
+
 template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 
-	template <typename C, typename R> using is_compound = typename std::enable_if<std::is_compound<C>::value,R>::type;
-	template <typename C, typename R> using is_arithmetic = typename std::enable_if<std::is_arithmetic<C>::value,R>::type;
-	template <typename C, typename R> using has_index = typename std::conditional<false, decltype(std::declval<C>()[0]), R>::type;
 
 	vec() {}
 
 	vec(const T &x) : vbase<T,SIZE>(x) {}
 	vec(const T &x, const T &y) : vbase<T,SIZE>(x, y) {}
 	vec(const T &x, const T &y, const T &z) : vbase<T,SIZE>(x, y, z) {}
-	//vec(const T &t) : data[0](t) {}
+
+	vec(const std::pair<T, T> &pair) : vbase<T,SIZE>(pair.first, pair.second) {}
 
 	vec(const std::initializer_list<T> &il) {
 		T *ptr = &vbase<T,SIZE>::data[0];
@@ -94,6 +99,12 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 		for(int i=0; i<SIZE; i++)
 			r[i] = vbase<T,SIZE>::data[i] + t;
 		return r;
+	}
+
+	vec operator+=(const vec &v) {
+		vbase<T,SIZE>::x += v.x;
+		vbase<T,SIZE>::y += v.y;
+		return *this;
 	}
 
 	template <typename VEC> has_index<VEC, vec> operator*(const VEC &v) const {
@@ -175,6 +186,13 @@ typedef vec<float, 4> vec4f;
 typedef vec<int, 2> vec2i;
 typedef vec<int, 3> vec3i;
 typedef vec<int, 4> vec4i;
+
+template <class T, int SIZE> vec<T,SIZE> sin(const vec<T,SIZE> &v) {
+	vec<T,SIZE> r;
+	for(int i=0; i<SIZE; i++)
+		r[i] = sinf(v[i]);
+	return r;
+}
 
 /*
 template <class T, int SIZE> struct mat {

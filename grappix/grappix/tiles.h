@@ -19,39 +19,6 @@ private:
 	std::string msg;
 };
 
-class SequentialPacker : public image::ImagePacker {
-public:
-	SequentialPacker(int w, int h) : xpos(0), ypos(0), width(w), height(h) {}
-	bool add(Rect &r) override {
-
-		if(ypos + r.w > height)
-			return false;
-
-		r.x = xpos;
-		r.y = ypos;
-
-		xpos += r.w;
-		if(xpos >= width) {
-			xpos = 0;
-			ypos += r.h;
-		}
-		return true;
-	}
-	void remove(const Rect &r) override {
-		throw tile_exception("remove() not supported in SequentialPacker");
-	}
-
-	Rect size() { return Rect(0,0,width,height); }
-
-private:
-	int xpos;
-	int ypos;
-	int width;
-	int height;
-};
-
-
-
 struct TileSet {
 
 	TileSet(uint32_t texw = 256, uint32_t texh = 256);
@@ -99,8 +66,6 @@ public:
 };
 
 
-typedef std::function<int(uint32_t, uint32_t)> TileFunction;
-
 class TileArray : public TileSource {
 public:
 	TileArray(uint32_t w, uint32_t h) : _width(w), _height(h), _size(w*h), tiles(_size) {}
@@ -146,19 +111,7 @@ public:
 	uint32_t& operator[](uint32_t o) {
 		return tiles[o % _size];
 	}
-/*
-	operator TileFunction() {
-		return [=](uint32_t x, uint32_t y) {
-			return get(x,y);
-		};
-	}
 
-	TileFunction get_function() {
-		return [=](uint32_t x, uint32_t y) {
-			return get(x,y);
-		};
-	}
-*/
 	void transform(std::function<void(int &x, int &y, int t)> func) {
 		decltype(tiles) newtiles;
 		newtiles.resize(tiles.size());
@@ -191,15 +144,9 @@ private:
 
 class TileLayer {
 public:
-
-	//TileLayer() {}
-
-	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts);
-	//TileLayer(uint32_t pw, uint32_t ph, uint32_t tw, uint32_t th, const TileSet &ts, std::function<uint32_t(uint32_t x, uint32_t y)> source);
 	TileLayer(std::shared_ptr<TileSet> ts, std::shared_ptr<TileSource> source, uint32_t tw = 0, uint32_t th = 0);
 	void render(RenderTarget &target);
 
-	//void setPixelSize(uint32_t px, uint32_t ph);
 	void setFrame(const Frame &f) { frame = f; }
 
 	void setTiles(std::shared_ptr<TileSet> ts) {
@@ -209,9 +156,6 @@ public:
 		if(tile_height == 0)
 			tile_height = ts->tiles[0].h;
 	}
-
-	//uint32_t pixelWidth() { return pixel_width; }
-	//uint32_t pixelHeight() { return pixel_height; }
 
 	uint32_t tileWidth() { return tile_width; }
 	uint32_t tileHeight() { return tile_height; }
@@ -224,15 +168,11 @@ public:
 private:
 
 	std::shared_ptr<TileSet> tileset;
-
-	//uint32_t pixel_width;
-	//uint32_t pixel_height;
 	Frame frame;
 
 	uint32_t tile_width;
 	uint32_t tile_height;
 
-	//TileFunction sourceFunction;
 	std::shared_ptr<TileSource> tileSource;
 
 	int multiBuf[2] = {-1, -1};
