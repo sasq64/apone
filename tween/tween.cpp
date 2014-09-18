@@ -208,6 +208,7 @@ void Tween::start() {
 
 #include "catch.hpp"
 
+#include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <stdio.h>
 #include <mutex>
@@ -267,6 +268,13 @@ TEST_CASE("tween::basic", "Basic tween") {
 	for(int i=0; i<20; ++i)
 		Tween::updateTweens(t += 0.1);
 
+	REQUIRE(Tween::updateTweens(t) == 0);
+}
+
+TEST_CASE("tween::thread", "Tween threading") {
+
+	using tween::Tween;
+
 	std::mutex m;
 
 	std::atomic<bool> run;
@@ -276,10 +284,10 @@ TEST_CASE("tween::basic", "Basic tween") {
 	run = true;
 	total = 0;
 
-	REQUIRE(Tween::updateTweens(t) == 0);
+	Tween::updateTweens(0.0);
 
-	auto l = [&run, &t]() {
-		auto t0 = utils::getms() - t * 1000;
+	auto l = [&run]() {
+		auto t0 = utils::getms();
 		while(run) {
 			auto t1 = utils::getms();
 			float t = (double)(t1-t0) / 1000.0;

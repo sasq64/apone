@@ -1,7 +1,6 @@
 #ifndef TWEEN_H
 #define TWEEN_H
 
-#include <coreutils/log.h>
 #include <coreutils/callback.h>
 
 #include <cmath>
@@ -15,6 +14,8 @@ namespace tween {
 
 class Tween;
 
+template <typename C, typename R> using is_compound = typename std::enable_if<std::is_compound<C>::value,R>::type;
+
 struct TweenAttrBase {
 	virtual void set(double v, Tween& t) = 0;
 	virtual bool compare(void *p) { return false; }
@@ -24,7 +25,6 @@ struct TweenAttrBase {
 template <typename T> struct TweenAttr : public TweenAttrBase {
 
 	TweenAttr(T *target, T value, int cycles) : startValue(*target), delta(value - *target), maxValue(std::numeric_limits<T>::max()), target(target) {
-
 		if(cycles != 1) {
 			maxValue = delta+1;
 			delta = (delta+1)*cycles-1;
@@ -40,7 +40,6 @@ template <typename T> struct TweenAttr : public TweenAttrBase {
 	utils::CallbackCaller<T&, Tween, double> on_update_cb;
 
 	virtual void set(double v, Tween &t) override {
-
 		T newValue = startValue + static_cast<T>(fmod(v * delta, maxValue));
 		if(newValue != *target) {
 			*target = newValue;
@@ -102,8 +101,8 @@ public:
 	Tween& sine();
 	Tween& repeating();
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	Tween& to(T &target, T value, int cycles = 1) {
+	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T> is_compound<T, Tween&> to(T &target, T value, int cycles = 1) {
 		for(int i=0; i<target.size(); i++) {
 			to(target[i], value[i], cycles);
 		}
@@ -129,8 +128,8 @@ public:
 		return TweenT<T>(impl, taptr);
 	}
 
-	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	Tween& from(T &target, T value) {
+	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	template <typename T> is_compound<T, Tween&>  from(T &target, T value) {
 		for(int i=0; i<target.size(); i++) {
 			from(target[i], value[i]);
 		}
