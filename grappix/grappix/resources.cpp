@@ -39,7 +39,9 @@ void Resources::update() {
 #else
 
 #include <unistd.h>
+#ifdef USE_INOTIFY
 #include <sys/inotify.h>
+#endif
 #include <sys/select.h>
 
 #include <coreutils/utils.h>
@@ -71,8 +73,10 @@ template <> void save_data(utils::File &f, const image::bitmap &data) {
 
 Resources::Resources() : delay_counter(0) {
 	//makedir("resources");
+#ifdef USE_INOTIFY
 	infd = inotify_init();
 	LOGD("INOTIFY FD = %d", infd);
+#endif
 	//watchfd = inotify_add_watch(infd, "resources", IN_CREATE|IN_DELETE|IN_CLOSE_WRITE);
 }
 
@@ -80,11 +84,13 @@ Resources::~Resources() {
 }
 
 void Resources::setNotify(const std::string &fileName) {
+#ifdef USE_INOTIFY
  	auto dn = path_directory(fileName);
  	if(dirnames.count(dn) == 0) {
  		LOGD("WATCHING %s", dn);
  		dirnames[dn] = inotify_add_watch(infd, dn.c_str(), /* IN_CREATE|IN_DELETE| */ IN_MOVED_TO|IN_CLOSE_WRITE);
  	}
+ #endif
 }
 
 bool Resources::done() { return true; }
@@ -98,6 +104,7 @@ void Resources::update() {
 	if(delay_counter++ < 30)
 		return;
 	delay_counter = 0;
+#ifdef USE_INOTIFY
 	fd_set readset;
 	struct timeval tv;
 	tv.tv_sec = 0;
@@ -135,6 +142,7 @@ void Resources::update() {
 			ptr += (sizeof(inotify_event) + evt->len);
 		}
 	}
+#endif
 }
 
 }

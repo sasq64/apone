@@ -1,7 +1,7 @@
 #include "../window.h"
 #include "../GL_Header.h"
 #include <tween/tween.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <unordered_map>
 #include <functional>
@@ -30,22 +30,25 @@ Window::click Window::NO_CLICK = { -1, -1, -1};
 std::deque<int> Window::key_buffer;
 std::deque<Window::click> Window::click_buffer;
 
-static void key_fn(int key, int action) {
+static GLFWwindow *gwindow;
+
+static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
 	if(action == GLFW_PRESS)
 		Window::key_buffer.push_back(key);
 }
 
-static void mouse_fn(int button, int action) {
+static void mouse_fn(GLFWwindow *gwin, int button, int action, int mods) {
 	if(action == GLFW_PRESS) {
 		Window::click c;
-		glfwGetMousePos(&c.x, &c.y);
+		double x,y;
+		glfwGetCursorPos(gwin, &x, &y);
 		c.button = button;
 		Window::click_buffer.push_back(c);
 	}
 }
 
 #ifndef EMSCRIPTEN
-static void resize_fn(int w, int h) {
+static void resize_fn(GLFWwindow *gwin, int w, int h) {
 	LOGD("Size now %d %d", w, h);
 	screen.resize(w, h);
 };
@@ -71,32 +74,38 @@ void Window::open(int w, int h, bool fs) {
 #else
 	_width = w;
 	_height = h;
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 2);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 0);
-	GLFWvidmode mode;
-	glfwGetDesktopMode(&mode);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
+	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
-	LOGD("Desktop is %dx%d", mode.Width, mode.Height);
-	//mode.Width = 1600;
+	LOGD("Desktop is %dx%d", mode->width, mode->height);
+	//mode->width = 1600;
 
-	if((float)mode.Width / (float)mode.Height > 2.2)
-		mode.Width /= 2;
+	//if((float)mode->width / (float)mode.Height > 2.2)
+	//	mode->width /= 2;
 
 	if(_width <= 0) {
-		_width = mode.Width;
+		_width = mode->width;
 		if(!fs)
 			_width /= 2;
 	}
 	if(_height <= 0) {
-		_height = mode.Height;
+		_height = mode->height;
 		if(!fs)
 			_height /= 2;
 	}
 #endif
 
-	/*int win =*/ glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	//_width *= 2;
+	//_height *= 2;
+
+	//gwindow = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
+	gwindow = glfwCreateWindow(_width, _height, "", fs ? monitor : nullptr, nullptr);
+	glfwMakeContextCurrent(gwindow);
+	LOGD("%p WH %d %d", gwindow, _width, _height);
 
 #ifndef EMSCRIPTEN
 	int rc = glewInit();
@@ -109,7 +118,15 @@ void Window::open(int w, int h, bool fs) {
   #endif
 #endif
 
+	int fw, fh;
+	glfwGetFramebufferSize(gwindow, &fw, &fh);
+	glViewport(0, 0, fw, fh);
+	LOGD("FB %d %d", fw, fh);
+	_width = fw;
+	_height = fh;
+
 	setup(_width, _height);
+
 
 	glfwSwapInterval(1);
 
@@ -117,13 +134,13 @@ void Window::open(int w, int h, bool fs) {
 	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
-	glfwSetKeyCallback(key_fn);
-	glfwSetMouseButtonCallback(mouse_fn);
+	glfwSetKeyCallback(gwindow, key_fn);
+	glfwSetMouseButtonCallback(gwindow, mouse_fn);
 #ifndef EMSCRIPTEN
-	glfwSetWindowSizeCallback(resize_fn);
+	glfwSetWindowSizeCallback(gwindow, resize_fn);
 #endif
-	glfwEnable(GLFW_MOUSE_CURSOR);
-
+	//glfwEnable(GLFW_MOUSE_CURSOR);
+	glfwSetInputMode(gwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	atexit([](){
 		if(!renderLoopFunction) {
 			while(screen.is_open()) {
@@ -196,9 +213,12 @@ void Window::flip() {
 		}
 		return;
 	}*/
-	glfwSwapBuffers();
-	if((glfwGetKey(GLFW_KEY_ESC) && glfwGetKey(GLFW_KEY_LCTRL)) || !glfwGetWindowParam(GLFW_OPENED)) {
-		glfwCloseWindow();
+	glfwSwapBuffers(gwindow);
+	glfwPollEvents();
+	if((glfwGetKey(gwindow, GLFW_KEY_ESCAPE) /* && glfwGetKey(gwindow, GLFW_KEY_LEFT_CONTROL) */ )) {
+		LOGD("QUIT");
+		glfwDestroyWindow(gwindow);
+		gwindow = nullptr;
 		winOpen = false;			
 	}
 
@@ -226,41 +246,41 @@ unordered_map<int, int> Window::translate = {
 	{ F11, GLFW_KEY_F11},
 	{ F12, GLFW_KEY_F12 },
 	{ BACKSPACE, GLFW_KEY_BACKSPACE },
-	{ DELETE, GLFW_KEY_DEL },
+	{ DELETE, GLFW_KEY_DELETE },
 	{ ENTER, GLFW_KEY_ENTER },
-	{ ESCAPE, GLFW_KEY_ESC },
+	{ ESCAPE, GLFW_KEY_ESCAPE },
 	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
-	{ CTRL_LEFT, GLFW_KEY_LCTRL },
-	{ CTRL_RIGHT, GLFW_KEY_RCTRL },
-	{ ALT_LEFT, GLFW_KEY_LALT },
-	{ ALT_RIGHT, GLFW_KEY_RALT },
-	{ SHIFT_LEFT, GLFW_KEY_LSHIFT },
-	{ SHIFT_RIGHT, GLFW_KEY_RSHIFT },
+	{ CTRL_LEFT, GLFW_KEY_LEFT_CONTROL },
+	{ CTRL_RIGHT, GLFW_KEY_RIGHT_CONTROL },
+	{ ALT_LEFT, GLFW_KEY_LEFT_ALT },
+	{ ALT_RIGHT, GLFW_KEY_RIGHT_ALT },
+	{ SHIFT_LEFT, GLFW_KEY_LEFT_SHIFT },
+	{ SHIFT_RIGHT, GLFW_KEY_RIGHT_SHIFT },
 	{ RIGHT, GLFW_KEY_RIGHT },
 	{ UP, GLFW_KEY_UP },
 	{ DOWN, GLFW_KEY_DOWN },
-	{ PAGEUP, GLFW_KEY_PAGEUP },
-	{ PAGEDOWN, GLFW_KEY_PAGEDOWN }
+	{ PAGEUP, GLFW_KEY_PAGE_UP },
+	{ PAGEDOWN, GLFW_KEY_PAGE_DOWN }
 };
 
 bool Window::mouse_pressed() {
-	return glfwGetMouseButton(0);
+	return glfwGetMouseButton(gwindow, 0);
 }
 
 tuple<int, int> Window::mouse_position() {
-	int x,y;
-	glfwGetMousePos(&x, &y);
-	return make_tuple(x, y);
+	double x,y;
+	glfwGetCursorPos(gwindow, &x, &y);
+	return make_tuple((int)x, (int)y);
 }
 
 bool Window::key_pressed(key k) {
 	auto glfwKey = translate[k];
-	return glfwGetKey(glfwKey) != 0;
+	return glfwGetKey(gwindow, glfwKey) != 0;
 }
 
 bool Window::key_pressed(char k) {
-	return glfwGetKey(k) != 0;
+	return glfwGetKey(gwindow, k) != 0;
 }
 
 Window::click Window::get_click(bool peek) {

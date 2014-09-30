@@ -23,7 +23,9 @@ else ifeq ($(HOST),emscripten)
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
 else ifeq ($(HOST),apple)
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
-  LIBS += -lglfw -framework OpenGL -lGLEW
+  LIBS += -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -framework OpenGL -lGLEW
+  CFLAGS += `pkg-config glew --cflags`
+  LIBS += `pkg-config glew --libs`
 else ifeq ($(HOST),raspberrypi)
   VC := $(PI_SDK)/vc
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pi.cpp $(GRAPPIX_DIR)grappix/specific/eglutil.cpp
