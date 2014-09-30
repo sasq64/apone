@@ -64,6 +64,7 @@ void Tween::addTween(const TweenImpl& ti) {
 	std::lock_guard<std::mutex> guard(tweenMutex);
 	allTweens.push_back(std::make_shared<TweenImpl>(ti));
 	allTweens.back()->isTweening = true;
+	allTweens.back()->startTime = currentTime;
 }
 
 void Tween::cancel() {
@@ -105,18 +106,20 @@ bool TweenImpl::step() {
 
 int Tween::updateTweens(double t) {
 
-	std::lock_guard<std::mutex> guard(tweenMutex);
 
 	static std::vector<std::shared_ptr<TweenImpl>> doneTweens;
 
-	currentTime = t;
-	auto it = allTweens.begin();
-	while(it != allTweens.end()) {
-		if(!(*it)->step()) {
-			doneTweens.push_back(*it);
-			it = allTweens.erase(it);
-		} else {
-			it++;
+	{
+		std::lock_guard<std::mutex> guard(tweenMutex);
+		currentTime = t;
+		auto it = allTweens.begin();
+		while(it != allTweens.end()) {
+			if(!(*it)->step()) {
+				doneTweens.push_back(*it);
+				it = allTweens.erase(it);
+			} else {
+				it++;
+			}
 		}
 	}
 
