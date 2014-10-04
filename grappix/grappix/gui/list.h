@@ -9,6 +9,7 @@ namespace grappix {
 
 class VerticalLayout {
 public:
+	VerticalLayout() {}
 	VerticalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
 		itemSize = screenArea / Rectangle(1, visibleItems);
 	}
@@ -27,6 +28,7 @@ private:
 
 class HorizontalLayout {
 public:
+	HorizontalLayout() {}
 	HorizontalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
 		itemSize = screenArea / Rectangle(visibleItems, 1);
 	}
@@ -50,6 +52,7 @@ public:
 		virtual void render_item(Rectangle &rec, int y, uint32_t index, bool hilight) = 0;
 	};
 
+	Base_List() {}
 
 	Base_List(std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc, const Rectangle &area, int visibleItems) : renderFunc(renderFunc), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
 	}
