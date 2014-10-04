@@ -132,7 +132,7 @@ char **uade_read_and_split_lines(size_t *nitems, size_t *lineno, FILE *f,
 		 * strsep() modifies line that it touches, so we make a copy
 		 * of it, and then count the number of items on the line
 		 */
-		strlcpy(templine, line, sizeof(templine));
+		strlcpyx(templine, line, sizeof(templine));
 		sp = templine;
 		while ((s = strsep(&sp, delim)) != NULL) {
 			if (*s == 0)

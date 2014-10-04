@@ -28,8 +28,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-//size_t strlcpy(char *dst, const char *src, size_t size);
-//size_t strlcat(char *dst, const char *src, size_t size);
+//size_t strlcpyxx(char *dst, const char *src, size_t size);
+//size_t strlcatx(char *dst, const char *src, size_t size);
 
 int uade_filesize(size_t *size, const char *pathname)
 {
@@ -51,7 +51,7 @@ static int uade_amiga_scandir(char *real, char *dirname, char *fake, int ml)
 	}
 	while ((direntry = readdir(dir))) {
 		if (!strcmp(fake, direntry->d_name)) {
-			if (((int) strlcpy(real, direntry->d_name, ml)) >= ml) {
+			if (((int) strlcpyx(real, direntry->d_name, ml)) >= ml) {
 				uade_warning("uade: %s does not fit real",
 					     direntry->d_name);
 				closedir(dir);
@@ -67,7 +67,7 @@ static int uade_amiga_scandir(char *real, char *dirname, char *fake, int ml)
 	rewinddir(dir);
 	while ((direntry = readdir(dir))) {
 		if (!strcasecmp(fake, direntry->d_name)) {
-			if (((int) strlcpy(real, direntry->d_name, ml)) >= ml) {
+			if (((int) strlcpyx(real, direntry->d_name, ml)) >= ml) {
 				fprintf(stderr, "uade: %s does not fit real", direntry->d_name);
 				closedir(dir);
 				return 0;
@@ -84,7 +84,7 @@ char *uade_dirname(char *dst, char *src, size_t maxlen)
 	char *srctemp = strdup(src);
 	if (srctemp == NULL)
 		return NULL;
-	strlcpy(dst, dirname(srctemp), maxlen);
+	strlcpyx(dst, dirname(srctemp), maxlen);
 	free(srctemp);
 	return dst;
 }
@@ -105,7 +105,7 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 	FILE *file;
 	size_t strip_offset;
 
-	if (strlcpy(copy, aname, sizeof(copy)) >= sizeof(copy)) {
+	if (strlcpyx(copy, aname, sizeof(copy)) >= sizeof(copy)) {
 		uade_warning("error: amiga tried to open a very long "
 			     "filename.\nPlease REPORT THIS!\n");
 		return -1;
@@ -134,11 +134,11 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 	} else {
 		if (*ptr == '/') {
 			/* absolute path */
-			strlcpy(dirname, "/", sizeof(dirname));
+			strlcpyx(dirname, "/", sizeof(dirname));
 			ptr++;
 		} else {
 			/* relative path */
-			strlcpy(dirname, "./", sizeof(dirname));
+			strlcpyx(dirname, "./", sizeof(dirname));
 		}
 	}
 
@@ -152,12 +152,12 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 		fake[len] = 0;
 		if (uade_amiga_scandir(real, dirname, fake, sizeof(real))) {
 			/* found matching entry */
-			if (strlcat(dirname, real, sizeof(dirname)) >= sizeof(dirname)) {
+			if (strlcatx(dirname, real, sizeof(dirname)) >= sizeof(dirname)) {
 				uade_warning("Too long dir path (%s + %s)\n",
 					     dirname, real);
 				return -1;
 			}
-			if (strlcat(dirname, "/", sizeof(dirname)) >= sizeof(dirname)) {
+			if (strlcatx(dirname, "/", sizeof(dirname)) >= sizeof(dirname)) {
 				uade_warning("Too long dir path (%s + %s)\n",
 					     dirname, "/");
 				return -1;
@@ -177,7 +177,7 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 
 	if (uade_amiga_scandir(real, dirname, ptr, sizeof(real))) {
 		/* found matching entry */
-		if (strlcat(dirname, real, sizeof(dirname)) >= sizeof(dirname)) {
+		if (strlcatx(dirname, real, sizeof(dirname)) >= sizeof(dirname)) {
 			uade_warning("Too long dir path (%s + %s)\n",
 				     dirname, real);
 			return -1;
@@ -198,7 +198,7 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 	/* Strip leading "./" from the real path name when copying */
 	strip_offset = (strncmp(dirname, "./", 2) == 0) ? 2 : 0;
 
-	strlcpy(realname, dirname + strip_offset, maxlen);
+	strlcpyx(realname, dirname + strip_offset, maxlen);
 
 	return 0;
 }
@@ -286,12 +286,12 @@ int uade_arch_spawn(struct uade_ipc *ipc, pid_t *uadepid, const char *uadename)
 
 /* This module was written by Heikki Orsila <heikki.orsila@iki.fi> 2000-2005.
  * No copyrights claimed, so this module is in Public Domain (only this
- * code module). See OpenBSD man pages for strlcat and strlcpy
+ * code module). See OpenBSD man pages for strlcatx and strlcpyx
  */
 /*
 #include <string.h>
 
-size_t strlcpy(char *dst, const char *src, size_t size)
+size_t strlcpyx(char *dst, const char *src, size_t size)
 {
   size_t slen = strlen(src);
   if(slen < size)
@@ -304,7 +304,7 @@ size_t strlcpy(char *dst, const char *src, size_t size)
 }
 
 
-size_t strlcat(char *dst, const char *src, size_t size)
+size_t strlcatx(char *dst, const char *src, size_t size)
 {
   size_t slen = strlen(src);
   size_t dlen = 0;

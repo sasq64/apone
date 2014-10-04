@@ -119,7 +119,7 @@ void uade_cleanup_state(struct uade_state *state)
 static void get_string(struct uade_event *event, struct uade_msg *um)
 {
 	uade_check_fix_string(um, 256);
-	strlcpy(event->msg, (char *) um->data, sizeof event->msg);
+	strlcpyx(event->msg, (char *) um->data, sizeof event->msg);
 }
 
 static void set_end_event(struct uade_event *event, int tailbytes,
@@ -135,7 +135,7 @@ static void set_end_event(struct uade_event *event, int tailbytes,
 	event->songend.happy = happy;
 	event->songend.stopnow = (!happy || stopnow || lastsubsong);
 
-	strlcpy(event->songend.reason, reason, sizeof event->songend.reason);
+	strlcpyx(event->songend.reason, reason, sizeof event->songend.reason);
 
 	state->song.endevent = *event;
 }
@@ -1277,7 +1277,7 @@ static int uade_play_internal(struct uade_file *module, int subsong,
 	song->info.duration = 0;
 	song->info.modulebytes = module->size;
 	if (module->name != NULL)
-		strlcpy(song->info.modulefname, module->name,
+		strlcpyx(song->info.modulefname, module->name,
 			sizeof song->info.modulefname);
 
 	prepare_configs(state);
@@ -1312,7 +1312,7 @@ static int uade_play_internal(struct uade_file *module, int subsong,
 
 	/* Player dir may not exist (custom song without filename was passed) */
 	if (player->name != NULL)
-		strlcpy(song->info.playerfname, player->name,
+		strlcpyx(song->info.playerfname, player->name,
 			sizeof song->info.playerfname);
 
 	/*
@@ -1373,15 +1373,15 @@ static int uade_play_internal(struct uade_file *module, int subsong,
 			uade_debug(state, "Got Amiga message before playloop: %s\n", event.msg);
 			break;
 		case UADE_EVENT_PLAYER_NAME:
-			strlcpy(song->info.playername, event.msg,
+			strlcpyx(song->info.playername, event.msg,
 				sizeof song->info.playername);
 			break;
 		case UADE_EVENT_FORMAT_NAME:
-			strlcpy(song->info.formatname, event.msg,
+			strlcpyx(song->info.formatname, event.msg,
 				sizeof song->info.formatname);
 			break;
 		case UADE_EVENT_MODULE_NAME:
-			strlcpy(song->info.modulename, event.msg,
+			strlcpyx(song->info.modulename, event.msg,
 				sizeof song->info.modulename);
 			break;
 		case UADE_EVENT_SUBSONG_INFO:
@@ -1448,7 +1448,7 @@ int uade_set_song_options(const char *songfile, const char *songoptions,
 		 "%s/.uade/song.conf", home);
 
 	if (state->songdbname[0] == 0)
-		strlcpy(state->songdbname, homesongconfname,
+		strlcpyx(state->songdbname, homesongconfname,
 			sizeof(state->songdbname));
 
 	if (!uade_update_song_conf(homesongconfname, songfile, songoptions)) {

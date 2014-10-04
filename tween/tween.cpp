@@ -106,18 +106,11 @@ bool TweenImpl::step() {
 
 int Tween::updateTweens(double t) {
 
-<<<<<<< Updated upstream
-
 	static std::vector<std::shared_ptr<TweenImpl>> doneTweens;
 
 	{
 		std::lock_guard<std::mutex> guard(tweenMutex);
-=======
-		static std::vector<std::shared_ptr<TweenImpl>> doneTweens;
-	{
-		std::lock_guard<std::mutex> guard(tweenMutex);
 
->>>>>>> Stashed changes
 		currentTime = t;
 		auto it = allTweens.begin();
 		while(it != allTweens.end()) {

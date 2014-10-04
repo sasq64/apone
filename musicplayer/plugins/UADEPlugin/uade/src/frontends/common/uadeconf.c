@@ -124,7 +124,7 @@ static void uade_set_filter_type(struct uade_config *uc, const char *model)
 void uade_config_set_defaults(struct uade_config *uc)
 {
 	memset(uc, 0, sizeof(*uc));
-	strlcpy(uc->basedir.name, UADE_CONFIG_BASE_DIR,	sizeof uc->basedir.name);
+	strlcpyx(uc->basedir.name, UADE_CONFIG_BASE_DIR,	sizeof uc->basedir.name);
 	uade_set_filter_type(uc, NULL);
 	uc->frequency = UADE_DEFAULT_FREQUENCY;
 	uc->gain = 1.0;
@@ -177,7 +177,7 @@ static void uade_add_ep_option(struct uade_ep_options *opts, const char *s)
 {
 	size_t freespace = sizeof(opts->o) - opts->s;
 
-	if (strlcpy(&opts->o[opts->s], s, freespace) >= freespace) {
+	if (strlcpyx(&opts->o[opts->s], s, freespace) >= freespace) {
 		fprintf(stderr, "Warning: uade eagleplayer option overflow: %s\n", s);
 		return;
 	}
@@ -437,7 +437,7 @@ int uade_parse_subsongs(int **subsongs, char *option)
 	nsubsongs = 0;
 	*subsongs = NULL;
 
-	if (strlcpy(substr, option, sizeof subsongs) >= sizeof subsongs) {
+	if (strlcpyx(substr, option, sizeof subsongs) >= sizeof subsongs) {
 		fprintf(stderr, "Too long a subsong option: %s\n", option);
 		return -1;
 	}
@@ -455,7 +455,7 @@ int uade_parse_subsongs(int **subsongs, char *option)
 		return -1;
 	}
 
-	strlcpy(substr, option, sizeof subsongs);
+	strlcpyx(substr, option, sizeof subsongs);
 
 	pos = 0;
 	sp = substr;
@@ -502,7 +502,7 @@ void uade_set_effects(struct uade_state *state)
 
 static void handle_config_path(struct uade_path *path, char *set, const char *value)
 {
-	strlcpy(path->name, value, sizeof path->name);
+	strlcpyx(path->name, value, sizeof path->name);
 	*set = 1;
 }
 

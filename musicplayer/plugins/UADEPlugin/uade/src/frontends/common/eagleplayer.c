@@ -142,7 +142,7 @@ static void try_extension(struct uade_detection_info *detectioninfo,
 		return;
 	detectioninfo->ep = get_eagleplayer(ext, state->playerstore);
 	if (detectioninfo->ep != NULL)
-		strlcpy(detectioninfo->ext, ext, sizeof detectioninfo->ext);
+		strlcpyx(detectioninfo->ext, ext, sizeof detectioninfo->ext);
 }
 
 static void custom_check(struct uade_detection_info *detectioninfo)
@@ -216,7 +216,7 @@ int uade_analyze_eagleplayer(struct uade_detection_info *detectioninfo,
 	/* First do filename detection (we'll later do content detection) */
 	t = uade_xbasename(fname);
 
-	if (strlcpy((char *) buf, t, sizeof buf) >= sizeof buf)
+	if (strlcpyx((char *) buf, t, sizeof buf) >= sizeof buf)
 		return -1;
 
 	t = strchr((char *) buf, '.');
@@ -230,7 +230,7 @@ int uade_analyze_eagleplayer(struct uade_detection_info *detectioninfo,
 	if (detectioninfo->ep == NULL) {
 		/* Try postfix */
 		t = uade_xbasename(fname);
-		strlcpy((char *) buf, t, sizeof buf);
+		strlcpyx((char *) buf, t, sizeof buf);
 		postfix = strrchr((char *) buf, '.') + 1; /* postfix != NULL */
 		try_extension(detectioninfo, postfix, state);
 	}
@@ -423,7 +423,7 @@ static struct eagleplayerstore *read_eagleplayer_conf(const char *filename)
 				       p->extensions == NULL);
 
 				p->nextensions = 0;
-				strlcpy(prefixes, prefixstart, sizeof prefixes);
+				strlcpyx(prefixes, prefixstart, sizeof prefixes);
 				sp = prefixes;
 				while ((s = strsep(&sp, OPTION_DELIMITER)) != NULL) {
 					if (*s == 0)

@@ -38,6 +38,10 @@ void Resources::update() {
 
 #else
 
+#ifdef LINUX
+#define USE_INOTIFY
+#endif
+
 #include <unistd.h>
 #ifdef USE_INOTIFY
 #include <sys/inotify.h>

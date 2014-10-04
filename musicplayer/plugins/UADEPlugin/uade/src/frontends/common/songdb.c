@@ -50,7 +50,7 @@ static struct uade_content *get_content(const char *md5, struct uade_state *stat
 		return NULL;
 
 	memset(&key, 0, sizeof key);
-	strlcpy(key.md5, md5, sizeof key.md5);
+	strlcpyx(key.md5, md5, sizeof key.md5);
 
 	return bsearch(&key, db->contentchecksums, db->nccused,
 		       sizeof db->contentchecksums[0], contentcompare);
@@ -84,7 +84,7 @@ static struct uade_content *create_content_checksum(struct uade_state *state,
 	db->ccmodified = 1;
 
 	memset(n, 0, sizeof(*n));
-	strlcpy(n->md5, md5, sizeof(n->md5));
+	strlcpyx(n->md5, md5, sizeof(n->md5));
 	n->playtime = playtime;
 
 	return n;
@@ -165,7 +165,7 @@ static void get_song_flags_and_attributes_from_songstore(struct uade_state *stat
 	if (db->songstore == NULL)
 		return;
 	/* Lookup md5 from the songdb */
-	strlcpy(key.md5, state->song.info.modulemd5, sizeof key.md5);
+	strlcpyx(key.md5, state->song.info.modulemd5, sizeof key.md5);
 	es = bsearch(&key, db->songstore, db->nsongs, sizeof db->songstore[0],
 		     escompare);
 	if (es == NULL)
@@ -237,7 +237,7 @@ static struct uade_content *store_playtime(const char *md5, long playtime,
 	if (oldnccused > 0) {
 		struct uade_content key;
 		memset(&key, 0, sizeof key);
-		strlcpy(key.md5, md5, sizeof key.md5);
+		strlcpyx(key.md5, md5, sizeof key.md5);
 
 		/* We use "oldnccused" here as the length, while new entries
 		   are added in unsorted manner to the end of the array */
@@ -431,7 +431,7 @@ int uade_read_song_conf(const char *filename, struct uade_state *state)
 			free(items);
 			continue;
 		}
-		if (strlcpy(s->md5, items[0] + 4, sizeof s->md5) !=
+		if (strlcpyx(s->md5, items[0] + 4, sizeof s->md5) !=
 		    ((sizeof s->md5) - 1)) {
 			fprintf(stderr,
 				"Line %zd in %s has too long an md5sum.\n",

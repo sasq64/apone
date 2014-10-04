@@ -260,7 +260,7 @@ int uade_receive_string(char *s, enum uade_msgtype com, size_t maxlen,
 		return -1;
 	if (um->size != (strlen((char *) um->data) + 1))
 		return -1;
-	strlcpy(s, (char *) um->data, maxlen);
+	strlcpyx(s, (char *) um->data, maxlen);
 	return 1;
 }
 
@@ -291,7 +291,7 @@ int uade_send_file(const struct uade_file *f, struct uade_ipc *ipc)
 				    };
 	if (f != NULL) {
 		if (f->name != NULL)
-			strlcpy((char *) meta.filename, f->name, sizeof meta.filename);
+			strlcpyx((char *) meta.filename, f->name, sizeof meta.filename);
 		meta.filesize = htonl(f->size);
 	}
 	if (uade_send_message((struct uade_msg *) &meta, ipc)) {

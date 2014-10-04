@@ -37,7 +37,9 @@ else ifeq ($(HOST),raspberrypi)
   # -L/home/sasq/raspberrypi/arm
 else
   FILES += $(GRAPPIX_DIR)grappix/specific/window_pc.cpp
-  LIBS += -lglfw -lGL -lGLEW
+  CFLAGS += `pkg-config glfw3 --cflags`
+  LIBS += -lGL -lGLEW
+  LIBS += -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor `pkg-config glfw3 --libs`
 endif
 
 include $(CPP_MODS)/image/module.mk

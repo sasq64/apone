@@ -192,7 +192,7 @@ struct uade_file *uade_rmc_get_file(const struct bencode *rmc, const char *name)
 		return NULL;
 	}
 
-	strlcpy(path, name, sizeof path);
+	strlcpyx(path, name, sizeof path);
 	namepart = path;
 	while (1) {
 		separator = strchr(namepart, '/');
@@ -261,7 +261,7 @@ int uade_rmc_record_file(struct bencode *rmc, const char *name,
 		return -1;
 	}
 
-	strlcpy(path, name, sizeof path);
+	strlcpyx(path, name, sizeof path);
 	namepart = path;
 
 	while (1) {
