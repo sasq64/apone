@@ -576,7 +576,7 @@ inline int CPUUpdateTicks()
 
 /*static bool CPUReadState(gzFile gzFile)
 {
-  /*int version = utilReadInt(gzFile);
+  int version = utilReadInt(gzFile);
 
   if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_1) {
     systemMessage(MSG_UNSUPPORTED_VBA_SGM,
@@ -787,7 +787,7 @@ inline int CPUUpdateTicks()
   fclose(file);
   CPUReset();
   return true;
-}
+}*/
 
 /*
 bool CPUImportEepromFile(const char *fileName)
@@ -834,7 +834,7 @@ bool CPUImportEepromFile(const char *fileName)
 
 /*bool CPUReadBatteryFile(const char *fileName)
 {
-  /*FILE *file = fopen(fileName, "rb");
+  FILE *file = fopen(fileName, "rb");
     
   if(!file)
     return false;

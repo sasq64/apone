@@ -3,8 +3,8 @@
 
 #include <string.h>
 
-size_t strlcpy(char *dst, const char *src, size_t size);
-size_t strlcat(char *dst, const char *src, size_t size);
+size_t strlcpyx(char *dst, const char *src, size_t size);
+size_t strlcatx(char *dst, const char *src, size_t size);
 
 #endif
 

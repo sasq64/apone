@@ -185,7 +185,7 @@ const vector<uint8_t>& File::getData() {
 File File::findFile(const string &path, const string &name) {
 	auto parts = split(path, ":");
 	for(string p : parts) {
-		if(p[p.length()-1] != '/')
+		if(p.length() > 0 && p[p.length()-1] != '/')
 			p += "/";
 		File f { p + name };
 		LOGD("Checking '%s'", f.getName());

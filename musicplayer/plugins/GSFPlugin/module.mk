@@ -20,7 +20,7 @@ gsfplugin_FILES += $(THIS_DIR)playgsf/libresample-0.1.3/src/resample.c \
 	
 gsfplugin_INCLUDES := $(THIS_DIR) $(THIS_DIR)playgsf $(THIS_DIR)playgsf/libresample-0.1.3/include
 
-gsfplugin_CFLAGS := -DLINUX -DC_CORE -funroll-all-loops -O3
+gsfplugin_CFLAGS := -DLINUX -DC_CORE -O2
 
 INCLUDES += $(THIS_DIR)/..
 

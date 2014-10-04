@@ -47,6 +47,7 @@ $(error Android toolchain is not valid)
 endif
 
 export PATH := $(ANDROID_TOOLCHAIN)/bin:$(PATH)
+$(info $(PATH))
 
 # We also need ant to build the final project
 ifeq ($(shell which ant),)
