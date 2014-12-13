@@ -215,7 +215,7 @@ void Window::flip() {
 	}*/
 	glfwSwapBuffers(gwindow);
 	glfwPollEvents();
-	if((glfwGetKey(gwindow, GLFW_KEY_ESCAPE) /* && glfwGetKey(gwindow, GLFW_KEY_LEFT_CONTROL) */ )) {
+	if(glfwWindowShouldClose(gwindow) || (glfwGetKey(gwindow, GLFW_KEY_ESCAPE) && glfwGetKey(gwindow, GLFW_KEY_LEFT_SHIFT))) {
 		LOGD("QUIT");
 		glfwDestroyWindow(gwindow);
 		gwindow = nullptr;

@@ -8,6 +8,14 @@
 
 using namespace std;
 
+void _LUA_createtable(struct lua_State *L, int narr, int nrec) {
+	lua_createtable(L, narr, nrec);
+}
+
+void _LUA_settable(struct lua_State *L, int offs) {
+	lua_settable(L, offs);
+}
+
 template <> int getArg(struct lua_State *L, int index) {
 	return lua_tointeger(L, index);
 }
@@ -36,6 +44,21 @@ template <> std::vector<std::string> getArg(struct lua_State *L, int index) {
 	return vec;
 }
 
+template <> std::unordered_map<std::string, std::string> getArg(struct lua_State *L, int index) {
+
+	if(index < 0) index--;
+	std::unordered_map<std::string, std::string> smap;
+	lua_pushnil(L);
+	while(lua_next(L, index) != 0) {
+		const char *key = lua_tostring(L, -2);
+		const char *value = lua_tostring(L, -1);
+		smap[key] = value;
+		lua_pop(L, 1);
+	}
+	return smap;
+
+}
+
 
 int pushArg(struct lua_State *L, const int& a) {
 	lua_pushnumber(L, a);
@@ -57,28 +80,32 @@ int pushArg(struct lua_State *L, const std::string& a) {
 	return 1;
 }
 
-int pushArg(struct lua_State *L, const std::vector<std::string>& vec) {
-	//lua_pushstring(L, a.c_str());
-	lua_createtable(L, vec.size(), 0);
-	int i = 1;
-	for(const auto &v : vec) {
-		lua_pushnumber(L, i++);
-		lua_pushstring(L, v.c_str());
-		lua_settable(L, -3);
-	}
-	return 1;
-}
-
-
 int LuaInterpreter::proxy_func(lua_State *L) {
 	FunctionCaller *fc = (FunctionCaller*)(lua_touserdata(L, lua_upvalueindex(1)));
 	return fc->call();
 }
 
+/*
+void create_meta(FunctionCaller *fc
+{
+
+		lua_createtable(L, 0, 0);
+
+		lua_pushlightuserdata(L, fc);
+	    lua_pushcclosure(L, proxy_func, 1);
+
+		lua_pushstring(L, "__tostring");
+		lua_pushcclosure(L, proxy_func, 1);		
+		lua_settable(L, -3);
+		lua_setmetatable(L, -1);
+}
+*/
+
 void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *fc) {
 	lua_pushlightuserdata(L, fc);
     lua_pushcclosure(L, proxy_func, 1);
     lua_setglobal(L, name.c_str());
+
     //functions.push_back(shared_ptr<FunctionCaller>(fc));
 }
 

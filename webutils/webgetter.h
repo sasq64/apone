@@ -18,58 +18,33 @@
 class WebGetter {
 public:
 
-	static std::atomic<int> ongoingCalls;
-
-	class Job {
-	public:
-		Job() : datapos(0) {}
-		Job(const std::string &url, const std::string &targetDir);
-		~Job();
-
-		void setTargetDir(const std::string &wd) {
-			targetDir = wd;
-			datapos = -1;
-		}
-
-		bool isDone() const;
-		int getReturnCode() const;
-		std::string getFile() const;
-		const std::vector<uint8_t>& getData() const { return data; }
-		void urlGet(const std::string &url);
-	private:
-#ifdef EMSCRIPTEN
-		static void onLoad(void *arg, const char *name);
-		static void onError(void *arg, int code);
-#else
-		static size_t writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
-		static size_t headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
-
-		mutable std::mutex m;
-		std::thread jobThread;
-#endif
-		bool loaded;
-		int returnCode;
-		std::string targetDir;
-		std::unique_ptr<utils::File> file;
-		std::vector<uint8_t> data;
-		int32_t datapos;
-		std::string target;
-	};
-
 	static void getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
+	static int inProgress() { return ongoingCalls; }
 
-	WebGetter(const std::string &workDir) ;
+	WebGetter(const std::string &workDir, const std::string &base = "");
+
+	void setBaseURL(const std::string &base) { baseURL = base; }
+	bool inCache(const std::string &url) const;
+
+
+	void setErrorCallback(std::function<void(int code, const std::string &msg)> cb) {
+		errorCallback = cb;
+	}
+
+	//void getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
+	void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
+	void streamData(const std::string &url, std::function<void(uint8_t* data, int size)> callback);
+
+private:
+
+	class Job;
+
 	Job* getURL(const std::string &url);
 
 	void getURL(const std::string url, std::function<void(const Job&)>);
 
-	void setBaseURL(const std::string &base) { baseURL = base; }
+	static std::atomic<int> ongoingCalls;
 
-	bool inCache(const std::string &url) const;
-
-	static int inProgress() { return ongoingCalls; }
-
-private:
 	std::atomic<int> counter;
 	std::future<void> f[4];
 	static std::atomic<int> scounter;
@@ -77,6 +52,7 @@ private:
 
 	std::string workDir;
 	std::string baseURL;
+	std::function<void(int code, const std::string &msg)> errorCallback;
 };
 
 #endif // WEBGETTER_H

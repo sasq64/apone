@@ -22,6 +22,7 @@ class Holder {
 public:
 	virtual const std::type_info& getType() = 0;
 	virtual void *getValue() = 0;
+	virtual void *getValue(int index) = 0;
 };
 
 template <class T> class VHolder : public Holder {
@@ -34,6 +35,10 @@ public:
 
 	virtual void *getValue() {
 		return (void*)&value;
+	}
+
+	virtual void *getValue(int index) {		
+		return (void*)&value[index];
 	}
 
 private:
@@ -53,6 +58,10 @@ public:
 		return (void*)&value;
 	}
 
+	virtual void *getValue(int index) {		
+		return (void*)&value[index];
+	}
+
 private:
 	std::string value;
 };
@@ -61,27 +70,13 @@ private:
 class var {
 public:
 
-	var() : holder(nullptr), callback(nullptr) {
-	}
-
-	void setCallback(std::function<void()> f) {
-		callback = f;
+	var() : holder(nullptr) {
 	}
 
 	template <typename T> var& operator=(T t) {
 		holder = std::unique_ptr<Holder>(new VHolder<T>(t));
-		/*if(callback) {
-			LOGD("Assigning to variable with callback");
-			callback();
-		} else
-			LOGD("Assigning to variable WITHOUT callback"); */
-
 		return *this;
 	}
-
-	//template <typename T> var(const T &t) {
-	//	holder = std::unique_ptr<Holder>(new VHolder<T>(t));
-	//}
 
 	template <typename T> operator T&() {
 		if(!holder)
@@ -91,6 +86,11 @@ public:
 			return t;
 		}
 		throw illegal_conversion_exception();
+	}
+
+	template <typename S> const S& operator [](const int &index) {
+		S &s = *((S*)holder->getValue(index));
+		return s;
 	}
 
 	operator int() {
@@ -122,7 +122,6 @@ public:
 
 private:
 	std::unique_ptr<Holder> holder;
-	std::function<void()> callback;
 };
 
 }

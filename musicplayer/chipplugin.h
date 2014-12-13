@@ -22,7 +22,14 @@ public:
 		fclose(fp);
 		return fromFile("tmpfile");
 	}
+
+	//static std::shared_ptr<ChipPlugin> findPlugin(const std::string &fileName);
+	//static template <typename T> void registerPlugin() {
+	//	plugins.push_back(new T()):
+	//}
+
 };
 
 }
+
 #endif // CHIP_PLUGIN_H

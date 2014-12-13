@@ -116,4 +116,5 @@ ChipPlayer *ModPlugin::fromFile(const std::string &fileName) {
 	return new ModPlayer {file.getPtr(), (int)file.getSize()};
 };
 
+
 }

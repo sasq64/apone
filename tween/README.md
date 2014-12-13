@@ -76,7 +76,6 @@ When tweening members of an object, a good habit is to tell the tween about it, 
 tween;
 
 ```c++
-
 auto mySprite = std::make_shared<Sprite>(0,0);
 Tween::make().retain(mySprite).to(mySprite->xpos, 100.0).seconds(2.5);
 mySprite = nullptr; // Safe, shared_ptr still held by the Tween

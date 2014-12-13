@@ -5,6 +5,7 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 struct lua_State;
 struct luaL_Reg;
@@ -28,24 +29,52 @@ template <> std::vector<std::string> popArg(struct lua_State *);
 */
 
 // GET ARG FUNCTIONS - Gets an arg (without popping) from the stack
-template <class T> T getArg(struct lua_State *L, int index) {}
+//template <class T, class S> std::unordered_map<T, S> getArg(struct lua_State *L, int index) {
+//
+//}
+
+
+template <class T> T getArg(struct lua_State *L, int index);
 template <> int getArg(struct lua_State *L, int index);
 template <> uint32_t getArg(struct lua_State *L, int index);
 template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
 template <> std::vector<std::string> getArg(struct lua_State *L, int index);
-
+template <> std::unordered_map<std::string, std::string> getArg(struct lua_State *L, int index);
 // PUSH ARG FUNCTIONS - Push an arg to the stack
 
 int pushArg(struct lua_State *L, const int &r);
 int pushArg(struct lua_State *L, const unsigned int &r);
 int pushArg(struct lua_State *L, const double& a);
 int pushArg(struct lua_State *L, const std::string& a);
-int pushArg(struct lua_State *L, const std::vector<std::string>& a);
+//int pushArg(struct lua_State *L, const std::vector<std::string>& a);
 
-template <class F, class... A> void pushArg(struct lua_State *L, const F& first, const A& ... tail) {
-	pushArg(L, first);
-	pushArg(L, tail...);
+void _LUA_createtable(struct lua_State *L, int narr, int nrec);
+void _LUA_settable(struct lua_State *L, int offs);
+
+template <typename T> int pushArg(struct lua_State *L, const std::vector<T>& vec) {
+	_LUA_createtable(L, vec.size(), 0);
+	int i = 1;
+	for(const auto &v : vec) {
+		int offs = pushArg(L, i++);
+		offs += pushArg(L, v);
+		_LUA_settable(L, -1 - offs);
+	}
+	return 1;
+}
+
+template <typename T, typename S> int pushArg(struct lua_State *L, const std::unordered_map<S, T>& amap) {
+	_LUA_createtable(L, 0, 0);
+	for(const auto &v : amap) {
+		int offs = pushArg(L, v.first);
+		offs += pushArg(L, v.second);
+		_LUA_settable(L, -1 - offs);
+	}
+	return 1;
+}
+
+template <class F, class... A> int pushArg(struct lua_State *L, const F& first, const A& ... tail) {
+	return pushArg(L, first) + pushArg(L, tail...);
 }
 
 	//void pushArg(const int& a);
@@ -57,7 +86,6 @@ struct FunctionCaller {
 	virtual int call() = 0;
 };
 
-
 template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
 
 	virtual ~FunctionCallerImpl() {
@@ -67,7 +95,6 @@ template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCal
 
 	FunctionCallerImpl(struct lua_State *L, std::function<R(ARGS ... )> f) : L(L), func(f) {
 	}
-
 
 	template <class A> int apply() {
 		return pushArg(L, func(getArg<A>(L, 1)));
@@ -121,6 +148,10 @@ template <class... ARGS> struct FunctionCallerImpl<void, ARGS...> : public Funct
 		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3), getArg<D>(L, 4));
 	}
 
+	template <class A, class B, class C, class D, class E> void apply() {
+		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3), getArg<D>(L, 4), getArg<E>(L, 5));
+	}
+
 	int call() override {
 		apply<ARGS...>();
 		return 0;
@@ -163,10 +194,6 @@ public:
 	bool load(const std::string &code, const std::string &name = "");
 	bool loadFile(const std::string &name);
 
-	//void pushArg(const int& a);
-	//void pushArg(const double& a);
-	//void pushArg(const std::string& a);
-
 	void getGlobal(const std::string &g);
 	void setGlobal(const std::string &g);
 	void luaCall(int nargs, int nret);
@@ -181,6 +208,8 @@ public:
 
 	void createLuaClosure(const std::string &name, FunctionCaller *fc);
 
+	// Sadly this doesn't work snce we want to use lambdas as parameters, and C++ cant resolve a lambda
+	// to a template function
 	//template <class R, class... A> void registerFunction(const std::string &name, std::function<R(A ... )> f) {
 	//	createLuaClosure(name, new FunctionCallerImpl<R, A...>(L, f));
 	//}
@@ -221,20 +250,18 @@ public:
 		
 		auto x = getArg<R>(L, -1);
 		return x;
-		//return popArg<R>(L);
 	}
 
-	template <class T> void set_global(const std::string &name, T arg) {
+	template <class T> void setGlobal(const std::string &name, T arg) {
 		pushArg(L, arg);
 		setGlobal(name);
 	}
 
-	static int l_my_print(lua_State* L);
 private:
 
-	std::function<void(const std::string &)> outputFunction;
-	//static const struct luaL_Reg *printlib;
+	static int l_my_print(lua_State* L);
 
+	std::function<void(const std::string &)> outputFunction;
 	lua_State *L;
 };
 
