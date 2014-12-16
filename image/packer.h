@@ -20,7 +20,7 @@ private:
 class ImagePacker {
 public:
 	struct Rect {
-		Rect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
+		Rect(int x = 0, int y = 0, int w = 0, int h = 0) : x(x), y(y), w(w), h(h) {}
 		uint16_t x;
 		uint16_t y;
 		uint16_t w;

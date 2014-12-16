@@ -7,8 +7,8 @@
 #include <array>
 
 //#include <rfftw.h>
-//#include <fftw3.h>
-#include "fftw-3.3.4/api/fftw3.h"
+#include <fftw3.h>
+//#include "fftw-3.3.4/api/fftw3.h"
 
 class SpectrumAnalyzer {
 public:

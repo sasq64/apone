@@ -12,4 +12,4 @@ add_definitions(-DSDL_AUDIO)
 set(SOURCE_FILES ${SOURCE_FILES} player_sdl.cpp)
 
 add_library(audioplayer ${SOURCE_FILES})
-target_link_libraries(audioplayer ${EXTRA_LIBS} SDLMain)
+target_link_libraries(audioplayer ${EXTRA_LIBS})

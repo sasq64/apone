@@ -106,11 +106,11 @@ void LuaInterpreter::createLuaClosure(const std::string &name, FunctionCaller *f
     lua_pushcclosure(L, proxy_func, 1);
     lua_setglobal(L, name.c_str());
 
-    //functions.push_back(shared_ptr<FunctionCaller>(fc));
+    functions[name] = fc;
 }
 
 
-static const struct luaL_Reg printlib[] = {
+const struct luaL_Reg LuaInterpreter::printlib[] = {
 	{ "print", LuaInterpreter::l_my_print },
 	{ nullptr, nullptr }
 };
@@ -127,7 +127,6 @@ int LuaInterpreter::l_my_print(lua_State* L) {
 			else
 				puts(s);
 		}
-			//LOGD("LUA:%s", lua_tostring(L, i));
     }
 	if(li->outputFunction)
 		li->outputFunction("\n");
@@ -144,6 +143,9 @@ LuaInterpreter::LuaInterpreter() {
 
 LuaInterpreter::~LuaInterpreter() {
 	lua_close(L);
+	for(auto &p : functions) {
+		delete p.second;
+	}
 }
 
 bool LuaInterpreter::load(const string &code, const string &name) {
@@ -172,30 +174,7 @@ bool LuaInterpreter::loadFile(const string &fileName) {
 		return false;
 	return true;
 }
-/*
-void LuaInterpreter::pushArg(const int& a) {
-	lua_pushnumber(L, a);
-}
 
-void LuaInterpreter::pushArg(const double& a) {
-	lua_pushnumber(L, a);
-}
-
-void LuaInterpreter::pushArg(const std::string& a) {
-	lua_pushstring(L, a.c_str());
-}
-
-void LuaInterpreter::pushArg(const std::vector<std::vector>& a) {
-	//lua_pushstring(L, a.c_str());
-	lua_createtable(L, vec.size(), 0);
-	int i = 1;
-	for(const auto &v : vec) {
-		lua_pushnumber(L, i++);
-		lua_pushstring(L, v.c_str());
-		lua_settable(L, -3);
-	}
-}
-*/
 void LuaInterpreter::getGlobal(const std::string &g) {
 	lua_getglobal(L, g.c_str());
 }
@@ -208,27 +187,6 @@ void LuaInterpreter::luaCall(int nargs, int nret) {
 	LOGD("Call %d %d", nargs, nret);
 	lua_call(L, nargs, nret);
 }
-
-/*
-template <> double popArg(struct lua_State *L) {
-	return lua_tonumber(L, -1);
-}
-
-template <> int popArg(struct lua_State *L) {
-	return lua_tonumber(L, -1);
-}
-
-template <> std::vector<std::string> popArg(struct lua_State *L) {
-
-	std::vector<std::string> vec;
-	lua_pushnil(L);
-	while(lua_next(L, -2) != 0) {
-		vec.push_back(lua_tostring(L, -1));
-		lua_pop(L, 1);
-	}
-	return vec;
-}
-*/
 
 #ifdef UNIT_TEST
 

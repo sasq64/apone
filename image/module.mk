@@ -18,7 +18,7 @@ else
   LIBS += `libpng-config --libs`
 endif
 
-include $(THIS_DIR)../coreutils/module.mk
+#include $(THIS_DIR)../coreutils/module.mk
 
 MODULES += image
 

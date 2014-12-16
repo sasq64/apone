@@ -53,6 +53,7 @@ find_library(GLFW_LIBRARY glfw3)
 set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
 
 #LIBS += -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -framework OpenGL -lGLEW
+set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
 
 file(GLOB SHADERS grappix/shaders/*.glsl)
 file(MAKE_DIRECTORY .shader) 

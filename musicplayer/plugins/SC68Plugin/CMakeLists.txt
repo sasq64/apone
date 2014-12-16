@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.musicplayer.sc68plugin)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++0x")
 set(SOURCE_FILES
+	SC68Plugin.cpp
 	file68/src/endian68.c
 	file68/src/error68.c
 	file68/src/file68.c
@@ -62,6 +64,7 @@ set(SOURCE_FILES
 	libsc68/io68/ymemul.c
 	libsc68/libsc68.c
 	libsc68/mixer68.c
+	unice68/unice68_native.c
 )
 add_definitions(-DHAVE_CONFIG_H)
 include_directories(. libsc68/sc68 file68 file68/sc68 unice68 libsc68)

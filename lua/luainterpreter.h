@@ -9,6 +9,8 @@
 
 struct lua_State;
 struct luaL_Reg;
+void _LUA_createtable(struct lua_State *L, int narr, int nrec);
+void _LUA_settable(struct lua_State *L, int offs);
 
 class lua_exception : public std::exception {
 public:
@@ -18,22 +20,7 @@ private:
 	std::string msg;
 };
 
-
-/*
-template <class R> R popArg(struct lua_State *) {
-}
-
-template <> double popArg(struct lua_State *);
-template <> int popArg(struct lua_State *);
-template <> std::vector<std::string> popArg(struct lua_State *);
-*/
-
-// GET ARG FUNCTIONS - Gets an arg (without popping) from the stack
-//template <class T, class S> std::unordered_map<T, S> getArg(struct lua_State *L, int index) {
-//
-//}
-
-
+// Get a value from the lua stack
 template <class T> T getArg(struct lua_State *L, int index);
 template <> int getArg(struct lua_State *L, int index);
 template <> uint32_t getArg(struct lua_State *L, int index);
@@ -41,16 +28,13 @@ template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
 template <> std::vector<std::string> getArg(struct lua_State *L, int index);
 template <> std::unordered_map<std::string, std::string> getArg(struct lua_State *L, int index);
-// PUSH ARG FUNCTIONS - Push an arg to the stack
 
+// Push a value to the lua stack
 int pushArg(struct lua_State *L, const int &r);
 int pushArg(struct lua_State *L, const unsigned int &r);
 int pushArg(struct lua_State *L, const double& a);
 int pushArg(struct lua_State *L, const std::string& a);
 //int pushArg(struct lua_State *L, const std::vector<std::string>& a);
-
-void _LUA_createtable(struct lua_State *L, int narr, int nrec);
-void _LUA_settable(struct lua_State *L, int offs);
 
 template <typename T> int pushArg(struct lua_State *L, const std::vector<T>& vec) {
 	_LUA_createtable(L, vec.size(), 0);
@@ -77,9 +61,6 @@ template <class F, class... A> int pushArg(struct lua_State *L, const F& first, 
 	return pushArg(L, first) + pushArg(L, tail...);
 }
 
-	//void pushArg(const int& a);
-	//void pushArg(const double& a);
-	//void pushArg(const std::string& a);
 
 struct FunctionCaller {
 	virtual ~FunctionCaller() {};
@@ -89,7 +70,6 @@ struct FunctionCaller {
 template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
 
 	virtual ~FunctionCallerImpl() {
-		fprintf(stderr, "FUNCTRION CALLER DESTROY\n");
 	};
 
 
@@ -201,8 +181,6 @@ public:
 		outputFunction = f;
 	}
 
-	std::vector<std::shared_ptr<FunctionCaller>> functions;
-
 
 	static int proxy_func(lua_State *L);
 
@@ -259,7 +237,10 @@ public:
 
 private:
 
+	std::unordered_map<std::string, FunctionCaller *> functions;
+
 	static int l_my_print(lua_State* L);
+	static const struct luaL_Reg printlib[];
 
 	std::function<void(const std::string &)> outputFunction;
 	lua_State *L;

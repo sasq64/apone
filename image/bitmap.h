@@ -88,6 +88,14 @@ public:
 		memcpy(&(*pixels)[0], px, sizeof(T) * width * height);
 	}
 
+	void put(int x, int y, const basic_bitmap &bm) {
+		for(int yy = 0; yy < bm.h; yy++)
+			for(int xx = 0; xx < bm.w; xx++) {
+				(*pixels)[xx + x + (yy + y)*w] = bm[xx+yy*bm.w];
+			}
+		dirty = true;
+	}
+
 	basic_bitmap clone() {
 		return basic_bitmap(w, h, &(*pixels)[0]);
 	}
@@ -172,6 +180,7 @@ private:
 };
 
 typedef basic_bitmap<uint32_t> bitmap;
+typedef basic_bitmap<uint8_t> bitmap8;
 
 }
 
