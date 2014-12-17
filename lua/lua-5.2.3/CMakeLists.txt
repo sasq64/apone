@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.lua)
 
 #lua_CFLAGS := -O2 -Wall  -Wno-parentheses-equality
-
-set(CMAKE_C_COMPILER g++)
+#set(CMAKE_C_COMPILER g++)
 
 add_definitions(-DLUA_COMPAT_ALL -DLUA_USE_POSIX)
 

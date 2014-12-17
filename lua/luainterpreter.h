@@ -7,8 +7,10 @@
 #include <memory>
 #include <unordered_map>
 
+extern "C" {
 struct lua_State;
 struct luaL_Reg;
+};
 void _LUA_createtable(struct lua_State *L, int narr, int nrec);
 void _LUA_settable(struct lua_State *L, int offs);
 
