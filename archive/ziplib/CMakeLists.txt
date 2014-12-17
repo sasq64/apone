@@ -58,4 +58,8 @@ set(SOURCE_FILES
 	zip_unchange_data.c
 )
 
+find_package(zlib REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
+
 add_library(ziplib ${SOURCE_FILES})
+target_link_libraries(ziplib ${ZLIB_LIBRARIES})
