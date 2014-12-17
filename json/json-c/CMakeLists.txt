@@ -13,7 +13,7 @@ set(SOURCE_FILES
 	linkhash.c
 	printbuf.c
 )
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-Wall -Wextra -Wwrite-strings -Wno-unused-parameter -std=gnu99 -fPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wwrite-strings -Wno-unused-parameter -std=gnu99 -fPIC")
 
 add_definitions(-DHAVE_CONFIG_H -D_GNU_SOURCE -D_REENTRANT -fPIC -DPIC)
 

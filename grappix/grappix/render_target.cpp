@@ -66,7 +66,7 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 	program.setUniform("matrix", matrix.transpose());
 
 
-	program.setUniform("vScreenScale", 2.0 / _width, 2.0 / _height);
+	program.setUniform("vScreenScale", 2.0f / _width, 2.0f / _height);
 	program.setUniform("vScale", globalScale, globalScale);
 	program.setUniform("vPosition", 0, 0);
 

@@ -1,8 +1,21 @@
 #include "spectrum.h"
 
+#include <fftw3.h>
 #include <cmath>
 
 using namespace std;
+
+struct SpectrumAnalyzer::Internal {
+	float fftin[fft_size];
+	fftwf_complex fftout[fft_size];
+	fftwf_plan fftwp;
+};
+
+SpectrumAnalyzer::SpectrumAnalyzer() : eq(eq_slots) {
+	si = new Internal();
+	//fftwp = rfftw_create_plan(fft_size, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+	si->fftwp = fftwf_plan_dft_r2c_1d(fft_size, si->fftin, si->fftout, FFTW_ESTIMATE);
+}
 
 void SpectrumAnalyzer::popLevels() {
 	lock_guard<mutex> guard(m);
@@ -17,17 +30,17 @@ void SpectrumAnalyzer::addAudio(int16_t *samples, int len) {
 
 	while(pos < len) {
 		for(int i=0; i<fft_size; i++) {
-			fftin[i] = ((float)samples[pos+i*2] + (float)samples[pos+i*2+1])/(65536.0);
+			si->fftin[i] = ((float)samples[pos+i*2] + (float)samples[pos+i*2+1])/(65536.0);
 		}
 		//rfftw_one(fftwp, fftin, fftout);
-		fftwf_execute(fftwp);
+		fftwf_execute(si->fftwp);
 
 		pos += fft_size*2;
 
-		power[0] = fftout[0][0]*fftout[0][0];  /* DC component */
+		power[0] = si->fftout[0][0]*si->fftout[0][0];  /* DC component */
 		for(int k = 1; k < (fft_size+1)/2; ++k)  /* (k < fft_size/2 rounded up) */
-			power[k] = fftout[0][k]*fftout[0][k] + fftout[0][fft_size-k]*fftout[0][fft_size-k];
-		power[fft_size/2] = fftout[0][fft_size/2]*fftout[0][fft_size/2];  /* Nyquist freq. */
+			power[k] = si->fftout[0][k]*si->fftout[0][k] + si->fftout[0][fft_size-k]*si->fftout[0][fft_size-k];
+		power[fft_size/2] = si->fftout[0][fft_size/2]*si->fftout[0][fft_size/2];  /* Nyquist freq. */
 		float sum = 0;
 		int j = 0;
 

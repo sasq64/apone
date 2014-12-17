@@ -5,8 +5,8 @@ file(GLOB MAIN_FILES grappix/*.cpp)
 file(GLOB FREETYPE_FILES grappix/freetype-gl/*.c)
 set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES} grappix/specific/window_pc.cpp)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2")
-set(CMAKE_C_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 add_subdirectory(../image image)
 add_subdirectory(../tween tween)
@@ -22,38 +22,64 @@ if(APPLE)
    set(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${CORE_VIDEO_LIBRARY} ${IOKIT_LIBRARY})
 endif()
 
-find_package(Freetype)
-find_package(GLEW)
-find_package(OpenGL)
 
-if(FREETYPE_FOUND)
-	set(EXTRA_LIBS ${EXTRA_LIBS} ${FREETYPE_LIBRARIES})
-	include_directories(${FREETYPE_INCLUDE_DIRS})
+find_path(FREETYPE_INCLUDE_DIR ft2build.h
+  HINTS
+    ENV FREETYPE_DIR
+  PATHS
+    /usr/X11R6
+    /usr/local/X11R6
+    /usr/local/X11
+    /usr/local
+    ENV GTKMM_BASEPATH
+    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+  PATH_SUFFIXES include/freetype2 include
+)
+
+find_library(FREETYPE_LIBRARY
+  NAMES freetype libfreetype freetype219
+  HINTS
+    ENV FREETYPE_DIR
+  PATH_SUFFIXES lib
+  PATHS
+    /usr/X11R6
+    /usr/local/X11R6
+    /usr/local/X11
+    /usr/freeware
+    /usr/local
+    ENV GTKMM_BASEPATH
+    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+)
+
+
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+if(FREETYPE_LIBRARY)
+	set(EXTRA_LIBS ${EXTRA_LIBS} ${FREETYPE_LIBRARY})
+	include_directories(${FREETYPE_INCLUDE_DIR})
 	add_definitions(-DWITH_FREETYPE)
+else()
+	message(FATAL_ERROR "Could not find freetype")
 endif()
 
-if(GLEW_FOUND)
-	set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
-	include_directories(${GLEW_INCLUDE_DIRS})
-endif()
+set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
+include_directories(${GLEW_INCLUDE_DIRS})
 
-if(OPENGL_FOUND)
-	set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-	include_directories(${OPENGL_INCLUDE_DIRS})
-endif()
+message("GLEW LIBS " ${GLEW_LIBRARIES})
 
-#exec_program(freetype-config ARGS --cflags OUTPUT_VARIABLE FREETYPE_CFLAGS)
-#exec_program(freetype-config ARGS --libs OUTPUT_VARIABLE FREETYPE_LIBS)
-#find_library(LIBPNG png HINTS ${LIBPNG_LIBDIR})
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FREETYPE_CFLAGS}")
-#find_library(FREETYPE_LIBRARY freetype HINT ${FREETYPE_LIBS})
-#set(EXTRA_LIBS ${EXTRA_LIBS} ${FREETYPE_LIBS})
 
-find_library(GLFW_LIBRARY glfw3)
+set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+include_directories(${OPENGL_INCLUDE_DIRS})
+
+
+find_library(GLFW_LIBRARY glfw3 REQUIRED)
 set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
 
 #LIBS += -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -framework OpenGL -lGLEW
-set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
+#set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
 
 file(GLOB SHADERS grappix/shaders/*.glsl)
 file(MAKE_DIRECTORY .shader) 
@@ -73,4 +99,6 @@ include_directories(.. grappix/freetype-gl)
 
 add_library(grappix ${SOURCE_FILES})
 
-target_link_libraries(grappix coreutils image tween GLEW glfw ${EXTRA_LIBS})
+message("EXTRA LIBS " ${EXTRA_LIBS})
+
+target_link_libraries(grappix coreutils image tween ${EXTRA_LIBS})

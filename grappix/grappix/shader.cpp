@@ -93,7 +93,7 @@ GLuint createProgram(const string &vertexSource, const string &fragmentSource) {
 				glGetProgramInfoLog(program, bufLength, NULL, buf);
 				msg = buf;
 			}
-			LOGD("Link failed\n%s\n", msg.c_str());
+			LOGD("Link failed\n%s\n", msg);
 			glDeleteProgram(program);
 			throw shader_exception(msg);
 		}

@@ -15,7 +15,8 @@ set(SOURCE_FILES
 	telnetserver.cpp
 )
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} --std=c++0x)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 add_library(bbsutils ${SOURCE_FILES})
 target_link_libraries(bbsutils netlink)
