@@ -1,6 +1,11 @@
 
 #include "archive.h"
-#include "ziplib/zip.h"
+
+#define MINIZ_HEADER_FILE_ONLY
+extern "C" {
+#include <miniz/miniz.c>
+}
+//#include "ziplib/zip.h"
 
 #include <vector>
 #include <cstring>
@@ -21,21 +26,27 @@ class ExtArchive : public Archive {
 class ZipFile : public Archive {
 public:
 	ZipFile(const string &fileName, const string &workDir = ".") : workDir(workDir) {
-		zipFile = zip_open(fileName.c_str(), 0, NULL);
+		//zipFile = zip_open(fileName.c_str(), 0, NULL);
+		memset(&zipArchive, 0, sizeof(zipArchive));
+		if(!mz_zip_reader_init_file(&zipArchive, fileName.c_str(), 0))
+			throw archive_exception("Could not open zip file");
 	}
 
 	~ZipFile() {
-		if(zipFile)
-			close();
+		close();
 	}
 
 	void close() {
-		zip_close(zipFile);
-		zipFile = nullptr;
+		mz_zip_reader_end(&zipArchive);
 	}
 
 	File extract(const string &name) {
-		int i = zip_name_locate(zipFile, name.c_str(), ZIP_FL_NOCASE);
+
+		File file(workDir + "/" + name);
+		mz_zip_reader_extract_file_to_file(&zipArchive, name.c_str(), workDir.c_str(), 0);
+		return file;
+
+		/*int i = zip_name_locate(zipFile, name.c_str(), ZIP_FL_NOCASE);
 		if(i >= 0) {
 			struct zip_file *zf = zip_fopen_index(zipFile, i, 0);
 			File file(workDir + "/" + name);
@@ -51,21 +62,28 @@ public:
 			zip_fclose(zf);
 			return file;
 		}
-		return File();
+		return File();*/
 	}
 
 	virtual string nameFromPosition(int pos) const {
-		struct zip_stat sz;
-		zip_stat_index(zipFile, pos, 0, &sz);
-		return string(sz.name);
+	mz_zip_archive_file_stat file_stat;
+    if(!mz_zip_reader_file_stat(const_cast<mz_zip_archive*>(&zipArchive), pos, &file_stat))
+    {}
+	return string(file_stat.m_filename);
+
+		//struct zip_stat sz;
+		//zip_stat_index(zipFile, pos, 0, &sz);
+		//return string(sz.name);
 	}
 
 	virtual int totalFiles() const {
-		return zip_get_num_files(zipFile);
+		return mz_zip_reader_get_num_files(const_cast<mz_zip_archive*>(&zipArchive));
+		//return zip_get_num_files(zipFile);
 	}
 
 private:
-	struct zip *zipFile;
+	mz_zip_archive zipArchive;
+	//struct zip *zipFile;
 	string workDir;
 };
 
