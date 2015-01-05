@@ -15,6 +15,13 @@ if (NOT TARGET coreutils)
 	add_subdirectory(../coreutils coreutils)
 endif()
 
+if (NOT TARGET freetype)
+  add_subdirectory(../freetype freetype)
+message("FREETYPE-2 ${FREETYPE_INCLUDE_DIR}")
+endif()
+
+
+
 if(APPLE)
    find_library(COCOA_LIBRARY Cocoa)
    find_library(CORE_VIDEO_LIBRARY CoreVideo)
@@ -23,60 +30,70 @@ if(APPLE)
 endif()
 
 
-find_path(FREETYPE_INCLUDE_DIR ft2build.h
-  HINTS
-    ENV FREETYPE_DIR
-  PATHS
-    /usr/X11R6
-    /usr/local/X11R6
-    /usr/local/X11
-    /usr/local
-    ENV GTKMM_BASEPATH
-    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
-    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
-  PATH_SUFFIXES include/freetype2 include
-)
+#find_path(FREETYPE_INCLUDE_DIR ft2build.h
+#  HINTS
+#    ENV FREETYPE_DIR
+#  PATHS
+#    /usr/X11R6
+#    /usr/local/X11R6
+#    /usr/local/X11
+#    /usr/local
+#    ENV GTKMM_BASEPATH
+#    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+#    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+#  PATH_SUFFIXES include/freetype2 include
+#)
+#
+#find_library(FREETYPE_LIBRARY
+#  NAMES freetype libfreetype freetype219
+#  HINTS
+#    ENV FREETYPE_DIR
+#  PATH_SUFFIXES lib
+#  PATHS
+#    /usr/X11R6
+#    /usr/local/X11R6
+#    /usr/local/X11
+#    /usr/freeware
+#    /usr/local
+#    ENV GTKMM_BASEPATH
+#    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+#    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+#)
 
-find_library(FREETYPE_LIBRARY
-  NAMES freetype libfreetype freetype219
-  HINTS
-    ENV FREETYPE_DIR
-  PATH_SUFFIXES lib
-  PATHS
-    /usr/X11R6
-    /usr/local/X11R6
-    /usr/local/X11
-    /usr/freeware
-    /usr/local
-    ENV GTKMM_BASEPATH
-    [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
-    [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
-)
+if(APPLE)
+  find_package(OpenGL REQUIRED)
+  find_package(GLEW REQUIRED)
+  find_library(GLFW_LIBRARY glfw3 REQUIRED)
 
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+  include_directories(${OPENGL_INCLUDE_DIRS})
 
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
+  include_directories(${GLEW_INCLUDE_DIRS})
 
-if(FREETYPE_LIBRARY)
-	set(EXTRA_LIBS ${EXTRA_LIBS} ${FREETYPE_LIBRARY})
-	include_directories(${FREETYPE_INCLUDE_DIR})
-	add_definitions(-DWITH_FREETYPE)
-else()
-	message(FATAL_ERROR "Could not find freetype")
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
+
+else() # PI
+  set(VC $(PI_SDK)/vc)
+  set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pi.cpp grappix/specific/eglutil.cpp)
+  set(EXTRA_LIBS ${EXTRA_LIBS} EGL GLESv2 vcos vchiq_arm bcm_host)
+  include_directories(${VC}/include ${VC}/include/interface/vcos/pthreads ${VC}/include/interface/vmcs_host/linux)
+
 endif()
 
-set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
-include_directories(${GLEW_INCLUDE_DIRS})
+#if(FREETYPE_LIBRARY)
+#	set(EXTRA_LIBS ${EXTRA_LIBS} ${FREETYPE_LIBRARY})
+#	include_directories(${FREETYPE_INCLUDE_DIR})
+#	add_definitions(-DWITH_FREETYPE)
+#else()
+#	message(FATAL_ERROR "Could not find freetype")
+#endif()
+
 
 message("GLEW LIBS " ${GLEW_LIBRARIES})
 
-
-set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-include_directories(${OPENGL_INCLUDE_DIRS})
-
-
-find_library(GLFW_LIBRARY glfw3 REQUIRED)
-set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
+add_definitions(-DWITH_FREETYPE)
+include_directories(${FREETYPE_INCLUDE_DIR})
 
 #LIBS += -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -framework OpenGL -lGLEW
 #set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
@@ -101,4 +118,4 @@ add_library(grappix ${SOURCE_FILES})
 
 message("EXTRA LIBS " ${EXTRA_LIBS})
 
-target_link_libraries(grappix coreutils image tween ${EXTRA_LIBS})
+target_link_libraries(grappix coreutils image tween freetype ${EXTRA_LIBS})
