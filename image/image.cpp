@@ -8,7 +8,7 @@
 #ifdef EMSCRIPTEN
 #include <SDL/SDL_image.h>
 #else
-#include <png.h>
+#include "lodepng.h"
 #endif
 using namespace std;
 using namespace utils;
@@ -35,6 +35,20 @@ void save_png(bitmap bitmap, const std::string &path) {
 
 
 bitmap load_png(const std::string &file_name) {
+
+	unsigned char* image;
+	unsigned width, height, error;
+
+	if((error = lodepng_decode32_file(&image, &width, &height, file_name.c_str())))
+		throw image_exception(lodepng_error_text(error));
+
+	bitmap bm(width, height, reinterpret_cast<uint32_t*>(image));
+
+	free(image);
+
+	return bm;
+
+#if 0
 	unsigned char header[8];    // 8 is the maximum size that can be checked
 
 	/* open file and test for it being a png */
@@ -112,9 +126,11 @@ bitmap load_png(const std::string &file_name) {
 	fclose(fp);
 
 	return bm;
+#endif
 }
 
 void save_png(bitmap bitmap, const std::string &path) {
+#if 0
 	FILE * fp;
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;
@@ -197,7 +213,7 @@ void save_png(bitmap bitmap, const std::string &path) {
 	
 	png_destroy_write_struct (&png_ptr, &info_ptr);
 	fclose (fp);
-
+#endif
 }
 
 
