@@ -2,29 +2,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(libmpg123)
 
 enable_language(ASM)
-
-set(SOURCE_FILES
-	compat.c
-	parse.c
-	frame.c
-	format.c
-	dct64.c
-	equalizer.c
-	id3.c
-	optimize.c
-	readers.c
-	tabinit.c
-	libmpg123.c
-	index.c
-	lfs_alias.c
 	# lfs_wrap.c
-	icy.c
-	icy2utf8.c
-	layer1.c
-	layer2.c
-	layer3.c
-	dither.c
-	feature.c
 	# dct36_3dnowext.S
 	# dct36_3dnow.S
 	# dct36_sse.S
@@ -58,7 +36,6 @@ set(SOURCE_FILES
 	# synth_stereo_sse_accurate.S
 	# synth_x86_64_accurate.S
 	# synth_stereo_x86_64_accurate.S
-	  synth_arm.S
 	# synth_arm_accurate.S
 	# synth_neon.S
 	# synth_neon_float.S
@@ -76,21 +53,47 @@ set(SOURCE_FILES
 	# synth_stereo_neon64_float.S
 	# synth_stereo_neon64_s32.S
 	# synth_stereo_neon64_accurate.S
-	#synth_stereo_avx_accurate.S
+	# synth_stereo_avx_accurate.S
+	# equalizer_3dnow.S
+	# tabinit_mmx.S
+	# getcpuflags.S
+
+set(SOURCE_FILES
+	compat.c
+	parse.c
+	frame.c
+	format.c
+	dct64.c
+	equalizer.c
+	id3.c
+	optimize.c
+	readers.c
+	tabinit.c
+	libmpg123.c
+	index.c
+	lfs_alias.c
+	icy.c
+	icy2utf8.c
+	layer1.c
+	layer2.c
+	layer3.c
+	dither.c
+	feature.c
 	ntom.c
 	synth.c
 	synth_8bit.c
 	synth_real.c
 	synth_s32.c
-	# equalizer_3dnow.S
-	# tabinit_mmx.S
 	stringbuf.c
-	# getcpuflags.S
-	  getcpuflags_arm.c
-	  check_neon.S
 )
 
 if(RASPBERRY)
+	set(SOURCE_FILES ${SOURCE_FILES}
+	  synth_arm.S
+	  getcpuflags_arm.c
+	  check_neon.S
+	)
+	add_definitions(-DOPT_ARM -DREAL_IS_FLOAT -DNOXFERMEM)
 else()
 	set(SOURCE_FILES ${SOURCE_FILES}
 		dct36_x86_64.S
@@ -110,11 +113,9 @@ else()
 		synth_stereo_avx_s32.S
 		getcpuflags_x86_64.S
 	)
+	add_definitions(-DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX -DNOXFERMEM)
 endif()
 
 include_directories(../.. ..)
-
-#add_definitions(-DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX -DNOXFERMEM)
-add_definitions(-DOPT_ARM -DREAL_IS_FLOAT -DNOXFERMEM)
 
 add_library(libmpg123 ${SOURCE_FILES})

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.musicplayer.usfplugin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -ffast-math -finline-functions -funswitch-loops")
 
 set(SOURCE_FILES
 	resampler.c
@@ -33,7 +34,6 @@ set(SOURCE_FILES
 	lazyusf/rsp_hle/musyx.c
 	lazyusf/rsp_hle/plugin.c
 )
-
 
 #usfplugin_CFLAGS = -O3 -ffast-math -finline-functions -funswitch-loops
 ## -ftree-vectorizer-verbose=1 -fpredictive-commoning -fgcse-after-reload -ftree-vectorize -fipa-cp-clone
