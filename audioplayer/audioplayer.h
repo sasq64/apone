@@ -14,47 +14,23 @@ public:
 	std::string msg;
 };
 
-#ifdef SDL_AUDIO
-#include "player_sdl.h"
-#elif defined WIN32
-#include "player_windows.h"
-#elif defined LINUX
-#include "player_linux.h"
-#elif defined ANDROID
-#include "player_sl.h"
-#else
-#include "player_sdl.h"
-#endif
-
+class InternalPlayer;
 
 class AudioPlayer {
 public:
-	AudioPlayer(int hz = 44100) : internalPlayer(std::make_shared<InternalPlayer>(hz)) {}
-	AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : internalPlayer(std::make_shared<InternalPlayer>(cb, hz)) {
-		staticInternalPlayer = internalPlayer;
-	}
+	AudioPlayer(int hz = 44100);
+	AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100);
 
-	static void play(std::function<void(int16_t *, int)> cb, int hz = 44100) {
-		staticInternalPlayer = std::make_shared<InternalPlayer>(cb, hz);
-	}
+	static void play(std::function<void(int16_t *, int)> cb, int hz = 44100);
 
-	static void close() {
-		staticInternalPlayer = nullptr;
-		//fprintf(stderr, "STATIC DESTROYED\n");
-	}
+	static void close();
 
-	void pause() { internalPlayer->pause(true); }
-	void resume() { internalPlayer->pause(false); }
+	void pause();
+	void resume();
 
-	static void pause_audio() { 
-		if(staticInternalPlayer)
-			staticInternalPlayer->pause(true);
-	}
+	static void pause_audio(); 
 
-	static void resume_audio() {
-		if(staticInternalPlayer)
-			staticInternalPlayer->pause(false);
-	}
+	static void resume_audio();
 
 	void touch() const {}
 

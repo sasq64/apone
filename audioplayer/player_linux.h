@@ -17,7 +17,6 @@ public:
 
 	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
 		playerThread = std::thread {&InternalPlayer::run, this};
-
 	}
 
 	void pause(bool on) {
@@ -30,7 +29,6 @@ public:
 			playerThread.join();
 		if(playback_handle)
 			snd_pcm_close(playback_handle);
-		//fprintf(stderr, "DESTROYED\n");
 	}
 
 	void run() {

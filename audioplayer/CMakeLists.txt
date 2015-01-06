@@ -3,7 +3,6 @@ project(cpp-mods.audioplayer)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-
 set(SOURCE_FILES audioplayer.cpp)
 
 if(APPLE)
@@ -12,6 +11,12 @@ if(APPLE)
 	include_directories(${SDL_INCLUDE_DIR})
 	add_definitions(-DSDL_AUDIO)
 	set(SOURCE_FILES ${SOURCE_FILES} player_sdl.cpp)
+else()
+	add_definitions(-DLINUX)
+	find_library(ASOUND_LIBRARY asound)
+	find_path(ASOUND_INCLUDE alsa/asoundlib.h)
+	set(EXTRA_LIBS ${EXTRA_LIBS} ${ASOUND_LIBRARY})
+	include_directories(${ASOUND_INCLUDE})
 endif()
 
 add_library(audioplayer ${SOURCE_FILES})

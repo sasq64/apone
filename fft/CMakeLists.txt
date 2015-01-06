@@ -30,7 +30,7 @@ foreach(DIR ${FFT_DIRS})
 endforeach()
 
 add_definitions(-DFFTW_SINGLE -DHAVE_CONFIG_H)
-include_directories(${FFTW} ${FFTW}/kernel ${FFTW}/rdft ${FFTW}/dft ${FFTW}/reodft ${FFTW}/rdft/scalar ${FFTW}/dft/scalar)
+include_directories(${FFTW} ${FFTW}/api ${FFTW}/kernel ${FFTW}/rdft ${FFTW}/dft ${FFTW}/reodft ${FFTW}/rdft/scalar ${FFTW}/dft/scalar)
 # -O3  -fstrict-aliasing -fno-schedule-insns -ffast-math -fomit-frame-pointer
 
 

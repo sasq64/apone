@@ -28,8 +28,6 @@ set(SOURCE_FILES
 	# dct36_3dnowext.S
 	# dct36_3dnow.S
 	# dct36_sse.S
-	dct36_x86_64.S
-	dct36_avx.S
 	# dct36_neon.S
 	# dct36_neon64.S
 	# dct64_3dnowext.S
@@ -40,14 +38,10 @@ set(SOURCE_FILES
 	# dct64_mmx.S
 	# dct64_sse.S
 	# dct64_sse_float.S
-	dct64_x86_64.S
-	dct64_x86_64_float.S
 	# dct64_neon.S
 	# dct64_neon_float.S
 	# dct64_neon64.S
 	# dct64_neon64_float.S
-	dct64_avx.S
-	dct64_avx_float.S
 	# synth_3dnowext.S
 	# synth_3dnow.S
 	# synth_altivec.c
@@ -62,15 +56,9 @@ set(SOURCE_FILES
 	# synth_stereo_sse_float.S
 	# synth_stereo_sse_s32.S
 	# synth_stereo_sse_accurate.S
-	synth_x86_64.S
-	synth_x86_64_float.S
-	synth_x86_64_s32.S
 	# synth_x86_64_accurate.S
-	synth_stereo_x86_64.S
-	synth_stereo_x86_64_float.S
-	synth_stereo_x86_64_s32.S
 	# synth_stereo_x86_64_accurate.S
-	# synth_arm.S
+	  synth_arm.S
 	# synth_arm_accurate.S
 	# synth_neon.S
 	# synth_neon_float.S
@@ -88,9 +76,6 @@ set(SOURCE_FILES
 	# synth_stereo_neon64_float.S
 	# synth_stereo_neon64_s32.S
 	# synth_stereo_neon64_accurate.S
-	synth_stereo_avx.S
-	synth_stereo_avx_float.S
-	synth_stereo_avx_s32.S
 	#synth_stereo_avx_accurate.S
 	ntom.c
 	synth.c
@@ -101,13 +86,35 @@ set(SOURCE_FILES
 	# tabinit_mmx.S
 	stringbuf.c
 	# getcpuflags.S
-	getcpuflags_x86_64.S
-	# getcpuflags_arm.c
-	# check_neon.S
+	  getcpuflags_arm.c
+	  check_neon.S
 )
+
+if(RASPBERRY)
+else()
+	set(SOURCE_FILES ${SOURCE_FILES}
+		dct36_x86_64.S
+		dct36_avx.S
+		dct64_x86_64.S
+		dct64_x86_64_float.S
+		dct64_avx.S
+		dct64_avx_float.S
+		synth_x86_64.S
+		synth_x86_64_float.S
+		synth_x86_64_s32.S
+		synth_stereo_x86_64.S
+		synth_stereo_x86_64_float.S
+		synth_stereo_x86_64_s32.S
+		synth_stereo_avx.S
+		synth_stereo_avx_float.S
+		synth_stereo_avx_s32.S
+		getcpuflags_x86_64.S
+	)
+endif()
 
 include_directories(../.. ..)
 
-add_definitions(-DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX -DNOXFERMEM)
+#add_definitions(-DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX -DNOXFERMEM)
+add_definitions(-DOPT_ARM -DREAL_IS_FLOAT -DNOXFERMEM)
 
 add_library(libmpg123 ${SOURCE_FILES})

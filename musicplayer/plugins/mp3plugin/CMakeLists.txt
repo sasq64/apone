@@ -11,6 +11,7 @@ set(SOURCE_FILES MP3Plugin.cpp)
 #message(${MPG123_LIBRARY})
 
 add_subdirectory(mpg123-1.21.0/src/libmpg123 libmpg123)
+include_directories(mpg123-1.21.0/src/libmpg123)
 
 add_library(mp3plugin ${SOURCE_FILES})
 target_link_libraries(mp3plugin libmpg123)
