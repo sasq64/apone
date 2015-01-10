@@ -9,4 +9,5 @@ add_definitions(-DBLARGG_LITTLE_ENDIAN -DHAVE_ZLIB_H)
 find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 add_library(gmeplugin GMEPlugin.cpp ${SOURCE_FILES})
+
 target_link_libraries(gmeplugin ${ZLIB_LIBRARIES})

@@ -13,6 +13,15 @@ set(SOURCE_FILES MP3Plugin.cpp)
 add_subdirectory(mpg123-1.21.0/src/libmpg123 libmpg123)
 include_directories(mpg123-1.21.0/src/libmpg123)
 
+if (NOT TARGET crypto)
+	if (${CPP_MODS})
+		add_subdirectory(${CPP_MODS}/crypto crypto)
+	else()
+		add_subdirectory(../../../crypto crypto)
+	endif()
+endif()
+
+
 add_library(mp3plugin ${SOURCE_FILES})
-target_link_libraries(mp3plugin libmpg123)
+target_link_libraries(mp3plugin libmpg123 curl)
 #${MPG123_LIBRARY})

@@ -175,4 +175,4 @@ if (NOT TARGET crypto)
 endif()
 
 add_library(viceplugin ${SOURCE_FILES})
-target_link_libraries(viceplugin crypto)
+target_link_libraries(viceplugin crypto z)

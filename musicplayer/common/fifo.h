@@ -11,6 +11,7 @@ class Fifo {
 
 public:
 	Fifo(int size) {
+		this->size = size;
 		volume = 1.0;
 		buffer = NULL;
 		if(size > 0) {
@@ -89,6 +90,8 @@ public:
 
 	int filled() { return bufPtr - buffer; }
 
+	int left() { return size - (bufPtr - buffer); }
+
 	int getSilence() { return position - lastSoundPos; }
 	void setVolume(float v) { volume = v; }
 
@@ -101,7 +104,7 @@ private:
 
 	//short startLoop[44100*10];
 	//int loopPos;
-	//int size;
+	int size;
 	int lastSoundPos;
 	int position;
 	uint8_t *buffer;

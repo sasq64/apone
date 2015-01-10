@@ -196,6 +196,8 @@ File File::findFile(const string &path, const string &name) {
 	return NO_FILE;
 }
 
+#ifdef APP_NAME
+
 const std::string File::getCacheDir() {
     const char *home = getenv("HOME");
     auto d = format("%s/.cache/" APP_NAME_STR, home);
@@ -222,6 +224,8 @@ const std::string File::getUserDir() {
         utils::makedirs(d);
     return d + "/";
 }
+
+#endif
 
 
 int64_t File::getSize() {
@@ -293,10 +297,17 @@ File::~File() {
 }
 
 void File::setAppDir(const std::string &a) {
+	LOGD("Setting appdir to %s", a);
 	appDir = a;
 }
 
 const std::string File::getAppDir() {
+	if(appDir == "") {
+		if(APP_NAME_STR != "")
+			appDir = "/usr/share/" APP_NAME_STR;
+		else
+			throw io_exception("No appDir specified");
+	}
 	return appDir;
 }
 

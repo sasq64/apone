@@ -488,9 +488,9 @@ bool VicePlugin::canHandle(const std::string &name) {
 ChipPlayer *VicePlugin::fromFile(const std::string &fileName) {
 	return new VicePlayer { fileName };
 }
+
 vector<uint8_t> VicePlugin::mainHash;
 vector<uint16_t> VicePlugin::extraLengths;
-
 unordered_map<string, VicePlugin::STILSong> VicePlugin::stilSongs;
 
 vector<uint16_t> VicePlugin::findLengths(uint32_t key) {

@@ -7,3 +7,4 @@ Naming
 
 * ClassName, methodName, variable_name
 
+Build structure
