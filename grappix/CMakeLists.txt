@@ -45,7 +45,9 @@ elseif(UNIX)
   include_directories(${GLEW_INCLUDE_DIRS})
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
-
+  if(NOT APPLE)
+    set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
+  endif()
 endif()
 
 message("GLEW LIBS " ${GLEW_LIBRARIES})

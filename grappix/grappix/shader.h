@@ -53,8 +53,6 @@ public:
 		createProgram();
 	}
 
-	//Program(GLint p) : program(std::make_shared<ProgRef>(p)), vertexShader(-1), pixelShader(-1) {}
-
 	Program()  {}
 
 	Program(unsigned char *vertexSource, int vlen, unsigned char *fragmentSource, int flen) : vSource((const char*)vertexSource, vlen), fSource((const char*)fragmentSource, flen) {

@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <algorithm>
 
 #include "chipplayer.h"
 
@@ -28,25 +29,33 @@ public:
 		return fromFile("tmpfile");
 	}
 
+	virtual int priority() { return 0; }
+
 	static void createPlugins(const std::string &configDir, std::vector<std::shared_ptr<ChipPlugin>> &plugins) {
-		auto &functions = addAndGetPlugins();
-		for(auto &f : functions) {
+		for(auto &f : pluginConstructors()) {
 			plugins.push_back(f(configDir));
 		}
+
+		std::sort(plugins.begin(), plugins.end(), [](std::shared_ptr<ChipPlugin> a, std::shared_ptr<ChipPlugin> b) -> bool {
+			return a->priority() > b->priority();
+		});
+	}
+
+	static void addPluginConstructor(PluginConstructor pc) {
+		pluginConstructors().push_back(pc);
 	}
 
 	struct RegisterMe {
 		RegisterMe(PluginConstructor f) {
-			ChipPlugin::addAndGetPlugins(&f);
-		}
+			ChipPlugin::addPluginConstructor(f);
+		};
 	};
 
 
 private:
-	static std::vector<PluginConstructor> &addAndGetPlugins(PluginConstructor *f = nullptr) {
+	// Small trick to put a static variable in an h-file only
+	static std::vector<PluginConstructor> &pluginConstructors() {
 		static std::vector<PluginConstructor> constructors;
-		if(f)
-			constructors.push_back(*f);
 		return constructors;
 	};
 
