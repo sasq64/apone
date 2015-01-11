@@ -71,7 +71,7 @@ public:
 	int filled() { return bufPtr - buffer; }
 	int left() { return bufSize - (bufPtr - buffer); }
 	int size() { return bufSize; }
-	T *ptr() { return bufPtr; }
+	//T *ptr() { return bufPtr; }
 
 protected:
 

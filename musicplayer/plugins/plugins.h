@@ -14,5 +14,6 @@
 #include "adplugin/AdPlugin.h"
 #include "mp3plugin/MP3Plugin.h"
 #include "uadeplugin/UADEPlugin.h"
+#include "rsnplugin/RSNPlugin.h"
 
 #endif // MUSICPLAYER_PLUGINS_H
