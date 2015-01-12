@@ -7,8 +7,13 @@ set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-add_subdirectory(../image image)
-add_subdirectory(../tween tween)
+if(NOT TARGET image)
+  add_subdirectory(../image image)
+endif()
+
+if(NOT TARGET tween)
+  add_subdirectory(../tween tween)
+endif()
 
 if(NOT TARGET coreutils)
 	add_subdirectory(../coreutils coreutils)
@@ -16,8 +21,8 @@ endif()
 
 if(NOT TARGET freetype)
   add_subdirectory(../freetype freetype)
-message("FREETYPE-2 ${FREETYPE_INCLUDE_DIR}")
 endif()
+include_directories(${FREETYPE_INCLUDE_DIR})
 
 if(APPLE)
    find_library(COCOA_LIBRARY Cocoa)
@@ -50,15 +55,7 @@ elseif(UNIX)
   endif()
 endif()
 
-message("GLEW LIBS " ${GLEW_LIBRARIES})
-
 add_definitions(-DWITH_FREETYPE)
-include_directories(${FREETYPE_INCLUDE_DIR})
-
-#LIBS += -lglfw3 -framework Cocoa -framework IOKit -framework CoreVideo -framework OpenGL -lGLEW
-#if(UNIX)
-#	set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
-#endif()
 
 file(GLOB SHADERS grappix/shaders/*.glsl)
 file(MAKE_DIRECTORY .shader) 
@@ -72,12 +69,8 @@ foreach(SHADER ${SHADERS})
 	set(SOURCE_FILES ${SOURCE_FILES} ${SHADERNAME}.c)
 endforeach()
 
-#add_subdirectory(../coreutils coreutils)
 
 include_directories(.. grappix/freetype-gl)
 
 add_library(grappix ${SOURCE_FILES})
-
-message("EXTRA LIBS " ${EXTRA_LIBS})
-
 target_link_libraries(grappix coreutils image tween freetype ${EXTRA_LIBS})

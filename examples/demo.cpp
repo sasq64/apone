@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 		scr.text(font, "BALLS ON THE SCREEN!!", xpos-=4, 10, 0xe080c0ff, 15.0);
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
-		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), uvs, program);
+		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
 	
 		screen.flip();
 	});

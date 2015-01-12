@@ -54,6 +54,10 @@ public:
 		return Base_Color(r / x, g / x, b / x, a);
 	}
 
+	Base_Color operator*(float x) {
+		return Base_Color(r * x, g * x, b * x, a);
+	}
+
 	float& operator[](int i) { return data[i]; }
 	constexpr int size() const { return 4; }
 

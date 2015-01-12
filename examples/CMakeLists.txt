@@ -3,18 +3,10 @@ project(examples)
 
 add_definitions(-DAPP_NAME=examples)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
-# set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
-# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DCM_DEBUG")
-# set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} -DCM_DEBUG")
-
 set(CPP_MODS ../mods)
 
 include_directories(${CPP_MODS})
 
-file(GLOB SOURCE_FILES src/*.cpp)
 
 set(CPP_MODS_MODULES
 	coreutils
@@ -45,5 +37,3 @@ target_link_libraries(demo coreutils audioplayer grappix modplugin)
 add_executable(snake snake.cpp)
 target_link_libraries(snake coreutils grappix)
 
-#add_executable(demo demo.cpp)
-#target_link_libraries(demo ${CPP_MODS_MODULES})

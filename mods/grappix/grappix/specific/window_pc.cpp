@@ -33,7 +33,7 @@ std::deque<Window::click> Window::click_buffer;
 static GLFWwindow *gwindow;
 
 static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
-	if(action == GLFW_PRESS)
+	if(action == GLFW_PRESS || action == GLFW_REPEAT)
 		Window::key_buffer.push_back(key);
 }
 
