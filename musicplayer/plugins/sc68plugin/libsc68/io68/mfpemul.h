@@ -10,7 +10,7 @@
 /* Copyright (C) 1998-2011 Benjamin Gerard */
 
 #ifndef _IO68_MFPEMUL_H_
-#define _IO68_MFPEMUL_H
+#define _IO68_MFPEMUL_H_
 
 #include "io68_api.h"
 #include "emu68/struct68.h"

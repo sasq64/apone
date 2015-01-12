@@ -45,6 +45,8 @@ set(SOURCE_FILES
 	cmddata.cpp
 )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-logical-op-parentheses -Wno-dangling-else -Wno-switch")
+
 add_definitions(-DSILENT -DRARDLL)
 add_library(unrar ${SOURCE_FILES})
 

@@ -116,6 +116,10 @@ else()
 	add_definitions(-DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX -DNOXFERMEM)
 endif()
 
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
+
+
 include_directories(../.. ..)
 
 add_library(libmpg123 ${SOURCE_FILES})

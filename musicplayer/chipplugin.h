@@ -14,7 +14,7 @@ namespace chipmachine {
 class ChipPlugin {
 public:
 
-	typedef std::function<std::shared_ptr<ChipPlugin>(const std::string &)> PluginConstructor;
+	using PluginConstructor = std::function<std::shared_ptr<ChipPlugin>(const std::string &)>;
 
 	virtual ~ChipPlugin() {};
 

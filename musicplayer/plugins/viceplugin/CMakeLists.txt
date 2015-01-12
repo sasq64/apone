@@ -55,7 +55,7 @@ set(SOURCE_FILES
 	vice/zfile.c
 	vice/zipcode.c
 	vice/c64/c64-cmdline-options.c
-	vice/c64/c64embedded.c
+	#vice/c64/c64embedded.c
 	vice/c64/c64export.c
 	vice/c64/c64gluelogic.c
 	vice/c64/c64io.c

@@ -23,4 +23,8 @@ set(SOURCE_FILES
 include_directories(nds/vio2sf nds/vio2sf/desmume nds)
 add_definitions(-DLSB_FIRST -DHAVE_STDINT_H -D_strnicmp=strncasecmp)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-parentheses-equality -Wno-bitwise-op-parentheses -Wno-parentheses -Wno-pointer-sign  -Wno-dangling-else")
+
+
+
 add_library(ndsplugin ${SOURCE_FILES})

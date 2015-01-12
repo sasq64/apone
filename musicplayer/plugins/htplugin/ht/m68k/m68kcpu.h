@@ -46,9 +46,9 @@
 /* ======================================================================== */
 
 /* Check for > 32bit sizes */
-#define MAKE_INT_8(A) (INT8)(A)
-#define MAKE_INT_16(A) (INT16)(A)
-#define MAKE_INT_32(A) (INT32)(A)
+//#define MAKE_INT_8(A) (INT8)(A)
+//#define MAKE_INT_16(A) (INT16)(A)
+//#define MAKE_INT_32(A) (INT32)(A)
 
 
 /* ======================================================================== */

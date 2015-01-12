@@ -38,6 +38,7 @@ set(SOURCE_FILES
 #usfplugin_CFLAGS = -O3 -ffast-math -finline-functions -funswitch-loops
 ## -ftree-vectorizer-verbose=1 -fpredictive-commoning -fgcse-after-reload -ftree-vectorize -fipa-cp-clone
 ##-DARCH_MIN_ARM_NEON -mfpu=neon 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-typedef-redefinition")
 
 include_directories(. lazyusf lazyusf/rsp_hle)
 

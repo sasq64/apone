@@ -5,13 +5,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 set(SOURCE_FILES
 	OpenMPTPlugin.cpp
-	common/AudioCriticalSection.cpp
-	common/stdafx.cpp
+	#common/AudioCriticalSection.cpp
+	#common/stdafx.cpp
 	common/Logging.cpp
 	common/misc_util.cpp
-	common/mptPathString.cpp
+	#common/mptPathString.cpp
 	common/mptString.cpp
-	common/Profiler.cpp
+	#common/Profiler.cpp
 	common/serialization_utils.cpp
 	common/typedefs.cpp
 	common/version.cpp
@@ -20,7 +20,7 @@ set(SOURCE_FILES
 	libopenmpt/libopenmpt_impl.cpp
 	libopenmpt/libopenmpt_ext.cpp
 	soundlib/Dither.cpp
-	soundlib/Dlsbank.cpp
+	#soundlib/Dlsbank.cpp
 	soundlib/Fastmix.cpp
 	soundlib/ITCompression.cpp
 	soundlib/ITTools.cpp
@@ -78,7 +78,7 @@ set(SOURCE_FILES
 	soundlib/Sndmix.cpp
 	soundlib/SoundFilePlayConfig.cpp
 	soundlib/Tables.cpp
-	soundlib/Tagging.cpp
+	#soundlib/Tagging.cpp
 	soundlib/tuningbase.cpp
 	soundlib/tuningCollection.cpp
 	soundlib/tuning.cpp

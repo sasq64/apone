@@ -30,6 +30,7 @@ SET(SOURCE_FILES
 
 include_directories(. ../.. uade/src/include uade/src/frontends/include uade/src/frontends/common)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-sizeof-pointer-memaccess")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_library(uadeplugin ${SOURCE_FILES})

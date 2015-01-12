@@ -67,6 +67,8 @@ set(SOURCE_FILES
 		adplug/xsm.cpp
 )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unsequenced -Wno-bitwise-op-parentheses -Wno-unused-value -Wno-dangling-else -Wno-deprecated-register -Wno-empty-body")
+
 include_directories(opl libbinio adplug)
 
 add_library(adplugin ${SOURCE_FILES})
