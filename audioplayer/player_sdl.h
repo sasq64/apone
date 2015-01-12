@@ -17,7 +17,7 @@ public:
 	}
 	void init() {
 		//LOGD("Opening audio");
-		uint16_t bufSize = 32768/4;
+		uint16_t bufSize = 32768/16;
 		SDL_AudioSpec wanted = { 44100, AUDIO_S16, 2, 0, bufSize, 0, 0, fill_audio, this };
 	    if(SDL_OpenAudio(&wanted, NULL) < 0 ) {
 	        //fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
@@ -37,7 +37,11 @@ public:
 		iplayer->callback((int16_t*)stream, len/2);
 	}
 
+	int get_delay() const { return 1; }
+
+
 	~InternalPlayer() {
+		SDL_CloseAudio();
 	}
 
 	void writeAudio(int16_t *samples, int sampleCount) {

@@ -41,3 +41,9 @@ void AudioPlayer::resume_audio() {
 	if(staticInternalPlayer)
 		staticInternalPlayer->pause(false);
 }
+
+int AudioPlayer::get_delay() {
+	if(staticInternalPlayer)
+		return staticInternalPlayer->get_delay();
+	return 0;
+}

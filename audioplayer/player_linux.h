@@ -63,6 +63,13 @@ public:
 		}
 	}
 
+	int get_delay() const{
+	#ifdef RASPBERRYPI
+		return 12;
+	#else
+		return 19;
+	}
+
 	std::function<void(int16_t *, int)> callback;
 	bool quit;
 	int dspFD;

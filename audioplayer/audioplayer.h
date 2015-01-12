@@ -34,6 +34,8 @@ public:
 
 	void touch() const {}
 
+	static int get_delay();
+
 	//void writeAudio(int16_t *samples, int sampleCount) {
 	//	internalPlayer->writeAudio(samples, sampleCount);
 	//}
