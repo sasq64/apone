@@ -55,6 +55,10 @@ public:
 		rectangle(rec.x, rec.y, rec.w, rec.h, 0xffffffff, program);
 	}
 	void rectangle(float x, float y, float w, float h, uint32_t color, const Program &program = get_program(FLAT_PROGRAM));
+
+	template <typename T> void rectangle(T pos, float w, float h, uint32_t color, const Program &program = get_program(FLAT_PROGRAM)) {
+		rectangle(pos[0], pos[1], w, h, color, program);
+	}
 /*
 	template <typename TEXTURE, class = typename std::enable_if<std::is_compound<TEXTURE>::value>::type>
 	void image(TEXTURE t, float x, float y, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
