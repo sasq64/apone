@@ -39,8 +39,8 @@ void SpectrumAnalyzer::addAudio(int16_t *samples, int len) {
 
 		power[0] = si->fftout[0][0]*si->fftout[0][0];  /* DC component */
 		for(int k = 1; k < (fft_size+1)/2; ++k)  /* (k < fft_size/2 rounded up) */
-			power[k] = si->fftout[0][k]*si->fftout[0][k] + si->fftout[0][fft_size-k]*si->fftout[0][fft_size-k];
-		power[fft_size/2] = si->fftout[0][fft_size/2]*si->fftout[0][fft_size/2];  /* Nyquist freq. */
+			power[k] = si->fftout[k][0]*si->fftout[k][0] + si->fftout[fft_size-k][0]*si->fftout[fft_size-k][0];
+		power[fft_size/2] = si->fftout[fft_size/2][0]*si->fftout[fft_size/2][0];  /* Nyquist freq. */
 		float sum = 0;
 		int j = 0;
 
