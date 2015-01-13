@@ -31,8 +31,11 @@ if(APPLE)
    set(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${CORE_VIDEO_LIBRARY} ${IOKIT_LIBRARY})
 endif()
 
-
-if(RASPBERRY)
+if(EMSCRIPTEN)
+  set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
+  set(EXTRA_LIBS ${EXTRA_LIBS} -lGL)
+  
+elseif(RASPBERRY)
   set(VC ${PI_SYS_ROOT}/vc)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pi.cpp grappix/specific/eglutil.cpp)
   set(EXTRA_LIBS ${EXTRA_LIBS} EGL GLESv2 vcos vchiq_arm bcm_host)

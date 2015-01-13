@@ -11,7 +11,7 @@ struct SpectrumAnalyzer::Internal {
 	fftwf_plan fftwp;
 };
 
-SpectrumAnalyzer::SpectrumAnalyzer() : eq(eq_slots) {
+SpectrumAnalyzer::SpectrumAnalyzer() : eq(eq_slots), power(fft_size/2+1) {
 	si = new Internal();
 	//fftwp = rfftw_create_plan(fft_size, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
 	si->fftwp = fftwf_plan_dft_r2c_1d(fft_size, si->fftin, si->fftout, FFTW_ESTIMATE);
@@ -23,8 +23,6 @@ void SpectrumAnalyzer::popLevels() {
 }
 
 void SpectrumAnalyzer::addAudio(int16_t *samples, int len) {
-
-	static vector<float> power(fft_size/2+1);
 
 	int pos = 0;
 

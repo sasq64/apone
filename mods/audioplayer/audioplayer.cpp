@@ -14,7 +14,6 @@
 
 std::shared_ptr<InternalPlayer> AudioPlayer::staticInternalPlayer;
 
-
 AudioPlayer::AudioPlayer(int hz) : internalPlayer(std::make_shared<InternalPlayer>(hz)) {}
 AudioPlayer::AudioPlayer(std::function<void(int16_t *, int)> cb, int hz) : internalPlayer(std::make_shared<InternalPlayer>(cb, hz)) {
 	staticInternalPlayer = internalPlayer;
@@ -26,7 +25,6 @@ void AudioPlayer::play(std::function<void(int16_t *, int)> cb, int hz) {
 
 void AudioPlayer::close() {
 	staticInternalPlayer = nullptr;
-	//fprintf(stderr, "STATIC DESTROYED\n");
 }
 
 void AudioPlayer::pause() { internalPlayer->pause(true); }

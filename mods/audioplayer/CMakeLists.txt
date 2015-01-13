@@ -5,7 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 set(SOURCE_FILES audioplayer.cpp)
 
-if(APPLE)
+if(APPLE OR EMSCRIPTEN)
 	find_package(SDL)
 	set(EXTRA_LIBS ${EXTRA_LIBS} ${SDL_LIBRARY})
 	include_directories(${SDL_INCLUDE_DIR})

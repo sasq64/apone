@@ -1,10 +1,10 @@
 #ifndef AUDIOPLAYER_H
 #define AUDIOPLAYER_H
 
-#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <functional>
 
 class audio_exception : public std::exception {
 public:

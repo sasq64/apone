@@ -26,6 +26,8 @@ private:
 
 	std::vector<uint8_t> eq;
 
+	std::vector<float> power;
+
 	//fftw_real fftin[fft_size], fftout[fft_size];
 	//float fftin[fft_size];
 	struct Internal *si;

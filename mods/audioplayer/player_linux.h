@@ -68,6 +68,7 @@ public:
 		return 12;
 	#else
 		return 19;
+	#endif
 	}
 
 	std::function<void(int16_t *, int)> callback;

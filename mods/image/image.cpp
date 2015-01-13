@@ -23,7 +23,7 @@ bitmap load_png(const std::string &file_name) {
 	SDL_Surface* s = IMG_Load(file_name.c_str());
 	if(!s)
 		throw image_exception(format("Could not load %s", file_name));
-	return bitmap(s->w, s->h, s->pixels);
+	return bitmap(s->w, s->h, reinterpret_cast<uint32_t*>(s->pixels));
 }
 
 void save_png(bitmap bitmap, const std::string &path) {
