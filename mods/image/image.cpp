@@ -130,6 +130,8 @@ bitmap load_png(const std::string &file_name) {
 }
 
 void save_png(bitmap bitmap, const std::string &path) {
+
+	lodepng_encode32_file(path.c_str(), (const unsigned char*)bitmap.data(), bitmap.width(), bitmap.height());
 #if 0
 	FILE * fp;
 	png_structp png_ptr = NULL;
