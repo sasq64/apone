@@ -152,6 +152,8 @@ public:
 		return true;
 	}
 
+	int size() { return totalItems; }
+
 private:
 
 	Renderer *renderer;

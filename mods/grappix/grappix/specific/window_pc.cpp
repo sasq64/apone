@@ -1,10 +1,11 @@
 #include "../window.h"
 #include "../GL_Header.h"
 #include <tween/tween.h>
-#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <unordered_map>
 #include <functional>
+#include <GLFW/glfw3.h>
+
 //#include <math.h>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -50,7 +51,15 @@ static void mouse_fn(GLFWwindow *gwin, int button, int action, int mods) {
 #ifndef EMSCRIPTEN
 static void resize_fn(GLFWwindow *gwin, int w, int h) {
 	LOGD("Size now %d %d", w, h);
-	screen.resize(w, h);
+
+	//screen.resize(w, h);
+
+	int fw, fh;
+	glfwGetFramebufferSize(gwindow, &fw, &fh);
+	glViewport(0, 0, fw, fh);
+	LOGD("FB %d %d", fw, fh);
+	screen.resize(fw, fh);
+
 };
 #endif
 
@@ -70,7 +79,8 @@ void Window::open(int w, int h, bool fs) {
 	_height = h;
 	fs = false;
 	GLFWvidmode mode;
-	mode.RedBits = mode.GreenBits = mode.BlueBits = 8;
+	mode.redBits = mode.greenBits = mode.blueBits = 8;
+	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 #else
 	_width = w;
 	_height = h;
@@ -127,10 +137,6 @@ void Window::open(int w, int h, bool fs) {
 
 	setup(_width, _height);
 
-
-	glfwSwapInterval(1);
-
-
 	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
@@ -138,6 +144,7 @@ void Window::open(int w, int h, bool fs) {
 	glfwSetMouseButtonCallback(gwindow, mouse_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(gwindow, resize_fn);
+	glfwSwapInterval(1);
 #endif
 	//glfwEnable(GLFW_MOUSE_CURSOR);
 	glfwSetInputMode(gwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -169,7 +176,8 @@ static void runMainLoop() {
 void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	renderLoopFunction = f;
 #ifdef EMSCRIPTEN
-	emscripten_set_main_loop(runMainLoop, fps, false);
+	emscripten_set_main_loop(runMainLoop, 0, false);
+	glfwSwapInterval(1);
 #else
 	atexit([](){
 		auto lastMs = utils::getms();

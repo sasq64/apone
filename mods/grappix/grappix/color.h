@@ -50,6 +50,14 @@ public:
 		return Base_Color(r + x, g + x, b + x, a);
 	}
 
+	Base_Color operator+(const Base_Color &other) {
+		return Base_Color(r + other.r, g + other.g, b + other.b, a + other.a);
+	}
+
+	Base_Color operator-(const Base_Color &other) {
+		return Base_Color(r - other.r, g - other.g, b - other.b, a - other.a);
+	}
+
 	Base_Color operator/(float x) {
 		return Base_Color(r / x, g / x, b / x, a);
 	}

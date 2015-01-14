@@ -108,6 +108,7 @@ public:
 	void resize(int w, int h) {
 		_width = w;
 		_height = h;
+		update_matrix();
 	}
 
 	static std::deque<int> key_buffer;

@@ -100,6 +100,15 @@ public:
 		return fSource;
 	}
 
+	void setVertexSource(const std::string &source) {
+		vSource = source;
+		createProgram();
+	}
+
+	std::string getVertexSource() {
+		return vSource;
+	}
+
 	GLuint getAttribLocation(const std::string &name) const {
 		GLuint a;
 		if(attributes.count(name) == 0) {
@@ -149,6 +158,11 @@ public:
 	void setUniform(const std::string &name, const Color &c) const {
 		auto h = getUniformLocation(name);
 		glUniform4f(h, c.r, c.g, c.b, c.a);
+	}
+
+	void setUniform(const std::string &name, float *ptr, int count) const {
+		auto h = getUniformLocation(name);
+		glUniform1fv(h, count, ptr);
 	}
 
 	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
