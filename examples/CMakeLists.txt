@@ -7,13 +7,15 @@ set(CPP_MODS ../mods)
 
 include_directories(${CPP_MODS})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -g -Wno-warn-absolute-paths")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g -Wno-warn-absolute-paths")
 
 set(CPP_MODS_MODULES
 	coreutils
 	audioplayer
 	grappix
 	#bbsutils
-	fft
+	#fft
 	archive
 	#webutils
 	#json
@@ -28,12 +30,19 @@ include_directories(${CPP_MODS}/grappix)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-add_executable(simple simple.cpp)
-target_link_libraries(simple coreutils grappix)
+if(EMSCRIPTEN)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file data/stardust.mod")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file data/ObelixPro.ttf")
+endif()
+#add_executable(simple simple.cpp)
+#target_link_libraries(simple coreutils grappix)
 
 add_executable(demo demo.cpp)
 target_link_libraries(demo coreutils audioplayer grappix modplugin)
 
-add_executable(snake snake.cpp)
-target_link_libraries(snake coreutils grappix)
+#add_executable(snake snake.cpp)
+#target_link_libraries(snake coreutils grappix)
 
+if(EMSCRIPTEN)
+set_target_properties(demo PROPERTIES LINK_FLAGS "-s USE_GLFW=3 -s ASSERTIONS=2")
+endif()

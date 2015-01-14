@@ -48,7 +48,9 @@ int main(int argc, char **argv) {
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player->getSamples(target, len);
 	});
-      
+
+	LOGD("Loading font");
+
 	Font font = Font("data/ObelixPro.ttf", 24, Font::UPPER_CASE | Font::DISTANCE_MAP);
 
 	// Create our ball image
@@ -61,6 +63,8 @@ int main(int argc, char **argv) {
 
 	program = get_program(TEXTURED_PROGRAM).clone();
 	program.setFragmentSource(sineShaderF);
+
+	LOGD("Render loop");
 
 	screen.render_loop([=](uint32_t delta) mutable {
 		int count = sz*2;
