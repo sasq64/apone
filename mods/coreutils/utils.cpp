@@ -165,7 +165,7 @@ float clamp(float x, float a0, float a1) {
 
 void makedir(const std::string &name) {
 
-#ifdef WIN32
+#ifdef _WIN32
 	mkdir(name.c_str());
 #else
 	mkdir(name.c_str(), 07777);

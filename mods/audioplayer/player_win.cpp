@@ -1,45 +1,50 @@
 
-#include "AudioPlayerWindows.h"
+#include "player_win.h"
 
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
 
-AudioPlayerWindows::AudioPlayerWindows() : blockCounter(0), blockPosition(0), bufSize(32768), bufCount(4) {
+void InternalPlayer::init() {
 
-		WAVEFORMATEX wfx;
-		//MMRESULT result;
-		wfx.nSamplesPerSec = 44100;
-		wfx.wBitsPerSample = 16;
-		wfx.nChannels = 2;
-		wfx.cbSize = 0; /* size of _extra_ info */
-		wfx.wFormatTag = WAVE_FORMAT_PCM;
-		wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
-		wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
+	blockCounter = 0;
+	blockPosition = 0;
+	bufSize = 32768;
+	bufCount = 4;
 
-		if(waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD)AudioPlayerWindows::waveOutProc, (DWORD)this, CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
-			fprintf(stderr, "unable to open WAVE_MAPPER device\n");
-			ExitProcess(1);
-		}
+	WAVEFORMATEX wfx;
+	//MMRESULT result;
+	wfx.nSamplesPerSec = 44100;
+	wfx.wBitsPerSample = 16;
+	wfx.nChannels = 2;
+	wfx.cbSize = 0; /* size of _extra_ info */
+	wfx.wFormatTag = WAVE_FORMAT_PCM;
+	wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
+	wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
 
-		InitializeCriticalSection(&lock);
-
-		header.resize(bufCount);
-		buffer.resize(bufCount);
-
-		for(int i=0; i<bufCount; i++) {
-			buffer[i].resize(bufSize);
-			ZeroMemory(&header[i], sizeof(WAVEHDR));
-			header[i].lpData = (LPSTR) &buffer[i][0];
-		}
-
+	if(waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD)InternalPlayer::waveOutProc, (DWORD)this, CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+		fprintf(stderr, "unable to open WAVE_MAPPER device\n");
+		ExitProcess(1);
 	}
 
-AudioPlayerWindows::~AudioPlayerWindows() {
+	InitializeCriticalSection(&lock);
+
+	header.resize(bufCount);
+	buffer.resize(bufCount);
+
+	for(int i=0; i<bufCount; i++) {
+		buffer[i].resize(bufSize);
+		ZeroMemory(&header[i], sizeof(WAVEHDR));
+		header[i].lpData = (LPSTR) &buffer[i][0];
+	}
+
+}
+
+InternalPlayer::~InternalPlayer() {
 	waveOutClose(hWaveOut);
 }
 
-void AudioPlayerWindows::writeAudio(int16_t *samples, int sampleCount) {
+void InternalPlayer::writeAudio(int16_t *samples, int sampleCount) {
 
 		//printf("Writing block %d\n", blockPosition);
 

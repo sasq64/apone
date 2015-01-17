@@ -45,8 +45,8 @@ void Resources::update() {
 #include <unistd.h>
 #ifdef USE_INOTIFY
 #include <sys/inotify.h>
-#endif
 #include <sys/select.h>
+#endif
 
 #include <coreutils/utils.h>
 #include <coreutils/format.h>

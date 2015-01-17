@@ -167,7 +167,11 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 		string newUrl = line.substr(10);
 		LOGD("Redirecting to %s", newUrl);
 		string newTarget = urlencode(newUrl, ":/\\?;");
+#ifdef _WIN32 // TODO: Some way to simulate symlinks?
+		File::copy(job->target, newTarget);
+#else
 		symlink(newTarget.c_str(), job->target.c_str());
+#endif
 		job->target = job->targetDir + "/" + newTarget;
 	}
 

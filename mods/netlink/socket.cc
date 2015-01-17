@@ -562,7 +562,7 @@ void Socket::send(const void* buffer, size_t size) {
 
     while (sentData < size) {
 
-        int status = ::send(_socketHandler, (const char*)buffer + sentData, size - sentData, MSG_NOSIGNAL);
+        int status = ::send(_socketHandler, (const char*)buffer + sentData, size - sentData, 0);
 
         if(status == -1)
             throw Exception(Exception::ERROR_SEND, "Error sending data", getSocketErrorCode());

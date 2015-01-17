@@ -13,7 +13,7 @@
 class InternalPlayer {
 public:
 	InternalPlayer(int hz = 44100) : quit(false), playback_handle(nullptr), paused(false) {
-	}
+	};
 
 	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
 		playerThread = std::thread {&InternalPlayer::run, this};
@@ -39,7 +39,7 @@ public:
 			exit(1);
 		}
 		if((err = snd_pcm_set_params(playback_handle,
-		          SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 44100, 1, 500000)) < 0) {
+		          SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 44100, 1, 30000)) < 0) {
 			fprintf(stderr, "Playback open error: %s\n", snd_strerror(err));
 			exit(1);
 		}
@@ -65,9 +65,9 @@ public:
 
 	int get_delay() const{
 	#ifdef RASPBERRYPI
-		return 12;
+		return 1;
 	#else
-		return 19;
+		return 1;
 	#endif
 	}
 

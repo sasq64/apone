@@ -11,4 +11,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_library(sqlite3 ${SOURCE_FILES})
 
-target_link_libraries(sqlite3 dl pthread)
+target_link_libraries(sqlite3 pthread)

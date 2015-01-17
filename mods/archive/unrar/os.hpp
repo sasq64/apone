@@ -38,6 +38,9 @@
 
 #ifndef _WIN_CE
   #include <shellapi.h>
+
+  struct SOLE_AUTHENTICATION_SERVICE;
+
   #include <shlobj.h>
   #include <winioctl.h>
 

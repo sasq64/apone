@@ -276,7 +276,11 @@ void File::copy(const std::string &from, const std::string &to) {
 
 std::string File::resolvePath(const std::string &fileName) {
 	char temp[PATH_MAX];
+#ifdef _WIN32
+	if(_fullpath(temp, fileName.c_str(), PATH_MAX))
+#else
 	if(::realpath(fileName.c_str(), temp))
+#endif
 		return std::string(temp);
 	return fileName;
 }

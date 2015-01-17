@@ -71,7 +71,7 @@ PetsciiConsole::PetsciiConsole(Terminal &terminal) : Console(terminal) {
 
 	wstring s = L"\t╋┃━┏┓┗┛{}_";
 	vector<uint8_t> v { 0x20,0xdd,0xdb,0x60,0xb0,0xae,0xad,0xbd,0xb3,0xab,0xa4 };
-	for(uint i=0; i<v.size(); i++) {
+	for(unsigned i=0; i<v.size(); i++) {
 		unicodeToPetscii[s[i]] = v[i];
 	}
 }

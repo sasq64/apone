@@ -2,8 +2,8 @@
 
 #ifdef SDL_AUDIO
 #include "player_sdl.h"
-#elif defined WIN32
-#include "player_windows.h"
+#elif defined _WIN32
+#include "player_win.h"
 #elif defined LINUX
 #include "player_linux.h"
 #elif defined ANDROID

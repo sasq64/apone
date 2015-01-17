@@ -51,7 +51,7 @@ void Console::fill(int bg, int x, int y, int w, int h) {
 		}
 }
 
-static const u_int32_t offsetsFromUTF8[6] = {
+static const uint32_t offsetsFromUTF8[6] = {
 	0x00000000UL, 0x00003080UL, 0x000E2080UL,
 	0x03C82080UL, 0xFA082080UL, 0x82082080UL
 };
@@ -85,7 +85,7 @@ int u8_seqlen(char *s)
 */
 int u8_to_ucs(const char *src, uint32_t *dest, int sz)
 {
-	u_int32_t ch;
+	uint32_t ch;
 	int nb;
 	int i=0;
 

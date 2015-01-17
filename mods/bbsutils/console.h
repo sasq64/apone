@@ -9,7 +9,7 @@
 #include <coreutils/vec.h>
 
 #include <stdint.h>
-#include <termios.h>
+//#include <termios.h>
 #include <time.h>
 #include <string.h>
 #include <string>

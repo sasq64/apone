@@ -10,10 +10,13 @@ set(SOURCE_FILES
 	ansiconsole.cpp
 	console.cpp
 	editor.cpp
-	localconsole.cpp
 	petsciiconsole.cpp
 	telnetserver.cpp
 )
+
+if(NOT WINDOWS)
+  set(SOURCE_FILES ${SOURCE_FILES} localconsole.cpp)
+endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
