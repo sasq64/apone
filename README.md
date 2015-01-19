@@ -4,6 +4,8 @@
 
 Apone is a C++ *library*, or *collection of code modules* to help you write modern, portable applications -- specifially ones using graphics and audio.
 
+Apone uses cmake.
+
 ```c++
 #include <grappix/grappix.h>
 
@@ -20,20 +22,34 @@ int main() {
 }
 ```
 
+Take a look at EXAMPLES.md for more code examples.
+
 ## Platform support
+
+* Linux, Mac, Rasperry PI, Emscripten currently works.
+* Windows/Mingw and Android soon working (again).
+* iOS port should be doable.
+
 
 ### Posix Desktop (Linux, Mac)
 
+Should build right out of the box
+
 ### Windows
 
+Mingw support is almost done. Visual Studio will probably never work.
+
 ### Raspberry PI
+
+Should build right out of the box.
 
 #### Cross compile
 
 Requires
 
 * Raspberry PI cross compiler in your path (arm-linux-gnueabihf-gcc etc)
-* A copy of lib, usr/lib, usr/include and vc from a Rasbian Jessie installation
+
+`cmake -DCMAKE_TOOLCHAIN_FILE=../../cpp-mods/cmake/RaspberryPi.cmake -DCMAKE_BUILD_TYPE=Release`
 
 #### Native compile
 
