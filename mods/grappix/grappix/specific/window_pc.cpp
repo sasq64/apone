@@ -88,6 +88,15 @@ void Window::open(int w, int h, bool fs) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
+	int monitorCount;
+	GLFWmonitor **monitors = glfwGetMonitors(&monitorCount);
+	LOGD("%d monitors", monitorCount);
+	for(int i=0; i<monitorCount; i++) {
+		int mw,mh;
+		glfwGetMonitorPhysicalSize(monitors[i], &mw,  &mh);
+		LOGD("%d: %dx%d", i, mw, mh);
+	}
+	//GLFWmonitor *monitor = monitors[1];//glfwGetPrimaryMonitor();
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 

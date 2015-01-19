@@ -1,13 +1,18 @@
 # the name of the target operating system
 SET(CMAKE_SYSTEM_NAME Windows)
 
+#set(WHERE /usr)
+set(WHERE /usr/local/gcc-4.8.0-qt-4.8.4-for-mingw32/win32-gcc)
+#set(CPREFIX i686-w64-mingw32-)
+set(CPREFIX i586-mingw32-)
+
 # which compilers to use for C and C++
-SET(CMAKE_C_COMPILER i686-w64-mingw32-gcc)
-SET(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
-SET(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
+SET(CMAKE_C_COMPILER ${WHERE}/bin/${CPREFIX}gcc)
+SET(CMAKE_CXX_COMPILER ${WHERE}/bin/${CPREFIX}g++)
+SET(CMAKE_RC_COMPILER ${WHERE}/bin/${CPREFIX}windres)
 
 # here is the target environment located
-SET(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32 /home/sasq/winroot)
+SET(CMAKE_FIND_ROOT_PATH ${WHERE} /home/sasq/winroot)
 
 SET(WINDOWS 1)
 

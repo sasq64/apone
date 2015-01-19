@@ -24,6 +24,10 @@ if(NOT TARGET freetype)
 endif()
 include_directories(${FREETYPE_INCLUDE_DIR})
 
+#if(NOT TARGET glew)
+#  add_subdirectory(../glew glew)
+#endif()
+
 if(APPLE)
    find_library(COCOA_LIBRARY Cocoa)
    find_library(CORE_VIDEO_LIBRARY CoreVideo)
@@ -60,15 +64,14 @@ else()
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
 
   find_package(OpenGL REQUIRED)
-  #find_package(GLEW REQUIRED)
+  find_package(GLEW REQUIRED)
   find_library(GLFW_LIBRARY glfw3 REQUIRED)
+
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
 
-  set(SOURCE_FILES ${SOURCE_FILES} GL/glew.c GL/glewinfo.c GL/visualinfo.c)
-  include_directories(.)
-  #set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
-  #include_directories(${GLEW_INCLUDE_DIRS})
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
+  include_directories(${GLEW_INCLUDE_DIRS})
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
 
