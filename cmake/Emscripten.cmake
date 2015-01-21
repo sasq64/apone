@@ -1,5 +1,23 @@
 
-if(EXISTS /opt/emscripten)
+if(NOT EXISTS "$ENV{HOME}/.emscripten")
+	message(FATAL_ERROR "Emscripten not installed (could not find $ENV{HOME}/.emscripten)") 
+endif()
 
+file(READ "$ENV{HOME}/.emscripten" CONTENTS)
+string(REGEX MATCH "EMSCRIPTEN_ROOT=\\'([^\\']*)" EMSCRIPTEN_ROOT ${CONTENTS})
+set(EMSCRIPTEN_ROOT ${CMAKE_MATCH_1})
 
-include(${EMSCRIPTEN_ROOT}/cmake/)
+include(${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake)
+
+set(EXTRA_FLAGS "-DEMSCRIPTEN -Wno-warn-absolute-paths")
+
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${EXTRA_FLAGS})
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${EXTRA_FLAGS})
+
+set(CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} ${EXTRA_FLAGS})
+set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_FLAGS})
+set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} ${EXTRA_FLAGS})
+set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} ${EXTRA_FLAGS})
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=2")
+

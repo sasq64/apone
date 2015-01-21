@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 	Texture sprite { sz, sz };
 	vec2f xy {0,0};
 	int xpos = -9999;
-	Texture scr {screen.width()+200, 440};
+	Texture scr { screen.width()+200, 440 };
 	Program program;
 	float sinepos = 0;
 

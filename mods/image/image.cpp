@@ -8,8 +8,10 @@
 #ifdef EMSCRIPTEN
 #include <SDL/SDL_image.h>
 #else
-#include "lodepng.h"
 #endif
+
+#include "lodepng.h"
+
 using namespace std;
 using namespace utils;
 
