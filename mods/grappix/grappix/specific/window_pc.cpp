@@ -211,13 +211,18 @@ void Window::vsync() {
 //static uint64_t lastTime;
 
 void Window::flip() {
+
 	//auto t = chrono::high_resolution_clock::now();
-#ifdef FPS_COUNTER
 	auto tm = utils::getms();
 	auto d = tm - lastTime;
+	lastTime = tm;
+
+	if(d < 8)
+		utils::sleepms(8);
+
+#ifdef FPS_COUNTER
 	if(d > 0)
 		fps = fps * 0.8 + (1000 / d) * 0.2;
-	lastTime = tm;
 	text(utils::format("%d", (int)fps), 0,0);
 #endif
 	/*if(bmCounter) {

@@ -15,6 +15,10 @@
 #include <mutex>
 #include <thread>
 
+#ifdef _WIN32
+#undef DELETE
+#endif
+
 namespace grappix {
 
 class display_exception : public std::exception {
@@ -69,7 +73,7 @@ public:
 		ALT_RIGHT,
 		CTRL_LEFT,
 		CTRL_RIGHT,
-		WINDOWS,
+		WINDOW_KEY,
 		CLICK = 0x300,
 		RIGHT_CLICK,
 		NO_KEY = 0xffff
