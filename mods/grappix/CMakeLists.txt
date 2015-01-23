@@ -48,7 +48,7 @@ elseif(UNIX)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
   find_package(OpenGL REQUIRED)
   find_package(GLEW REQUIRED)
-  find_library(GLFW_LIBRARY glfw3 REQUIRED)
+  find_library(GLFW_LIBRARY glfw REQUIRED)
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
@@ -58,7 +58,8 @@ elseif(UNIX)
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
   if(NOT APPLE)
-    set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
+    #set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
+    set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lpthread)
   endif()
 else()
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
@@ -90,7 +91,6 @@ foreach(SHADER ${SHADERS})
 		DEPENDS ${SHADER})
 	set(SOURCE_FILES ${SOURCE_FILES} ${SHADERNAME}.c)
 endforeach()
-
 
 include_directories(.. grappix/freetype-gl)
 
