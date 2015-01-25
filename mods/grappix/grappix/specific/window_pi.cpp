@@ -156,9 +156,12 @@ void Window::open(int w, int h, bool fs) {
 					if(test_bit(evbit, EV_KEY)) {
 						ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
 						if(test_bit(keybit, KEY_LEFT) || test_bit(keybit, BTN_LEFT)) {
+							ioctl(fd, EVIOCGRAB, 1);
 							fdv.push_back(fd);
+							continue;
 						}
 					}
+					::close(fd);
 				} else
 					LOGW("Could not access %s", f.getName());
 			}
@@ -171,7 +174,8 @@ void Window::open(int w, int h, bool fs) {
 			return;
 
 		// TO avoid spamming the shell, maybe
-		close(0);
+		//::close(0);
+		//::close(1);
 
 		int maxfd = -1;
 
@@ -324,6 +328,11 @@ unordered_map<int, int> Window::translate = {
 	{ 'Y', KEY_Y },
 	{ 'Z', KEY_Z },
 	{ '0', KEY_0 },
+
+	{ '-', KEY_MINUS },
+	{ '=', KEY_EQUAL },
+	{ '[', KEY_LEFTBRACE },
+	{ ']', KEY_LEFTBRACE },
 	{ F11, F11 },
 	{ F12, F12 },
 	{ BTN_LEFT, CLICK },
@@ -339,10 +348,15 @@ unordered_map<int, int> Window::translate = {
 	{ ESCAPE, KEY_ESC },
 	{ BACKSPACE, KEY_BACKSPACE },
 	{ DELETE, KEY_DELETE },
+	{ TAB, KEY_TAB },
+	{ END, KEY_END },
+	{ HOME, KEY_HOME },
 	{ SHIFT_LEFT, KEY_LEFTSHIFT },
 	{ SHIFT_RIGHT, KEY_RIGHTSHIFT },
-	{ ALT_LEFT, KEY_LEFTMETA },
-	{ ALT_RIGHT, KEY_RIGHTMETA },
+	{ WINDOW_LEFT, KEY_LEFTMETA },
+	{ WINDOW_RIGHT, KEY_RIGHTMETA },
+	{ ALT_LEFT, KEY_LEFTALT },
+	{ ALT_RIGHT, KEY_RIGHTALT },
 	{ CTRL_LEFT, KEY_LEFTCTRL},
 	{ CTRL_RIGHT, KEY_RIGHTCTRL }
 };

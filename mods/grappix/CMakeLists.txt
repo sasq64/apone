@@ -86,6 +86,7 @@ endif()
 add_definitions(-DWITH_FREETYPE)
 
 file(GLOB SHADERS grappix/shaders/*.glsl)
+file(MAKE_DIRECTORY .shaderx) 
 file(MAKE_DIRECTORY .shader) 
 foreach(SHADER ${SHADERS})
 	message(${SHADER})

@@ -10,6 +10,9 @@
 #include <vector>
 #include <atomic>
 
+#include <coreutils/log.h>
+#include <coreutils/file.h>
+
 class InternalPlayer {
 public:
 	InternalPlayer(int hz = 44100) : quit(false), playback_handle(nullptr), paused(false) {
@@ -65,18 +68,25 @@ public:
 		const char *card = "default";
 		const char *selem_name = "Master";
 
-		snd_mixer_open(&handle, 0);
-		snd_mixer_attach(handle, card);
-		snd_mixer_selem_register(handle, NULL, NULL);
-		snd_mixer_load(handle);
+		if(snd_mixer_open(&handle, 0) < 0)
+			throw utils::io_exception("mixer_open");
+		if(snd_mixer_attach(handle, card) < 0)
+			throw utils::io_exception("mixer attach");
+		if(snd_mixer_selem_register(handle, NULL, NULL) < 0)
+			throw utils::io_exception("selem register");
+		if(snd_mixer_load(handle) < 0)
+			throw utils::io_exception("load");
 
 		snd_mixer_selem_id_alloca(&sid);
 		snd_mixer_selem_id_set_index(sid, 0);
-		snd_mixer_selem_id_set_name(sid, selem_name);
+		snd_mixer_selem_id_set_name(sid, "PCM");
 		snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
-
-		snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
-		snd_mixer_selem_set_playback_volume_all(elem, volume * max / 100);
+		if(elem) {
+			snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+			LOGD("MINMAX %d %d", min, max);
+			snd_mixer_selem_set_playback_volume_all(elem, volume * (max - min) / 100 + min);
+		} else
+			LOGD("Could not change volume");
 
 		snd_mixer_close(handle);
 	}
@@ -90,7 +100,7 @@ public:
 
 	int get_delay() const{
 	#ifdef RASPBERRYPI
-		return 3;
+		return 1;
 	#else
 		return 1;
 	#endif

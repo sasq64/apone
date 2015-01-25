@@ -91,12 +91,17 @@ public:
 	}
 
 	template <typename T, typename = is_compound<T>>
+	void draw(const T &t, float x0, float y0, float w, float h, float *uvs, uint32_t color, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
+		draw_texture(t.id(), x0, y0, w, h, uvs, program, color);
+	}
+
+	template <typename T, typename = is_compound<T>>
 	void draw(const T &t, float x0 = 0, float y0 = 0, const Program &program = get_program(TEXTURED_PROGRAM) ) const {
 		draw_texture(t.id(), x0, y0, t.width(), t.height(), nullptr, program);
 	}
 
-	void draw_textures(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
-	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM) ) const;
+	void draw_textures(GLint texture, float *points, int count, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM)) const;
+	void draw_texture(GLint texture, float x0, float y0, float w, float h, float *uvs = nullptr, const Program &program = get_program(TEXTURED_PROGRAM), uint32_t color = 0xffffffff ) const;
 
 	void clear(uint32_t color = 0xff000000);
 
