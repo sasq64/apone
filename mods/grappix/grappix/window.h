@@ -39,6 +39,7 @@ public:
 	void open(int w, int h, bool fs = false);
 	void flip();
 	void vsync();
+	void close();
 
 	enum key {
 		SPACE = 0x20,

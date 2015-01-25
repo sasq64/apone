@@ -57,7 +57,7 @@ public:
 	}
 
 
-	void setVolume(int volume) {
+	void set_volume(int volume) {
 
 		long min, max;
 		snd_mixer_t *handle;
@@ -90,7 +90,7 @@ public:
 
 	int get_delay() const{
 	#ifdef RASPBERRYPI
-		return 1;
+		return 3;
 	#else
 		return 1;
 	#endif

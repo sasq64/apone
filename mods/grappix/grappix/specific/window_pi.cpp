@@ -36,6 +36,10 @@ void Window::open(bool fs) {
 	open(0,0,fs);
 }
 
+void Window::close() {
+	winOpen = false;
+}
+
 std::deque<int> Window::key_buffer;
 static uint8_t pressed_keys[512];
 //static uint8_t modifiers = 0;

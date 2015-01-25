@@ -35,6 +35,13 @@ void AudioPlayer::pause_audio() {
 		staticInternalPlayer->pause(true);
 }
 
+void AudioPlayer::set_volume(int v) {
+#ifdef LINUX
+	if(staticInternalPlayer)
+		staticInternalPlayer->set_volume(v);
+#endif
+}
+
 void AudioPlayer::resume_audio() {
 	if(staticInternalPlayer)
 		staticInternalPlayer->pause(false);

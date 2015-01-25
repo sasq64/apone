@@ -26,6 +26,8 @@ void Window::open(bool fs) {
 	open(0,0,fs);
 }
 
+
+
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
 std::deque<int> Window::key_buffer;
@@ -210,6 +212,13 @@ void Window::vsync() {
 
 //static uint64_t lastTime;
 
+void Window::close() {
+	LOGD("QUIT");
+	glfwDestroyWindow(gwindow);
+	gwindow = nullptr;
+	winOpen = false;			
+}
+
 void Window::flip() {
 
 	//auto t = chrono::high_resolution_clock::now();
@@ -235,13 +244,14 @@ void Window::flip() {
 		}
 		return;
 	}*/
+
+	if(!gwindow)
+		return;
+
 	glfwSwapBuffers(gwindow);
 	glfwPollEvents();
-	if(glfwWindowShouldClose(gwindow) || (glfwGetKey(gwindow, GLFW_KEY_ESCAPE) && glfwGetKey(gwindow, GLFW_KEY_LEFT_SHIFT))) {
-		LOGD("QUIT");
-		glfwDestroyWindow(gwindow);
-		gwindow = nullptr;
-		winOpen = false;			
+	if(glfwWindowShouldClose(gwindow)) {
+		close();
 	}
 
 	//auto ms = chrono::duration_cast<chrono::microseconds>(t - startTime).count();

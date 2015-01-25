@@ -28,6 +28,8 @@ public:
 	void pause();
 	void resume();
 
+	static void set_volume(int percent);
+
 	static void pause_audio(); 
 
 	static void resume_audio();
