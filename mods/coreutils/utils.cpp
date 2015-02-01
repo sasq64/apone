@@ -101,6 +101,48 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	return lines;
 }
 
+static int16_t decode(const string &symbol) {
+	static unordered_map<std::string, int16_t> codes = {
+		{ "amp", '&' },
+		{ "gt", '>' },
+		{ "lt", '<' }
+	};
+
+	if(codes.count(symbol))
+		return codes[symbol];
+	return '?';
+}
+
+string htmldecode(const string &s) {
+
+	char target [s.length() + 1];
+	char *ptr = target;
+	char symbol[32];
+	char *sptr;
+
+	for(uint i=0; i<s.length(); i++) {
+		uint16_t c = s[i];
+		if(c == '&') {
+			sptr = symbol;
+			int saved = i;
+			i++;
+			while(isalnum(s[i]))
+				*sptr++ = s[i++];
+			*sptr = 0;
+			if(s[i] == ';') {
+				c = decode(symbol);
+			} else
+				i = saved;
+			LOGD("%s -> %02x", symbol, c);
+
+		}
+		*ptr ++ = c;
+	}
+	*ptr = 0;
+	return string(target);
+
+}
+
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
 	char *ptr = target;

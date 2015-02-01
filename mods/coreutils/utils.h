@@ -115,6 +115,8 @@ void replace_char(char *s, char c, char r);
 std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
 
+std::string htmldecode(const std::string &source);
+
 void sleepms(uint ms);
 uint64_t getms();
 void makedir(const std::string &name);
