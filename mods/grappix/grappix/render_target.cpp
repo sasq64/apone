@@ -26,6 +26,7 @@ namespace grappix {
 GLint RenderTarget::circleBuf = -1;
 GLint RenderTarget::recBuf = -1;
 GLint RenderTarget::lineBuf = -1;
+static GLint lineBuf2 = -1;
 GLint RenderTarget::multiBuf[2] = {-1, -1};
 
 void RenderTarget::clear(uint32_t color) {
@@ -34,6 +35,78 @@ void RenderTarget::clear(uint32_t color) {
 	auto c = Color(color);
 	glClearColor(c.red, c.green, c.blue, c.alpha);
 	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void RenderTarget::glowLine(vec2f v0, vec2f v1, uint32_t color) {
+
+	auto vn0 = (v1-v0).normalize();
+	auto vn1 = (v0-v1).normalize();
+
+	if(lineBuf2 == -1) {
+		static vector<float> p {
+			-1, 1,
+			1, 1,
+			-1, -1,
+			1, -1,
+			0,0,1,0,0,1,1,1
+		};
+		glGenBuffers(1, (GLuint*)&lineBuf2);
+		glBindBuffer(GL_ARRAY_BUFFER, lineBuf2);
+		glBufferData(GL_ARRAY_BUFFER, p.size() * 4, &p[0], GL_STATIC_DRAW);
+	} else {
+		glBindBuffer(GL_ARRAY_BUFFER, lineBuf2);
+	}
+
+ 	vector<float> p(8);
+	p[0] = v0.x - vn0.y;
+	p[1] = v0.y + vn0.x;
+
+	p[2] = v1.x - vn1.y;
+	p[3] = v1.y + vn1.x;
+
+	p[4] = v0.x + vn0.y;
+	p[5] = v0.y - vn0.x;
+
+	p[6] = v1.x + vn1.y;
+	p[7] = v1.y - vn1.x;
+
+	glBufferSubData(GL_ARRAY_BUFFER, 8 * 4, 0, &p[0]);
+
+	auto &program = get_program(FLAT_PROGRAM);
+
+	program.use();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glViewport(0,0,_width,_height);
+
+	//if(texture >= 0)
+	//	glBindTexture(GL_TEXTURE_2D, texture);
+
+	mat4f matrix = make_scale(globalScale, globalScale);
+	//matrix = make_rotate_z(xrot) * matrix;
+	//xrot += 0.5;
+	//matrix = make_translate(x + w/2, y + h/2) * matrix;
+
+	//matrix = make_perspective(M_PI, 1.0, 0, 10) * matrix;
+
+	matrix = toScreen * matrix;
+
+	program.setUniform("matrix", matrix.transpose());
+
+	auto c = Color(color);
+	program.setUniform("color", c.red, c.green, c.blue, c.alpha);
+
+	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
+	//if(uvs)
+	//	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 16*4);
+	//else
+	//	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 16, 8);
+
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	//if(texture >= 0)
+	//	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) {
@@ -54,7 +127,7 @@ void RenderTarget::line(float x0, float y0, float x1, float y1, uint32_t color) 
 
 	GLuint posHandle = program.getAttribLocation("vertex");
 
-	glLineWidth(2.0);
+	glLineWidth(4.0);
 
 	auto c = Color(color);
 	program.setUniform("color", c.red, c.green, c.blue, 1.0);

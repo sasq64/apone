@@ -29,6 +29,8 @@ public:
 	void line(T p0, T p1, uint32_t color) {
 		line(p0[0], p0[1], p1[0], p1[1], color);
 	}
+	void glowLine(utils::vec2f p0, utils::vec2f p1, uint32_t color);
+
 	void line(float x0, float y0, float x1, float y1, uint32_t color);
 	void dashed_line(float x0, float y0, float x1, float y1, uint32_t color);
 
