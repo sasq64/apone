@@ -6,8 +6,8 @@
 #include <string>
 #ifdef EMSCRIPTEN
 #else
-#include <mutex>
 #include <future>
+#include <mutex>
 #include <thread>
 #endif
 #include <memory>

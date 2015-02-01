@@ -4,10 +4,10 @@
 #include <coreutils/file.h>
 
 #include <string>
+#include <future>
 #include <mutex>
 #include <thread>
 #include <memory>
-#include <future>
 #include <unordered_map>
 #include <cstdio>
 

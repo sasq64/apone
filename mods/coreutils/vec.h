@@ -171,6 +171,10 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 		return sqrt(rc);
 	}
 
+	vec normalize() {
+		return *this / dist();
+	}
+
 	template <typename VEC> has_index<VEC, T> dot(const VEC &v) const {
 		T r = 0;
 		for(int i=0; i<SIZE; i++)
