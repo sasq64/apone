@@ -54,7 +54,7 @@ Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 	tref = make_shared<texref>();
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	if(fmt == RGB16) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_6_5, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 	} else {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	}
@@ -69,14 +69,6 @@ Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tref->id, 0);
 	//glBindFramebuffer(GL_FRAMEBUFFER, old_fbo);
 	//glBindFramebuffer(GL_FRAMEBUFFER, fbuf);
-
-	//LOGD("ERROR %d", glGetError());
-	//GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	//LOGD("STATUS %d", status);
-/*if(status != GL_FRAMEBUFFER_COMPLETE) {
-	glfwSleep(100);
-}
-*/
 }
 
 }
