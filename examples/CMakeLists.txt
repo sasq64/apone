@@ -10,7 +10,7 @@ include_directories(${CPP_MODS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g")
 
-set(CPP_MODS_MODULES
+set(APONE_MODULES
 	coreutils
 	audioplayer
 	grappix
