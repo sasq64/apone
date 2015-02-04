@@ -24,11 +24,6 @@ if(NOT TARGET freetype)
 endif()
 include_directories(${FREETYPE_INCLUDE_DIR})
 
-if(NOT TARGET glew)
-  add_subdirectory(../glew glew)
-  add_definitions(-DGLEW_STATIC)
-  set(EXTRA_LIBS ${EXTRA_LIBS} glew)
-endif()
 
 if(APPLE)
    find_library(COCOA_LIBRARY Cocoa)
@@ -55,6 +50,11 @@ elseif(UNIX)
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
 
+if(NOT TARGET glew)
+  add_subdirectory(../glew glew)
+  add_definitions(-DGLEW_STATIC)
+  set(EXTRA_LIBS ${EXTRA_LIBS} glew)
+endif()
   #set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
   #include_directories(${GLEW_INCLUDE_DIRS})
 
