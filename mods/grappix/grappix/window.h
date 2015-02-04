@@ -6,6 +6,7 @@
 #include <tween/tween.h>
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
+#include <coreutils/events.h>
 #include <chrono>
 #include <unordered_map>
 #include <set>
@@ -29,6 +30,10 @@ private:
 	std::string msg;
 };
 
+struct KeyEvent {
+	KeyEvent(int c) : code(c) {}
+	int code;
+};
 
 class Window : public RenderTarget {
 public:
@@ -117,7 +122,6 @@ public:
 		update_matrix();
 	}
 
-	static std::deque<int> key_buffer;
 	static std::deque<click> click_buffer;
 
 
@@ -220,6 +224,8 @@ public:
 	std::function<void()> focus_func;
 	std::function<void()> focus_lost_func;
 
+	static std::unordered_map<int, int> translate;
+
 private:
 
 
@@ -253,8 +259,6 @@ private:
 
 	std::mutex safeMutex;
 	std::deque<std::function<void()>> safeFuncs;
-
-	static std::unordered_map<int, int> translate;
 
 	std::thread keyboardThread;
 };

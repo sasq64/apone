@@ -26,18 +26,26 @@ void Window::open(bool fs) {
 	open(0,0,fs);
 }
 
-
-
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
-std::deque<int> Window::key_buffer;
 std::deque<Window::click> Window::click_buffer;
 
 static GLFWwindow *gwindow;
 
 static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
-	if(action == GLFW_PRESS || action == GLFW_REPEAT)
-		Window::key_buffer.push_back(key);
+	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
+
+		int realkey = key;
+		for(auto t : Window::translate) {
+			if(t.second == key) {
+				realkey = t.first;
+				break;
+			}
+		}
+
+		putEvent<KeyEvent>(realkey);
+	}
+		//Window::key_buffer.push_back(key);
 }
 
 static void mouse_fn(GLFWwindow *gwin, int button, int action, int mods) {
@@ -326,15 +334,9 @@ Window::click Window::get_click(bool peek) {
 }
 
 Window::key Window::get_key(bool peek) {
-	if(key_buffer.size() > 0) {
-		auto k = key_buffer.front();
-		if(!peek)
-			key_buffer.pop_front();
-		for(auto t : translate) {
-			if(t.second == k)
-				return (key)t.first;
-		}
-		//LOGD("%d", (key)k);
+	if(hasEvents<KeyEvent>()) {
+		auto ke = getEvent<KeyEvent>();
+		auto k = ke.code;
 		return (key)k;
 	}
 	return NO_KEY;

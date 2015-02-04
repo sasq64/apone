@@ -40,7 +40,6 @@ void Window::close() {
 	winOpen = false;
 }
 
-std::deque<int> Window::key_buffer;
 static uint8_t pressed_keys[512];
 //static uint8_t modifiers = 0;
 
@@ -206,8 +205,22 @@ void Window::open(int w, int h, bool fs) {
 						while(rc >= sizeof(struct input_event)) {
 							if(ptr->type == EV_KEY) {
 								LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
-								if(ptr->value)
-									key_buffer.push_back(ptr->code);
+								if(ptr->value) {
+									auto k = ptr->code;
+									if(k >= KEY_1 && k <= KEY_9)
+										k += ('1' - KEY_1);
+									else if(k >= KEY_F1 && k <= KEY_F10)
+										k += (F1-KEY_F1);
+									else {
+										for(auto t : Window::translate) {
+											if(t.second == k) {
+												k = t.first;
+												break;
+											}
+										}
+									}
+									putEvent<KeyEvent>(k);
+								}
 								if(ptr->code < 512)
 									pressed_keys[ptr->code] = ptr->value;
 							}
@@ -361,21 +374,11 @@ unordered_map<int, int> Window::translate = {
 	{ CTRL_RIGHT, KEY_RIGHTCTRL }
 };
 
+
 Window::key Window::get_key(bool peek) {
-	if(key_buffer.size() > 0) {
-		auto k = key_buffer.front();
-		if(!peek)
-			key_buffer.pop_front();
-		if(k >= KEY_1 && k <= KEY_9)
-			k += ('1' - KEY_1);
-		else if(k >= KEY_F1 && k <= KEY_F10)
-			k += (F1-KEY_F1);
-		else {
-			for(auto t : translate) {
-				if(t.second == k)
-					return (key)t.first;
-			}
-		}
+	if(hasEvents<KeyEvent>()) {
+		auto ke = getEvent<KeyEvent>();
+		auto k = ke.code;
 		return (key)k;
 	}
 	return NO_KEY;
