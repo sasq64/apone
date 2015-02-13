@@ -32,15 +32,14 @@ public:
 	int getReturnCode() const;
 	std::string getFile() const;
 	const std::vector<uint8_t>& getData() const { return data; }
+	void urlStream(const std::string &url, std::function<void(uint8_t*, int)> cb);
 	void urlGet(const std::string &url);
 private:
 #ifdef EMSCRIPTEN
 	static void onLoad(void *arg, const char *name);
 	static void onError(void *arg, int code);
 #else
-	static size_t writeDataFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
-	static size_t writeFileFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
-	static size_t streamFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
+	static size_t writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 	static size_t headerFunc(void *ptr, size_t size, size_t nmemb, void *userdata);
 
 	mutable std::mutex m;
@@ -53,7 +52,7 @@ private:
 	std::vector<uint8_t> data;
 	int32_t datapos;
 	std::string target;
-	std::function<void(uint8_t* data, int size)> streamCallback;
+	std::function<void(uint8_t *ptr, int size)> streamCallback;
 };
 
 
@@ -81,13 +80,23 @@ string WebGetter::Job::getFile() const {
 	return target;
 }
 
+void WebGetter::Job::urlStream(const std::string &url, std::function<void(uint8_t*, int)> cb) {
+
+	streamCallback = cb;
+	urlGet(url);
+}
+
 void WebGetter::Job::urlGet(const std::string &url) {
 
 	target = targetDir + "/" + urlencode(url, ":/\\?;");
+
 	LOGD("TARGET:%s", target);
+
 
 	int rc = 0;
 	if(!File::exists(target)) {
+
+		file = make_unique<File>(target + ".download", File::WRITE);
 
 		ongoingCalls++;
 
@@ -99,24 +108,33 @@ void WebGetter::Job::urlGet(const std::string &url) {
 		curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
-		if(datapos >= 0)
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeDataFunc);
-		else
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFileFunc);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
 		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, this);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 		rc = curl_easy_perform(curl);
 		LOGI("Curl returned %d", rc);
 		ongoingCalls--;
-		if(file)
-			file->close();
+		file->close();
+		file->rename(target);			
 		curl_easy_cleanup(curl);
 	} else {
 		LOGI("Getting %s from cache", target);
+		if(streamCallback) {
+			LOGD("Streaming from file, YAY");
+			vector<uint8_t> buffer(4096);
+			File f { target };
+			streamCallback(nullptr, f.getSize());
+			while(true) {
+				int rc = f.read(&buffer[0], buffer.size());
+				if(rc <= 0)
+					break;				
+				streamCallback(&buffer[0], rc);
+			}
+			f.close();
+		}
 	}
-
-	//if(fp)
-	//	fclose(fp);
+	if(streamCallback)
+		streamCallback(nullptr, 0);
 
 	m.lock();
 	returnCode = rc;
@@ -125,29 +143,21 @@ void WebGetter::Job::urlGet(const std::string &url) {
 
 }
 
-size_t WebGetter::Job::writeDataFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
-	Job *job = (Job*)userdata;
-	auto &v = job->data;
-	v.resize(v.size() + size * nmemb);
-	memcpy(&v[job->datapos], ptr, size * nmemb);
-	job->datapos += (size * nmemb);
-	return size * nmemb;
-}
+size_t WebGetter::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
 
-size_t WebGetter::Job::writeFileFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
 	Job *job = (Job*)userdata;
 
-	if(!job->file) {
-		job->file = make_unique<File>(job->target, File::WRITE);
-		LOGD("Opened %s", job->target);
+	if(job->datapos >= 0) {
+		auto &v = job->data;
+		v.resize(v.size() + size * nmemb);
+		memcpy(&v[job->datapos], ptr, size * nmemb);
+		job->datapos += (size * nmemb);
 	}
-	job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
 
-	return size * nmemb;
-}
-
-size_t WebGetter::Job::streamFunc(void *ptr, size_t size, size_t nmemb, void *userdata) {
-	static_cast<Job*>(userdata)->streamCallback(static_cast<uint8_t*>(ptr), size * nmemb);
+	if(job->streamCallback)
+		job->streamCallback(static_cast<uint8_t*>(ptr), size * nmemb);
+	if(job->file)
+		job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
 	return size * nmemb;
 }
 
@@ -161,8 +171,12 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 
 	auto line = string(text, sz);
 
-	log(VERBOSE, "HEADER:'%s'", line);
-
+	LOGD("HEADER:'%s'", line);
+	if(line.substr(0, 15) == "Content-Length:") {
+		int sz = stol(line.substr(16));
+		if(sz > 0 && job->streamCallback)
+			job->streamCallback(nullptr, sz);
+	} else
 	if(line.substr(0, 9) == "Location:") {
 		string newUrl = line.substr(10);
 		LOGD("Redirecting to %s", newUrl);
@@ -173,6 +187,7 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 		symlink(newTarget.c_str(), job->target.c_str());
 #endif
 		job->target = job->targetDir + "/" + newTarget;
+		job->file = make_unique<File>(job->target +".download", File::WRITE);
 	}
 
 	return size *nmemb;
@@ -186,7 +201,6 @@ WebGetter::WebGetter(const string &workDir, const string &base) : workDir(workDi
 WebGetter::Job* WebGetter::getURL(const string &url) {
 	return new Job(baseURL + url, workDir);
 }
-
 
 void WebGetter::getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)> callback) {
 	sf[scounter] = std::async(std::launch::async, [&]() {
@@ -241,6 +255,20 @@ void WebGetter::getFile(const std::string &url, std::function<void(const File&)>
 	counter = (counter+1)%4;
 }
 
-void streamData(const std::string &url, std::function<void(uint8_t* data, int size)> callback) {
+void WebGetter::streamData(const std::string &url, std::function<void(uint8_t* data, int size)> callback) {
+	f[counter] = std::async(std::launch::async, [=]() {
+		try {
+			Job job;
+			job.setTargetDir(workDir);
+			job.urlStream(baseURL + url, callback);
+			callback(nullptr, job.getReturnCode());
+			if((job.getReturnCode() != CURLE_OK) && errorCallback)
+				errorCallback(job.getReturnCode(), "");
+
+		} catch(std::exception &e) {
+			std::terminate();
+		}
+	});
+	counter = (counter+1)%4;
 }
 

@@ -33,6 +33,7 @@ public:
 
 	//void getURLData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
 	void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
+	//void getFile(const std::string &url, int wantBytes, std::function<void(const utils::File&)> done_callback, std::function<void(const utils::File&)> started_callback);
 	void streamData(const std::string &url, std::function<void(uint8_t* data, int size)> callback);
 
 private:
