@@ -17,6 +17,11 @@
 #include <emscripten.h>
 #endif
 
+#ifdef APPLE
+#include <mach-o/dyld.h>
+#endif
+
+
 #include <mutex>
 
 #ifdef ANDROID
@@ -133,7 +138,6 @@ string htmldecode(const string &s) {
 				c = decode(symbol);
 			} else
 				i = saved;
-			LOGD("%s -> %02x", symbol, c);
 
 		}
 		*ptr ++ = c;
@@ -385,16 +389,20 @@ void replace_char(char *s, char c, char r) {
 }
 
 std::string current_exe_path() {
-#ifdef LINUX
 	static char buf[1024];
+#ifdef LINUX
 	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
 	if(rc >= 0) {
 		buf[rc] = 0;
 		return path_directory(buf);
-	} return "";
-#else
-	return "";
+	}
+#elif defined APPLE
+	uint32_t size = sizeof(buf);
+	if(_NSGetExecutablePath(buf, &size) == 0) {
+		return path_directory(buf);
+	}
 #endif
+	return "";
 }
 
 static bool performCalled = false;

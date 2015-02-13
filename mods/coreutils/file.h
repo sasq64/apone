@@ -85,12 +85,15 @@ public:
 
 
 	int64_t getSize();
+	uint64_t getModified();
+	static uint64_t getModified(const std::string &fileName);
 
 	bool isDir() const;
 
 	std::vector<std::string> getLines();
 
 	void remove();
+	void rename(const std::string &newName);
 
 	void copyFrom(File &otherFile);
 	void copyFrom(const std::string &other);

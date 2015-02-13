@@ -183,14 +183,18 @@ const vector<uint8_t>& File::getData() {
 }
 
 File File::findFile(const string &path, const string &name) {
+	if(name == "")
+		return NO_FILE;
 	auto parts = split(path, ":");
 	for(string p : parts) {
-		if(p.length() > 0 && p[p.length()-1] != '/')
+		if(p.length() > 0) {
+			if(p[p.length()-1] != '/')
 			p += "/";
-		File f { p + name };
-		LOGD("Checking '%s'", f.getName());
-		if(f.exists())
-			return f;
+			File f { p + name };
+			LOGD("Checking '%s'", f.getName());
+			if(f.exists())
+				return f;
+		}
 	}
 	LOGD("NOT FOUND");
 	return NO_FILE;
@@ -227,6 +231,19 @@ const std::string File::getUserDir() {
 
 #endif
 
+uint64_t File::getModified() {
+	struct stat ss;
+	if(stat(fileName.c_str(), &ss) != 0)
+		throw io_exception {"Could not stat file"};
+	return (uint64_t)ss.st_mtime;
+}
+
+uint64_t File::getModified(const std::string &fileName) {
+	struct stat ss;
+	if(stat(fileName.c_str(), &ss) != 0)
+		throw io_exception {"Could not stat file"};
+	return (uint64_t)ss.st_mtime;
+}
 
 int64_t File::getSize() {
 	if(size < 0) {
@@ -248,6 +265,11 @@ bool File::isDir() const {
 void File::remove() {
 	if(std::remove(fileName.c_str()) != 0)
 		throw io_exception {"Could not delete file"};
+}
+
+void File::rename(const std::string &newName) {
+	if(std::rename(fileName.c_str(), newName.c_str()) != 0)
+		throw io_exception {"Could not rename file"};
 }
 
 void File::remove(const std::string &fileName) {

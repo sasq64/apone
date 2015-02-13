@@ -68,11 +68,33 @@ void log(LogLevel level, const std::string &text) {
 }
 
 void log2(const char *fn, int line, LogLevel level, const std::string &text) {
-
+	static int termType = 1;
 	const auto &space = LogSpace::spaces[fn];
 	if(space.second || space.first == "") {
 		char temp[2048];
-		sprintf(temp, "[%s:%d] ", fn, line);
+
+		if(!termType) {
+			const char *tt = std::getenv("TERM");
+			log(level, "TERMTYPE %s", tt ? tt : "NULL");
+			termType = 1;
+			if(tt) {
+				if(strncmp(tt, "xterm", 5) == 0) {
+					termType = 2;
+				}
+			}
+		}
+
+		if(termType == 2) {
+			int cs = 0;
+			for(int i=0; i<strlen(fn); i++)
+				cs = cs ^ fn[i];
+
+			cs = (cs % 6) + 1;
+
+			sprintf(temp, "\x1b[%dm[%s:%d]\x1b[%dm ", cs + 30, fn, line, 37);
+		} else {
+			sprintf(temp, "[%s:%d] ", fn, line);
+		}
 		log(level, std::string(temp).append(text));
 	}
 }
