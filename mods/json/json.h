@@ -51,10 +51,10 @@ public:
 	//JSon operator=(const std::string &val) {
 	//}
 
-	JSon operator()(const std::string &key) const {
+	JSon operator[](const char *key) const {
 		if(jtype != json_type_object)
 			throw json_exception("Not an object");
-		return JSon(json_object_object_get(obj, key.c_str()));
+		return JSon(json_object_object_get(obj, key));
 	}
 /*
 	JSon operator()(const std::string &key) {
@@ -98,7 +98,7 @@ public:
 		json_object_array_add(obj, j);
 	}
 
-	JSon operator()(const uint32_t index) const {
+	JSon operator[](const uint32_t index) const {
 		if(jtype != json_type_array)
 			throw json_exception("Not an array");
 		return JSon(json_object_array_get_idx(obj,index));
@@ -117,7 +117,7 @@ public:
 		return json_object_get_int(obj);
 	} 
 
-	template <typename T, class = typename std::enable_if<std::is_floating_point<T>::value>::type>
+	//template <typename T, class = typename std::enable_if<std::is_floating_point<T>::value>::type>
 	operator double() {
 		if(jtype != json_type_double)
 			throw json_exception("Not a double");

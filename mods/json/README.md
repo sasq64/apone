@@ -5,5 +5,5 @@ JSON
 
 ```C++
 JSon j { ... };
-string s = j(2)("name");
+string s = j[2]["name"];
 ```
