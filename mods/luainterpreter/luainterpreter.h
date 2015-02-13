@@ -176,8 +176,8 @@ public:
 	bool load(const std::string &code, const std::string &name = "");
 	bool loadFile(const std::string &name);
 
-	void getGlobal(const std::string &g);
-	void setGlobal(const std::string &g);
+	void getGlobalToStack(const std::string &g);
+	void setGlobalFromStack(const std::string &g);
 	void luaCall(int nargs, int nret);
 	void setOuputFunction(std::function<void(const std::string &)> f) {
 		outputFunction = f;
@@ -224,7 +224,7 @@ public:
 
 
 	template <class R, class... A> R call(const std::string &f, const A& ... args) {
-		getGlobal(f);
+		getGlobalToStack(f);
 		pushArg(L, args...);
 		luaCall(sizeof...(args), 1);
 		
@@ -234,7 +234,12 @@ public:
 
 	template <class T> void setGlobal(const std::string &name, T arg) {
 		pushArg(L, arg);
-		setGlobal(name);
+		setGlobalFromStack(name);
+	}
+
+	template <class T> T getGlobal(const std::string &name) {
+		getGlobalToStack(name);
+		return getArg<T>(L, 1);
 	}
 
 private:

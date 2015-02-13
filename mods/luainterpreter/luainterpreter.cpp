@@ -177,11 +177,11 @@ bool LuaInterpreter::loadFile(const string &fileName) {
 	return true;
 }
 
-void LuaInterpreter::getGlobal(const std::string &g) {
+void LuaInterpreter::getGlobalToStack(const std::string &g) {
 	lua_getglobal(L, g.c_str());
 }
 
-void LuaInterpreter::setGlobal(const string &name) {
+void LuaInterpreter::setGlobalFromStack(const string &name) {
 	lua_setglobal(L, name.c_str());
 }
 
