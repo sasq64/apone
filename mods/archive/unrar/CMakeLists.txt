@@ -5,7 +5,7 @@ set(SOURCE_FILES
 	filestr.cpp
 	scantree.cpp
 	dll.cpp
-	rar.cpp
+	#rar.cpp
 	strlist.cpp
 	strfn.cpp
 	pathfn.cpp
@@ -19,12 +19,12 @@ set(SOURCE_FILES
 	arcread.cpp
 	unicode.cpp
 	system.cpp
-	isnt.cpp
+	#isnt.cpp
 	crypt.cpp
 	crc.cpp
 	rawread.cpp
 	encname.cpp
-	resource.cpp
+	#resource.cpp
 	match.cpp
 	timefn.cpp
 	rdwrfn.cpp

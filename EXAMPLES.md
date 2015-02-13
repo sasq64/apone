@@ -77,7 +77,7 @@ for(const SongInfo &info : songs) {
 }
 rpc.post("get_song_url", json.to_string(), [=](const string &result) {
     JSon json = JSon::parse(result);
-    for(auto pl : json("urls")) {
+    for(auto pl : json["urls"]) {
         list.emplace_back(pl.to_string());
     }
 });

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.image)
 
-set(SOURCE_FILES image.cpp lodepng.cpp packer.cpp)
+set(SOURCE_FILES image.cpp lodepng.cpp)
+#packer.cpp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 #find_package(PNG REQUIRED)
