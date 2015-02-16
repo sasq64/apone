@@ -16,6 +16,11 @@
 //#include <sstream>
 #include <iomanip>
 #include <dirent.h>
+
+#ifdef APPLE
+#include <mach-o/dyld.h>
+#endif
+
 namespace utils {
 
 using namespace std;
@@ -26,9 +31,9 @@ string File::appDir = "/usr/share/" APP_NAME_STR;
 string File::userDir;
 
 
-File::File() : size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {}
+File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
-File::File(const string &name, Mode mode) : fileName(rstrip(name, '/')), size(-1), loaded(false), writeFP(nullptr), readFP(nullptr) {
+File::File(const string &name, const Mode mode) : fileName(rstrip(name, '/')), size(-1), writeFP(nullptr), readFP(nullptr) {
 
 	fileName = resolvePath(fileName);
 
@@ -36,9 +41,9 @@ File::File(const string &name, Mode mode) : fileName(rstrip(name, '/')), size(-1
 		open(mode);
 };
 
-File::File(const File &parent, const string &name, Mode mode) : File(parent.getName() + "/" + name, mode) {}
+File::File(const File &parent, const string &name, const Mode mode) : File(parent.getName() + "/" + name, mode) {}
 
-File::File(const string &parent, const string &name, Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
+File::File(const string &parent, const string &name, const Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
 
 vector<File> File::listFiles() {
 	DIR *dir;
@@ -56,24 +61,17 @@ vector<File> File::listFiles() {
 	return rc;
 }
 
-void File::readAll()  {		
-	if(!loaded) {
-		FILE *fp = fopen(fileName.c_str(), "rb");
-		if(!fp)
-			throw file_not_found_exception(fileName);
-		fseek(fp, 0, SEEK_END);
-		size = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		data.resize(size);
-		int rc = fread(&data[0], 1, size, fp);
-		if(rc != size)
-			throw io_exception{};
-		fclose(fp);
-		loaded = true;
-	}
+vector<uint8_t> File::readAll() {
+	vector<uint8_t> data;
+	seek(0);
+	data.resize(getSize());
+	int rc = read(&data[0], data.size());
+	if(rc != data.size())
+		throw io_exception{};
+	return data;
 }
 
-void File::open(Mode mode) {
+void File::open(const Mode mode) {
 	if(mode == READ) {
 		if(!readFP) {
 			readFP = fopen(fileName.c_str(), "rb");
@@ -92,15 +90,10 @@ void File::open(Mode mode) {
 
 }
 
-bool File::isChildOf(const File &f) {
+bool File::isChildOf(const File &f) const {
 	string myPath = resolvePath(getName());
 	string parentPath = resolvePath(f.getName());
 	return (myPath.find(parentPath) == 0);
-}
-
-int File::read(uint8_t *target, int len) {
-	open(READ);
-	return fread(target, 1, len, readFP);
 }
 
 void File::seek(int where) {
@@ -110,12 +103,11 @@ void File::seek(int where) {
 	fseek(readFP, where, SEEK_SET);
 }
 
+
 vector<string> File::getLines() {
 	vector<string> lines;
-	close();
-	if(!loaded)
-		readAll();
-	string source { reinterpret_cast<char*>(&data[0]), (unsigned int)size };
+	auto data = readAll();
+	string source { reinterpret_cast<char*>(&data[0]), (unsigned int)data.size() };
 	stringstream ss(source);
 	string to;
 
@@ -128,7 +120,7 @@ vector<string> File::getLines() {
     return lines;
 }
 
-void File::write(const uint8_t *data, int size) {
+void File::write(const uint8_t *data, const int size) {
 	open(WRITE);
 	fwrite(data, 1, size, writeFP);
 }
@@ -141,9 +133,8 @@ void File::write(const string &data) {
 
 void File::copyFrom(File &otherFile) {
 	open(WRITE);
-	uint8_t *ptr = otherFile.getPtr();
-	int size = otherFile.getSize();
-	fwrite(ptr, 1, size, writeFP);
+	const auto data = otherFile.readAll();
+	fwrite(&data[0], 1, data.size(), writeFP);
 }
 
 void File::copyFrom(const string &other) {
@@ -155,10 +146,12 @@ void File::copyFrom(const string &other) {
 void File::close() {
 	if(writeFP)
 		fclose(writeFP);
-	writeFP = nullptr;
+	else if(readFP)
+		fclose(readFP);
+	writeFP = readFP = nullptr;
 }
 
-bool File::exists() {
+bool File::exists() const {
 	struct stat ss;
 	return (stat(fileName.c_str(), &ss) == 0);
 }
@@ -166,20 +159,6 @@ bool File::exists() {
 bool File::exists(const string &fileName) {
 	struct stat ss;
 	return (stat(fileName.c_str(), &ss) == 0);
-}
-
-uint8_t *File::getPtr() {
-	close();
-	if(!loaded)
-		readAll();
-	return &data[0];
-}
-
-const vector<uint8_t>& File::getData() {
-	close();
-	if(!loaded)
-		readAll();
-	return data;
 }
 
 File File::findFile(const string &path, const string &name) {
@@ -191,12 +170,10 @@ File File::findFile(const string &path, const string &name) {
 			if(p[p.length()-1] != '/')
 			p += "/";
 			File f { p + name };
-			LOGD("Checking '%s'", f.getName());
 			if(f.exists())
 				return f;
 		}
 	}
-	LOGD("NOT FOUND");
 	return NO_FILE;
 }
 
@@ -231,7 +208,7 @@ const std::string File::getUserDir() {
 
 #endif
 
-uint64_t File::getModified() {
+uint64_t File::getModified() const {
 	struct stat ss;
 	if(stat(fileName.c_str(), &ss) != 0)
 		throw io_exception {"Could not stat file"};
@@ -245,7 +222,7 @@ uint64_t File::getModified(const std::string &fileName) {
 	return (uint64_t)ss.st_mtime;
 }
 
-int64_t File::getSize() {
+int64_t File::getSize() const {
 	if(size < 0) {
 		struct stat ss;
 		if(stat(fileName.c_str(), &ss) != 0)
@@ -263,6 +240,7 @@ bool File::isDir() const {
 }
 
 void File::remove() {
+	close();
 	if(std::remove(fileName.c_str()) != 0)
 		throw io_exception {"Could not delete file"};
 }
@@ -270,6 +248,7 @@ void File::remove() {
 void File::rename(const std::string &newName) {
 	if(std::rename(fileName.c_str(), newName.c_str()) != 0)
 		throw io_exception {"Could not rename file"};
+	fileName = newName;
 }
 
 void File::remove(const std::string &fileName) {
@@ -279,21 +258,14 @@ void File::remove(const std::string &fileName) {
 
 std::string File::read() {
 	open(READ);
-	if(!loaded)
-		readAll();
-	return std::string((const char *)&data[0], (unsigned long)size);
+	auto data = readAll();
+	return std::string(reinterpret_cast<const char *>(&data[0]), (unsigned long)data.size());
 }
 
 void File::copy(const std::string &from, const std::string &to) {
 	File f0 { from };
 	File f1 { to };
-	f0.readAll();
-
-	const auto &data = f0.getData();
-
-	f1.write(&data[0], (int)data.size());
-	f0.close();
-	f1.close();
+	f1.copyFrom(f0);
 }
 
 std::string File::resolvePath(const std::string &fileName) {
@@ -322,6 +294,25 @@ File::~File() {
 		fclose(writeFP);
 }
 
+const std::string File::getExeDir() {
+
+	static char buf[1024];
+#if defined LINUX
+	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
+	if(rc >= 0) {
+		buf[rc] = 0;
+		return path_directory(buf);
+	}
+#elif defined APPLE
+	uint32_t size = sizeof(buf);
+	if(_NSGetExecutablePath(buf, &size) == 0) {
+		return path_directory(buf);
+	}
+#endif
+	return "";
+}
+
+
 void File::setAppDir(const std::string &a) {
 	LOGD("Setting appdir to %s", a);
 	appDir = a;
@@ -339,11 +330,6 @@ const std::string File::getAppDir() {
 
 void File::writeln(const std::string &line) {
 	write(line + "\n");
-}
-
-void File::clear() {
-	close();
-	remove();
 }
 
 }
@@ -373,8 +359,8 @@ TEST_CASE("utils::File", "File operations") {
 
 	file = File { "temp.text" };
 
-	file.readAll();
-	REQUIRE(file.getPtr() != 0);
+	auto data = file.readAll();
+	REQUIRE(data.size() > 0);
 
 	vector<string> lines = file.getLines();
 
