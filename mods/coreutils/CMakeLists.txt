@@ -10,6 +10,11 @@ if(APPLE)
 	add_definitions(-DAPPLE)
 endif()
 
+
+if(UNIX)
+	add_definitions(-DLINUX)
+endif()
+
 add_library(coreutils ${SOURCE_FILES})
 
 if(DO_UNIT_TEST)
