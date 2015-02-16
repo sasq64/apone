@@ -63,7 +63,7 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 	auto l = delim.length();
 	if(l == 0) return args;
 	int pos = 0;
-	bool crlf = (delim == T("\n"));
+	bool crlf = (delim.size() == 1 && delim[0] == 10);
 	while(true) {
 		auto newpos = s.find(delim, pos);
 		if((limit && args.size() == limit) || newpos == std::string::npos) {
