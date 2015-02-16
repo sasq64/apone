@@ -45,19 +45,19 @@ private:
 	Rectangle itemSize;
 };
 
-template <typename LAYOUT> class Base_List {
+template <typename LAYOUT> class BaseList {
 public:
 
 	struct Renderer {
-		virtual void render_item(Rectangle &rec, int y, uint32_t index, bool hilight) = 0;
+		virtual void renderItem(Rectangle &rec, int y, uint32_t index, bool hilight) = 0;
 	};
 
-	Base_List() {}
+	BaseList() {}
 
-	Base_List(std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc, const Rectangle &area, int visibleItems) : renderFunc(renderFunc), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
+	BaseList(std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc, const Rectangle &area, int visibleItems) : renderFunc(renderFunc), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
 	}
 
-	Base_List(Renderer *renderer, const Rectangle &area, int visibleItems) : renderer(renderer), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
+	BaseList(Renderer *renderer, const Rectangle &area, int visibleItems) : renderer(renderer), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
 	}
 
 	void render() {
@@ -73,7 +73,7 @@ public:
 		if(renderer != 0) {
 			for(int i=0; i<n; i++) {
 				auto rec = layout.layout((i - p) / (float)visibleItems);
-				renderer->render_item(rec, i, i + ip, i + ip == selected_item);
+				renderer->renderItem(rec, i, i + ip, i + ip == selected_item);
 			}
 		} else {
 			for(int i=0; i<n; i++) {
@@ -85,19 +85,19 @@ public:
 		glDisable(GL_SCISSOR_TEST);
 	}
 
-	void set_visible(int lines) {
+	void setVisible(int lines) {
 		visibleItems = lines;
 		layout = LAYOUT(area, visibleItems);
 		select(selected_item);
 	}
 
-	void set_area(const Rectangle &r) {
+	void setArea(const Rectangle &r) {
 		area = r;
 		layout = LAYOUT(area, visibleItems);
 		select(selected_item);
 	}
 
-	void set_total(uint32_t t) {
+	void setTotal(uint32_t t) {
 		totalItems = t;
 		select(selected_item);
 	}
@@ -132,7 +132,7 @@ public:
 	void pagedown() { select(selected_item + visibleItems); }
 	void pageup() { select(selected_item - visibleItems); }
 
-	virtual bool on_key(grappix::Window::key k) {
+	virtual bool onKey(grappix::Window::key k) {
 		switch(k) {
 		case Window::UP:
 			select(selected()-1);
@@ -167,8 +167,8 @@ private:
 };
 
 
-typedef Base_List<VerticalLayout> VerticalList;
-typedef Base_List<HorizontalLayout> HorizontalList;
+typedef BaseList<VerticalLayout> VerticalList;
+typedef BaseList<HorizontalLayout> HorizontalList;
 
 }
 

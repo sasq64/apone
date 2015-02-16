@@ -37,7 +37,7 @@ public:
 			T alpha;
 		};
 	};
-	operator uint32_t() {
+	operator uint32_t() const {
 		auto r0 = utils::clamp(r);
 		auto g0 = utils::clamp(g);
 		auto b0 = utils::clamp(b);

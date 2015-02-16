@@ -18,8 +18,13 @@ void debug_callback(unsigned int source, unsigned int type, unsigned int id, uns
 	LOGD("GLDEBUG:%s", message);
 }
 
+static GLFWwindow *gwindow;
+
 Window::Window() : RenderTarget(), winOpen(false), bmCounter(0), lockIt(false) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
+}
+
+Window::~Window() {
 }
 
 void Window::open(bool fs) {
@@ -30,7 +35,6 @@ Window::click Window::NO_CLICK = { -1, -1, -1};
 
 std::deque<Window::click> Window::click_buffer;
 
-static GLFWwindow *gwindow;
 
 static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {

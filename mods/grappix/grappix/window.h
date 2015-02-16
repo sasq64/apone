@@ -39,6 +39,7 @@ class Window : public RenderTarget {
 public:
 
 	Window();
+	~Window();
 
 	void open(bool fs = true);
 	void open(int w, int h, bool fs = false);
