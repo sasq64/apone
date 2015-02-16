@@ -22,25 +22,18 @@ public:
 	AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100);
 
 	static void play(std::function<void(int16_t *, int)> cb, int hz = 44100);
-
 	static void close();
 
 	void pause();
 	void resume();
 
 	static void set_volume(int percent);
-
 	static void pause_audio(); 
-
 	static void resume_audio();
 
 	void touch() const {}
 
 	static int get_delay();
-
-	//void writeAudio(int16_t *samples, int sampleCount) {
-	//	internalPlayer->writeAudio(samples, sampleCount);
-	//}
 
 private:
 		std::shared_ptr<InternalPlayer> internalPlayer;
