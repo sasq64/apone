@@ -117,7 +117,8 @@ public:
 		return json_object_get_int(obj);
 	} 
 
-	//template <typename T, class = typename std::enable_if<std::is_floating_point<T>::value>::type>
+	// NOTE: Why does this work?
+	template <typename T, class = typename std::enable_if<std::is_floating_point<T>::value>::type>
 	operator double() {
 		if(jtype != json_type_double)
 			throw json_exception("Not a double");
