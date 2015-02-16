@@ -17,10 +17,6 @@
 #include <emscripten.h>
 #endif
 
-#ifdef APPLE
-#include <mach-o/dyld.h>
-#endif
-
 
 #include <mutex>
 
@@ -80,9 +76,7 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	}
 
 	// Find space from right
-	LOGD("wrapping '%s' at %d,%d", text, width, subseqWidth);
-
-
+	//LOGD("wrapping '%s' at %d,%d", text, width, subseqWidth);
 
 	while(true) {
 		if(end > text.length()) {
@@ -91,11 +85,11 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 		}
 		auto pos = text.rfind(' ', end);
 		if(pos != string::npos && pos > start) {
-			LOGD("Breaking at %d,%d", start, pos - start);
+			//LOGD("Breaking at %d,%d", start, pos - start);
 			lines.push_back(text.substr(start, pos - start));
 			start = pos+1;
 		} else {
-			LOGD("Found no space, at %d,%d", start,width);
+			//LOGD("Found no space, at %d,%d", start,width);
 			lines.push_back(text.substr(start, width));
 			start += width;
 		}
@@ -106,12 +100,16 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	return lines;
 }
 
-static int16_t decode(const string &symbol) {
-	static unordered_map<std::string, int16_t> codes = {
+static uint16_t decode(const string &symbol) {
+	static unordered_map<std::string, uint16_t> codes = {
 		{ "amp", '&' },
 		{ "gt", '>' },
 		{ "lt", '<' }
 	};
+
+	uint16_t code = strtol(symbol.c_str(), nullptr, 10);
+	if(code > 0)
+		return code;
 
 	if(codes.count(symbol))
 		return codes[symbol];
@@ -388,23 +386,6 @@ void replace_char(char *s, char c, char r) {
 	}
 }
 
-std::string current_exe_path() {
-	static char buf[1024];
-#ifdef LINUX
-	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
-	if(rc >= 0) {
-		buf[rc] = 0;
-		return path_directory(buf);
-	}
-#elif defined APPLE
-	uint32_t size = sizeof(buf);
-	if(_NSGetExecutablePath(buf, &size) == 0) {
-		return path_directory(buf);
-	}
-#endif
-	return "";
-}
-
 static bool performCalled = false;
 static vector<function<void()>> callbacks;
 
@@ -437,9 +418,22 @@ TEST_CASE("utils::text", "Text operations") {
 	string text = "This is a journey into sound. Stereophonic sound. Stereophonic sound with mounds of boundless hounds rounding the ground.";
 
 	auto lines = text_wrap(text, 25);
+	REQUIRE(lines.size() == 6);
+	string fullText;
 	for(const auto &l : lines) {
-		LOGD("Line:%s", l);
+		REQUIRE(l.length() <= 25);		
+		fullText = fullText + l +  "\n\r";
 	}
+
+	auto lines2 = split(fullText, "\n");
+	REQUIRE(lines.size() == 6);
+	for(int i=0; i<6; i++) {
+		REQUIRE(lines[i] == lines2[i]);
+	}
+
+
+	//vector<string> linev = splitLines(lines);
+
 }
 
 TEST_CASE("utils::path", "Path name operations") {

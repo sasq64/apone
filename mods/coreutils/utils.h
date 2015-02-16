@@ -63,6 +63,7 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 	auto l = delim.length();
 	if(l == 0) return args;
 	int pos = 0;
+	bool crlf = (delim == T("\n"));
 	while(true) {
 		auto newpos = s.find(delim, pos);
 		if((limit && args.size() == limit) || newpos == std::string::npos) {
@@ -72,6 +73,7 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 		//LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
 		args.push_back(s.substr(pos, newpos-pos));
 		pos = newpos + l;
+		if(crlf && pos < s.length() && s[pos] == 13) pos++;
 	}
 
 	return args;
@@ -80,7 +82,6 @@ template <typename T>
 std::vector<T> split(const T &s, const char *delim, int limit = 0) {
 	return split(s, std::string(delim), limit);
 }
-
 
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const V &separator) {
@@ -146,6 +147,9 @@ bool isalpha(const std::string &s);
 
 float clamp(float x, float a0 = 0.0, float a1 = 1.0);
 
+void schedule_callback(std::function<void()> f);
+void perform_callbacks();
+
 // SLICE
 
 template <class InputIterator> class slice {
@@ -170,6 +174,66 @@ private:
 template <class T> slice<typename T::const_iterator> make_slice(T &vec, int start, int len) {
 	return slice<typename T::const_iterator>(vec.begin() + start, vec.begin() + start + len);
 }
+
+
+template <typename T> struct _ct {
+
+	_ct(const T &to) : to(to) {}
+	T to;
+
+	struct const_iterator  {
+		const_iterator(const T& index) : index(index) {}
+		const_iterator(const const_iterator& rhs) : index(rhs.index) {}
+
+		bool operator!= (const const_iterator& other) const {
+			return index != other.index;
+		}
+ 
+		T operator* () const {
+			return index;
+		}
+ 
+		const const_iterator& operator++ () {
+			index++;
+			return *this;
+		}
+		T index;
+	};
+
+	const_iterator begin() const { return const_iterator(0); }
+	const_iterator end() const { return const_iterator(to); }
+};
+
+template <typename T> struct _cf {
+
+	_cf(const T &from) : from(from) {}
+	T from;
+
+	struct const_iterator  {
+		const_iterator(const T& index) : index(index) {}
+		const_iterator(const const_iterator& rhs) : index(rhs.index) {}
+
+		bool operator!= (const const_iterator& other) const {
+			return index != other.index;
+		}
+ 
+		T operator* () const {
+			return index;
+		}
+ 
+		const const_iterator& operator++ () {
+			index--;
+			return *this;
+		}
+		T index;
+	};
+
+	const_iterator begin() const { return const_iterator(from-1); }
+	const_iterator end() const { return const_iterator(-1); }
+};
+
+template <typename T> _ct<T> count_to(const T &t) { return _ct<T>(t); }
+template <typename T> _cf<T> count_from(const T &f) { return _cf<T>(f); }
 
 // make_unique by STL
 
@@ -203,37 +267,6 @@ template<class T, class... Args>
     typename _Unique_if<T>::_Known_bound
     make_unique(Args&&...) = delete;
 
-struct asyncthread {
-	asyncthread() : done(false) {}
-	~asyncthread() {
-		if(t.joinable())
-			t.join();
-	}
-	std::thread t;
-	std::atomic<bool> done;
 };
-
-
-void schedule_callback(std::function<void()> f);
-void perform_callbacks();
-
-//static std::vector<asyncthread> atlist;
-
-//void cleanup_async();
-//void run_async(std::function<void()> f);
-/*
-
-HRESULT SHGetKnownFolderPath(
-  _In_      REFKNOWNFOLDERID rfid,
-  _In_      DWORD dwFlags,
-  _In_opt_  HANDLE hToken,
-  _Out_     PWSTR *ppszPath
-);
-
-*/
-
-};
-
-//#include "file.h"
 
 #endif // UTILS_H
