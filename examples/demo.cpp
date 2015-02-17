@@ -1,5 +1,5 @@
 
-#include <musicplayer/plugins/modplugin/ModPlugin.h>
+#include <musicplayer/plugins/openmptplugin/OpenMPTPlugin.h>
 #include <audioplayer/audioplayer.h>
 #include <grappix/grappix.h>
 #include <mutex>
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 	Program program;
 	float sinepos = 0;
 
-	chipmachine::ModPlugin plugin;
+	chipmachine::OpenMPTPlugin plugin;
 	auto player = plugin.fromFile("data/stardust.mod");
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player->getSamples(target, len);

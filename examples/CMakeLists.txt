@@ -17,7 +17,7 @@ set(APONE_MODULES
 	archive
 )
 add_subdirectory(${CPP_MODS} cppmods)
-add_subdirectory(${CPP_MODS}/musicplayer/plugins/modplugin modplugin)
+add_subdirectory(${CPP_MODS}/musicplayer/plugins/openmptplugin openmptplugin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
@@ -28,7 +28,7 @@ add_executable(simple simple.cpp)
 target_link_libraries(simple coreutils grappix)
 
 add_executable(demo demo.cpp)
-target_link_libraries(demo coreutils audioplayer grappix modplugin)
+target_link_libraries(demo coreutils audioplayer grappix openmptplugin)
 
 add_executable(snake snake.cpp)
 target_link_libraries(snake coreutils grappix)
