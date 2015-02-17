@@ -31,7 +31,6 @@ message(${PI_SYS_ROOT})
 
 # specify the cross compiler
 set(CMAKE_C_COMPILER ${PI_SDK_ROOT}/bin/${PREF}gcc)
-
 set(CMAKE_CXX_COMPILER ${PI_SDK_ROOT}/bin/${PREF}g++)
 
 # where is the target environment

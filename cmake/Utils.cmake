@@ -1,3 +1,22 @@
+
+if(EXISTS /opt/vc/include/bcm_host.h)
+  message("DETECTED RASPBERRY PI")
+  set(RASPBERRY 1)
+  set(PI_SYS_ROOT /opt)
+  set(RPI_FLAGS "-DGL_ES -DRASPBERRYPI -mfloat-abi=hard -I/opt/vc/include")
+  exec_program(uname ARGS -m OUTPUT_VARIABLE RPI_ARCH)
+  if(RPI_ARCH matches "armv7l")
+    message("v2 neon detected")
+    set(RPI_FLAGS "${RPI_FLAGS} -mfpu=neon")
+  else()
+    set(RPI_FLAGS "${RPI_FLAGS} -mfpu=vfp")
+  endif()
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RPI_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RPI_FLAGS}")
+endif()   
+
+
 if(EMSCRIPTEN)
 
 function(SET_DATA_FILES) 

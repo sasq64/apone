@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.grappix)
 
-find_path(RPI_PATH /opt/vc/include/bcm_host.h)
-if(RPI_PATH)
-  message("DETECTED RASPBERRY PI")
-  set(RASPBERRY 1)
-  set(CMAKE_C_FLAGS ${CMAKE_CFLAGS} "-DGL_ES -DRASPBERRYPI -mfpu=vfp -mfloat-abi=hard -I/opt/vc/include")
-endif()
-
 file(GLOB MAIN_FILES grappix/*.cpp)
 file(GLOB FREETYPE_FILES grappix/freetype-gl/*.c)
 set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES})
