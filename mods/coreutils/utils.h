@@ -49,8 +49,6 @@ std::string to_string(T value)
 
 namespace utils {
 
-typedef unsigned int uint;
-
 const char path_separator = '/';
 
 std::string utf8_encode(const std::string &s);
@@ -189,7 +187,7 @@ template <typename T> struct _ct {
 			return index != other.index;
 		}
  
-		T operator* () const {
+		int32_t operator* () const {
 			return index;
 		}
  
@@ -197,7 +195,7 @@ template <typename T> struct _ct {
 			index++;
 			return *this;
 		}
-		T index;
+		int32_t index;
 	};
 
 	const_iterator begin() const { return const_iterator(0); }

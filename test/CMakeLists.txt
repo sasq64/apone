@@ -9,10 +9,13 @@ add_definitions(-DAPP_NAME=aponetest)
 enable_testing()
 
 #set(AP1_ROOT ..)
+include_directories(../mods)
+
 
 set(DO_UNIT_TEST 1)
 
 set(APONE_MODULES
 	coreutils
+	tween
 )
 add_subdirectory(../mods ap1mods)

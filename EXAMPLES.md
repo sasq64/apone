@@ -99,7 +99,7 @@ uint64_t id = 123;
 
 db.exec("INSERT INTO user (name, id) VALUES (?, ?)", name, id);
 
-std::vector<User> users;
+vector<User> users;
 auto q = db.query<uint64_t, string>("SELECT id,name FROM user");
 while(q.step()) {
     users.push_back(q.get<User>());

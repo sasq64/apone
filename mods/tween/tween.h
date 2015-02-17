@@ -56,7 +56,7 @@ template <typename T> class TweenT;
 
 struct TweenImpl {
 
-	TweenImpl(double t, std::function<double(double)> f, bool it = true) : startTime(t), tween_func(f), isTweening(it) {}
+	TweenImpl(double t, bool it = true) : startTime(t), isTweening(it) {}
 
 	~TweenImpl();
 
@@ -170,6 +170,7 @@ public:
 
 protected:
 
+	static double default_fn(double t);
 	static double linear_fn(double t);
 	static double smoothStep_fn(double t);
 	static double easeInSine_fn(double t);

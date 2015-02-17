@@ -10,10 +10,13 @@ if(APPLE)
 	add_definitions(-DAPPLE)
 endif()
 
-
 if(UNIX)
-	add_definitions(-DLINUX)
+	add_definitions(-DUNIX)
 endif()
+
+#if(UNIX)
+#	add_definitions(-DLINUX)
+#endif()
 
 add_library(coreutils ${SOURCE_FILES})
 

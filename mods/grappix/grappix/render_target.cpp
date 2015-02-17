@@ -372,6 +372,9 @@ void RenderTarget::draw_textures(GLint texture, float *points, int count, float 
 	//mat4f m = make_rotate_x(2.0);
 	program.setUniform("matrix", toScreen.transpose());
 
+	auto c = Color(0xffffffff);
+	program.setUniform("color", c.red, c.green, c.blue, c.alpha);
+
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 0, count*8*4);
 	program.vertexAttribPointer("uv", 2, GL_FLOAT, GL_FALSE, 0, 0);
 

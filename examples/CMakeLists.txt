@@ -24,12 +24,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 include(../cmake/Utils.cmake)
 SET_DATA_FILES(data/stardust.mod data/ObelixPro.ttf)
 
-#add_executable(simple simple.cpp)
-#target_link_libraries(simple coreutils grappix)
+add_executable(simple simple.cpp)
+target_link_libraries(simple coreutils grappix)
 
 add_executable(demo demo.cpp)
 target_link_libraries(demo coreutils audioplayer grappix modplugin)
 
-#add_executable(snake snake.cpp)
-#target_link_libraries(snake coreutils grappix)
+add_executable(snake snake.cpp)
+target_link_libraries(snake coreutils grappix)
 

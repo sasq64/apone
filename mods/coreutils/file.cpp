@@ -297,15 +297,15 @@ File::~File() {
 const std::string File::getExeDir() {
 
 	static char buf[1024];
-#if defined LINUX
+#if defined APPLE
+	uint32_t size = sizeof(buf);
+	if(_NSGetExecutablePath(buf, &size) == 0) {
+		return path_directory(buf);
+	}
+#elif defined UNIX
 	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
 	if(rc >= 0) {
 		buf[rc] = 0;
-		return path_directory(buf);
-	}
-#elif defined APPLE
-	uint32_t size = sizeof(buf);
-	if(_NSGetExecutablePath(buf, &size) == 0) {
 		return path_directory(buf);
 	}
 #endif

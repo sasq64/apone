@@ -10,6 +10,10 @@ std::vector<std::shared_ptr<TweenImpl>> Tween::allTweens;
 double Tween::currentTime = 0;
 std::mutex Tween::tweenMutex;
 
+double Tween::default_fn(double t) {
+	return 0.0;
+}
+
 double Tween::linear_fn(double t) {
 	return t;
 }
@@ -61,12 +65,14 @@ TweenImpl::~TweenImpl() {
 }
 
 Tween Tween::make() {
-	return Tween(std::make_shared<TweenImpl>(currentTime, smoothStep_fn, false));
+	return Tween(std::make_shared<TweenImpl>(currentTime, false));
 }
 
 void Tween::addTween(const TweenImpl& ti) {
 	std::lock_guard<std::mutex> guard(tweenMutex);
 	allTweens.push_back(std::make_shared<TweenImpl>(ti));
+	if(!allTweens.back()->tween_func)
+		allTweens.back()->tween_func = smoothStep_fn;
 	allTweens.back()->isTweening = true;
 	allTweens.back()->startTime = currentTime;
 }
@@ -136,7 +142,7 @@ int Tween::updateTweens(double t) {
 	return (int)allTweens.size();
 }
 
-Tween::Tween(int dummy) : impl(std::make_shared<TweenImpl>(currentTime, smoothStep_fn)) {
+Tween::Tween(int dummy) : impl(std::make_shared<TweenImpl>(currentTime)) {
 }
 
 Tween::Tween(std::shared_ptr<TweenImpl> i) : impl(i) {
@@ -197,6 +203,8 @@ Tween &Tween::sine() {
 
 Tween &Tween::repeating() {
 	impl->do_rep = true;
+	if(!impl->tween_func)
+		impl->tween_func = sine_fn;
 	return *this;
 }
 
@@ -206,6 +214,8 @@ void Tween::start() {
 		std::lock_guard<std::mutex> guard(tweenMutex);
 		allTweens.push_back(impl);
 		allTweens.back()->isTweening = true;
+		if(!allTweens.back()->tween_func)
+			allTweens.back()->tween_func = smoothStep_fn;
 	}
 }
 
