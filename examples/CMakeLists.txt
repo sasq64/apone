@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(examples)
 
+include(../cmake/Utils.cmake)
+
 add_definitions(-DAPP_NAME=examples)
 
 set(CPP_MODS ../mods)
@@ -21,7 +23,6 @@ add_subdirectory(${CPP_MODS}/musicplayer/plugins/openmptplugin openmptplugin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-include(../cmake/Utils.cmake)
 SET_DATA_FILES(data/stardust.mod data/ObelixPro.ttf)
 
 add_executable(simple simple.cpp)
@@ -32,4 +33,3 @@ target_link_libraries(demo coreutils audioplayer grappix openmptplugin)
 
 add_executable(snake snake.cpp)
 target_link_libraries(snake coreutils grappix)
-

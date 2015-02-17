@@ -36,6 +36,9 @@ void Window::open(bool fs) {
 	open(0,0,fs);
 }
 
+Window::~Window() {
+}
+
 void Window::close() {
 	winOpen = false;
 }
@@ -204,7 +207,7 @@ void Window::open(int w, int h, bool fs) {
 						//	LOGD("[%02x]", buf);
 						while(rc >= sizeof(struct input_event)) {
 							if(ptr->type == EV_KEY) {
-								LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
+								//LOGD("TYPE %d CODE %d VALUE %d", ptr->type, ptr->code, ptr->value);
 								if(ptr->value) {
 									auto k = ptr->code;
 									if(k >= KEY_1 && k <= KEY_9)
