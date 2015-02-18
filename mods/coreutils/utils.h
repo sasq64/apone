@@ -116,7 +116,7 @@ std::string urldecode(const std::string &s, const std::string &chars);
 
 std::string htmldecode(const std::string &source);
 
-void sleepms(uint ms);
+void sleepms(unsigned ms);
 uint64_t getms();
 void makedir(const std::string &name);
 void makedirs(const std::string &name);

@@ -123,7 +123,7 @@ string htmldecode(const string &s) {
 	char symbol[32];
 	char *sptr;
 
-	for(uint i=0; i<s.length(); i++) {
+	for(unsigned i=0; i<s.length(); i++) {
 		uint16_t c = s[i];
 		if(c == '&') {
 			sptr = symbol;
@@ -148,7 +148,7 @@ string htmldecode(const string &s) {
 string urlencode(const string &s, const string &chars) {
 	char target [s.length() * 3 + 1];
 	char *ptr = target;
-	for(uint i=0; i<s.length(); i++) {
+	for(unsigned i=0; i<s.length(); i++) {
 		auto c = s[i];
 		if(chars.find(c) != string::npos) {
 			sprintf(ptr, "%%%02x", c);
@@ -163,7 +163,7 @@ string urlencode(const string &s, const string &chars) {
 string urldecode(const string &s, const string &chars) {
 	char target [s.length() + 1];
 	char *ptr = target;
-	for(uint i=0; i<s.length(); i++) {
+	for(unsigned i=0; i<s.length(); i++) {
 		auto c = s[i];
 		if(c == '%') {
 			*ptr++ = strtol(s.substr(i+1,2).c_str(), nullptr, 16);
@@ -175,7 +175,7 @@ string urldecode(const string &s, const string &chars) {
 	return string(target);
 }
 
-void sleepms(uint ms) {
+void sleepms(unsigned ms) {
 #ifdef WIN32
 	Sleep(ms);
 #else
@@ -239,7 +239,7 @@ bool startsWith(const string &name, const string &pref) {
 }
 
 void makeLower(string &s) {
-	for(uint i=0; i<s.length(); i++)
+	for(unsigned i=0; i<s.length(); i++)
 		s[i] = tolower(s[i]);
 }
 

@@ -15,16 +15,21 @@ if(EXISTS /opt/vc/include/bcm_host.h)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RPI_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RPI_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/vc/lib")
-endif()   
+endif() 
 
 
 if(EMSCRIPTEN)
 
-function(SET_DATA_FILES) 
+include_directories(../mods/zlib/zlib-1.2.8)
+
+macro(SET_DATA_FILES)
+  message("ARGV " ${ARGV})
    foreach(DF ${ARGV})
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/${DF}.mod@${DF}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/${DF}@${DF}")
    endforeach()
-endfunction()
+   message("FLAGS " ${CMAKE_EXE_LINKER_FLAGS})
+endmacro()
+
 
 else()
 
