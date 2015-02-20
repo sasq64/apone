@@ -23,3 +23,7 @@ Use coreutils/callback for callbacks with variable number of arguments
 
 Use exceptions for error conditions, but don't require them (Slow in Emscripten).
 
+=== OOP AND LOCALITY OF STATE
+
+Ideally, the class defintion should only contain the public facade of the object, and all private state should be located close to where it is used. This means for instance; use local static variables for method local state, consider PIPL, and consider static namespace scope variables for global private state.
+  
