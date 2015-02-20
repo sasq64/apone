@@ -29,14 +29,9 @@ public:
 private:
 
 	struct texref {
-		texref() {
-			glGenTextures(1, &id);
-		}
+		texref();
 		texref(GLuint id) : id(id) {}
-
-		~texref() {
-			glDeleteTextures(1, &id);
-		}
+		~texref();
 		GLuint id;
 	};
 

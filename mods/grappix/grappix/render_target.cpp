@@ -440,7 +440,22 @@ void RenderTarget::text(const std::string &text, float x, float y, uint32_t col,
 	font->render_text(*this, text, x, y, col, scale);
 }
 
+void RenderTarget::bindMe() const {
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+}
 
+image::bitmap RenderTarget::get_pixels() const {
+	image::bitmap target(_width, _height);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, &target[0]);
+	target.flip();
+	return target;
+}
+
+void RenderTarget::get_pixels(uint32_t *ptr) {
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
+}
 
 
 }

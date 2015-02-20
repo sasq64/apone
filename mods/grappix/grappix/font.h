@@ -36,7 +36,7 @@ public:
 		return r.value;
 	}
 
-	void cleanup() {		
+	void cleanup() {
 		auto it = map.begin();
 		while(it != map.end()) {
 			if(it->second.age == 0) {
@@ -61,9 +61,7 @@ struct TextBuf {
 	std::vector<GLuint> vbuf;
 	std::string text;
 	float rec[4];
-	void destroy() {
-		glDeleteBuffers(2, &vbuf[0]);
-	}
+	void destroy();
 };
 
 class Font {

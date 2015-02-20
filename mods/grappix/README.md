@@ -8,31 +8,22 @@
 ## PREREQUISITES
 
 * gcc-4.7+ or clang-3.2+
-* libpng
 * freetype
-* glfw 2
-* glew
+* glfw3 (PC)
+* glew (PC)
 
 ### Ubuntu
 ```
-sudo apt-get install libfreetype6-dev libpng12-dev libglfw-dev libglew-dev
+sudo apt-get install libfreetype6-dev libglfw-dev libglew-dev
 ```
 
 ### Mac OS (brew)
 ```
-brew install freetype glew libpng homebrew/versions/glfw2 
+brew install freetype glew glfw3 
 ```
-## QUICKSTART
 
-```Shell
-$ git clone http://github.com/sasq64/cpp-mods.git
-$ git clone http://github.com/sasq64/grappix.git
-$ cp -a grappix/quickstart .
-$ cd quickstart
-$ ls
-Makefile test.cpp
-$ cat test.cpp
-
+## SIMPLE EXAMPLE
+```C++
 #include <grappix/grappix.h>
 using namespace grappix;
 
@@ -47,12 +38,28 @@ int main(int argc, char **argv) {
 	});
 	return 0;
 }
-$ make
-$ ./test
 ```
 
-## CLASS DESIGN/CODING STANDARD
+## THE RENDER LOOP
 
-All grappix classes are designed for pass-by-value. This means that client code should
-normally not need to use new or delete, and can program more like a scripting
-language then traditional c++, including more functional programming.
+In *grappix*, you specify the render loop through a callback function. This function will be called once "per frame", meaning when the screen needs to be re-rendered. The reason for using a callback and not let the application implement it's own render loop is mainly one; *Emscripten*. Javascript is event based and single threaded, so we can't run our own continuous loop.
+
+The biggest implication of this is; any variables defined in *main()* will be *out of scope* when the render loop is actually executing. This means you must either rely on those variables being *copied* into your lambda, like in the above example -- or you must define them as static, so they wont be destroyed when main() ends.
+
+## READING INPUT
+
+```C++
+auto k = screen.get_key();
+if(k == Window::LEFT)
+    moveLeft();
+```
+
+### PLATFORM SUPPORT
+
+#### Raspberry PI
+
+grappix does not use X on Raspberry PI, you can run your applications directly from the console. Your application will always be full screen, and while running will grab exclusive access to the keyboard.
+
+#### Emscripten
+
+...

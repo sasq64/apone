@@ -8,6 +8,8 @@
 #include <cmath>
 #include <vector>
 
+#include "GL_Header.h"
+
 using namespace std;
 using namespace image;
 using namespace utils;

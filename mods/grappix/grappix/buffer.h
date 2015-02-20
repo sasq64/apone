@@ -1,24 +1,21 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "GL_Header.h"
 #include <memory>
 class Buffer {
+
+	using GLuint = uint32_t;
+
+
 	Buffer();
 	Buffer(GLuint bufid);
 	void bind();
 
 private:
 	struct bufref {
-		bufref() {
-			//LOGD("GEN");
-			glGenBuffers(1, &id);
-		}
+		bufref();
 		bufref(GLuint id) : id(id) {}
-		~bufref() {
-			//LOGD("DEL");
-			glDeleteBuffers(1, &id);
-		}
+		~bufref();
 		GLuint id;
 	};
 

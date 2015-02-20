@@ -16,15 +16,8 @@ public:
 		return r.w > 0;
 	}
 
-	void set(const RenderTarget &target) {
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(r.x, target.height()-r.h-r.y, r.w, r.h);
-	}
-
-	void unset() {
-		glDisable(GL_SCISSOR_TEST);
-	}
-
+	void set(const RenderTarget &target);
+	void unset();
 	int width() { return r.w; }
 	int height() { return r.h; }
 

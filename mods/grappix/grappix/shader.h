@@ -1,7 +1,6 @@
 #ifndef GRAPPIX_SHADER_H
 #define GRAPPIX_SHADER_H
 
-#include "GL_Header.h"
 #include "color.h"
 //#include <coreutils/log.h>
 #include <coreutils/mat.h>
@@ -11,6 +10,13 @@
 #include <unordered_map>
 
 namespace grappix {
+
+using GLuint = uint32_t;
+using GLenum = uint32_t;
+using GLint = int32_t;
+using GLboolean = unsigned char;
+using GLvoid = void;
+using GLsizei = int;
 
 class shader_exception : public std::exception {
 public:
@@ -33,15 +39,7 @@ enum program_name {
 
 struct ProgRef {
 	ProgRef(GLint id, GLint vs, GLint fs) : id(id), vs(vs), fs(fs) {}
-	~ProgRef() {
-		if(id > 0)
-			glDeleteProgram(id);
-		if(vs > 0)
-			glDeleteShader(vs);
-		if(fs > 0)
-			glDeleteShader(fs);
-
-	}
+	~ProgRef();
 	GLint id;
 	GLint vs;
 	GLint fs;
@@ -91,101 +89,22 @@ public:
 
 	void createProgram();
 
-	void setFragmentSource(const std::string &source) {
-		fSource = source;
-		createProgram();
-	}
-
-	std::string getFragmentSource() {
-		return fSource;
-	}
-
-	void setVertexSource(const std::string &source) {
-		vSource = source;
-		createProgram();
-	}
-
-	std::string getVertexSource() {
-		return vSource;
-	}
-
-	GLuint getAttribLocation(const std::string &name) const {
-		GLuint a;
-		if(attributes.count(name) == 0) {
-			a = glGetAttribLocation(program->id, name.c_str());
-			attributes[name] = a;
-		} else {
-			a = attributes[name];
-		}
-		return a;
-	}
-	GLuint getUniformLocation(const std::string &name) const {
-		GLuint u;
-		if(uniforms.count(name) == 0) {
-			u = glGetUniformLocation(program->id, name.c_str());
-			uniforms[name] = u;
-		} else {
-			u = uniforms[name];
-		}
-		return u;
-	}
-
-	void setUniform(const std::string &name, const utils::mat4f &m) const {
-		auto h = getUniformLocation(name);
-		glUniformMatrix4fv(h, 1, GL_FALSE, &m[0][0]);
-	}
-
-	void setUniform(const std::string &name, float f0) const {
-		auto h = getUniformLocation(name);
-		glUniform1f(h, f0);
-	}
-
-	void setUniform(const std::string &name, float f0, float f1) const {
-		auto h = getUniformLocation(name);
-		glUniform2f(h, f0, f1);
-	}
-
-	void setUniform(const std::string &name, float f0, float f1, float f2) const {
-		auto h = getUniformLocation(name);
-		glUniform3f(h, f0, f1, f2);
-	}
-
-	void setUniform(const std::string &name, float f0, float f1, float f2, float f3) const {
-		auto h = getUniformLocation(name);
-		glUniform4f(h, f0, f1, f2, f3);
-	}
-
-	void setUniform(const std::string &name, const Color &c) const {
-		auto h = getUniformLocation(name);
-		glUniform4f(h, c.r, c.g, c.b, c.a);
-	}
-
-	void setUniform(const std::string &name, float *ptr, int count) const {
-		auto h = getUniformLocation(name);
-		glUniform1fv(h, count, ptr);
-	}
-
-	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	//void setUniform(const std::string &name, T t) const {
-	//	glUniform1fv();
-//	}
-
-	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const {
-		GLuint h = getAttribLocation(name);
-		glVertexAttribPointer(h, size, type, normalized, stride, ptr);
-		glEnableVertexAttribArray(h);
-	}
-
-	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) const {
-		GLuint h = getAttribLocation(name);
-		glVertexAttribPointer(h, size, type, normalized, stride, reinterpret_cast<const GLvoid*>(offset));
-		glEnableVertexAttribArray(h);
-	}
-
-	void use() const { 
-		glUseProgram(program->id);
-		setUniform("frame_counter", frame_counter);
-	}
+	void setFragmentSource(const std::string &source);
+	std::string getFragmentSource();
+	void setVertexSource(const std::string &source);
+	std::string getVertexSource();
+	GLuint getAttribLocation(const std::string &name) const;
+	GLuint getUniformLocation(const std::string &name) const;
+	void setUniform(const std::string &name, const utils::mat4f &m) const;
+	void setUniform(const std::string &name, float f0) const;
+	void setUniform(const std::string &name, float f0, float f1) const;
+	void setUniform(const std::string &name, float f0, float f1, float f2) const;
+	void setUniform(const std::string &name, float f0, float f1, float f2, float f3) const;
+	void setUniform(const std::string &name, const Color &c) const;
+	void setUniform(const std::string &name, float *ptr, int count) const;
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const;
+	void vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) const;
+	void use() const;
 
 	GLint id() const { return program->id; }
 

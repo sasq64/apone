@@ -1,6 +1,0 @@
-
-
-class window_base {
-
-
-}

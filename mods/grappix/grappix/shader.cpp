@@ -4,6 +4,8 @@
 #include <vector>
 #include <coreutils/log.h>
 
+#include "GL_Header.h"
+
 using namespace std;
 
 extern unsigned char _shader_plain_v_glsl[];
@@ -117,6 +119,18 @@ const Program& get_program(program_name program) {
 	return programs[program];
 }
 
+
+ProgRef::~ProgRef() {
+	if(id > 0)
+		glDeleteProgram(id);
+	if(vs > 0)
+		glDeleteShader(vs);
+	if(fs > 0)
+		glDeleteShader(fs);
+
+}
+
+
 void Program::createProgram() {
 
 	uniforms.clear();
@@ -162,5 +176,105 @@ void Program::createProgram() {
 		throw shader_exception("Could not create program");
 
 }
+
+
+void Program::setFragmentSource(const std::string &source) {
+	fSource = source;
+	createProgram();
+}
+
+std::string Program::getFragmentSource() {
+	return fSource;
+}
+
+void Program::setVertexSource(const std::string &source) {
+	vSource = source;
+	createProgram();
+}
+
+std::string Program::getVertexSource() {
+	return vSource;
+}
+
+GLuint Program::getAttribLocation(const std::string &name) const {
+	GLuint a;
+	if(attributes.count(name) == 0) {
+		a = glGetAttribLocation(program->id, name.c_str());
+		attributes[name] = a;
+	} else {
+		a = attributes[name];
+	}
+	return a;
+}
+
+GLuint Program::getUniformLocation(const std::string &name) const {
+	GLuint u;
+	if(uniforms.count(name) == 0) {
+		u = glGetUniformLocation(program->id, name.c_str());
+		uniforms[name] = u;
+	} else {
+		u = uniforms[name];
+	}
+	return u;
+}
+
+void Program::setUniform(const std::string &name, const utils::mat4f &m) const {
+	auto h = getUniformLocation(name);
+	glUniformMatrix4fv(h, 1, GL_FALSE, &m[0][0]);
+}
+
+void Program::setUniform(const std::string &name, float f0) const {
+	auto h = getUniformLocation(name);
+	glUniform1f(h, f0);
+}
+
+void Program::setUniform(const std::string &name, float f0, float f1) const {
+	auto h = getUniformLocation(name);
+	glUniform2f(h, f0, f1);
+}
+
+void Program::setUniform(const std::string &name, float f0, float f1, float f2) const {
+	auto h = getUniformLocation(name);
+	glUniform3f(h, f0, f1, f2);
+}
+
+void Program::setUniform(const std::string &name, float f0, float f1, float f2, float f3) const {
+	auto h = getUniformLocation(name);
+	glUniform4f(h, f0, f1, f2, f3);
+}
+
+void Program::setUniform(const std::string &name, const Color &c) const {
+	auto h = getUniformLocation(name);
+	glUniform4f(h, c.r, c.g, c.b, c.a);
+}
+
+void Program::setUniform(const std::string &name, float *ptr, int count) const {
+	auto h = getUniformLocation(name);
+	glUniform1fv(h, count, ptr);
+}
+
+//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+//vProgram::oid setUniform(const std::string &name, T t) const {
+//	glUniform1fv();
+//	}
+
+void Program::vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const {
+	GLuint h = getAttribLocation(name);
+	glVertexAttribPointer(h, size, type, normalized, stride, ptr);
+	glEnableVertexAttribArray(h);
+}
+
+void Program::vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLint offset) const {
+	GLuint h = getAttribLocation(name);
+	glVertexAttribPointer(h, size, type, normalized, stride, reinterpret_cast<const GLvoid*>(offset));
+	glEnableVertexAttribArray(h);
+}
+
+void Program::use() const {
+	glUseProgram(program->id);
+	setUniform("frame_counter", frame_counter);
+}
+
+
 
 }

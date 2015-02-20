@@ -35,7 +35,7 @@ endif()
 if(EMSCRIPTEN)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
   set(EXTRA_LIBS ${EXTRA_LIBS} -lGL)
-  
+
 elseif(RASPBERRY)
   set(VC ${PI_SYS_ROOT}/vc)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pi.cpp grappix/specific/eglutil.cpp)
@@ -88,14 +88,14 @@ endif()
 add_definitions(-DWITH_FREETYPE)
 
 file(GLOB SHADERS grappix/shaders/*.glsl)
-file(MAKE_DIRECTORY .shaderx) 
-file(MAKE_DIRECTORY .shader) 
+file(MAKE_DIRECTORY .shaderx)
+file(MAKE_DIRECTORY .shader)
 foreach(SHADER ${SHADERS})
 	message(${SHADER})
 	get_filename_component(SHADERNAME ${SHADER} NAME)
 	add_custom_command(OUTPUT ${SHADERNAME}.c
 		COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} .shader/${SHADERNAME}
-		COMMAND xxd -i .shader/${SHADERNAME} > ${SHADERNAME}.c 
+		COMMAND xxd -i .shader/${SHADERNAME} > ${SHADERNAME}.c
 		DEPENDS ${SHADER})
 	set(SOURCE_FILES ${SOURCE_FILES} ${SHADERNAME}.c)
 endforeach()

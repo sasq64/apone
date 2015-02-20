@@ -1,8 +1,6 @@
 #ifndef GRAPPIX_BASIC_BUFFER_H
 #define GRAPPIX_BASIC_BUFFER_H
 
-#include "GL_Header.h"
-
 #include "shader.h"
 #include "font.h"
 #include "transform.h"
@@ -19,6 +17,8 @@ namespace grappix {
 
 class RenderTarget {
 public:
+
+	using GLint = int32_t;
 
 	template <typename T> using is_compound = typename std::enable_if<std::is_compound<T>::value>::type;
 
@@ -125,22 +125,15 @@ public:
 
 	template <typename T, typename = is_compound<T>>
 	void render(T renderable) {
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+		bindMe();
 		renderable.render(_width, _height);
 	}
 
-	image::bitmap get_pixels() const {
-		image::bitmap target(_width, _height);
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-		glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, &target[0]);
-		target.flip();
-		return target;
-	}
+	void bindMe() const;
 
-	template <typename T> void get_pixels(T *ptr) {
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-		glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
-	}
+	image::bitmap get_pixels() const;
+
+	void get_pixels(uint32_t *ptr);
 
 	const utils::mat4f& get_view_matrix() const { return toScreen; }
 

@@ -121,7 +121,7 @@ TextBuf Font::make_text2(const string &text) const {
                 break;
             }
         }
-        if(!glyph) { 
+        if(!glyph) {
    			x += 8.0;
             continue;
         }
@@ -395,6 +395,10 @@ Font::FontRef::~FontRef() {
 	atlas = nullptr;
 }
 
+
+void TextBuf::destroy() {
+	glDeleteBuffers(2, &vbuf[0]);
+}
 
 }
 

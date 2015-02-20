@@ -117,89 +117,16 @@ public:
 
 	constexpr static const double FPS = 1.0/60.0;
 
-	void resize(int w, int h) {
-		_width = w;
-		_height = h;
-		update_matrix();
-	}
+	void resize(int w, int h);
 
 	static std::deque<click> click_buffer;
 
 
-	void setup(int w, int h) {
-
-		utils::perform_callbacks();
-
-		if(winOpen)
-			return;
-
-		_width = w;
-		_height = h;
-
-		LOGD("Window %dx%d", _width, _height);
-
-		update_matrix();
-
-		glLineWidth(2.0);
-		glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-		//glBlendColor(1.0,1.0,1.0,1.0);
-		lastTime = -1;
-		winOpen = true;
-
-		startTime = chrono::high_resolution_clock::now();
-		frameBuffer = 0;
-	}
-
-	int call_repeatedly(std::function<void(void)> f, int msec) {
-		callbacks.push_back(Callback(f, msec));
-		return callbacks.size()-1;
-	}
-
-	void update_callbacks() {
-
-		auto t = chrono::high_resolution_clock::now();
-		uint32_t us = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
-		tween::Tween::updateTweens(us / 1000000.0f);
-		Resources::getInstance().update();
-
-		utils::perform_callbacks();
-
-		while(safeFuncs.size() > 0) {
-			safeMutex.lock();
-			auto &f = safeFuncs.front();
-			f();
-			safeFuncs.pop_front();
-			safeMutex.unlock();
-		}
-
-		us = utils::getms();
-		for(auto &cb : callbacks) {
-			if(cb.msec == 0 || us >= cb.next_time) {
-				cb.cb();
-				cb.next_time += cb.msec;
-			}
-		}
-
-		for(auto i : to_remove) {
-			callbacks.erase(callbacks.begin() + i);
-		}
-		to_remove.clear();
-
-		Program::frame_counter++;
-
-	}
-
-	void remove_repeating(int index) {
-		to_remove.insert(index);
-	}
-
-	void benchmark() {
-		benchStart = chrono::high_resolution_clock::now();
-		bmCounter = 100;
-	}
-
+	void setup(int w, int h);
+	int call_repeatedly(std::function<void(void)> f, int msec);
+	void update_callbacks();
+	void remove_repeating(int index);
+	void benchmark();
 
 	void lock() {
 		lockIt = true;
@@ -211,16 +138,7 @@ public:
 
 	bool locked() { return lockIt; }
 
-	void run_safely(std::function<void()> f) {
-		safeMutex.lock();
-		safeFuncs.push_back(f);
-		safeMutex.unlock();
-		while(safeFuncs.size() != 0) {
-			safeMutex.lock();
-			safeMutex.unlock();
-		}
-	}
-
+	void run_safely(std::function<void()> f);
 
 	std::function<void()> focus_func;
 	std::function<void()> focus_lost_func;
@@ -266,7 +184,7 @@ private:
 
 
 constexpr Window::key as_key(const char c) {
-	return static_cast<Window::key>(c); 
+	return static_cast<Window::key>(c);
 }
 
 extern Window &screen;
