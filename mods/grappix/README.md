@@ -2,7 +2,7 @@
 
 * Simple graphics library built with OpenGL 3.0 (and restricted to ES 2.0 profile)
 * Allows for very short programs
-* Supports *Linux*, *Mac OS*, *Android* and *Emscripten*.
+* Supports *Linux X11*, *Raspberry PI Console*, *Mac OS*, *Android* and *Emscripten*.
 * Uses C++11 
 
 ## PREREQUISITES
@@ -14,12 +14,12 @@
 
 ### Ubuntu
 ```
-sudo apt-get install libfreetype6-dev libglfw-dev libglew-dev
+sudo apt-get install libglfw-dev libglew-dev
 ```
 
 ### Mac OS (brew)
 ```
-brew install freetype glew glfw3 
+brew install glew glfw3 
 ```
 
 ## SIMPLE EXAMPLE
