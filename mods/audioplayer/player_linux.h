@@ -83,8 +83,14 @@ public:
 		snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
 		if(elem) {
 			snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
-			LOGD("MINMAX %d %d", min, max);
-			snd_mixer_selem_set_playback_volume_all(elem, volume * (max - min) / 100 + min);
+	
+			double v = 1.0 - volume*0.01;
+			v = (1.0 - v*v*v);
+			int dbvol = v*7500 - 7500;
+			LOGD("VOL>> %d %f %d", volume, v, dbvol);
+
+
+			snd_mixer_selem_set_playback_volume_all(elem, dbvol);
 		} else
 			LOGD("Could not change volume");
 
