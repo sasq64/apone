@@ -28,7 +28,7 @@ template <typename T> struct TweenAttr : public TweenAttrBase {
 		if(cycles != 1) {
 			maxValue = delta+1;
 			delta = (delta+1)*cycles-1;
-		}		
+		}
 	}
 
 	T startValue;
@@ -102,9 +102,20 @@ public:
 	Tween& repeating();
 
 	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
+	// template <typename T> is_compound<T, Tween&> to(T &target, T value, int cycles = 1) {
+	// 	for(int i=0; i<target.size(); i++) {
+	// 		to(target[i], value[i], cycles);
+	// 	}
+	// 	return *this;
+	// }
+
 	template <typename T> is_compound<T, Tween&> to(T &target, T value, int cycles = 1) {
-		for(int i=0; i<target.size(); i++) {
-			to(target[i], value[i], cycles);
+		auto it0 = std::begin(target);
+		auto it1 = std::begin(value);
+		while(it0 != std::end(target)) {
+			to(*it0, *it1, cycles);
+			++it0;
+			++it1;
 		}
 		return *this;
 	}
@@ -129,9 +140,13 @@ public:
 	}
 
 	//template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
-	template <typename T> is_compound<T, Tween&>  from(T &target, T value) {
-		for(int i=0; i<target.size(); i++) {
-			from(target[i], value[i]);
+	template <typename T> is_compound<T, Tween&> from(T &target, T value) {
+		auto it0 = std::begin(target);
+		auto it1 = std::begin(value);
+		while(it0 != std::end(target)) {
+			from(*it0, *it1);
+			++it0;
+			++it1;
 		}
 		return *this;
 	}

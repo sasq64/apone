@@ -67,7 +67,10 @@ public:
 	}
 
 	float& operator[](int i) { return data[i]; }
-	constexpr int size() const { return 4; }
+	//constexpr int size() const { return 4; }
+
+	T *begin() { return std::begin(data); }
+	T *end() { return std::end(data); }
 
 	static const Base_Color<T> WHITE;
 	static const Base_Color<T> RED;
