@@ -160,7 +160,7 @@ void Window::open(int w, int h, bool fs) {
 
 	setup(_width, _height);
 
-	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1, 
+	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1,
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
 	glfwSetKeyCallback(gwindow, key_fn);
@@ -177,7 +177,7 @@ void Window::open(int w, int h, bool fs) {
 				screen.update_callbacks();
 				screen.flip();
 			}
-		}	
+		}
 	});
 
 	flip();
@@ -228,7 +228,7 @@ void Window::close() {
 	LOGD("QUIT");
 	glfwDestroyWindow(gwindow);
 	gwindow = nullptr;
-	winOpen = false;			
+	winOpen = false;
 }
 
 void Window::flip() {

@@ -2,6 +2,8 @@
 #define BUFFER_H
 
 #include <memory>
+#include <cstdint>
+
 class Buffer {
 
 	using GLuint = uint32_t;

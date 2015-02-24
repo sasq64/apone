@@ -26,10 +26,10 @@ include_directories(${FREETYPE_INCLUDE_DIR})
 
 
 if(APPLE)
-   find_library(COCOA_LIBRARY Cocoa)
-   find_library(CORE_VIDEO_LIBRARY CoreVideo)
-   find_library(IOKIT_LIBRARY IOKit)
-   set(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${CORE_VIDEO_LIBRARY} ${IOKIT_LIBRARY})
+  find_library(COCOA_LIBRARY Cocoa)
+  find_library(CORE_VIDEO_LIBRARY CoreVideo)
+  find_library(IOKIT_LIBRARY IOKit)
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${CORE_VIDEO_LIBRARY} ${IOKIT_LIBRARY})
 endif()
 
 if(EMSCRIPTEN)
@@ -45,21 +45,27 @@ elseif(UNIX)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
   find_package(OpenGL REQUIRED)
  # find_package(GLEW REQUIRED)
+
+if(APPLE)
+  find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
+else() # Ubuntu changed naming between 14.0 and 14.10
   find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
+endif()
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
 
-if(NOT TARGET glew)
-  add_subdirectory(../glew glew)
-  add_definitions(-DGLEW_STATIC)
-  include_directories(../glew/glew-1.11.0/include)
-  set(EXTRA_LIBS ${EXTRA_LIBS} glew)
-endif()
+  if(NOT TARGET glew)
+    add_subdirectory(../glew glew)
+    add_definitions(-DGLEW_STATIC)
+    include_directories(../glew/glew-1.11.0/include)
+    set(EXTRA_LIBS ${EXTRA_LIBS} glew)
+  endif()
   #set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
   #include_directories(${GLEW_INCLUDE_DIRS})
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
+
   if(NOT APPLE)
     if(GLFW_LIBRARY MATCHES "\\.a")
       message("GLFW is static")

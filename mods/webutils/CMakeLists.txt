@@ -4,7 +4,7 @@ project(cpp-mods.webutils)
 set(SOURCE_FILES webgetter.cpp webrpc.cpp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-find_library(CURL_LIBRARY curl REQUIRED)
+find_library(CURL_LIBRARY NAMES libcurl.a curl REQUIRED)
 find_path(CURL_INCLUDE curl/curl.h)
 
 message("CURL: " ${CURL_INCLUDE} ${CURL_LIBRARY})

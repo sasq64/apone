@@ -1,4 +1,4 @@
- 
+
 #include "webgetter.h"
 
 #include <coreutils/log.h>
@@ -66,12 +66,12 @@ WebGetter::Job::~Job() {
 		jobThread.join();
 }
 
-bool WebGetter::Job::isDone() const { 
+bool WebGetter::Job::isDone() const {
 	lock_guard<mutex>{m};
 	return loaded;
 }
 
-int WebGetter::Job::getReturnCode() const { 
+int WebGetter::Job::getReturnCode() const {
 	lock_guard<mutex>{m};
 	return returnCode;
 }
@@ -115,7 +115,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 		LOGI("Curl returned %d", rc);
 		ongoingCalls--;
 		file->close();
-		file->rename(target);			
+		file->rename(target);
 		curl_easy_cleanup(curl);
 	} else {
 		LOGI("Getting %s from cache", target);
@@ -127,7 +127,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 			while(true) {
 				int rc = f.read(&buffer[0], buffer.size());
 				if(rc <= 0)
-					break;				
+					break;
 				streamCallback(&buffer[0], rc);
 			}
 			f.close();
@@ -157,7 +157,7 @@ size_t WebGetter::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *use
 	if(job->streamCallback)
 		job->streamCallback(static_cast<uint8_t*>(ptr), size * nmemb);
 	if(job->file)
-		job->file->write(static_cast<uint8_t*>(ptr), size * nmemb); 
+		job->file->write(static_cast<uint8_t*>(ptr), size * nmemb);
 	return size * nmemb;
 }
 
