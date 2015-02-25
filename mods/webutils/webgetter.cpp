@@ -90,7 +90,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 
 	target = targetDir + "/" + urlencode(url, ":/\\?;");
 
-	LOGD("TARGET:%s", target);
+	//LOGD("TARGET:%s", target);
 
 
 	int rc = 0;
@@ -102,7 +102,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 
 		auto u = urlencode(url, " #");
 
-		LOGI("Downloading %s", url);
+		LOGD("Downloading %s", url);
 		CURL *curl;
 		curl = curl_easy_init();
 		curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
@@ -112,7 +112,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, this);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 		rc = curl_easy_perform(curl);
-		LOGI("Curl returned %d", rc);
+		LOGV("Curl returned %d", rc);
 		ongoingCalls--;
 		file->close();
 		file->rename(target);
@@ -171,7 +171,7 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 
 	auto line = string(text, sz);
 
-	LOGD("HEADER:'%s'", line);
+	LOGV("HEADER:'%s'", line);
 	if(line.substr(0, 15) == "Content-Length:") {
 		int sz = stol(line.substr(16));
 		if(sz > 0 && job->streamCallback)

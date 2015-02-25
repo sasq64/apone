@@ -142,7 +142,7 @@ protected:
 	void update_matrix() {
 		toScreen = make_scale(2.0 / _width, -2.0 / _height);
 		toScreen = make_translate(-1.0, 1.0, 0.5) * toScreen;
-		LOGD("#### toScreen %d %d", _width, _height);
+		//LOGD("#### toScreen %d %d", _width, _height);
 	}
 
 	unsigned int frameBuffer;

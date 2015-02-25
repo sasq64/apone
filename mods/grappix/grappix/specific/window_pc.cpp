@@ -102,19 +102,19 @@ void Window::open(int w, int h, bool fs) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-	int monitorCount;
+	/*int monitorCount;
 	GLFWmonitor **monitors = glfwGetMonitors(&monitorCount);
 	LOGD("%d monitors", monitorCount);
 	for(int i=0; i<monitorCount; i++) {
 		int mw,mh;
 		glfwGetMonitorPhysicalSize(monitors[i], &mw,  &mh);
 		LOGD("%d: %dx%d", i, mw, mh);
-	}
+	} */
 	//GLFWmonitor *monitor = monitors[1];//glfwGetPrimaryMonitor();
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
-	LOGD("Desktop is %dx%d", mode->width, mode->height);
+	//LOGD("Desktop is %dx%d", mode->width, mode->height);
 	//mode->width = 1600;
 
 	//if((float)mode->width / (float)mode.Height > 2.2)
@@ -138,7 +138,7 @@ void Window::open(int w, int h, bool fs) {
 	//gwindow = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
 	gwindow = glfwCreateWindow(_width, _height, "", fs ? monitor : nullptr, nullptr);
 	glfwMakeContextCurrent(gwindow);
-	LOGD("%p WH %d %d", gwindow, _width, _height);
+	//LOGD("%p WH %d %d", gwindow, _width, _height);
 
 #ifndef EMSCRIPTEN
 	int rc = glewInit();
@@ -154,7 +154,7 @@ void Window::open(int w, int h, bool fs) {
 	int fw, fh;
 	glfwGetFramebufferSize(gwindow, &fw, &fh);
 	glViewport(0, 0, fw, fh);
-	LOGD("FB %d %d", fw, fh);
+	LOGD("Window Size %dx%d -- Framebuffer Size  %dx%d", _width, _height, fw, fh);
 	_width = fw;
 	_height = fh;
 

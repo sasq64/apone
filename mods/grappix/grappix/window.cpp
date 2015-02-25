@@ -21,7 +21,7 @@ void Window::setup(int w, int h) {
 	_width = w;
 	_height = h;
 
-	LOGD("Window %dx%d", _width, _height);
+	//LOGD("Window %dx%d", _width, _height);
 
 	update_matrix();
 

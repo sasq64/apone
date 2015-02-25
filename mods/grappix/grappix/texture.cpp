@@ -30,7 +30,7 @@ Texture::Texture(uint8_t *data, unsigned int w, unsigned int h) {
 	_width = w;
 	_height = h;
 	update_matrix();
-	LOGD("%dx%d", _width, _height);
+	//LOGD("%dx%d", _width, _height);
 
 	tref = make_shared<texref>();
 
@@ -63,7 +63,7 @@ Texture::Texture(unsigned int width, unsigned int height, Format fmt) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	LOGD("texid %d", tref->id);
+	//LOGD("texid %d", tref->id);
 
 	// Bind the Texture to the COLOR_ATTACHMENT of our framebuffer. This would not work on the default (0) framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tref->id, 0);
