@@ -57,10 +57,10 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 	for(auto &fr : fontRefs) {
 		auto r = fr.lock();
 		if(r) {
-			LOGD("%s(%d) vs %s(%d)",r->ttfName, r->w, ttfName, tsize);
+			//LOGD("%s(%d) vs %s(%d)",r->ttfName, r->w, ttfName, tsize);
 			if(r->ttfName == ttfName && r->w == tsize && r->h == tsize && r->flags == flags) {
 				ref = r;
-				LOGD("Reusing %s (%d)", ttfName, size);
+				LOGD("Reusing Font %s (%d)", ttfName, size);
 				return;
 			}
 		}
@@ -81,10 +81,10 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 		File f { format("%s%s.%d.%d.dfield", File::getCacheDir(), fn, size, tsize) };
 		if(f.exists()) {
 			f.read(atlas->data, atlas->width*atlas->height);
-			LOGD("Distance map loaded");
+			LOGD("%s: Found existing distance map", fn);
 		} else {
 			uint8_t *data = make_distance_map(atlas->data, atlas->width, atlas->height);
-			LOGD("Distance map created");
+			LOGD("%s: Distance map created", fn);
 			free(atlas->data);
 			atlas->data = data;
 			f.write(atlas->data, atlas->width*atlas->height);
@@ -95,6 +95,12 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 }
 
 //static float scale = 1.0;
+template <typename T> static void push_back(vector<T> &vec) {} // The end
+
+template <typename T, typename U, typename...ARGS> static void push_back(vector<T> &vec, const U &u, const ARGS& ... args) {
+	vec.push_back(u);
+	push_back(vec, args...);
+}
 
 TextBuf Font::make_text2(const string &text) const {
 
@@ -126,16 +132,13 @@ TextBuf Font::make_text2(const string &text) const {
             continue;
         }
 
-		//texture_glyph_t *glyph = texture_font_get_glyph(font, c);
-		//LOGD("Glyph %p", glyph);
-		//if( glyph == NULL )
 		//if(lastChar)
 		//	x += texture_glyph_get_kerning(glyph, lastChar);
 		float x0  = x + glyph->offset_x;
-		float y0  = y + static_font.height;//gl;//+ glyph->offset_y;
 		float x1  = x0 + glyph->width;
-		float y1  = y0 - glyph->offset_y;
-		//LOGD("%d %d", glyph->height, glyph->offset_y);
+
+		float y1  = y + static_font.height;
+		float y0  = y1 - glyph->offset_y;
 
 		float s0 = glyph->s0;
 		float t0 = glyph->t0;
@@ -144,29 +147,13 @@ TextBuf Font::make_text2(const string &text) const {
 
 		x += glyph->advance_x;
 
-		verts.push_back(x0);
-		verts.push_back(y1);
-		verts.push_back(s0);
-		verts.push_back(t0);
-		verts.push_back(x1);
-		verts.push_back(y1);
-		verts.push_back(s1);
-		verts.push_back(t0);
-		verts.push_back(x0);
-		verts.push_back(y0);
-		verts.push_back(s0);
-		verts.push_back(t1);
-		verts.push_back(x1);
-		verts.push_back(y0);
-		verts.push_back(s1);
-		verts.push_back(t1);
+		push_back(verts, x0, y0, s0, t0);
+		push_back(verts, x1, y0, s1, t0);
+		push_back(verts, x0, y1, s0, t1);
+		push_back(verts, x1, y1, s1, t1);
 
-		indexes.push_back(i);
-		indexes.push_back(i+1);
-		indexes.push_back(i+2);
-		indexes.push_back(i+1);
-		indexes.push_back(i+3);
-		indexes.push_back(i+2);
+		push_back(indexes, i, i+1, i+2, i+1, i+3, i+2);
+
 		i += 4;
 		//break;
 	}
@@ -188,11 +175,6 @@ TextBuf Font::make_text(const string &text) const {
 
 	if(!ref->font)
 		return make_text2(text);
-
-	//LOGD("Make text");
-
-	//auto tl = text.length();
-	//vector<GLfloat> p;
 
 	char lastChar = 0;
 	int i = 0;
@@ -216,61 +198,34 @@ TextBuf Font::make_text(const string &text) const {
 		texture_glyph_t *glyph = texture_font_get_glyph(font, c);
 		if(!glyph)
 			continue;
-		//LOGD("Glyph %p", glyph);
-		//if( glyph == NULL )
 		if(lastChar)
 			x += texture_glyph_get_kerning(glyph, lastChar);
 		lastChar = c;
 
-		//LOGD("%d vs %d", glyph->height, font->height);
-
 		float x0  = x + glyph->offset_x;
 		float x1  = x0 + glyph->width;
 
-		float y1  = y - glyph->offset_y;
-		float y0  = y1 + glyph->height;
-		//LOGD("%f %f %f", glyph->height, glyph->offset_y, font->height);
+		float y0  = y - glyph->offset_y;
+		float y1  = y0 + glyph->height;
 
 		float s0 = glyph->s0;
 		float t0 = glyph->t0;
 		float s1 = glyph->s1;
 		float t1 = glyph->t1;
 
+		push_back(verts, x0, y0, s0, t0);
+		push_back(verts, x1, y0, s1, t0);
+		push_back(verts, x0, y1, s0, t1);
+		push_back(verts, x1, y1, s1, t1);
 
-		verts.push_back(x0);
-		verts.push_back(y1);
-		verts.push_back(s0);
-		verts.push_back(t0);
-		verts.push_back(x1);
-		verts.push_back(y1);
-		verts.push_back(s1);
-		verts.push_back(t0);
-		verts.push_back(x0);
-		verts.push_back(y0);
-		verts.push_back(s0);
-		verts.push_back(t1);
-		verts.push_back(x1);
-		verts.push_back(y0);
-		verts.push_back(s1);
-		verts.push_back(t1);
+		push_back(indexes, i, i+1, i+2, i+1, i+3, i+2);
 
-		indexes.push_back(i);
-		indexes.push_back(i+1);
-		indexes.push_back(i+2);
-		indexes.push_back(i+1);
-		indexes.push_back(i+3);
-		indexes.push_back(i+2);
 		i += 4;
-
 		x += glyph->advance_x;
-
-		//break;
 	}
 
-
-
 	TextBuf tbuf;
-	//vector<GLuint> vbuf(2);
+
 	tbuf.text = text;
 	tbuf.size = i/4;
 	tbuf.rec[0] = verts[0];
@@ -310,7 +265,6 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 	// Needed for DF shader
 	program.setUniform("vScale", scale);
 
-	//auto c = make_color(color);
 	program.setUniform("color", Color(color));
 
 	program.vertexAttribPointer("vertex", 2, GL_FLOAT, GL_FALSE, 16, 0);
@@ -321,10 +275,7 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	//int tl = text.text.length();
 	glDrawElements(GL_TRIANGLES, 6*text.size, GL_UNSIGNED_SHORT, 0);
-
-	//LOGD("Drew %d\n", tl);
 
 	//glDisableVertexAttribArray(uvHandle);
 	//glDisableVertexAttribArray(vertHandle);
@@ -350,15 +301,6 @@ void clean_cache() {
 
 int Font::get_width(const string &text, float scale) const {
 	return get_size(text, scale).x;
-	// if(text == "")
-	// 	return 0;
-	// auto buf = cache.get(text);
-	// if(buf.text == "") {
-	// 	buf = make_text(text);
-	// 	cache.put(text, buf);
-	// }
-	// scale = scale * 32.0 / (float)size;
-	// return (buf.rec[2] - buf.rec[0]) * scale;
 }
 
 vec2i Font::get_size(const string &text, float scale) const {
