@@ -23,7 +23,6 @@
 using namespace std;
 using namespace utils;
 
-//bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay);
 bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDisplay, EGLSurface &eglSurface, EGLNativeWindowType nativeWin);
 
 namespace grappix {
@@ -44,7 +43,6 @@ void Window::close() {
 }
 
 static uint8_t pressed_keys[512];
-//static uint8_t modifiers = 0;
 
 Window::click Window::NO_CLICK = { -1, -1, -1};
 
@@ -58,7 +56,7 @@ static EGLDisplay eglDisplay;
 static EGLSurface eglSurface;
 
 /*constexpr */ bool test_bit(const vector<uint8_t> &v, int n) {
-	return (v[n/8] & (1<<(n%8))) != 0; 
+	return (v[n/8] & (1<<(n%8))) != 0;
 }
 
 
@@ -83,15 +81,6 @@ void Window::open(int w, int h, bool fs) {
 	if(success < 0)
 		throw display_exception("Cound not get display size");
 
-	// You can hardcode the resolution here:
-	//display_width = 640;
-	//display_height = 480;
-	LOGD("Display %dx%d", display_width, display_height);
-
-	//display_width = 640;
-	//display_height = 480;
-
-
 	dst_rect.x = 0;
 	dst_rect.y = 0;
 	dst_rect.width = display_width;
@@ -100,6 +89,7 @@ void Window::open(int w, int h, bool fs) {
 	uint16_t dwa = 0;
 	uint16_t dha = 0;
 
+	// Scale 50% on hires screens
 	if(display_width > 1280) {
 		display_width /= 2;
 		display_height /= 2;
@@ -115,11 +105,10 @@ void Window::open(int w, int h, bool fs) {
 	dispman_display = vc_dispmanx_display_open(0 /* LCD */);
 	dispman_update = vc_dispmanx_update_start(0);
 
-	dispman_element = vc_dispmanx_element_add(dispman_update, 
+	dispman_element = vc_dispmanx_element_add(dispman_update,
 	dispman_display, 0/*layer*/, &dst_rect, 0/*src*/,
-	&src_rect, DISPMANX_PROTECTION_NONE, nullptr /*alpha*/, 
+	&src_rect, DISPMANX_PROTECTION_NONE, nullptr /*alpha*/,
 	nullptr/*clamp*/, DISPMANX_NO_ROTATE);
-	LOGD("Dispelement %d", dispman_element);
 
 	nativewindow.element = dispman_element;
 	nativewindow.width = display_width;
@@ -127,16 +116,6 @@ void Window::open(int w, int h, bool fs) {
 	vc_dispmanx_update_submit_sync(dispman_update);
 
 	initEGL(eglConfig, eglContext, eglDisplay, eglSurface, &nativewindow);
-
-	//eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, &nativewindow, NULL);
-/*
-	LOGI("Surface %p", eglSurface);
-
-	if (eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE) {
-		LOGI("Unable to eglMakeCurrent");
-		return;
-	}
-*/
 
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
@@ -174,10 +153,6 @@ void Window::open(int w, int h, bool fs) {
 
 		if(fdv.size() == 0)
 			return;
-
-		// TO avoid spamming the shell, maybe
-		//::close(0);
-		//::close(1);
 
 		int maxfd = -1;
 
@@ -243,7 +218,7 @@ void Window::open(int w, int h, bool fs) {
 				screen.update_callbacks();
 				screen.flip();
 			}
-		}	
+		}
 	});
 };
 
