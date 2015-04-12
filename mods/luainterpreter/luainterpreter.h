@@ -69,13 +69,16 @@ struct FunctionCaller {
 	virtual int call() = 0;
 };
 
-template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCaller {
+template<typename... X> struct FunctionCallerImpl;
+
+
+template <class FX, class R, class... ARGS> struct FunctionCallerImpl<FX, R (FX::*)(ARGS...) const> : public FunctionCaller {
 
 	virtual ~FunctionCallerImpl() {
 	};
 
 
-	FunctionCallerImpl(struct lua_State *L, std::function<R(ARGS ... )> f) : L(L), func(f) {
+	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
 	template <class A> int apply() {
@@ -107,11 +110,11 @@ template <class R, class... ARGS> struct FunctionCallerImpl : public FunctionCal
 	}
 
 	struct lua_State *L;
-	std::function<R(ARGS ... )> func;
+	FX func;
 };
 
-template <class... ARGS> struct FunctionCallerImpl<void, ARGS...> : public FunctionCaller {
-	FunctionCallerImpl(struct lua_State *L, std::function<void(ARGS ... )> f) : L(L), func(f) {
+template <class FX, class... ARGS> struct FunctionCallerImpl<FX,void (FX::*)(ARGS...) const> : public FunctionCaller {
+	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
 	template <class A> void apply() {
@@ -140,11 +143,11 @@ template <class... ARGS> struct FunctionCallerImpl<void, ARGS...> : public Funct
 	}
 
 	struct lua_State *L;
-	std::function<void(ARGS ... )> func;
+	FX func;
 };
 
-template <class R> struct FunctionCallerImpl<R> : public FunctionCaller {
-	FunctionCallerImpl(struct lua_State *L, std::function<R()> f) : L(L), func(f) {
+template <class FX, class R> struct FunctionCallerImpl<FX,R (FX::*)() const> : public FunctionCaller {
+	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
 	int call() override {
@@ -152,11 +155,11 @@ template <class R> struct FunctionCallerImpl<R> : public FunctionCaller {
 	}
 
 	struct lua_State *L;
-	std::function<R()> func;
+	FX func;
 };
 
-template <> struct FunctionCallerImpl<void> : public FunctionCaller {
-	FunctionCallerImpl(struct lua_State *L, std::function<void()> f) : L(L), func(f) {
+template <class FX> struct FunctionCallerImpl<FX, void (FX::*)() const> : public FunctionCaller {
+	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
 	int call() override {
@@ -165,8 +168,9 @@ template <> struct FunctionCallerImpl<void> : public FunctionCaller {
 	}
 
 	struct lua_State *L;
-	std::function<void()> func;
+	FX func;
 };
+
 
 class LuaInterpreter {
 public:
@@ -183,51 +187,19 @@ public:
 		outputFunction = f;
 	}
 
-
 	static int proxy_func(lua_State *L);
 
 	void createLuaClosure(const std::string &name, FunctionCaller *fc);
 
-	// Sadly this doesn't work snce we want to use lambdas as parameters, and C++ cant resolve a lambda
-	// to a template function
-	//template <class R, class... A> void registerFunction(const std::string &name, std::function<R(A ... )> f) {
-	//	createLuaClosure(name, new FunctionCallerImpl<R, A...>(L, f));
-	//}
-
-	template <class R> void registerFunction(const std::string &name, std::function<R()> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R>(L, f));
+	template <class FX> void registerFunction(const std::string &name, FX f) {
+		createLuaClosure(name, new FunctionCallerImpl<FX,decltype(&FX::operator()) >(L, f));
 	}
-
-	template <class R, class A> void registerFunction(const std::string &name, std::function<R(A)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A>(L, f));
-	}
-
-	template <class R, class A, class B> void registerFunction(const std::string &name, std::function<R(A, B)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A, B>(L, f));
-	}
-
-	template <class R, class A, class B, class C> void registerFunction(const std::string &name, std::function<R(A, B, C)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A, B, C>(L, f));
-	}
-
-	template <class R, class A, class B, class C, class D> void registerFunction(const std::string &name, std::function<R(A, B, C, D)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A, B, C, D>(L, f));
-	}
-
-	template <class R, class A, class B, class C, class D, class E> void registerFunction(const std::string &name, std::function<R(A, B, C, D, E)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A, B, C, D, E>(L, f));
-	}
-
-	template <class R, class A, class B, class C, class D, class E, class F> void registerFunction(const std::string &name, std::function<R(A, B, C, D, E, F)> f) {
-		createLuaClosure(name, new FunctionCallerImpl<R, A, B, C, D, E, F>(L, f));
-	}
-
 
 	template <class R, class... A> R call(const std::string &f, const A& ... args) {
 		getGlobalToStack(f);
 		pushArg(L, args...);
 		luaCall(sizeof...(args), 1);
-		
+
 		auto x = getArg<R>(L, -1);
 		return x;
 	}
