@@ -71,7 +71,7 @@ struct base_query {
 		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 		if(rc != SQLITE_OK)
 			throw db_exception(sqlite3_errmsg(db));
-		//LOGD("CONSTRUCT stmt %p", stmt);	
+		//LOGD("CONSTRUCT stmt %p", stmt);
 
 		Statement s { stmt, 1 };
 		std::vector<int> results = { bindArg(s, args)... };
@@ -86,7 +86,7 @@ struct base_query {
 		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
 		if(rc != SQLITE_OK)
 			throw db_exception(sqlite3_errmsg(db));
-		//LOGD("CONSTRUCT stmt %p", stmt);	
+		//LOGD("CONSTRUCT stmt %p", stmt);
 
 		Statement s { stmt, 1 };
 		std::vector<int> results;
@@ -141,7 +141,7 @@ struct base_query {
 	}
 
 	void finalize() {
-		//LOGD("finalize %p", stmt);	
+		//LOGD("finalize %p", stmt);
 		if(stmt)
 			sqlite3_finalize(stmt);
 		stmt = nullptr;
@@ -206,7 +206,7 @@ template <class... Target> struct Query : public base_query {
 			return make<std::tuple<Target...>, Target...>(stmt);
 		} else
 			throw db_exception("No more rows");
-	} 
+	}
 };
 
 template <class T> struct Query<T> : public base_query {
@@ -279,13 +279,13 @@ public:
 				int rc = sqlite3_exec(db, "COMMIT", nullptr, nullptr, &err);
 				if(rc != SQLITE_OK)
 					throw db_exception(err);
-				db = nullptr;			
+				db = nullptr;
 			}
 			void rollback() {
 				char *err;
 				int rc = sqlite3_exec(db, "ROLLBACK", nullptr, nullptr, &err);
 				if(rc != SQLITE_OK)
-					throw db_exception(err);				
+					throw db_exception(err);
 				db = nullptr;
 			}
 			sqlite3 *db;

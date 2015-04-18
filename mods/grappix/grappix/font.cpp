@@ -233,8 +233,6 @@ TextBuf Font::make_text(const string &text) const {
 	tbuf.rec[2] = verts[verts.size()-4];
 	tbuf.rec[3] = font->height;//verts[verts.size()-3];
 
-	//LOGD("Text %s covers %f to %f", text, tbuf.rec[0], tbuf.rec[2]);
-
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tbuf.vbuf[1]);
