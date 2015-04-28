@@ -4,7 +4,7 @@ project(cpp-mods.luainterpreter)
 add_subdirectory(lua-5.2.3)
 
 set(SOURCE_FILES luainterpreter.cpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 
 

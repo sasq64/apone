@@ -131,23 +131,23 @@ public:
 				r0.h = box.h;
 				r1.y += box.h;
 				r1.h -= box.h;
-				kids[0] = utils::make_unique<Node>(r0, true);
-				kids[1] = utils::make_unique<Node>(r1, false);
+				kids[0] = std::make_unique<Node>(r0, true);
+				kids[1] = std::make_unique<Node>(r1, false);
 			} else if(r.h == box.h) {
 				// Split vertically
 				r0.w = box.w;
 				r1.x += box.w;
 				r1.w -= box.w;
-				kids[0] = utils::make_unique<Node>(r0, true);
-				kids[1] = utils::make_unique<Node>(r1, false);
+				kids[0] = std::make_unique<Node>(r0, true);
+				kids[1] = std::make_unique<Node>(r1, false);
 			} else {
 				// Split horizontally
 				//LOGD("Splitting box");
 				r0.h = box.h;
 				r1.y += box.h;
 				r1.h -= box.h;
-				kids[0] = utils::make_unique<Node>(r0, false);
-				kids[1] = utils::make_unique<Node>(r1, false);
+				kids[0] = std::make_unique<Node>(r0, false);
+				kids[1] = std::make_unique<Node>(r1, false);
 				return kids[0]->add(box);
 			}
 			box = r0;

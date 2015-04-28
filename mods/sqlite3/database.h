@@ -2,6 +2,7 @@
 #define SQLITE_DATABASE_H
 
 #include "sqlite3.h"
+#include <coreutils/utils.h>
 #include <coreutils/log.h>
 #include <cstring>
 #include <string>
@@ -157,34 +158,11 @@ struct base_query {
 	int lastCode;
 };
 
-//template <class A, class B, class C, class D, class E> f(A a, B b, C c, D d, E e) {
-//
-//}
 
-template <class... Target> struct Query : public base_query {
+template <class... TARGET> struct Query : public base_query {
 
-	template <class T, class A, class B, class C, class D, class E, class F, class G> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3), stepper<E>(s, 4), stepper<F>(s, 5), stepper<G>(s, 6) };
-	}
-
-	template <class T, class A, class B, class C, class D, class E, class F> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3), stepper<E>(s, 4), stepper<F>(s, 5) };
-	}
-
-	template <class T, class A, class B, class C, class D, class E> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3), stepper<E>(s, 4) };
-	}
-
-	template <class T, class A, class B, class C, class D> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2), stepper<D>(s, 3) };
-	}
-
-	template <class T, class A, class B, class C> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1), stepper<C>(s, 2) };
-	}
-
-	template <class T, class A, class B> T make(sqlite3_stmt *s) {
-		return T { stepper<A>(s, 0), stepper<B>(s, 1) };
+	template <class T, size_t ... A> T make(sqlite3_stmt *s, std::index_sequence<A...>) {
+		return T { stepper<TARGET>(s, A)... };
 	}
 
 	template <class... A> Query(sqlite3 *db, const std::string &query, const A& ... args) : base_query { db, query, args... } {}
@@ -194,16 +172,16 @@ template <class... Target> struct Query : public base_query {
 			lastCode = sqlite3_step(stmt);
 
 		if(lastCode == SQLITE_ROW) {
-			return make<T, Target...>(stmt);
+			return make<T>(stmt, std::make_index_sequence<sizeof...(TARGET)>());
 		} else
 			throw db_exception("No more rows");
 	}
 
-	std::tuple<Target...> get_tuple() {
+	std::tuple<TARGET...> get_tuple() {
 		if(lastCode < 0)
 			lastCode = sqlite3_step(stmt);
 		if(lastCode == SQLITE_ROW) {
-			return make<std::tuple<Target...>, Target...>(stmt);
+			return make<std::tuple<TARGET...>>(stmt, std::make_index_sequence<sizeof...(TARGET)>());
 		} else
 			throw db_exception("No more rows");
 	}
@@ -237,12 +215,12 @@ public:
 			sqlite3_close(db);
 	}
 
-	template <class... Target, class... A> Query<Target...> query(const std::string &q, const A& ... args) const {
-		return Query<Target...>(db, q, args...);
+	template <class... TARGET, class... A> Query<TARGET...> query(const std::string &q, const A& ... args) const {
+		return Query<TARGET...>(db, q, args...);
 	}
 
-	template <class... Target, class A> Query<Target...> query(const std::string &q, const std::vector<A> &args) const {
-		return Query<Target...>(db, q, args);
+	template <class... TARGET, class A> Query<TARGET...> query(const std::string &q, const std::vector<A> &args) const {
+		return Query<TARGET...>(db, q, args);
 	}
 
 	template <class... A> void exec(const std::string &q, const A& ... args) const {

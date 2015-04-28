@@ -3,7 +3,7 @@ project(cpp-mods.image)
 
 set(SOURCE_FILES image.cpp lodepng.cpp)
 #packer.cpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 #find_package(PNG REQUIRED)
 #include_directories(${PNG_INCLUDE_DIRS})

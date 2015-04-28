@@ -6,6 +6,10 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <utility>
+
+#include <coreutils/utils.h>
+
 
 extern "C" {
 struct lua_State;
@@ -30,6 +34,11 @@ template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
 template <> std::vector<std::string> getArg(struct lua_State *L, int index);
 template <> std::unordered_map<std::string, std::string> getArg(struct lua_State *L, int index);
+
+// 0-based getArg() -- for use with index_sequence unpacking
+template <class T> T getArg0(struct lua_State *L, int index) {
+	return getArg<T>(L, index+1);
+}
 
 // Push a value to the lua stack
 int pushArg(struct lua_State *L, const int &r);
@@ -77,36 +86,15 @@ template <class FX, class R, class... ARGS> struct FunctionCallerImpl<FX, R (FX:
 	virtual ~FunctionCallerImpl() {
 	};
 
-
 	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
-	template <class A> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1)));
-	}
-
-	template <class A, class B> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2)));
-	}
-
-	template <class A, class B, class C> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3)));
-	}
-
-	template <class A, class B, class C, class D> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3), getArg<B>(L, 4)));
-	}
-
-	template <class A, class B, class C, class D, class E> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3), getArg<B>(L, 4), getArg<B>(L, 5)));
-	}
-
-	template <class A, class B, class C, class D, class E, class F> int apply() {
-		return pushArg(L, func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<B>(L, 3), getArg<B>(L, 4), getArg<B>(L, 5), getArg<B>(L, 6)));
+	template <size_t ... A> int apply(std::index_sequence<A...>) {
+		return pushArg(L, func(getArg0<ARGS>(L, A)...));
 	}
 
 	int call() override {
-		return apply<ARGS...>();
+		return apply(std::make_index_sequence<sizeof...(ARGS)>());
 	}
 
 	struct lua_State *L;
@@ -117,28 +105,12 @@ template <class FX, class... ARGS> struct FunctionCallerImpl<FX,void (FX::*)(ARG
 	FunctionCallerImpl(struct lua_State *L, FX f) : L(L), func(f) {
 	}
 
-	template <class A> void apply() {
-		func(getArg<A>(L, 1));
-	}
-
-	template <class A, class B> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2));
-	}
-
-	template <class A, class B, class C> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3));
-	}
-
-	template <class A, class B, class C, class D> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3), getArg<D>(L, 4));
-	}
-
-	template <class A, class B, class C, class D, class E> void apply() {
-		func(getArg<A>(L, 1), getArg<B>(L, 2), getArg<C>(L, 3), getArg<D>(L, 4), getArg<E>(L, 5));
+	template <size_t ... A> void apply(std::index_sequence<A...>) {
+		func(getArg0<ARGS>(L, A)...);
 	}
 
 	int call() override {
-		apply<ARGS...>();
+		apply(std::make_index_sequence<sizeof...(ARGS)>());
 		return 0;
 	}
 

@@ -5,7 +5,7 @@ file(GLOB MAIN_FILES grappix/*.cpp)
 file(GLOB FREETYPE_FILES grappix/freetype-gl/*.c)
 set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 if(NOT TARGET image)
   add_subdirectory(../image image)

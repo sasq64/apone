@@ -186,11 +186,11 @@ template <typename T> struct _ct {
 		bool operator!= (const const_iterator& other) const {
 			return index != other.index;
 		}
- 
+
 		int32_t operator* () const {
 			return index;
 		}
- 
+
 		const const_iterator& operator++ () {
 			index++;
 			return *this;
@@ -214,11 +214,11 @@ template <typename T> struct _cf {
 		bool operator!= (const const_iterator& other) const {
 			return index != other.index;
 		}
- 
+
 		T operator* () const {
 			return index;
 		}
- 
+
 		const const_iterator& operator++ () {
 			index--;
 			return *this;
@@ -233,8 +233,14 @@ template <typename T> struct _cf {
 template <typename T> _ct<T> count_to(const T &t) { return _ct<T>(t); }
 template <typename T> _cf<T> count_from(const T &f) { return _cf<T>(f); }
 
-// make_unique by STL
+};
 
+
+#if __cplusplus <= 201200L
+
+namespace std {
+
+// make_unique by STL
 
 template<class T> struct _Unique_if {
     typedef std::unique_ptr<T> _Single_object;
@@ -265,6 +271,20 @@ template<class T, class... Args>
     typename _Unique_if<T>::_Known_bound
     make_unique(Args&&...) = delete;
 
+
+// index_sequence
+
+template <std::size_t...> struct index_sequence {};
+
+template <std::size_t N, std::size_t... Is>
+struct make_index_sequence : make_index_sequence<N - 1, N - 1, Is...> {};
+
+template <std::size_t... Is>
+struct make_index_sequence<0u, Is...> : index_sequence<Is...> { using type = index_sequence<Is...>; };
+
 };
+
+#endif
+
 
 #endif // UTILS_H

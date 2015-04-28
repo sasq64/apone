@@ -7,14 +7,14 @@
 
 #include <array>
 #include <algorithm>
- 
+
 
 LOGSPACE("utils");
 
 namespace bbs {
 
 using namespace std;
-
+using namespace utils;
 
 void Console::clear() {
 	Tile t { 0x20, WHITE, BLACK };
@@ -177,9 +177,9 @@ void Console::put(int x, int y, const vector<uint32_t> &text, int fg, int bg) {
 
 	if(y >= clipY1 || y < clipY0)
 		return;
-	
+
 	for(int i=0; i<(int)text.size(); i++) {
-  
+
 		if(x+i < clipX0)
 			continue;
 		if(x+i >= clipX1)
@@ -384,7 +384,7 @@ void Console::write(const vector<uint32_t> &text) {
 
 		auto &t = grid[x + y * width];
 		x++;
-		//LOGD("put to %d %d",x+i,y);	
+		//LOGD("put to %d %d",x+i,y);
 		t.c = (Char)(c & 0xffff);
 		impl_translate(t.c);
 		if(fgColor >= 0)
@@ -434,7 +434,7 @@ int Console::getKey(int timeout) {
 }
 
 std::string Console::getLine(int maxlen) {
-	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen);
+	auto lineEd = make_unique<LineEditor>(*this, maxlen);
 	while(lineEd->update(500) != KEY_ENTER);
 	if(maxlen == 0) {
 		write("\n");
@@ -443,7 +443,7 @@ std::string Console::getLine(int maxlen) {
 }
 
 std::string Console::getPassword(int maxlen) {
-	auto lineEd = utils::make_unique<LineEditor>(*this, maxlen, '*');
+	auto lineEd = make_unique<LineEditor>(*this, maxlen, '*');
 	while(lineEd->update(500) != KEY_ENTER);
 	if(maxlen == 0) {
 		write("\n");
@@ -499,12 +499,12 @@ using namespace bbs;
 
 class TestTerminal : public Terminal {
 public:
-	virtual int write(const std::vector<Char> &source, int len) { 
+	virtual int write(const std::vector<Char> &source, int len) {
 		for(int i=0; i<len; i++)
 			outBuffer.push_back(source[i]);
 		return len;
 	}
-	virtual int read(std::vector<Char> &target, int len) { 
+	virtual int read(std::vector<Char> &target, int len) {
 		int rc = -1;//outBuffer.size();
 		//target.insert(target.back, outBuffer.begin(), outBuffer.end());
 		//outBuffer.resize(0);

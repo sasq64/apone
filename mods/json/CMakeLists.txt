@@ -5,7 +5,7 @@ add_subdirectory(json-c)
 
 set(SOURCE_FILES json.cpp)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 
 

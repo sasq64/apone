@@ -8,7 +8,7 @@ if (NOT TARGET miniz)
 endif()
 
 set(SOURCE_FILES archive.cpp)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 
 add_library(archive ${SOURCE_FILES})
 target_link_libraries(archive unrar miniz)

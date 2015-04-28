@@ -34,7 +34,7 @@ include_directories(${FFTW} ${FFTW}/api ${FFTW}/kernel ${FFTW}/rdft ${FFTW}/dft 
 # -O3  -fstrict-aliasing -fno-schedule-insns -ffast-math -fomit-frame-pointer
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 #add_definitions(-DFFTW_SINGLE)
 #include_directories(${FFT_PATH})
 
