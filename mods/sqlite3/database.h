@@ -46,14 +46,6 @@ template <typename T> T stepper(sqlite3_stmt *, int) {
 	throw db_exception("Uknown target type");
 }
 
-//template <typename T> typename std::enable_if<std::is_floating_point<T>::value, double>::type stepper(sqlite3_stmt *s, int pos) {
-//	throw db_exception("Uknown target type");
-//}
-
-//template <typename T> typename std::enable_if<std::is_integral<T>::value, int>::type stepper(sqlite3_stmt *s, int pos) {
-//	throw db_exception("Uknown target type");
-//}
-
 // These are the the types we support in our select target
 template <> int stepper(sqlite3_stmt *s, int pos);
 template <> uint64_t stepper(sqlite3_stmt *s, int pos);
@@ -62,8 +54,6 @@ template <> const char * stepper(sqlite3_stmt *s, int pos);
 template <> std::string stepper(sqlite3_stmt *s, int pos);
 template <> std::vector<uint8_t> stepper(sqlite3_stmt *s, int pos);
 template <> std::vector<uint64_t> stepper(sqlite3_stmt *s, int pos);
-
-
 
 class Database {
 
