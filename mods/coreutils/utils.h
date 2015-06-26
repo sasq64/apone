@@ -71,6 +71,8 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 		//LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
 		args.push_back(s.substr(pos, newpos-pos));
 		pos = newpos + l;
+		//while(s.substr(pos, l) == delim)
+		//	pos += l;
 		if(crlf && pos < s.length() && s[pos] == 13) pos++;
 	}
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.net)
 
-set(SOURCE_FILES net.cpp)
+set(SOURCE_FILES net.cpp webgetter.cpp)
 include_directories(asio)
 add_definitions(-DASIO_STANDALONE)
 

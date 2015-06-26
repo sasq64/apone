@@ -90,7 +90,7 @@ struct base_query {
 		}
 	};
 
-	template <class... A> void bind(const A& ... args) {
+	template <class... A> base_query& bind(const A& ... args) {
 		sqlite3_clear_bindings(stmt);
     	sqlite3_reset(stmt);
 
@@ -101,6 +101,7 @@ struct base_query {
 			if(r != SQLITE_OK)
 				throw db_exception(sqlite3_errmsg(db));
 		}
+		return *this;
     }
 
 	base_query& operator=(const base_query &q) = delete;

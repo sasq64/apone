@@ -43,7 +43,7 @@ screen.render_loop([=](uint32_t delta) mutable {
 LuaInterpreter lua;
 
 // Register a function callable from lua, with specific arguments
-lua.registerFunction<int, string, int, float>("testFunc", [=](string s, int x, float f) -> int {
+lua.registerFunction("testFunc", [=](string s, int x, float f) -> int {
     LOGD("Got '%s' and %f", s, f);
     return x+10;
 });
@@ -86,7 +86,7 @@ rpc.post("get_song_url", json.to_string(), [=](const string &result) {
 ### DATABASE
 ```c++
 struct User {
-    User(uint64_t id, string name) : id(id), name(name) {}
+    User(uint64_t id, string name) : id(id), name(name) {};
     uint64_t id;
     string name;
 };

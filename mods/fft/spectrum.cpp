@@ -17,6 +17,11 @@ SpectrumAnalyzer::SpectrumAnalyzer() : eq(eq_slots), power(fft_size/2+1) {
 	si->fftwp = fftwf_plan_dft_r2c_1d(fft_size, si->fftin, si->fftout, FFTW_ESTIMATE);
 }
 
+SpectrumAnalyzer::~SpectrumAnalyzer() {
+	fftwf_destroy_plan(si->fftwp);
+	delete si;
+}
+
 void SpectrumAnalyzer::popLevels() {
 	lock_guard<mutex> guard(m);
 	spectrum.pop_front();

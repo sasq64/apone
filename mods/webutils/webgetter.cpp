@@ -90,13 +90,14 @@ void WebGetter::Job::urlGet(const std::string &url) {
 
 	target = targetDir + "/" + urlencode(url, ":/\\?;");
 
-	//LOGD("TARGET:%s", target);
+	LOGD("TARGET:%s", target);
 
 
 	int rc = 0;
-	if(!File::exists(target)) {
+	if(datapos < 0 || !File::exists(target)) {
 
-		file = make_unique<File>(target + ".download", File::WRITE);
+		if(datapos < 0)	
+			file = make_unique<File>(target + ".download", File::WRITE);
 
 		ongoingCalls++;
 
@@ -114,8 +115,10 @@ void WebGetter::Job::urlGet(const std::string &url) {
 		rc = curl_easy_perform(curl);
 		LOGV("Curl returned %d", rc);
 		ongoingCalls--;
-		file->close();
-		file->rename(target);
+		if(file) {
+			file->close();
+			file->rename(target);
+		}
 		curl_easy_cleanup(curl);
 	} else {
 		LOGI("Getting %s from cache", target);
@@ -154,8 +157,9 @@ size_t WebGetter::Job::writeFunc(void *ptr, size_t size, size_t nmemb, void *use
 		job->datapos += (size * nmemb);
 	}
 
-	if(job->streamCallback)
+	if(job->streamCallback) {
 		job->streamCallback(static_cast<uint8_t*>(ptr), size * nmemb);
+	}
 	if(job->file)
 		job->file->write(static_cast<uint8_t*>(ptr), size * nmemb);
 	return size * nmemb;
@@ -187,7 +191,8 @@ size_t WebGetter::Job::headerFunc(void *ptr, size_t size, size_t nmemb, void *us
 		symlink(newTarget.c_str(), job->target.c_str());
 #endif
 		job->target = job->targetDir + "/" + newTarget;
-		job->file = make_unique<File>(job->target +".download", File::WRITE);
+		if(job->file)
+			job->file = make_unique<File>(job->target +".download", File::WRITE);
 	}
 
 	return size *nmemb;

@@ -58,7 +58,18 @@ public:
 	static File findFile(const std::string &path, const std::string &name);
 	static uint64_t getModified(const std::string &fileName);
 
+/*
+	template <typename F0, typename ... Fn> combinePath(F0 f, T...t) {
+		
+	}
 
+
+
+	template <typename F0, typename ... Fn> File(F0 f, T...t) {
+		compinePath(t...);
+	}
+*/
+	
 	File();
 	File(const std::string &name, const Mode mode  = NONE);
 	File(const File &parent, const std::string &name, const Mode mode  = NONE);
@@ -66,6 +77,11 @@ public:
 	~File();
 
 	void write(const uint8_t *data, const int size);
+
+	template <typename T> void write(const std::vector<T> &t) {
+		write(&t[0], t.size());
+	}
+
 	void write(const std::string &text);
 
 	template <typename T> void write(const T &t) {

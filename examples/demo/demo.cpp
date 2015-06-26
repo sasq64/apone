@@ -34,7 +34,7 @@ static const string sineShaderF = R"(
 int main(int argc, char **argv) {
 
 	screen.open(640, 480, false);
-	
+
 	uint32_t sz = screen.height() / 8;
 	Texture sprite { sz, sz };
 	vec2f xy {0,0};
@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
 
 	chipmachine::OpenMPTPlugin plugin;
 	auto player = plugin.fromFile("data/stardust.mod");
+
+
 	AudioPlayer aPlayer([=](int16_t *target, int len) mutable {
 		player->getSamples(target, len);
 	});
@@ -89,7 +91,7 @@ int main(int argc, char **argv) {
 		program.use();
 		program.setUniform("sinepos", sinepos += (0.00373 * delta));
 		screen.draw(scr, 0.0f, 0.0f, screen.width(), screen.height(), nullptr, program);
-	
+
 		screen.flip();
 	});
 

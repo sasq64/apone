@@ -34,8 +34,13 @@ using namespace std;
 
 string rstrip(const string &x, char c) {
 	auto l = x.length();
-	while(l > 1 && x[l-1] == c)
-		l--;
+	if(c == 10) {
+		while(l > 1 && (x[l-1] == 10 || x[l-1] == 13))
+			l--;
+	} else {
+		while(l > 1 && x[l-1] == c)
+			l--;
+	}
 	if(l == x.length())
 		return x;
 	return x.substr(0, l);
@@ -204,7 +209,7 @@ bool isalpha(const string &s) {
 }
 
 float clamp(float x, float a0, float a1) {
-	return min(max(x, a0), a1); 
+	return min(max(x, a0), a1);
 }
 
 void makedir(const std::string &name) {
@@ -421,7 +426,7 @@ TEST_CASE("utils::text", "Text operations") {
 	REQUIRE(lines.size() == 6);
 	string fullText;
 	for(const auto &l : lines) {
-		REQUIRE(l.length() <= 25);		
+		REQUIRE(l.length() <= 25);
 		fullText = fullText + l +  "\n\r";
 	}
 

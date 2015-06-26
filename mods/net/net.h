@@ -1,27 +1,66 @@
 #ifndef NET_H
 #define NET_H
 
-#include <string>
-#include <functional>
-#include <vector>
+#include "asio/asio.hpp"
 
-namespace utils {
-	class File;
-}
+#include <string>
 
 namespace net {
 
-class WebGetter {
+/* Represents a socket connection. Not copyable */
+class Connection {
 public:
-	WebGetter(const std::string &cacheDir) : cacheDir(cacheDir) {}
 
-	void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
-	//static void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
-	static void getData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
+	Connection() : socket(global_io_service), resolver(global_io_service) {}
+	Connection(const Connection &) = delete;
+	//Connection(const Connection &c) : socket(c.socket), resolver(io_service) {
+	//}
+	Connection(Connection &&c) : socket(std::move(c.socket)), resolver(global_io_service) {}
+	Connection(asio::ip::tcp::socket &socket) : socket(std::move(socket)), resolver(global_io_service) {}
+
+	Connection(const std::string &server, int port = -1) : socket(global_io_service), resolver(global_io_service) {
+		connect(server, port);
+	}
+
+	void connect(const std::string &target, int port = -1);
+
+/*
+	template <typename ... T> size_t read(T ... target) {
+		return socket.read_some(asio::buffer(target...));
+	}
+*/
+
+	// NOTE: Does not deal with short writes
+	void write(const std::string &s) {
+		socket.send(asio::buffer(s));
+	}
+
+	// NOTE: Does not deal with short writes
+	template <typename ... T> void write(T ... target) {
+		socket.send(asio::buffer(target...));
+	}
+
+	static void run() {
+		//LOGD("RUN");
+		global_io_service.run();
+		global_io_service.reset();
+	}
+
+	std::string getLine();
+
+	void read_lines();
+
+	asio::ip::tcp::socket& getSocket() { return socket; }
+
 private:
-	const std::string cacheDir;
+
+	static asio::io_service global_io_service;
+
+	asio::streambuf data;	
+	asio::ip::tcp::socket socket;
+	asio::ip::tcp::resolver resolver;
 };
 
-}
+};
 
 #endif // NET_H

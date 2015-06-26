@@ -17,7 +17,7 @@ Be typesafe when possible. Use type erasure for storing generic data.
 
 It's worth spending a lot of time on API interfaces.
 
-Prefer `std::function` to interfaces for callbacks.
+Prefer `std::function` to interfaces for callbacks. Or better yet, make it a generic type.
 
 Use coreutils/callback for callbacks with variable number of arguments
 

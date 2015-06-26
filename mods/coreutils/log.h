@@ -60,10 +60,10 @@ const char *xbasename(const char *x);
 class LogSpace {
 public:
 	LogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName, bool on = true) {
-		spaces[sourceFile] = std::make_pair(spaceName, on);
+		//spaces[sourceFile] = std::make_pair(spaceName, on);
 		//LOGD("LogSpace %s for %s '%s'", spaceName, sourceFile, function);
 	}
-	static std::unordered_map<std::string, std::pair<std::string, bool>> spaces;
+	//static std::unordered_map<std::string, std::pair<std::string, bool>> spaces;
 
 };
 

@@ -36,6 +36,7 @@ private:
 public:
 
 	SpectrumAnalyzer();
+	~SpectrumAnalyzer();
 
 	const std::array<uint16_t, eq_slots> getLevels() {
 		std::lock_guard<std::mutex> guard(m);

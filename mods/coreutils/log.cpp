@@ -30,7 +30,7 @@ using namespace std;
 
 LogLevel defaultLevel = DEBUG;
 static FILE *logFile = nullptr;
-unordered_map<string, pair<string, bool>> LogSpace::spaces;
+//unordered_map<string, pair<string, bool>> LogSpace::spaces;
 
 const char *xbasename(const char *x) {
 	const char *slash = x;
@@ -69,8 +69,8 @@ void log(LogLevel level, const std::string &text) {
 
 void log2(const char *fn, int line, LogLevel level, const std::string &text) {
 	static int termType = 1;
-	const auto &space = LogSpace::spaces[fn];
-	if(space.second || space.first == "") {
+	//const auto &space = LogSpace::spaces[fn];
+	if(true) {//space.second || space.first == "") {
 		char temp[2048];
 
 		if(!termType) {
@@ -113,11 +113,11 @@ void setOutputFile(const std::string &fileName) {
 //}
 
 void useLogSpace(const string &spaceName, bool on) {
-	for(auto &s : LogSpace::spaces) {
+	/*for(auto &s : LogSpace::spaces) {
 		if(s.second.first == spaceName) {
 			s.second.second = on;
 		}
-	}
+	}*/
 }
 
 }
