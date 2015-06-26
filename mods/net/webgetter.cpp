@@ -246,6 +246,7 @@ void WebGetter::update() {
 
 WebGetter::WebGetter(const string &cacheDir) : cacheDir(cacheDir) {
 	sessions.reserve(4);
+	quit = false;
 	workerThread = thread([&]() {
 		while(!quit) {
 			sleepms(50);
