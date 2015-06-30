@@ -104,6 +104,13 @@ struct base_query {
 		return *this;
     }
 
+    template <class T> base_query& bind(int index, const T& t) {
+    	Statement s { stmt, index };
+    	if(bindArg(s, t) != SQLITE_OK)
+    		throw db_exception(sqlite3_errmsg(db));
+    	return *this;
+	}
+
 	base_query& operator=(const base_query &q) = delete;
 	base_query(const base_query &q) = delete;
 

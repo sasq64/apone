@@ -27,9 +27,11 @@ using namespace std;
 
 File File::NO_FILE;
 
-string File::appDir = "/usr/share/" APP_NAME_STR;
-string File::userDir;
-
+File File::appDir ("/usr/share/" APP_NAME_STR);
+File File::userDir;
+File File::cacheDir;
+File File::configDir;
+File File::exeDir;
 
 File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
@@ -41,11 +43,11 @@ File::File(const string &name, const Mode mode) : fileName(rstrip(name, '/')), s
 		open(mode);
 };
 
-File::File(const File &parent, const string &name, const Mode mode) : File(parent.getName() + "/" + name, mode) {}
+// join: strip 
 
 File::File(const string &parent, const string &name, const Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
 
-vector<File> File::listFiles() {
+vector<File> File::listFiles() const {
 	DIR *dir;
 	struct dirent *ent;
 	vector<File> rc;
@@ -161,14 +163,28 @@ bool File::exists(const string &fileName) {
 	return (stat(fileName.c_str(), &ss) == 0);
 }
 
+string File::makePath(vector<File> files) {
+	string path = "";
+	string sep = "";
+	for(const File& f : files) {
+		path = path + sep + f.getName();
+		sep = ":";
+	}
+	return path;
+
+}
+
+
 File File::findFile(const string &path, const string &name) {
+	LOGD(">>>%s<<< :::%s:::", path, name);
 	if(name == "")
 		return NO_FILE;
 	auto parts = split(path, ":");
 	for(string p : parts) {
 		if(p.length() > 0) {
 			if(p[p.length()-1] != '/')
-			p += "/";
+				p += "/";
+			LOGD("%s", p);
 			File f { p + name };
 			if(f.exists())
 				return f;
@@ -179,20 +195,26 @@ File File::findFile(const string &path, const string &name) {
 
 #ifdef APP_NAME
 
-const std::string File::getCacheDir() {
-    const char *home = getenv("HOME");
-    auto d = format("%s/.cache/" APP_NAME_STR, home);
-    if(!exists(d))
-        utils::makedirs(d);
-    return d + "/";
+const File& File::getCacheDir() {
+	if(!cacheDir) {
+	    const char *home = getenv("HOME");
+	    auto d = format("%s/.cache/" APP_NAME_STR, home);
+	    if(!exists(d))
+	        utils::makedirs(d);
+	    cacheDir = File(d);
+	}
+    return cacheDir;
 }
 
-const std::string File::getConfigDir() {
-    const char *home = getenv("HOME");
-    auto d = format("%s/.config/" APP_NAME_STR, home);
-    if(!exists(d))
-        utils::makedirs(d);
-    return d + "/";
+const File& File::getConfigDir() {
+	if(!configDir) {
+	    const char *home = getenv("HOME");
+	    auto d = format("%s/.config/" APP_NAME_STR, home);
+	    if(!exists(d))
+	        utils::makedirs(d);
+	    configDir = File(d);
+	}
+    return configDir;
 }
 
 const std::string File::getUserDir() {
@@ -294,22 +316,24 @@ File::~File() {
 		fclose(writeFP);
 }
 
-const std::string File::getExeDir() {
+const File& File::getExeDir() {
 
-	static char buf[1024];
-#if defined APPLE
-	uint32_t size = sizeof(buf);
-	if(_NSGetExecutablePath(buf, &size) == 0) {
-		return path_directory(buf);
+	if(!exeDir) {
+		static char buf[1024];
+	#if defined APPLE
+		uint32_t size = sizeof(buf);
+		if(_NSGetExecutablePath(buf, &size) == 0) {
+			exeDir = File(path_directory(buf));
+		}
+	#elif defined UNIX
+		int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
+		if(rc >= 0) {
+			buf[rc] = 0;
+			exeDir = File(path_directory(buf));
+		}
+	#endif
 	}
-#elif defined UNIX
-	int rc = readlink("/proc/self/exe", buf, sizeof(buf)-1);
-	if(rc >= 0) {
-		buf[rc] = 0;
-		return path_directory(buf);
-	}
-#endif
-	return "";
+	return exeDir;
 }
 
 
@@ -318,10 +342,10 @@ void File::setAppDir(const std::string &a) {
 	appDir = a;
 }
 
-const std::string File::getAppDir() {
-	if(appDir == "") {
+const File& File::getAppDir() {
+	if(!appDir) {
 		if(APP_NAME_STR != "")
-			appDir = "/usr/share/" APP_NAME_STR;
+			appDir = File("/usr/share/" APP_NAME_STR);
 		else
 			throw io_exception("No appDir specified");
 	}

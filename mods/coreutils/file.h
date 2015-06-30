@@ -47,18 +47,27 @@ public:
 	static File cwd();
 	static void remove(const std::string &fileName);
 
-	static const std::string getCacheDir();
-	static const std::string getConfigDir();
-	static const std::string getAppDir();
+	static const File& getCacheDir();
+	static const File& getConfigDir();
+	static const File& getAppDir();
 
-	static const std::string getExeDir();
+	static const File& getExeDir();
 
 	static void setAppDir(const std::string &a);
 	static const std::string getUserDir();
 	static File findFile(const std::string &path, const std::string &name);
 	static uint64_t getModified(const std::string &fileName);
 
+	static std::string makePath(std::vector<File> files);
+
 /*
+	template <typename F0> static std::string makePath(const F0& f0) {
+		return f0.getName();
+	}
+	template <typename F0, typename ... F> static std::string makePath(const F0& f0, const F& ... f) {
+		return f0.getName() + ":" + makePath(f...);
+	}
+
 	template <typename F0, typename ... Fn> combinePath(F0 f, T...t) {
 		
 	}
@@ -72,9 +81,17 @@ public:
 	
 	File();
 	File(const std::string &name, const Mode mode  = NONE);
-	File(const File &parent, const std::string &name, const Mode mode  = NONE);
 	File(const std::string &parent, const std::string &name, const Mode mode = NONE);
 	~File();
+
+
+	operator bool() const { return fileName != ""; }
+
+	operator std::string() const { return getName(); }
+
+	template <typename F> File operator/(const F &f) const {
+		return File(*this, f);
+	}
 
 	void write(const uint8_t *data, const int size);
 
@@ -117,7 +134,7 @@ public:
 
 	std::vector<std::string> getLines();
 
-	std::vector<File> listFiles();
+	std::vector<File> listFiles() const;
 
 	bool exists() const;
 
@@ -146,8 +163,11 @@ private:
 
 	void open(Mode mode);
 
-	static std::string appDir;
-	static std::string userDir;
+	static File appDir;
+	static File userDir;
+	static File cacheDir;
+	static File configDir;
+	static File exeDir;
 
 	std::string fileName;
 	mutable int64_t size;
