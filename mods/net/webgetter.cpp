@@ -160,11 +160,22 @@ void HttpSession::stop() { impl->state = State::DONE; }
 void HttpSession::readContent() {
 	int size = impl->cntSize - impl->data.in_avail();
 	if(size <= 0) {
-		LOGD("EMPTY");
-		impl->state = State::EMPTY;
-		if(!isRedirect()) {
-			vector<uint8_t> v;
-			impl->callback(*this, v);
+
+		if(impl->data.in_avail() > 0) {
+			LOGD("ALL IN BUFFER");
+			vector<uint8_t> buffer(impl->data.size());
+			auto bufs = impl->data.data();
+			copy(asio::buffers_begin(bufs), asio::buffers_end(bufs), buffer.begin());
+			impl->total = impl->data.size();
+			impl->state = State::DONE;
+			impl->callback(*this, buffer);
+		} else {
+			LOGD("EMPTY");
+			impl->state = State::EMPTY;
+			if(!isRedirect()) {
+				vector<uint8_t> v;
+				impl->callback(*this, v);
+			}
 		}
 		return;
 	}
