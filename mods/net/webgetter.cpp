@@ -50,6 +50,15 @@ HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 
 	impl->url = url;
 
+	LOGD("URL:%s", url);
+
+
+	auto parts = split(url, "://");
+
+	if(parts.size() == 2) {
+
+	}
+
 	if(startsWith(url, "http://"))
 		hostStart = 7;
 
@@ -185,6 +194,7 @@ void HttpSession::readContent() {
 
 		if(n == 0 || impl->total == impl->cntSize) {
 			impl->state = State::DONE;
+			LOGD("Done reading");
 		}
 
 		impl->callback(*this, buffer);
@@ -290,7 +300,16 @@ WebGetter::~WebGetter() {
 void WebGetter::streamData(const string &url, function<bool(const uint8_t *data, int size)> callback) {
 	lock_guard<mutex>{m};
 	sessions.emplace_back(make_shared<HttpSession>(url));
-	sessions.back()->stream([=](HttpSession &session, const vector<uint8_t> &v) {
+	bool sizeReported = false;
+	sessions.back()->stream([=](HttpSession &session, const vector<uint8_t> &v) mutable {		
+		if(!sizeReported) {
+			sizeReported = true;
+			LOGD("SIZE:%d", session.contentSize());
+			if(!callback(nullptr, session.contentSize())) {
+				session.stop();
+				return;
+			}
+		}
 		if(!callback(&v[0], v.size()))
 			session.stop();
 		else
