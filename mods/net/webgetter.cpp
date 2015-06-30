@@ -86,7 +86,7 @@ HttpSession& HttpSession::operator=(HttpSession &&h) {
 
 
 void HttpSession::sendRequest(const string &path, const string &host) {
-	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", path, host);
+	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\?;+ "), host);
 	LOGD("REQ %p:\n%s", this, req);
 	LOGD("%d", impl->data.size());
 	impl->c.write(req);
@@ -95,7 +95,10 @@ void HttpSession::sendRequest(const string &path, const string &host) {
 		//LOGD("Read %d bytes", n);
 		parseHeader();
 		impl->state = State::HEADERS;
+		//if(impl->code == 200)
 		readContent();
+		//else
+		//	impl->state = State::ERROR;
 	});
 }
 
@@ -269,7 +272,7 @@ void WebGetter::getFile(const string &url, function<void(const File&)> callback)
 
 	string u = url;
 	auto target = make_shared<File>(cacheDir + "/" + urlencode(url, ":/\\?;"));
-	if(target->exists()) {
+	if(target->exists() && target->getSize() > 0) {
 		callback(*target);
 		return;
 	}
@@ -280,6 +283,10 @@ void WebGetter::getFile(const string &url, function<void(const File&)> callback)
 		if(session.done()) {
 			auto finalUrl = session.getUrl();
 			target->close();
+			if(session.returnCode() != 200) {
+				target->remove();
+				callback(File::NO_FILE);
+			} else
 			if(finalUrl != url) {
 				auto finalTarget = make_shared<File>(cacheDir + "/" + urlencode(finalUrl, ":/\\?;"));
 				std::rename(target->getName().c_str(), finalTarget->getName().c_str());
