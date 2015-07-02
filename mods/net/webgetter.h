@@ -20,9 +20,10 @@ public:
 	struct State;
 
 	HttpSession(const std::string &url);
-	HttpSession(const std::string &host, const std::string &path, int port);
+	//HttpSession(const std::string &host, const std::string &path, int port);
 	HttpSession(HttpSession &&h);
 	HttpSession& operator=(HttpSession &&h);
+	~HttpSession();
 
 	void stream(const Callback &cb);
 	void getData(const Callback &cb);
@@ -44,7 +45,13 @@ public:
 
 	void stop();
 
+	static std::atomic<int> ongoingCalls;
+
+	enum NetState { NONE, ERROR, CONNECT, HEADERS, DONE, EMPTY };
+	NetState getState();
+
 private:
+
 
 
 	void sendRequest(const std::string &path, const std::string &host);

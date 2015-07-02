@@ -38,12 +38,16 @@ struct HttpSession::State {
 	int code;
 	int headerSize;
 	int cntSize;
-	enum { NONE, CONNECT, HEADERS, DONE, EMPTY } state = NONE;
+	HttpSession::NetState state = NONE;
+	//asio::deadline_timer timer;
 
 };
 
+std::atomic<int> HttpSession::ongoingCalls;
 
 HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
+
+	ongoingCalls++;
 
 	int hostStart = 0;
 	impl->port = 80;
@@ -52,11 +56,13 @@ HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 
 	LOGD("URL:%s", url);
 
-
 	auto parts = split(url, "://");
 
 	if(parts.size() == 2) {
-
+		if(parts[0] != "http") {
+			impl->state = ERROR;
+			return;
+		}
 	}
 
 	if(startsWith(url, "http://"))
@@ -77,6 +83,11 @@ HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 }
 
 HttpSession::HttpSession(HttpSession &&h) : impl(std::move(h.impl)) {
+	ongoingCalls++;
+}
+
+HttpSession::~HttpSession() {
+	ongoingCalls--;
 }
 
 HttpSession& HttpSession::operator=(HttpSession &&h) {
@@ -86,19 +97,19 @@ HttpSession& HttpSession::operator=(HttpSession &&h) {
 
 
 void HttpSession::sendRequest(const string &path, const string &host) {
-	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\?;+ "), host);
+	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\?;+# "), host);
 	LOGD("REQ %p:\n%s", this, req);
 	LOGD("%d", impl->data.size());
 	impl->c.write(req);
-	impl->state = State::CONNECT;
+	impl->state = CONNECT;
 	asio::async_read_until(impl->c.getSocket(), impl->data, "\r\n\r\n", [=](const asio::error_code &e, size_t n) {
 		//LOGD("Read %d bytes", n);
 		parseHeader();
-		impl->state = State::HEADERS;
+		impl->state = HEADERS;
 		//if(impl->code == 200)
 		readContent();
 		//else
-		//	impl->state = State::ERROR;
+		//	impl->state = ERROR;
 	});
 }
 
@@ -150,12 +161,14 @@ int HttpSession::returnCode() const { return impl->code; }
 int HttpSession::getPort() const { return impl->port; }
 string HttpSession::getHost() const { return impl->host; }
 
-bool HttpSession::gotHeaders() const { return impl->state == State::HEADERS || impl->state == State::DONE || impl->state == State::EMPTY; }
-bool HttpSession::done() const { return impl->state == State::DONE || impl->state == State::EMPTY; }
+bool HttpSession::gotHeaders() const { return impl->state == HEADERS || impl->state == DONE || impl->state == EMPTY; }
+bool HttpSession::done() const { return impl->state == DONE || impl->state == EMPTY; }
 
 std::string HttpSession::getUrl() const { return impl->url; }
 
-void HttpSession::stop() { impl->state = State::DONE; }
+void HttpSession::stop() { impl->state = DONE; }
+
+HttpSession::NetState HttpSession::getState() { return impl->state; }
 
 void HttpSession::readContent() {
 	int size = impl->cntSize - impl->data.in_avail();
@@ -167,11 +180,11 @@ void HttpSession::readContent() {
 			auto bufs = impl->data.data();
 			copy(asio::buffers_begin(bufs), asio::buffers_end(bufs), buffer.begin());
 			impl->total = impl->data.size();
-			impl->state = State::DONE;
+			impl->state = DONE;
 			impl->callback(*this, buffer);
 		} else {
 			LOGD("EMPTY");
-			impl->state = State::EMPTY;
+			impl->state = EMPTY;
 			if(!isRedirect()) {
 				vector<uint8_t> v;
 				impl->callback(*this, v);
@@ -183,7 +196,7 @@ void HttpSession::readContent() {
 	if(!impl->callback || impl->oneShot) {
 		LOGD("ALL AT ONCE");
 		asio::async_read(impl->c.getSocket(), impl->data, asio::transfer_exactly(size), [&](const asio::error_code &e, size_t n) {
-			impl->state = State::DONE;
+			impl->state = DONE;
 			if(impl->oneShot) {
 				auto v8 = getContent();
 				impl->callback(*this, v8);
@@ -197,6 +210,9 @@ void HttpSession::readContent() {
 	//buffer.reserve(chunkSize);
 
 	impl->handler = [=](const asio::error_code &e, size_t n) {
+		//asio::deadline_timer t(io, boost::posix_time::seconds(5));
+		//t->async_wait(
+
 		impl->data.commit(n);
 		//LOGD("Read %d bytes, avail %d", n, impl->data.size());
 		//n += filled;
@@ -207,19 +223,20 @@ void HttpSession::readContent() {
 		//LOGD("Total %d", impl->total);
 
 		if(n == 0 || impl->total == impl->cntSize) {
-			impl->state = State::DONE;
+			impl->state = DONE;
 			LOGD("Done reading");
 		}
 
 		impl->callback(*this, buffer);
 
-		if(impl->state == State::DONE) {
+		if(impl->state == DONE) {
 			LOGD("Request stop");
 			return;
 		}
 
 		impl->data.consume(impl->data.size());
 		auto mutableBuffer = impl->data.prepare(16384);
+
 		impl->c.getSocket().async_read_some(asio::buffer(mutableBuffer), impl->handler);
 	};
 
@@ -266,6 +283,7 @@ void WebGetter::update() {
 		} else
 			it++;
 	}
+
 }
 
 WebGetter::WebGetter(const string &cacheDir) : cacheDir(cacheDir) {
@@ -289,6 +307,11 @@ void WebGetter::getFile(const string &url, function<void(const File&)> callback)
 	}
 	lock_guard<mutex>{m};
 	sessions.emplace_back(make_shared<HttpSession>(url));
+	if(sessions.back()->getState() == HttpSession::ERROR) {
+		callback(File::NO_FILE);
+		sessions.erase(sessions.end()-1);
+		return;
+	}
 	sessions.back()->stream([=](HttpSession &session, const vector<uint8_t> &v) {
 		target->write(v);
 		if(session.done()) {
@@ -336,7 +359,9 @@ void WebGetter::streamData(const string &url, function<bool(const uint8_t *data,
 	});
 }
 
-int WebGetter::inProgress() { return 0; }
+int WebGetter::inProgress() { 
+	return HttpSession::ongoingCalls;
+}
 
 bool WebGetter::inCache(const std::string &url) const {
 	auto target = File(cacheDir + "/" + urlencode(url, ":/\\?;"));
