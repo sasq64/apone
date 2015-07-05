@@ -53,8 +53,7 @@ void Window::update_callbacks() {
 
 	while(safeFuncs.size() > 0) {
 		safeMutex.lock();
-		auto &f = safeFuncs.front();
-		f();
+		safeFuncs.front()();
 		safeFuncs.pop_front();
 		safeMutex.unlock();
 	}

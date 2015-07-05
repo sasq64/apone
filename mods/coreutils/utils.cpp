@@ -235,7 +235,7 @@ void makedirs(const std::string &path) {
 
 bool endsWith(const string &name, const string &ext) {
 	auto pos = name.rfind(ext);
-	return (pos == name.length() - ext.length());
+	return (pos != string::npos && pos == name.length() - ext.length());
 }
 
 bool startsWith(const string &name, const string &pref) {

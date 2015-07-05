@@ -62,7 +62,7 @@ public:
 
 	void render() {
 		//LOGD("POSITION %f", position);
-		auto n = std::min(totalItems, visibleItems+1);
+		auto n = visibleItems+1;
 		float dummy;
 		float p = modf(position, &dummy);
 		int ip = (int)dummy;
@@ -72,13 +72,17 @@ public:
 
 		if(renderer != 0) {
 			for(int i=0; i<n; i++) {
+				if(i + ip >= totalItems)
+					break;
 				auto rec = layout.layout((i - p) / (float)visibleItems);
 				renderer->renderItem(rec, i, i + ip, i + ip == selected_item);
 			}
 		} else {
 			for(int i=0; i<n; i++) {
-				auto rec = layout.layout((i + p) / (float)visibleItems);
-				renderFunc(rec, i, i + position, i + ip == selected_item);
+				if(i + ip >= totalItems)
+					break;
+				auto rec = layout.layout((i - p) / (float)visibleItems);
+				renderFunc(rec, i, i + ip, i + ip == selected_item);
 			}
 		}
 

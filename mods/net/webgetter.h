@@ -25,6 +25,8 @@ public:
 	HttpSession& operator=(HttpSession &&h);
 	~HttpSession();
 
+	void connect();
+
 	void stream(const Callback &cb);
 	void getData(const Callback &cb);
 
@@ -68,8 +70,8 @@ public:
 	WebGetter(const std::string &cacheDir = "");
 	~WebGetter();
 
-	void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
-	void streamData(const std::string &url, std::function<bool(const uint8_t* data, int size)> callback);
+	std::shared_ptr<HttpSession> getFile(const std::string &url, std::function<void(const utils::File&)> callback);
+	std::shared_ptr<HttpSession> streamData(const std::string &url, std::function<bool(const uint8_t* data, int size)> callback);
 	//static void getFile(const std::string &url, std::function<void(const utils::File&)> callback);
 	void getData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)>);
 

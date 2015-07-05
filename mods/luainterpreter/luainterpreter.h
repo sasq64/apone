@@ -167,6 +167,20 @@ public:
 		createLuaClosure(name, new FunctionCallerImpl<FX,decltype(&FX::operator()) >(L, f));
 	}
 
+	struct LuaRef {
+		LuaRef(const std::string &name, LuaInterpreter& lua) : name(name), lua(lua) {}
+		LuaInterpreter &lua;
+		std::string name;
+		template <typename FX> LuaRef& operator=(FX f) {
+			lua.createLuaClosure(name, new FunctionCallerImpl<FX,decltype(&FX::operator()) >(lua.L, f));
+			return *this;
+		}
+	};
+
+	LuaRef operator[](const std::string &name) {
+		return LuaRef(name, *this);
+	}
+
 	template <class R, class... A> R call(const std::string &f, const A& ... args) {
 		getGlobalToStack(f);
 		pushArg(L, args...);

@@ -4,6 +4,7 @@
 #include "asio/asio.hpp"
 
 #include <string>
+#include <functional>
 
 namespace net {
 
@@ -23,6 +24,7 @@ public:
 	}
 
 	void connect(const std::string &target, int port = -1);
+	void connect(const std::string &target, int port, std::function<void(int)> cb);
 
 /*
 	template <typename ... T> size_t read(T ... target) {
@@ -53,6 +55,9 @@ public:
 	asio::ip::tcp::socket& getSocket() { return socket; }
 
 private:
+
+	asio::ip::tcp::resolver::query resolve(const std::string &target, int port = -1);
+
 
 	static asio::io_service global_io_service;
 

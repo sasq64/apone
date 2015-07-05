@@ -24,17 +24,17 @@ struct HttpSession::State {
 	int chunkSize = 1024;
 	int total;
 	bool oneShot = false;
-	std::string url;
-	std::string host;
-	std::string path;
+	string url;
+	string host;
+	string path;
 	int port;
-	std::function<void(const asio::error_code &e, size_t n)> handler;
+	function<void(const asio::error_code &e, size_t n)> handler;
 	Callback callback;
-	//std::vector<uint8_t> buffer;
-	//std::shared_ptr<utils::File> file;
+	//vector<uint8_t> buffer;
+	//shared_ptr<utils::File> file;
 	Connection c;
 	asio::streambuf data;
-	std::unordered_map<std::string, std::string> header;
+	unordered_map<string, string> header;
 	int code;
 	int headerSize;
 	int cntSize;
@@ -43,7 +43,7 @@ struct HttpSession::State {
 
 };
 
-std::atomic<int> HttpSession::ongoingCalls;
+atomic<int> HttpSession::ongoingCalls;
 
 HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 
@@ -76,22 +76,27 @@ HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 		impl->port = stol(impl->host.substr(lastColon+1));
 		impl->host = impl->host.substr(0, lastColon);
 	}
-
-	LOGD("CONNECT %s %d", impl->host, impl->port);
-	impl->c.connect(impl->host, impl->port);
-	sendRequest(impl->path, impl->host);
 }
 
-HttpSession::HttpSession(HttpSession &&h) : impl(std::move(h.impl)) {
+void HttpSession::connect() {
+	LOGD("CONNECT %s %d", impl->host, impl->port);
+	impl->c.connect(impl->host, impl->port, [=](int code) {
+		if(impl->state != DONE || impl->state != ERROR)
+			sendRequest(impl->path, impl->host);
+	});
+}
+
+HttpSession::HttpSession(HttpSession &&h) : impl(move(h.impl)) {
 	ongoingCalls++;
 }
 
 HttpSession::~HttpSession() {
+	LOGD("DESTROY %s", impl->url);
 	ongoingCalls--;
 }
 
 HttpSession& HttpSession::operator=(HttpSession &&h) {
-	impl = std::move(h.impl);
+	impl = move(h.impl);
 	return *this;
 }
 
@@ -164,9 +169,12 @@ string HttpSession::getHost() const { return impl->host; }
 bool HttpSession::gotHeaders() const { return impl->state == HEADERS || impl->state == DONE || impl->state == EMPTY; }
 bool HttpSession::done() const { return impl->state == DONE || impl->state == EMPTY; }
 
-std::string HttpSession::getUrl() const { return impl->url; }
+string HttpSession::getUrl() const { return impl->url; }
 
-void HttpSession::stop() { impl->state = DONE; }
+void HttpSession::stop() {
+	LOGD("STOPPING");
+	impl->state = DONE;
+}
 
 HttpSession::NetState HttpSession::getState() { return impl->state; }
 
@@ -272,8 +280,10 @@ void WebGetter::update() {
 			LOGD("Redirecting to '%s'", location);
 			auto callback = s->getCallback();
 			it = sessions.erase(it);
-			sessions.emplace_back(make_shared<HttpSession>(location));
-			sessions.back()->stream(callback);
+			auto s = make_shared<HttpSession>(location);
+			sessions.push_back(s);
+			s->connect();
+			s->stream(callback);
 			it = sessions.end();
 			continue;
 		}
@@ -297,40 +307,48 @@ WebGetter::WebGetter(const string &cacheDir) : cacheDir(cacheDir) {
 	});
 }
 
-void WebGetter::getFile(const string &url, function<void(const File&)> callback) {
+shared_ptr<HttpSession> WebGetter::getFile(const string &url, function<void(const File&)> callback) {
 
 	string u = url;
 	auto target = make_shared<File>(cacheDir + "/" + urlencode(url, ":/\\?;"));
+
+	lock_guard<mutex>{m};
+	auto s = make_shared<HttpSession>(url);
+
 	if(target->exists() && target->getSize() > 0) {
 		callback(*target);
-		return;
+		return s;
 	}
-	lock_guard<mutex>{m};
-	sessions.emplace_back(make_shared<HttpSession>(url));
-	if(sessions.back()->getState() == HttpSession::ERROR) {
+	sessions.push_back(s);
+	s->connect();
+
+	if(s->getState() == HttpSession::ERROR) {
 		callback(File::NO_FILE);
 		sessions.erase(sessions.end()-1);
-		return;
+		return s;
 	}
-	sessions.back()->stream([=](HttpSession &session, const vector<uint8_t> &v) {
+	s->stream([=](HttpSession &session, const vector<uint8_t> &v) {
 		target->write(v);
 		if(session.done()) {
 			auto finalUrl = session.getUrl();
 			target->close();
 			if(session.returnCode() != 200) {
 				target->remove();
-				callback(File::NO_FILE);
+				utils::schedule_callback([=]() { callback(File::NO_FILE); });
 			} else
 			if(finalUrl != url) {
 				auto finalTarget = make_shared<File>(cacheDir + "/" + urlencode(finalUrl, ":/\\?;"));
-				std::rename(target->getName().c_str(), finalTarget->getName().c_str());
+				rename(target->getName().c_str(), finalTarget->getName().c_str());
 				symlink(finalTarget->getName().c_str(), target->getName().c_str());
-				callback(*finalTarget);
+				//callback(*finalTarget);
+				utils::schedule_callback([=]() { callback(*finalTarget); });
 			} else
-				callback(*target);
+				utils::schedule_callback([=]() { callback(*target); });
+				//callback(*target);
 		}
 			
 	});
+	return s;
 }
 
 WebGetter::~WebGetter() {
@@ -338,11 +356,13 @@ WebGetter::~WebGetter() {
 	workerThread.join();
 }
 
-void WebGetter::streamData(const string &url, function<bool(const uint8_t *data, int size)> callback) {
+shared_ptr<HttpSession> WebGetter::streamData(const string &url, function<bool(const uint8_t *data, int size)> callback) {
 	lock_guard<mutex>{m};
-	sessions.emplace_back(make_shared<HttpSession>(url));
+	auto s = make_shared<HttpSession>(url);
+	sessions.push_back(s);
 	bool sizeReported = false;
-	sessions.back()->stream([=](HttpSession &session, const vector<uint8_t> &v) mutable {		
+	s->connect();
+	s->stream([=](HttpSession &session, const vector<uint8_t> &v) mutable {		
 		if(!sizeReported) {
 			sizeReported = true;
 			LOGD("SIZE:%d", session.contentSize());
@@ -357,18 +377,19 @@ void WebGetter::streamData(const string &url, function<bool(const uint8_t *data,
 		if(session.done())
 			callback(nullptr, 0);
 	});
+	return s;
 }
 
 int WebGetter::inProgress() { 
 	return HttpSession::ongoingCalls;
 }
 
-bool WebGetter::inCache(const std::string &url) const {
+bool WebGetter::inCache(const string &url) const {
 	auto target = File(cacheDir + "/" + urlencode(url, ":/\\?;"));
 	return target.exists();
 }
 
-void WebGetter::getData(const std::string &url, std::function<void(const std::vector<uint8_t> &data)> cb) {
+void WebGetter::getData(const string &url, function<void(const vector<uint8_t> &data)> cb) {
 	lock_guard<mutex>{m};
 	sessions.emplace_back(make_shared<HttpSession>(url));
 	sessions.back()->getData([=](HttpSession &session, const vector<uint8_t> &v) {

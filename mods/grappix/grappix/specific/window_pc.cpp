@@ -35,6 +35,10 @@ Window::click Window::NO_CLICK = { -1, -1, -1};
 
 std::deque<Window::click> Window::click_buffer;
 
+static void scroll_fn(GLFWwindow *gwin, double x, double y) {
+	LOGD("SCROLL %f, %f", x, y);
+}
+
 
 static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
@@ -58,6 +62,8 @@ static void mouse_fn(GLFWwindow *gwin, int button, int action, int mods) {
 		double x,y;
 		glfwGetCursorPos(gwin, &x, &y);
 		c.button = button;
+		c.x = x;
+		c.y = y;
 		Window::click_buffer.push_back(c);
 	}
 }
@@ -165,6 +171,7 @@ void Window::open(int w, int h, bool fs) {
 
 	glfwSetKeyCallback(gwindow, key_fn);
 	glfwSetMouseButtonCallback(gwindow, mouse_fn);
+	glfwSetScrollCallback(gwindow, scroll_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(gwindow, resize_fn);
 	glfwSwapInterval(1);
@@ -336,6 +343,9 @@ Window::click Window::get_click(bool peek) {
 	}
 	return NO_CLICK;
 }
+
+//Window::click Window::get_click(bool peek) {
+
 
 Window::key Window::get_key(bool peek) {
 	if(hasEvents<KeyEvent>()) {

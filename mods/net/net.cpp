@@ -18,7 +18,9 @@ namespace net {
 
 asio::io_service Connection::global_io_service;
 
-void Connection::connect(const string &target, int port) {
+//asio::ip::tcp::resolver::iterator
+asio::ip::tcp::resolver::query Connection::resolve(const string &target, int port) {
+
 	string service;
 	string server = target;
 
@@ -31,9 +33,25 @@ void Connection::connect(const string &target, int port) {
 	} else
 		service = to_string(port);
 	LOGD("Connecting %s %s\n", server, service);
-	tcp::resolver::query query(server, service);
-	auto endpoints = resolver.resolve(query);
+	return tcp::resolver::query(server, service);
+	//return resolver.resolve(query);
+}
+
+
+
+void Connection::connect(const string &target, int port) {
+	auto endpoints = resolver.resolve(resolve(target, port));
 	asio::connect(socket, endpoints);
+}
+
+void Connection::connect(const string &target, int port, function<void(int)> f) {
+	auto q = resolve(target, port);
+	resolver.async_resolve(q, [=](const asio::error_code &e, asio::ip::tcp::resolver::iterator endpoints) {
+		asio::async_connect(socket, endpoints, [=](const asio::error_code &e, asio::ip::tcp::resolver::iterator iterator) {
+			f(0);
+		});
+	});
+
 }
 
 string Connection::getLine() {
