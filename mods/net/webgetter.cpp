@@ -327,6 +327,7 @@ shared_ptr<HttpSession> WebGetter::getFile(const string &url, function<void(cons
 		sessions.erase(sessions.end()-1);
 		return s;
 	}
+
 	s->stream([=](HttpSession &session, const vector<uint8_t> &v) {
 		target->write(v);
 		if(session.done()) {
@@ -391,8 +392,10 @@ bool WebGetter::inCache(const string &url) const {
 
 void WebGetter::getData(const string &url, function<void(const vector<uint8_t> &data)> cb) {
 	lock_guard<mutex>{m};
-	sessions.emplace_back(make_shared<HttpSession>(url));
-	sessions.back()->getData([=](HttpSession &session, const vector<uint8_t> &v) {
+	auto s = make_shared<HttpSession>(url);
+	sessions.push_back(s);
+	s->connect();
+	s->getData([=](HttpSession &session, const vector<uint8_t> &v) {
 		cb(v);
 	});
 
