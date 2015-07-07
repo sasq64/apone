@@ -102,7 +102,7 @@ HttpSession& HttpSession::operator=(HttpSession &&h) {
 
 
 void HttpSession::sendRequest(const string &path, const string &host) {
-	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\?;+# "), host);
+	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\;+'\" "), host);
 	LOGD("REQ %p:\n%s", this, req);
 	LOGD("%d", impl->data.size());
 	impl->c.write(req);
