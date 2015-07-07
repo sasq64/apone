@@ -1,0 +1,9 @@
+#include <windows.h>
+#include <chrono>
+#include <system_error>
+#include <cstdio>
+#include "mingw.mutex.h"
+#include "/usr/local/mingw/lib/gcc/i686-w64-mingw32/4.8.2/include/c++/mutex"
+//#ifdef INCLUDE_REAL_MUTEX
+//#include INCLUDE_REAL_MUTEX
+//#endif
