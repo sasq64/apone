@@ -32,11 +32,14 @@ void Window::open(bool fs) {
 }
 
 Window::click Window::NO_CLICK = { -1, -1, -1};
+Window::Scroll Window::NO_SCROLL = { -9999, -9999};
 
 std::deque<Window::click> Window::click_buffer;
+std::deque<Window::Scroll> Window::scroll_buffer;
 
 static void scroll_fn(GLFWwindow *gwin, double x, double y) {
 	LOGD("SCROLL %f, %f", x, y);
+	Window::scroll_buffer.push_back(Window::Scroll(x,y));
 }
 
 
@@ -342,6 +345,16 @@ Window::click Window::get_click(bool peek) {
 		return k;
 	}
 	return NO_CLICK;
+}
+
+Window::Scroll Window::get_scroll(bool peek) {
+	if(scroll_buffer.size() > 0) {
+		auto k = scroll_buffer.front();
+		if(!peek)
+			scroll_buffer.pop_front();
+		return k;
+	}
+	return NO_SCROLL;
 }
 
 //Window::click Window::get_click(bool peek) {

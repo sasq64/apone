@@ -18,8 +18,6 @@
 #endif
 
 
-#include <mutex>
-
 #ifdef ANDROID
 namespace std {
 	long stol(const string &x) { return atol(x.c_str()); }

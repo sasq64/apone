@@ -2,8 +2,7 @@
 #include <string>
 #include <functional>
 #include <vector>
-#include <thread>
-#include <mutex>
+#include <coreutils/thread.h>
 #include <atomic>
 
 namespace utils {

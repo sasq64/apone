@@ -18,7 +18,6 @@
 #include <utility>
 #include <initializer_list>
 #include <stdexcept>
-#include <thread>
 #include <atomic>
 
 #include <cmath>

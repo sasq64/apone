@@ -13,8 +13,7 @@
 #include <deque>
 #include <functional>
 #include <tuple>
-#include <mutex>
-#include <thread>
+#include <coreutils/thread.h>
 
 #ifdef _WIN32
 #undef DELETE
@@ -96,9 +95,19 @@ public:
 		int button;
 	};
 
+	struct Scroll {
+		Scroll(double x, double y) : x(x), y(y) {}
+		bool operator==(const Scroll &c) { return c.x == x && c.y == y; }
+		bool operator!=(const Scroll &c) { return !(*this == c); }
+		double x;
+		double y;
+	};
+
 	static click NO_CLICK;
+	static Scroll NO_SCROLL;
 
 	click get_click(bool peek = false);
+	Scroll get_scroll(bool peek = false);
 	bool mouse_pressed();
 	std::tuple<int, int> mouse_position();
 
@@ -120,6 +129,7 @@ public:
 	void resize(int w, int h);
 
 	static std::deque<click> click_buffer;
+	static std::deque<Scroll> scroll_buffer;
 
 
 	void setup(int w, int h);

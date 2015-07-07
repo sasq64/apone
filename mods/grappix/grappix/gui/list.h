@@ -131,6 +131,13 @@ public:
 		}
 	}
 
+	void scroll(double x) {
+		x += position;
+		if(x != position && x > 0) {
+			tween::Tween::make().to(position, x).seconds(0.2);
+		}
+	}
+
 	int selected() { return selected_item; }
 
 	void pagedown() { select(selected_item + visibleItems); }
