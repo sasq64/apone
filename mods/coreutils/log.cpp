@@ -45,9 +45,14 @@ void log(const std::string &text) {
 	log(defaultLevel, text);
 }
 
+static std::mutex logm;
+
 void log(LogLevel level, const std::string &text) {
+
+
 	if(level >= defaultLevel) {
 		const char *cptr = text.c_str();
+		std::lock_guard<std::mutex> lock(logm);
 		LOG_PUTS(cptr);
 	}
 	if(logFile) {

@@ -390,20 +390,24 @@ void replace_char(char *s, char c, char r) {
 }
 
 static bool performCalled = false;
+static bool inPerform = false;
 static vector<function<void()>> callbacks;
 
 void schedule_callback(std::function<void()> f) {
-	if(performCalled)
-		callbacks.push_back(f);
-	else
+	if(!performCalled || inPerform)
 		f();
+	else
+		callbacks.push_back(f);
 }
 
 void perform_callbacks() {
 	performCalled = true;
+	inPerform = true;
 	for(const auto &f : callbacks) {
+		LOGD("Calling cb");
 		f();
 	}
+	inPerform = false;
 	callbacks.clear();
 }
 
