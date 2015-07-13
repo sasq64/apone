@@ -5,8 +5,9 @@
 #include <cstring>
 #include <cstdint>
 
-#include <condition_variable>
-#include <mutex>
+#include <coreutils/thread.h>
+//#include <condition_variable>
+//#include <mutex>
 
 #include <coreutils/log.h>
 

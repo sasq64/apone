@@ -102,7 +102,7 @@ HttpSession& HttpSession::operator=(HttpSession &&h) {
 
 
 void HttpSession::sendRequest(const string &path, const string &host) {
-	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, ":\\;+'\" "), host);
+	string req = utils::format("GET %s HTTP/1.1\r\nHost: %s\r\n\r\n", urlencode(path, "&#()!*[]:;\\;+'\" "), host);
 	LOGD("REQ %p:\n%s", this, req);
 	LOGD("%d", impl->data.size());
 	impl->c.write(req);
@@ -340,7 +340,11 @@ shared_ptr<HttpSession> WebGetter::getFile(const string &url, function<void(cons
 			if(finalUrl != url) {
 				auto finalTarget = make_shared<File>(cacheDir + "/" + urlencode(finalUrl, ":/\\?;"));
 				rename(target->getName().c_str(), finalTarget->getName().c_str());
+#ifdef _WIN32 // TODO: Some way to simulate symlinks?
+				File::copy(finalTarget->getName(), target->getName());
+#else
 				symlink(finalTarget->getName().c_str(), target->getName().c_str());
+#endif
 				//callback(*finalTarget);
 				utils::schedule_callback([=]() { callback(*finalTarget); });
 			} else

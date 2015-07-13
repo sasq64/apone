@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <stdint.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -48,7 +49,7 @@ private:
 	std::vector<std::vector<int16_t>> buffer;
 	std::vector<WAVEHDR> header;
 
-	static void CALLBACK waveOutProc(HWAVEOUT hWaveOut, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2) {
+	static void CALLBACK waveOutProc(HWAVEOUT hWaveOut, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
 
 		if(uMsg != WOM_DONE)
 			return;

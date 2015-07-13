@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <deque>
-#include <mutex>
+#include <coreutils/thread.h>
 #include <array>
 
 //#include <rfftw.h>

@@ -8,7 +8,7 @@
 #include <vector>
 #include <limits>
 #include <memory>
-#include <mutex>
+#include <coreutils/thread.h>
 
 namespace tween {
 

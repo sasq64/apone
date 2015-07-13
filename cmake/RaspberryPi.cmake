@@ -36,7 +36,7 @@ set(CMAKE_CXX_COMPILER ${PI_SDK_ROOT}/bin/${PREF}g++)
 # where is the target environment
 set(CMAKE_FIND_ROOT_PATH ${PI_SYS_ROOT})
 
-set(CMAKE_C_FLAGS "-DGL_ES -DRASPBERRYPI -DLINUX -march=armv6 -mfpu=vfp -mfloat-abi=hard -I${PI_SYS_ROOT}/include -I${PI_SYS_ROOT}/vc/include" CACHE STRING "")
+set(CMAKE_C_FLAGS "-DGL_ES -DRASPBERRYPI -DLINUX -I${PI_SYS_ROOT}/include -I${PI_SYS_ROOT}/vc/include" CACHE STRING "")
 set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "")
 set(CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS})

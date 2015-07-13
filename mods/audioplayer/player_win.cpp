@@ -22,7 +22,7 @@ void InternalPlayer::init() {
 	wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
 	wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
 
-	if(waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD)InternalPlayer::waveOutProc, (DWORD)this, CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+	if(waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD_PTR)InternalPlayer::waveOutProc, (DWORD_PTR)this, CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
 		fprintf(stderr, "unable to open WAVE_MAPPER device\n");
 		ExitProcess(1);
 	}
