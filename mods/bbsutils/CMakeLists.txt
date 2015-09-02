@@ -11,7 +11,7 @@ set(SOURCE_FILES
 	console.cpp
 	editor.cpp
 	petsciiconsole.cpp
-	telnetserver.cpp
+	#telnetserver.cpp
 )
 
 if(NOT WINDOWS)

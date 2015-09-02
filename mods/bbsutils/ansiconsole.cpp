@@ -311,7 +311,7 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 		}
 
 		xterm2c64[i] = bestj;
-		LOGD("Best match %d,%d,%d -> %d %d %d", c64pal2[i*3], c64pal2[i*3+1], c64pal2[i*3+2], xtermpal[bestj*3], xtermpal[bestj*3+1], xtermpal[bestj*3+2]);
+		//LOGD("Best match %d,%d,%d -> %d %d %d", c64pal2[i*3], c64pal2[i*3+1], c64pal2[i*3+2], xtermpal[bestj*3], xtermpal[bestj*3+1], xtermpal[bestj*3+2]);
 
 		//auto *p = &c64pal[i*3];
 		//const string &s = utils::format("\x1b]4;%d;#%02x%02x%02x\x07", 160 + i, p[0], p[1], p[2]);

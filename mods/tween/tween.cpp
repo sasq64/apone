@@ -58,6 +58,7 @@ double Tween::easeInOutBack_fn(double t) {
 	return 1.0/2*((postFix)*t*((s+1)*t + s) + 2);
 }
 
+// NOTE: If we save a tween and dont start it, can this cause a problem on program exit?
 TweenImpl::~TweenImpl() {
 	if(!isTweening) {
 		Tween::addTween(*this);

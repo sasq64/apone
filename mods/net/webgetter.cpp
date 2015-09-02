@@ -81,7 +81,10 @@ HttpSession::HttpSession(const string &url) : impl(make_shared<State>()) {
 void HttpSession::connect() {
 	LOGD("CONNECT %s %d", impl->host, impl->port);
 	impl->c.connect(impl->host, impl->port, [=](int code) {
-		if(impl->state != DONE || impl->state != ERROR)
+		LOGD("CODE %d", code);
+		if(code != 0)
+			impl->state = ERROR;
+		if(impl->state != ERROR)
 			sendRequest(impl->path, impl->host);
 	});
 }
@@ -168,6 +171,7 @@ string HttpSession::getHost() const { return impl->host; }
 
 bool HttpSession::gotHeaders() const { return impl->state == HEADERS || impl->state == DONE || impl->state == EMPTY; }
 bool HttpSession::done() const { return impl->state == DONE || impl->state == EMPTY; }
+bool HttpSession::error() const { return impl->state == ERROR; }
 
 string HttpSession::getUrl() const { return impl->url; }
 
@@ -287,6 +291,9 @@ void WebGetter::update() {
 			it = sessions.end();
 			continue;
 		}
+		if(s->error()) {
+			errorCallback(0, "");
+		}
 		if(s->done()) {
 			it = sessions.erase(it);
 			LOGD("Session done");
@@ -403,6 +410,10 @@ void WebGetter::getData(const string &url, function<void(const vector<uint8_t> &
 		cb(v);
 	});
 
+}
+
+void WebGetter::setErrorCallback(function<void(int, const string &)> cb) {
+	errorCallback = cb;
 }
 
 

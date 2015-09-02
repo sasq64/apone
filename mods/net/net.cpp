@@ -32,7 +32,7 @@ asio::ip::tcp::resolver::query Connection::resolve(const string &target, int por
 		}
 	} else
 		service = to_string(port);
-	LOGD("Connecting %s %s\n", server, service);
+		LOGD("Connecting %s %s\n", server, service);
 	return tcp::resolver::query(server, service);
 	//return resolver.resolve(query);
 }
@@ -41,14 +41,20 @@ asio::ip::tcp::resolver::query Connection::resolve(const string &target, int por
 
 void Connection::connect(const string &target, int port) {
 	auto endpoints = resolver.resolve(resolve(target, port));
+	LOGD("Conecting...");
 	asio::connect(socket, endpoints);
+	LOGD("Connected");
 }
 
 void Connection::connect(const string &target, int port, function<void(int)> f) {
 	auto q = resolve(target, port);
 	resolver.async_resolve(q, [=](const asio::error_code &e, asio::ip::tcp::resolver::iterator endpoints) {
+		LOGD("Resolved");
 		asio::async_connect(socket, endpoints, [=](const asio::error_code &e, asio::ip::tcp::resolver::iterator iterator) {
-			f(0);
+		LOGD("Connected");
+			if(e)
+				LOGD("ERROR CODE %d %s", e.value(), e.message());
+			f(e.value());
 		});
 	});
 

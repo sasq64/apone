@@ -36,6 +36,7 @@ public:
 	void update();
 	bool gotHeaders() const;
 	bool done() const;
+	bool error() const;
 
 	std::string getHeader(const std::string &what) const;
 	std::string getUrl() const;
@@ -79,12 +80,15 @@ public:
 	static int inProgress();
 	bool inCache(const std::string &name) const;
 
+	void setErrorCallback(std::function<void(int, const std::string&)>);
+
 private:
 	const std::string cacheDir;
 	std::thread workerThread;
 	std::atomic<bool> quit;
 	std::vector<std::shared_ptr<HttpSession>> sessions;
 	std::mutex m;
+	std::function<void(int, const std::string&)> errorCallback;
 };
 
 }
