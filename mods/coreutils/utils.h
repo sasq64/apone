@@ -236,6 +236,17 @@ template <typename T> _cf<T> count_from(const T &f) { return _cf<T>(f); }
 
 };
 
+// Can hold smart_ptr or raw pointer
+template <typename T> struct Pointer {
+	Pointer(std::shared_ptr<T> p) : sptr(p), ptr(p.get()) {}
+	Pointer(T *p) : ptr(p) {}
+	T* operator ->() const { return ptr; }
+	T* get() { return ptr; }
+private:
+	std::shared_ptr<T> sptr;
+	T *ptr = nullptr;
+};
+
 
 #if __cplusplus <= 201200L
 
