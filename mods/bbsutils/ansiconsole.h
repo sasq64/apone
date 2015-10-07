@@ -9,7 +9,7 @@ class AnsiConsole : public Console {
 public:
 	AnsiConsole(Terminal &terminal);
 
-	void putChar(Char c);
+	void putChar(Char c) override;
 
 	virtual const std::string name() const override { return "ansi"; }
 

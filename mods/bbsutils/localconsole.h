@@ -20,8 +20,8 @@ public:
 
 	virtual void close() override;
 
-	virtual int write(const std::vector<Char> &source, int len);
-	virtual int read(std::vector<Char> &target, int len);
+	virtual int write(const std::vector<Char> &source, int len) override;
+	virtual int read(std::vector<Char> &target, int len) override;
 private:
 	struct termios orig_term_attr;
 	struct winsize ws;

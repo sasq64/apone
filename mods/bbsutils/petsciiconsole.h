@@ -37,7 +37,7 @@ public:
 
 
 	PetsciiConsole(Terminal &terminal);
-	virtual void putChar(Char c);
+	virtual void putChar(Char c) override;
 
 	virtual const std::string name() const override { return "petscii"; }
 protected:

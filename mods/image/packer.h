@@ -55,7 +55,7 @@ public:
 		throw packer_exception("remove() not supported in SequentialPacker");
 	}
 
-	Rect size() { return Rect(0,0,width,height); }
+	Rect size() override { return Rect(0,0,width,height); }
 
 private:
 	int xpos;
@@ -172,7 +172,7 @@ public:
 		root.remove(r);
 	}
 
-	virtual Rect size() { return root.r; }
+	virtual Rect size() override { return root.r; }
 
 private:
 
