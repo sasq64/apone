@@ -85,7 +85,19 @@ public:
 	~File();
 
 
-	operator bool() const { return fileName != ""; }
+	File operator+(const std::string &suffix) const {
+		return File(fileName + suffix);
+	}
+
+	bool operator==(const File &f) {
+		return f.fileName == fileName;
+	}
+
+	bool operator!=(const File &f) {
+		return f.fileName != fileName;
+	}
+
+	explicit operator bool() const { return fileName != ""; }
 
 	operator std::string() const { return getName(); }
 

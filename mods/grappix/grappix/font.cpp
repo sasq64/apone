@@ -79,7 +79,7 @@ Font::Font(const string &ttfName, int size, int flags) : size(size) {
 	texture_atlas_t *atlas = (texture_atlas_t*)ref->atlas;
 	if(flags & DISTANCE_MAP) {
 		auto fn = path_filename(ttfName);
-		File f { format("%s%s.%d.%d.dfield", File::getCacheDir(), fn, size, tsize) };
+		File f { format("%s%s.%d.%d.dfield", File::getCacheDir().getName(), fn, size, tsize) };
 		if(f.exists()) {
 			f.read(atlas->data, atlas->width*atlas->height);
 			LOGD("%s: Found existing distance map", fn);

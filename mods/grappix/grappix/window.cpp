@@ -2,6 +2,8 @@
 #include "window.h"
 #include "GL_Header.h"
 
+#include <webutils/web.h>
+
 namespace grappix {
 
 
@@ -48,6 +50,8 @@ void Window::update_callbacks() {
 	uint32_t us = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
 	tween::Tween::updateTweens(us / 1000000.0f);
 	Resources::getInstance().update();
+
+	webutils::Web::pollAll();
 
 	utils::perform_callbacks();
 

@@ -86,8 +86,11 @@ public:
 	//Tween& operator=(const Tween &other) = delete;
 	//Tween(const Tween& other) = delete;
 
+	// Create a new empty Tween. It will start automatically when destroyed, if it was not started manually.
+	// This allows you do chain the call; `make().to(...).delay()` etc.
 	static Tween make();
 
+	// Manyally start the tween. Will have no effect if already started.
 	void start();
 
 	Tween& seconds(float s);
@@ -204,6 +207,9 @@ public:
 	static std::mutex tweenMutex;
 };
 
+// A TweenT is a Tween that currently references a tweenable value. You can for instance only call
+// onUpdate() on this kind of Tween, since it can refer to the last value added to the Tween
+// implementation.
 template <typename T> class TweenT : public Tween {
 public:
 
