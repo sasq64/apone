@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.webutils)
 
-set(SOURCE_FILES webgetter.cpp webrpc.cpp)
+set(SOURCE_FILES web.cpp webgetter.cpp webrpc.cpp)
 
 
 find_library(CURL_LIBRARY curl REQUIRED)
