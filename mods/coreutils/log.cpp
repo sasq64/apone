@@ -73,14 +73,14 @@ void log(LogLevel level, const std::string &text) {
 }
 
 void log2(const char *fn, int line, LogLevel level, const std::string &text) {
-	static int termType = 1;
+	static int termType = 0;
 	//const auto &space = LogSpace::spaces[fn];
 	if(true) {//space.second || space.first == "") {
 		char temp[2048];
 
 		if(!termType) {
 			const char *tt = std::getenv("TERM");
-			log(level, "TERMTYPE %s", tt ? tt : "NULL");
+			//log(level, "TERMTYPE %s", tt ? tt : "NULL");
 			termType = 1;
 			if(tt) {
 				if(strncmp(tt, "xterm", 5) == 0) {
@@ -103,7 +103,8 @@ void log2(const char *fn, int line, LogLevel level, const std::string &text) {
 		log(level, std::string(temp).append(text));
 	}
 }
-	void setLevel(LogLevel level) {
+
+void setLevel(LogLevel level) {
 	defaultLevel = level;
 }
 

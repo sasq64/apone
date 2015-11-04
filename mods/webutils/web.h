@@ -237,6 +237,7 @@ public:
 		
 		lastCount = handleCount;
 		CURLMsg *msg;
+		std::vector<std::shared_ptr<Job>> toRemove;
 		do {
 			int count;
 			if((msg = curl_multi_info_read(mh, &count))) {
@@ -244,7 +245,7 @@ public:
 					auto it = jobs.begin();
 					while(it != jobs.end()) {
 						if(it->get()->curl == msg->easy_handle) {
-							it->get()->finish();
+							toRemove.push_back(*it);
 							it = jobs.erase(it);
 						} else
 							it++;
@@ -254,6 +255,10 @@ public:
 			}
 
 		} while(msg);
+
+		for(auto &r : toRemove) {
+			r->finish();
+		}
 	}
 
 	template <typename FX> std::shared_ptr<Job> getFile(const std::string &url, FX cb) {
