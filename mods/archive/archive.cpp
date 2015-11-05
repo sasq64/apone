@@ -10,7 +10,10 @@ extern "C" {
 #include <vector>
 #include <cstring>
 #include <coreutils/log.h>
-#define _UNIX
+//#define _UNIX
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include  "unrar/dll.hpp"
 
 using namespace std;

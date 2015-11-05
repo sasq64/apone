@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdio>
 
+#define NOGDI
 #include <curl/curl.h>
 #include <memory>
 #include <vector>
@@ -108,7 +109,7 @@ public:
 
 			LOGV("HEADER: '%s'", line);
 			if(line.substr(0, 15) == "Content-Length:") {
-				int sz = stol(line.substr(16));
+				int sz = std::stol(line.substr(16));
 				if(sz > 0 && job->streamCb)
 					job->streamCb(nullptr, sz);
 			} else
@@ -117,7 +118,9 @@ public:
 				LOGD("Redirecting to %s", newUrl);
 				std::string newTarget = utils::urlencode(newUrl, ":/\\?;");
 				// TODO: Some way to simulate symlinks on win?
+#ifndef _WIN32
 				symlink(newTarget.c_str(), job->targetFile.getName().c_str());
+#endif
 			}
 
 			return size;

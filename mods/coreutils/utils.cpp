@@ -18,7 +18,7 @@
 #endif
 
 
-#ifdef ANDROID
+#if (defined ANDROID) || (defined WIN32)
 namespace std {
 	long stol(const string &x) { return atol(x.c_str()); }
 	long long stoll(const string &x) { return atoll(x.c_str()); }

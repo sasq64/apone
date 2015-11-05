@@ -9,6 +9,7 @@ endif()
 
 set(SOURCE_FILES archive.cpp)
 
+add_definitions(-DSILENT -DRARDLL)
 
 add_library(archive ${SOURCE_FILES})
 target_link_libraries(archive unrar miniz)

@@ -28,7 +28,7 @@
 
 #define RAR_DLL_VERSION       4
 
-#ifdef _UNIX
+#ifndef _WIN32
 #define CALLBACK
 #define PASCAL
 #define LONG long

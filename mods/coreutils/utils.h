@@ -19,13 +19,14 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <atomic>
+#include <functional>
 
 #include <cmath>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-#ifdef ANDROID
+#if (defined ANDROID) || (defined WIN32)
 
 // Android (for complicated reasons) misses some standard string conversion functions
 

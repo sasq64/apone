@@ -46,11 +46,11 @@ elseif(UNIX)
   find_package(OpenGL REQUIRED)
  # find_package(GLEW REQUIRED)
 
-if(APPLE)
-  find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
-else() # Ubuntu changed naming between 14.0 and 14.10
-  find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
-endif()
+  if(APPLE)
+    find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
+  else() # Ubuntu changed naming between 14.0 and 14.10
+    find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
+  endif()
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
@@ -61,8 +61,6 @@ endif()
     include_directories(../glew/glew-1.11.0/include)
     set(EXTRA_LIBS ${EXTRA_LIBS} glew)
   endif()
-  #set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES})
-  #include_directories(${GLEW_INCLUDE_DIRS})
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
 
@@ -82,6 +80,10 @@ else()
   find_package(GLEW REQUIRED)
   find_library(GLFW_LIBRARY glfw3 REQUIRED)
 
+  find_path(GLFW_PATH GLFW/glfw3.h)
+  include_directories(${GLFW_PATH})
+  message(${GLFW_PATH})
+  #
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
 

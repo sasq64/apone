@@ -3,22 +3,21 @@
 #include <sys/stat.h>
 
 #include "format.h"
-//#include "utils.h"
 #include "log.h"
-
-
 #ifdef WIN32
 #include <windows.h>
 #endif
 #include <unistd.h>
-//#include <cstring>
-//#include <iostream>
-//#include <sstream>
 #include <iomanip>
 #include <dirent.h>
+#include <stdlib.h>
 
 #ifdef APPLE
 #include <mach-o/dyld.h>
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
 #endif
 
 namespace utils {
@@ -293,6 +292,7 @@ void File::copy(const std::string &from, const std::string &to) {
 std::string File::resolvePath(const std::string &fileName) {
 	char temp[PATH_MAX];
 #ifdef _WIN32
+	//if(GetFullPathNameA(fileName.c_str(), PATH_MAX, temp, NULL) > 0)
 	if(_fullpath(temp, fileName.c_str(), PATH_MAX))
 #else
 	if(::realpath(fileName.c_str(), temp))

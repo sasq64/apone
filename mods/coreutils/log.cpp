@@ -3,8 +3,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctime>
 #include <unordered_map>
+#include <coreutils/mutex.h>
 
 static std::string logSource = "Grappix";
 
@@ -73,13 +75,14 @@ void log(LogLevel level, const std::string &text) {
 }
 
 void log2(const char *fn, int line, LogLevel level, const std::string &text) {
+	using namespace std;
 	static int termType = 0;
 	//const auto &space = LogSpace::spaces[fn];
 	if(true) {//space.second || space.first == "") {
 		char temp[2048];
 
 		if(!termType) {
-			const char *tt = std::getenv("TERM");
+			const char *tt = getenv("TERM");
 			//log(level, "TERMTYPE %s", tt ? tt : "NULL");
 			termType = 1;
 			if(tt) {

@@ -19,7 +19,6 @@ set(SOURCE_FILES
 	arcread.cpp
 	unicode.cpp
 	system.cpp
-	#isnt.cpp
 	crypt.cpp
 	crc.cpp
 	rawread.cpp
@@ -44,6 +43,12 @@ set(SOURCE_FILES
 	unpack.cpp
 	cmddata.cpp
 )
+if(WIN32)
+  set(SOURCE_FILES ${SOURCE_FILES}
+  	isnt.cpp
+  )
+endif()
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-logical-op-parentheses -Wno-dangling-else -Wno-switch")
 

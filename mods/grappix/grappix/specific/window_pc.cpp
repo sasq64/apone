@@ -88,13 +88,23 @@ static void resize_fn(GLFWwindow *gwin, int w, int h) {
 
 static function<void(uint32_t)> renderLoopFunction;
 
+static void glfw_error(int code, const char *text) {
+	LOGE("GLFW: %s (%d)", text, code);
+}
+
+
 void Window::open(int w, int h, bool fs) {
 
 	if(winOpen)
 		return;
 
-	LOGD("glfwInit");
-	glfwInit();
+	glfwSetErrorCallback(glfw_error);
+
+
+	if(!glfwInit()) {
+		LOGE("Could not initialize glfw");
+		exit(EXIT_FAILURE);
+	}
 #ifdef EMSCRIPTEN
 	if(w <= 0) w = 640;
 	if(h <= 0) h = 480;
@@ -107,7 +117,7 @@ void Window::open(int w, int h, bool fs) {
 #else
 	_width = w;
 	_height = h;
-	glfwWindowHint(GLFW_SAMPLES, 4);
+	//glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
@@ -121,7 +131,20 @@ void Window::open(int w, int h, bool fs) {
 	} */
 	//GLFWmonitor *monitor = monitors[1];//glfwGetPrimaryMonitor();
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+	const GLFWvidmode *mode = nullptr;
+	if(monitor)  
+		mode = glfwGetVideoMode(monitor);
+	else {
+		LOGW("Could not get primary monitor");
+		fs = false;
+	}
+	int modew = 640;
+	int modeh = 480;
+	if(mode) {
+		modew = mode->width;
+		modeh = mode->height;
+	}
+
 
 	//LOGD("Desktop is %dx%d", mode->width, mode->height);
 	//mode->width = 1600;
@@ -130,12 +153,12 @@ void Window::open(int w, int h, bool fs) {
 	//	mode->width /= 2;
 
 	if(_width <= 0) {
-		_width = mode->width;
+		_width = modew;
 		if(!fs)
 			_width /= 2;
 	}
 	if(_height <= 0) {
-		_height = mode->height;
+		_height = modeh;
 		if(!fs)
 			_height /= 2;
 	}

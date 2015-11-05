@@ -3,11 +3,9 @@ project(cpp-mods.webutils)
 
 set(SOURCE_FILES web.cpp webgetter.cpp webrpc.cpp)
 
-
 find_library(CURL_LIBRARY curl REQUIRED)
 find_path(CURL_INCLUDE curl/curl.h)
-
-message("CURL: " ${CURL_INCLUDE} ${CURL_LIBRARY})
+#set(CURL_LIBRARY curl)
 
 include_directories(${CURL_INCLUDE})
 

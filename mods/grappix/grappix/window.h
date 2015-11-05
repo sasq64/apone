@@ -13,7 +13,9 @@
 #include <deque>
 #include <functional>
 #include <tuple>
-#include <coreutils/thread.h>
+//#include <coreutils/thread.h>
+#include <mutex>
+#include <thread>
 
 #ifdef _WIN32
 #undef DELETE
