@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.audioplayer)
 
-
-
 set(SOURCE_FILES audioplayer.cpp)
 
 if(EMSCRIPTEN)
@@ -16,8 +14,7 @@ elseif(APPLE)
 	#set(SOURCE_FILES ${SOURCE_FILES} player_sdl.cpp)
 elseif(WIN32)
 	set(SOURCE_FILES ${SOURCE_FILES} player_win.cpp)
-	find_library(WINMM_LIBRARY winmm winmm REQUIRED)
-	set(EXTRA_LIBS ${EXTRA_LIBS} ${WINMM_LIBRARY})
+	set(EXTRA_LIBS ${EXTRA_LIBS} winmm.lib) 
 else()
 	add_definitions(-DLINUX)
 	find_library(ASOUND_LIBRARY asound REQUIRED)

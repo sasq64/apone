@@ -41,6 +41,14 @@ public:
 		WRITE = 2
 	};
 
+#ifdef _WIN32
+	static const char PATH_SEPARATOR = ';';
+	static constexpr const char* PATH_SEPARATOR_STR = ";";
+#else
+	static const char PATH_SEPARATOR = ':';
+	static constexpr const char* PATH_SEPARATOR_STR = ":";
+#endif
+
 	static bool exists(const std::string &fileName);
 	static void copy(const std::string &from, const std::string &to);
 	static std::string resolvePath(const std::string &fileName);
@@ -158,7 +166,7 @@ public:
 	uint64_t getModified() const;
 
 	bool isDir() const;
-
+	File& resolve();
 	void remove();
 	void rename(const std::string &newName);
 

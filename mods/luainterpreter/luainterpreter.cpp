@@ -155,7 +155,6 @@ bool LuaInterpreter::load(const string &code, const string &name) {
 		int rc = lua_pcall(L, 0, 0, 0);
 		if(rc != LUA_OK) {
 			const char *s = lua_tostring(L, -1);
-			//LOGD("MSG:%s", s);
 			lua_pop(L, 1);
 			throw lua_exception(s);
 		}

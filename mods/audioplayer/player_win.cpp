@@ -13,7 +13,6 @@ void InternalPlayer::init() {
 	bufCount = 4;
 
 	WAVEFORMATEX wfx;
-	//MMRESULT result;
 	wfx.nSamplesPerSec = 44100;
 	wfx.wBitsPerSample = 16;
 	wfx.nChannels = 2;

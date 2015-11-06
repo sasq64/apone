@@ -222,7 +222,7 @@ void makedir(const std::string &name) {
 void makedirs(const std::string &path) {
 	int start = 0;
 	while(true) {
-		auto pos = path.find("/", start);
+		auto pos = path.find_first_of("/\\", start);
 		if(pos != string::npos) {
 			makedir(path.substr(0, pos));
 			start = pos+1;

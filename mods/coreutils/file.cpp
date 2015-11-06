@@ -4,7 +4,7 @@
 
 #include "format.h"
 #include "log.h"
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include <unistd.h>
@@ -36,7 +36,7 @@ File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
 File::File(const string &name, const Mode mode) : fileName(rstrip(name, '/')), size(-1), writeFP(nullptr), readFP(nullptr) {
 
-	fileName = resolvePath(fileName);
+	//fileName = resolvePath(fileName);
 
 	if(mode != NONE)
 		open(mode);
@@ -117,8 +117,8 @@ vector<string> File::getLines() {
 		while(to[l] == 10 || to[l] == 13)
 			to = to.substr(0, l--);
 		lines.push_back(to);
-    }
-    return lines;
+	}
+	return lines;
 }
 
 void File::write(const uint8_t *data, const int size) {
@@ -167,7 +167,7 @@ string File::makePath(vector<File> files) {
 	string sep = "";
 	for(const File& f : files) {
 		path = path + sep + f.getName();
-		sep = ":";
+		sep = PATH_SEPARATOR_STR;
 	}
 	return path;
 
@@ -175,15 +175,15 @@ string File::makePath(vector<File> files) {
 
 
 File File::findFile(const string &path, const string &name) {
-	LOGD(">>>%s<<< :::%s:::", path, name);
+	LOGD("Find '%s'", name);
 	if(name == "")
 		return NO_FILE;
-	auto parts = split(path, ":");
+	auto parts = split(path, PATH_SEPARATOR_STR);
 	for(string p : parts) {
 		if(p.length() > 0) {
 			if(p[p.length()-1] != '/')
 				p += "/";
-			LOGD("%s", p);
+			LOGD("...in path %s", p);
 			File f { p + name };
 			if(f.exists())
 				return f;
@@ -196,35 +196,42 @@ File File::findFile(const string &path, const string &name) {
 
 const File& File::getCacheDir() {
 	if(!cacheDir) {
-	    const char *home = getenv("HOME");
-	    auto d = format("%s/.cache/" APP_NAME_STR, home);
-	    if(!exists(d))
-	        utils::makedirs(d);
-	    cacheDir = File(d);
+		string home = getenv("HOME");
+#ifdef _WIN32
+		replace_char(home, '\\', '/');
+#endif
+	auto d = format("%s/.cache/" APP_NAME_STR, home);
+		LOGD("CACHE: %s", d);
+		if(!exists(d))
+			utils::makedirs(d);
+		cacheDir = File(d);
 	}
-    return cacheDir;
+	return cacheDir;
 }
 
 const File& File::getConfigDir() {
 	if(!configDir) {
-	    const char *home = getenv("HOME");
-	    auto d = format("%s/.config/" APP_NAME_STR, home);
-	    if(!exists(d))
-	        utils::makedirs(d);
-	    configDir = File(d);
+		std::string home = getenv("HOME");
+#ifdef _WIN32
+		replace_char(home, '\\', '/');
+#endif
+	auto d = format("%s/.config/" APP_NAME_STR, home);
+	if(!exists(d))
+	utils::makedirs(d);
+	configDir = File(d);
 	}
-    return configDir;
+	return configDir;
 }
 
 const std::string File::getUserDir() {
-    std::string home = getenv("HOME");
-#ifdef WIN32
-    replace_char(home, '\\', '/');
+	std::string home = getenv("HOME");
+#ifdef _WIN32
+	replace_char(home, '\\', '/');
 #endif
-    auto d = format("%s/" APP_NAME_STR, home);
-    if(!exists(d))
-        utils::makedirs(d);
-    return d + "/";
+	auto d = format("%s/" APP_NAME_STR, home);
+	if(!exists(d))
+	utils::makedirs(d);
+	return d + "/";
 }
 
 #endif
@@ -293,17 +300,41 @@ std::string File::resolvePath(const std::string &fileName) {
 	char temp[PATH_MAX];
 #ifdef _WIN32
 	//if(GetFullPathNameA(fileName.c_str(), PATH_MAX, temp, NULL) > 0)
-	if(_fullpath(temp, fileName.c_str(), PATH_MAX))
+	if(_fullpath(temp, fileName.c_str(), PATH_MAX)) {
+		replace_char(temp, '\\', '/');
+		return std::string(temp);
+	}
 #else
 	if(::realpath(fileName.c_str(), temp))
-#endif
 		return std::string(temp);
+#endif
 	return fileName;
+}
+
+
+File& File::resolve() {
+	char temp[PATH_MAX];
+#ifdef _WIN32
+	if(_fullpath(temp, fileName.c_str(), PATH_MAX)) {
+		replace_char(temp, '\\', '/');
+		fileName = temp;
+	}
+#else
+	if(::realpath(fileName.c_str(), temp)) {
+		fileName = temp;
+	}
+#endif
+	else
+		fileName = "";
+	return *this;
 }
 
 File File::cwd() {
 	char temp[PATH_MAX];
 	if(::getcwd(temp, sizeof(temp))) {
+#ifdef _WIN32
+		replace_char(temp, '\\', '/');
+#endif
 		return File(temp);
 	}
 	throw io_exception {"Could not get current directory"};
@@ -320,7 +351,10 @@ const File& File::getExeDir() {
 
 	if(!exeDir) {
 		static char buf[1024];
-	#if defined APPLE
+	#if defined _WIN32
+		GetModuleFileName(nullptr, buf, sizeof(buf)-1);
+		replace_char(exeDir, '\\', '/');
+	#elif defined APPLE
 		uint32_t size = sizeof(buf);
 		if(_NSGetExecutablePath(buf, &size) == 0) {
 			exeDir = File(path_directory(buf));
@@ -333,6 +367,8 @@ const File& File::getExeDir() {
 		}
 	#endif
 	}
+	LOGD("EXEDIR:%s", exeDir.getName());
+	exeDir.resolve();
 	return exeDir;
 }
 
