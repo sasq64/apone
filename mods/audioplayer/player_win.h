@@ -9,6 +9,9 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+#include <thread>
+#include <mutex>
+#include <atomic>
 
 class InternalPlayer {
 public:
@@ -17,8 +20,22 @@ public:
 	}
 
 	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false) {
-		init();
+		playThread = std::thread { InternalPlayer::run, this };
 	}
+
+
+	void run() {
+		init();
+		paused = false;
+		std::vector<int16_t> buffer(8192);
+		while(!quit) {
+			if(!paused) {
+				callback(&buffer[0], buffer.size());
+				writeAudio(&buffer[0], buffer.size());
+			}
+		}
+
+	}	
 
 	~InternalPlayer();
 	
@@ -26,6 +43,7 @@ public:
 	void writeAudio(int16_t *samples, int sampleCount);
 
 	void pause(bool on) {
+		paused = on;
 	}
 
 	int get_delay() const { return 1; }
@@ -33,18 +51,22 @@ public:
 
 private:
 
-	bool quit;
+	std::thread playThread;
+
 	std::function<void(int16_t *, int)> callback;
 
 
-	CRITICAL_SECTION lock;
-	volatile int blockCounter;
-	volatile int blockPosition;
+	std::mutex lock;
+	std::atomic<int> blockCounter;
+	std::atomic<int> blockPosition;
 
 	HWAVEOUT hWaveOut;
 
 	int bufSize;
 	int bufCount;
+
+	std::atomic<bool> quit;
+	std::atomic<bool> paused;
 
 	std::vector<std::vector<int16_t>> buffer;
 	std::vector<WAVEHDR> header;
@@ -55,9 +77,9 @@ private:
 			return;
 
 		InternalPlayer *ap = (InternalPlayer*)dwInstance;
-		EnterCriticalSection(&ap->lock);
+		ap->lock.lock();
 		ap->blockCounter--;
-		LeaveCriticalSection(&ap->lock);
+		ap->lock.unlock();
 	}
 
 };

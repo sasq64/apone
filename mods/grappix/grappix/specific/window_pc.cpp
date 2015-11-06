@@ -235,7 +235,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 	emscripten_set_main_loop(runMainLoop, 0, false);
 	glfwSwapInterval(1);
 #else
-	atexit([](){
+	//atexit([](){
 		auto lastMs = utils::getms();
 		while(screen.is_open()) {
 			screen.update_callbacks();
@@ -247,7 +247,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 			//	utils::sleepms(5);
 			//}
 		}
-	});
+	//});
 
 #endif
 }

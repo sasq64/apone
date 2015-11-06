@@ -26,8 +26,6 @@ void InternalPlayer::init() {
 		ExitProcess(1);
 	}
 
-	InitializeCriticalSection(&lock);
-
 	header.resize(bufCount);
 	buffer.resize(bufCount);
 
@@ -57,17 +55,17 @@ void InternalPlayer::writeAudio(int16_t *samples, int sampleCount) {
 		waveOutPrepareHeader(hWaveOut, &h, sizeof(WAVEHDR));
 		waveOutWrite(hWaveOut, &h, sizeof(WAVEHDR));
 
-		EnterCriticalSection(&lock);
+		lock.lock();
 		blockCounter++;
-		LeaveCriticalSection(&lock);
+		lock.unlock();
 
 		blockPosition++;
-		blockPosition %= bufCount;
+		blockPosition = (blockPosition % bufCount);
 
 		while(true) {
-			EnterCriticalSection(&lock);
+			lock.lock();
 			int bc = blockCounter;
-			LeaveCriticalSection(&lock);
+			lock.unlock();
 			if(bc < bufCount)
 				break;
 			Sleep(100);

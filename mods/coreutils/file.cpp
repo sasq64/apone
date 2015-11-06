@@ -360,7 +360,8 @@ const File& File::getExeDir() {
 		static char buf[1024];
 	#if defined _WIN32
 		GetModuleFileName(nullptr, buf, sizeof(buf)-1);
-		replace_char(exeDir, '\\', '/');
+		replace_char(buf, '\\', '/');
+		exeDir = File(buf);
 	#elif defined APPLE
 		uint32_t size = sizeof(buf);
 		if(_NSGetExecutablePath(buf, &size) == 0) {
