@@ -33,14 +33,9 @@ public:
 		void wait(int timeout = -1);
 
 		void stop() {
-			if(curl) {
-				CURLM *curlm = Web::multiHandle();
-				curl_multi_remove_handle(curlm, curl);
-				curl_easy_cleanup(curl);
-				curl = nullptr;
-				if(targetFile.exists())
-					targetFile.remove();
-			}
+			stopped = true;
+			if(targetFile.exists())
+				targetFile.remove();
 		}
 
 		void setTarget(const utils::File &file) {
@@ -62,9 +57,8 @@ public:
 
 	protected:
 
-		void start() {
+		void start(CURLM *curlm) {
 
-			CURLM *curlm = Web::multiHandle();
 			curl = curl_easy_init();
 
 			if(targetFile) {
@@ -160,6 +154,7 @@ public:
 		utils::File orgFile;
 		StreamFunc streamCb;
 		bool isDone = false;
+		bool stopped = false;
 
 		friend Web;
 	};
@@ -209,46 +204,54 @@ public:
 	};
 
 	Web(const std::string &cacheDir = "", const std::string &baseUrl = "") : 
-		cacheDir(cacheDir), baseUrl(baseUrl) {}
+		cacheDir(cacheDir), baseUrl(baseUrl) {
+			std::lock_guard<std::mutex> lock(sm);
+			if(!initDone) {
+				curl_global_init(CURL_GLOBAL_ALL);
+				initDone = true;
+			}
+			curlm = curl_multi_init();
+		}
 
 	static int inProgress() {
-		return lastCount;	
+		return 0;//lastCount;	
 	}
 
-
-	template <typename FX> static std::shared_ptr<Job> get_url(const std::string &url, FX cb) {
-		std::lock_guard<std::mutex> lock(sm);
+	template <typename FX> std::shared_ptr<Job> get(const std::string &url, FX cb) {
 		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
 		job->setUrl(url);
-		job->start();
+		job->start(curlm);
 		jobs.push_back(job);
 		return job;
 	}
 
-	static void pollAll() {
-
-		std::lock_guard<std::mutex> lock(sm);
+	void poll() {
 
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
-			if(it->get()->curl == nullptr) {
+			auto *curl = it->get()->curl;
+			if(curl && it->get()->stopped) {
+				curl_multi_remove_handle(curlm, curl);
+				curl_easy_cleanup(curl);
+				curl = nullptr;
+			}
+			if(!curl) {
 				it = jobs.erase(it);
 			} else
 				it++;
 		}
 
 		int handleCount;
-		CURLM *mh = multiHandle();
 		CURLMcode rc = CURLM_CALL_MULTI_PERFORM;
 		while(rc == CURLM_CALL_MULTI_PERFORM)
-			rc = curl_multi_perform(mh, &handleCount);
+			rc = curl_multi_perform(curlm, &handleCount);
 		
 		lastCount = handleCount;
 		CURLMsg *msg;
 		std::vector<std::shared_ptr<Job>> toRemove;
 		do {
 			int count;
-			if((msg = curl_multi_info_read(mh, &count))) {
+			if((msg = curl_multi_info_read(curlm, &count))) {
 				if(msg->msg == CURLMSG_DONE) {
 					auto it = jobs.begin();
 					while(it != jobs.end()) {
@@ -275,7 +278,7 @@ public:
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		job->setTarget(target);
 		job->setUrl(url);
-		job->start();
+		job->start(curlm);
 		jobs.push_back(job);
 		return job;	
 	}
@@ -290,9 +293,25 @@ public:
 		auto job = std::make_shared<Job>();
 		job->setStreamCallback(cb);
 		job->setUrl(url);
-		job->start();
+		job->start(curlm);
 		jobs.push_back(job);
 		return job;	
+	}
+
+	static Web& getInstance() {
+		static Web w;
+		return w;
+	}
+
+	template <typename FX> static std::shared_ptr<Job> get_url(const std::string &url, FX cb) {
+		std::lock_guard<std::mutex> lock(sm);
+		return getInstance().get(url, cb);
+	}
+
+	static void pollAll() {
+		Web& w = getInstance();
+		std::lock_guard<std::mutex> lock(sm);
+		w.poll();
 	}
 
 private:
@@ -302,18 +321,13 @@ private:
 	std::string baseUrl;
 	utils::File cacheDir;
 
-	static CURLM *multiHandle() {
-		static CURLM *handle = nullptr;
-		if(!handle) {
-			curl_global_init(CURL_GLOBAL_ALL);
-			handle = curl_multi_init();
-		}
-		return handle;
-	}
+	static bool initDone;
 
-	static std::vector<std::shared_ptr<Web::Job>> jobs;
-	static int lastCount;
+	CURLM *curlm = nullptr;
 
+	std::vector<std::shared_ptr<Web::Job>> jobs;
+	int lastCount;
+	static int totalRunning;
 };
 
 

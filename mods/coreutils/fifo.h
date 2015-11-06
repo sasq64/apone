@@ -29,6 +29,7 @@ public:
 	}
 
 	void clear() {
+		std::unique_lock<std::mutex> lock(m);
 		bufPtr = buffer;
 	}
 
@@ -69,9 +70,15 @@ public:
 	}
 
 
-	int filled() { return bufPtr - buffer; }
-	int left() { return bufSize - (bufPtr - buffer); }
-	int size() { return bufSize; }
+	int filled() {
+	   	return bufPtr - buffer; 
+	}
+	int left() { 
+		return bufSize - (bufPtr - buffer); 
+	}
+	int size() {
+	   	return bufSize; 
+	}
 	//T *ptr() { return bufPtr; }
 
 protected:

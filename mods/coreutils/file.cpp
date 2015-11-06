@@ -16,6 +16,8 @@
 #include <mach-o/dyld.h>
 #endif
 
+#include <mutex>
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
@@ -31,6 +33,8 @@ File File::userDir;
 File File::cacheDir;
 File File::configDir;
 File File::exeDir;
+
+static mutex fm;
 
 File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
@@ -195,6 +199,7 @@ File File::findFile(const string &path, const string &name) {
 #ifdef APP_NAME
 
 const File& File::getCacheDir() {
+	lock_guard<mutex> lock(fm);
 	if(!cacheDir) {
 		string home = getenv("HOME");
 #ifdef _WIN32
@@ -210,6 +215,7 @@ const File& File::getCacheDir() {
 }
 
 const File& File::getConfigDir() {
+	lock_guard<mutex> lock(fm);
 	if(!configDir) {
 		std::string home = getenv("HOME");
 #ifdef _WIN32
@@ -348,6 +354,7 @@ File::~File() {
 }
 
 const File& File::getExeDir() {
+	lock_guard<mutex> lock(fm);
 
 	if(!exeDir) {
 		static char buf[1024];
@@ -374,11 +381,13 @@ const File& File::getExeDir() {
 
 
 void File::setAppDir(const std::string &a) {
+	lock_guard<mutex> lock(fm);
 	LOGD("Setting appdir to %s", a);
 	appDir = a;
 }
 
 const File& File::getAppDir() {
+	lock_guard<mutex> lock(fm);
 	if(!appDir) {
 		if(APP_NAME_STR != "")
 			appDir = File("/usr/share/" APP_NAME_STR);
