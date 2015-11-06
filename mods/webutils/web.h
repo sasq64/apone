@@ -8,8 +8,10 @@
 
 #define NOGDI
 #include <curl/curl.h>
+#include <unistd.h>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 namespace webutils {
 
@@ -215,6 +217,7 @@ public:
 
 
 	template <typename FX> static std::shared_ptr<Job> get_url(const std::string &url, FX cb) {
+		std::lock_guard<std::mutex> lock(sm);
 		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
 		job->setUrl(url);
 		job->start();
@@ -223,6 +226,8 @@ public:
 	}
 
 	static void pollAll() {
+
+		std::lock_guard<std::mutex> lock(sm);
 
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
@@ -265,6 +270,7 @@ public:
 	}
 
 	template <typename FX> std::shared_ptr<Job> getFile(const std::string &url, FX cb) {
+		std::lock_guard<std::mutex> lock(sm);
 		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		job->setTarget(target);
@@ -280,6 +286,7 @@ public:
 	}
 
 	std::shared_ptr<Job> streamData(const std::string &url, StreamFunc cb) {
+		std::lock_guard<std::mutex> lock(sm);
 		auto job = std::make_shared<Job>();
 		job->setStreamCallback(cb);
 		job->setUrl(url);
@@ -289,6 +296,8 @@ public:
 	}
 
 private:
+
+	static std::mutex sm;
 
 	std::string baseUrl;
 	utils::File cacheDir;
