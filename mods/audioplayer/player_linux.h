@@ -28,6 +28,7 @@ public:
 
 	~InternalPlayer() {
 		quit = true;
+		paused = false;
 		if(playerThread.joinable())
 			playerThread.join();
 		if(playback_handle)

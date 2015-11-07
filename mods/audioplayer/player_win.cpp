@@ -38,6 +38,10 @@ void InternalPlayer::init() {
 }
 
 InternalPlayer::~InternalPlayer() {
+	quit = true;
+	paused = false;
+	if(playThread.joinable())
+		playThread.join();
 	waveOutClose(hWaveOut);
 }
 

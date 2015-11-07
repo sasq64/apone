@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <memory>
 #include <vector>
+#include <thread>
 #include <mutex>
 
 namespace webutils {
@@ -132,7 +133,11 @@ public:
 					return;
 				} else {
 					targetFile.close();
-					targetFile.rename(orgFile);
+					if(orgFile) {
+						if(orgFile.exists())
+							orgFile.remove();
+						targetFile.rename(orgFile);
+					}
 				}
 			}
 			if(streamCb)
@@ -211,7 +216,27 @@ public:
 				initDone = true;
 			}
 			curlm = curl_multi_init();
+			webThread = std::thread { Web::run, this };
+	}
+
+	~Web() {
+		quit = true;
+		webThread.join();
+	}
+
+	void run() {
+		while(!quit) {
+			int handleCount;
+			CURLMcode rc = CURLM_CALL_MULTI_PERFORM;
+			{
+				std::lock_guard<std::mutex> lock(m);		
+				while(rc == CURLM_CALL_MULTI_PERFORM)
+					rc = curl_multi_perform(curlm, &handleCount);
+				lastCount = handleCount;
+			}
+			utils::sleepms(5);
 		}
+	}
 
 	static int inProgress() {
 		return 0;//lastCount;	
@@ -226,6 +251,7 @@ public:
 	}
 
 	void poll() {
+		std::lock_guard<std::mutex> lock(m);		
 
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
@@ -241,12 +267,6 @@ public:
 				it++;
 		}
 
-		int handleCount;
-		CURLMcode rc = CURLM_CALL_MULTI_PERFORM;
-		while(rc == CURLM_CALL_MULTI_PERFORM)
-			rc = curl_multi_perform(curlm, &handleCount);
-		
-		lastCount = handleCount;
 		CURLMsg *msg;
 		std::vector<std::shared_ptr<Job>> toRemove;
 		do {
@@ -273,11 +293,17 @@ public:
 	}
 
 	template <typename FX> std::shared_ptr<Job> getFile(const std::string &url, FX cb) {
-		std::lock_guard<std::mutex> lock(sm);
 		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		job->setTarget(target);
 		job->setUrl(url);
+		LOGD("target: %s", target.getName());
+		if(target.exists()) {
+			job->call_handler();
+			job->targetFile = utils::File();
+			job->isDone = true;
+			return job;
+		}
 		job->start(curlm);
 		jobs.push_back(job);
 		return job;	
@@ -289,7 +315,6 @@ public:
 	}
 
 	std::shared_ptr<Job> streamData(const std::string &url, StreamFunc cb) {
-		std::lock_guard<std::mutex> lock(sm);
 		auto job = std::make_shared<Job>();
 		job->setStreamCallback(cb);
 		job->setUrl(url);
@@ -317,7 +342,9 @@ public:
 private:
 
 	static std::mutex sm;
-
+	std::mutex m;
+	std::thread webThread;
+	bool quit = false;
 	std::string baseUrl;
 	utils::File cacheDir;
 

@@ -7,6 +7,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
 #include <unistd.h>
 #include <iomanip>
 #include <dirent.h>
@@ -196,12 +197,27 @@ File File::findFile(const string &path, const string &name) {
 	return NO_FILE;
 }
 
+
+static string getHome() {
+	char path[MAX_PATH];
+#ifdef _WIN32
+	string h = getenv("HOMEPATH");
+	if(h[0] == '\\') {
+		h = string("C:") + h;
+		replace_char(h, '\\', '/');
+	}
+	return h;
+#else
+	return getenv("HOME");
+#endif
+}
+
 #ifdef APP_NAME
 
 const File& File::getCacheDir() {
 	lock_guard<mutex> lock(fm);
 	if(!cacheDir) {
-		string home = getenv("HOME");
+		string home = getHome();
 #ifdef _WIN32
 		replace_char(home, '\\', '/');
 #endif
@@ -217,11 +233,12 @@ const File& File::getCacheDir() {
 const File& File::getConfigDir() {
 	lock_guard<mutex> lock(fm);
 	if(!configDir) {
-		std::string home = getenv("HOME");
+		std::string home = getHome();
 #ifdef _WIN32
 		replace_char(home, '\\', '/');
 #endif
 	auto d = format("%s/.config/" APP_NAME_STR, home);
+	LOGD("CACHE: %s", d);
 	if(!exists(d))
 	utils::makedirs(d);
 	configDir = File(d);
@@ -230,7 +247,7 @@ const File& File::getConfigDir() {
 }
 
 const std::string File::getUserDir() {
-	std::string home = getenv("HOME");
+	std::string home = getHome();
 #ifdef _WIN32
 	replace_char(home, '\\', '/');
 #endif
@@ -361,6 +378,10 @@ const File& File::getExeDir() {
 	#if defined _WIN32
 		GetModuleFileName(nullptr, buf, sizeof(buf)-1);
 		replace_char(buf, '\\', '/');
+		char *ptr = &buf[strlen(buf)-1];
+		while(ptr > buf && *ptr != '/')
+			*ptr-- = 0;
+		*ptr = 0;
 		exeDir = File(buf);
 	#elif defined APPLE
 		uint32_t size = sizeof(buf);
