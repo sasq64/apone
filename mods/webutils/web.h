@@ -216,7 +216,7 @@ public:
 				initDone = true;
 			}
 			curlm = curl_multi_init();
-			webThread = std::thread { Web::run, this };
+			webThread = std::thread { &Web::run, this };
 	}
 
 	~Web() {

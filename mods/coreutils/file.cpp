@@ -199,8 +199,8 @@ File File::findFile(const string &path, const string &name) {
 
 
 static string getHome() {
-	char path[MAX_PATH];
 #ifdef _WIN32
+	char path[MAX_PATH];
 	string h = getenv("HOMEPATH");
 	if(h[0] == '\\') {
 		h = string("C:") + h;
