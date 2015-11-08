@@ -27,7 +27,7 @@ public:
 	void run() {
 		init();
 		paused = false;
-		std::vector<int16_t> buffer(8192);
+		std::vector<int16_t> buffer(4096);
 		while(!quit) {
 			if(!paused) {
 				callback(&buffer[0], buffer.size());
@@ -46,7 +46,7 @@ public:
 		paused = on;
 	}
 
-	int get_delay() const { return 1; }
+	int get_delay() const { return 2; }
 
 
 private:
