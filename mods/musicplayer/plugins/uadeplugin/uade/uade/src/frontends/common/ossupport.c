@@ -218,6 +218,8 @@ void uade_arch_kill_and_wait_uadecore(struct uade_ipc *ipc, pid_t *uadepid)
 	*uadepid = 0;
 }
 
+int uadecore_main (int argc, char **argv);
+
 int uade_arch_spawn(struct uade_ipc *ipc, pid_t *uadepid, const char *uadename)
 {
 	int fds[2];
@@ -264,7 +266,9 @@ int uade_arch_spawn(struct uade_ipc *ipc, pid_t *uadepid, const char *uadename)
 		snprintf(input, sizeof input, "%d", fds[1]);
 		snprintf(output, sizeof output, "%d", fds[1]);
 
-		execlp(uadename, uadename, "-i", input, "-o", output, NULL);
+		//execlp(uadename, uadename, "-i", input, "-o", output, NULL);
+		char *args[] = { uadename, "-i", input, "-o", output };
+		uadecore_main(5, args);
 		uade_die("uade execlp (%s) failed: %s\n",
 			 uadename, strerror(errno));
 	}
