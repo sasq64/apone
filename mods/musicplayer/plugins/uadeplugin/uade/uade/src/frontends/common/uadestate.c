@@ -1132,10 +1132,10 @@ struct uade_state *uade_new_state(const struct uade_config *extraconfig)
 
 	uade_merge_configs(&state->config, &state->extraconfig);
 
-	if (access(state->config.uadecore_file.name, X_OK)) {
-		uade_warning("Could not execute %s\n", state->config.uadecore_file.name);
-		goto error;
-	}
+	//if (access(state->config.uadecore_file.name, X_OK)) {
+	//	uade_warning("Could not execute %s\n", state->config.uadecore_file.name);
+	//	goto error;
+	//}
 	if (access(state->config.uae_config_file.name, R_OK)) {
 		uade_warning("Could not read uae config file: %s\n", state->config.uae_config_file.name);
 		goto error;
