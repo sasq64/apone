@@ -6,10 +6,15 @@
 #include <assert.h>
 #include <unistd.h>
 
+#ifdef _WIN32
 #define UREAD(fd, target, len) recv(fd, target, len, 0)
 #define UWRITE(fd, target, len) send(fd, target, len, 0)
 #define UCLOSE(fd) closesocket(fd)
-
+#else
+#define UREAD(fd, target, len) read(fd, target, len)
+#define UWRITE(fd, target, len) write(fd, target, len)
+#define UCLOSE(fd) close(fd)
+#endif
 int uade_atomic_close(int fd)
 {
   while (1) {
@@ -23,20 +28,6 @@ int uade_atomic_close(int fd)
   return 0;
 }
 
-/*  
-int uade_atomic_dup2(int oldfd, int newfd)
-{
-  while (1) {
-    if (dup2(oldfd, newfd) < 0) {
-      if (errno == EINTR)
-	continue;
-      return -1;
-    }
-    break;
-  }
-  return newfd;
-}
-*/
 ssize_t uade_atomic_read(int fd, const void *buf, size_t count)
 {
   char *b = (char *) buf;

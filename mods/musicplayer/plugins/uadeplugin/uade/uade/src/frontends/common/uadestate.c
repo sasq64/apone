@@ -11,11 +11,9 @@
 #include <uade/options.h>
 #include <uade/rmc.h>
 
-//#include <arpa/inet.h>
 #include <assert.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <sys/wait.h>
 #include <unistd.h>
 #include <time.h>
 #include <dirent.h>

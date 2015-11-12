@@ -22,10 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <sys/wait.h>
 #include <unistd.h>
 
 
@@ -216,28 +214,10 @@ void uade_wait_thread();
 void uade_arch_kill_and_wait_uadecore(struct uade_ipc *ipc, pid_t *uadepid)
 {
 	uade_info("Kill and wait\n");
-
-	//uade_end_thread9);
-
-	//if (*uadepid == 0)
-	//	return;
-
-	
-	uade_info("Closing %d %d\n", ipc->in_fd, ipc->out_fd);
 	uade_atomic_close(ipc->in_fd);
 	uade_atomic_close(ipc->out_fd);
 
 	uade_wait_thread();
-
-
-
-	/*
-	 * Wait until one of two happens:
-	 * 1. uadepid is successfully handled (waitpid() returns uadepid)
-	 * 2. someone else has processed uadepid (waitpid() returns -1)
-	 */
-	//while (waitpid(*uadepid, NULL, 0) == -1 && errno == EINTR);
-	//*uadepid = 0;
 }
 
 static void thread_func(void *data)
@@ -251,10 +231,8 @@ static void thread_func(void *data)
 	snprintf(input, sizeof input, "%d", fds[1]);
 	snprintf(output, sizeof output, "%d", fds[1]);
 
-	//execlp(uadename, uadename, "-i", input, "-o", output, NULL);
 	char *args[] = { "uadecore", "-i", input, "-o", output };
 	uadecore_main(5, args);
-	//uade_die("uade execlp (%s) failed: %s\n", uadename, strerror(errno));
 	uade_info("UADE thread ended\n");
 }
 
