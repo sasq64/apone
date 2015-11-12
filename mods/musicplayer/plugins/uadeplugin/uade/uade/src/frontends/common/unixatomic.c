@@ -6,10 +6,14 @@
 #include <assert.h>
 #include <unistd.h>
 
+#define UREAD(fd, target, len) recv(fd, target, len, 0)
+#define UWRITE(fd, target, len) send(fd, target, len, 0)
+#define UCLOSE(fd) closesocket(fd)
+
 int uade_atomic_close(int fd)
 {
   while (1) {
-    if (close(fd) < 0) {
+    if (UCLOSE(fd) < 0) {
       if (errno == EINTR)
 	continue;
       return -1;
@@ -19,7 +23,7 @@ int uade_atomic_close(int fd)
   return 0;
 }
 
-
+/*  
 int uade_atomic_dup2(int oldfd, int newfd)
 {
   while (1) {
@@ -32,14 +36,14 @@ int uade_atomic_dup2(int oldfd, int newfd)
   }
   return newfd;
 }
-
+*/
 ssize_t uade_atomic_read(int fd, const void *buf, size_t count)
 {
   char *b = (char *) buf;
   ssize_t bytes_read = 0;
   ssize_t ret;
   while (bytes_read < count) {
-    ret = read(fd, &b[bytes_read], count - bytes_read);
+    ret = UREAD(fd, &b[bytes_read], count - bytes_read);
     if (ret < 0) {
       if (errno == EINTR)
         continue;
@@ -66,7 +70,7 @@ ssize_t uade_atomic_write(int fd, const void *buf, size_t count)
   ssize_t bytes_written = 0;
   ssize_t ret;
   while (bytes_written < count) {
-    ret = write(fd, &b[bytes_written], count - bytes_written);
+    ret = UWRITE(fd, &b[bytes_written], count - bytes_written);
     if (ret < 0) {
       if (errno == EINTR)
         continue;

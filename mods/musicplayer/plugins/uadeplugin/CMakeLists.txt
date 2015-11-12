@@ -8,5 +8,5 @@ include_directories(../.. uade/uade/src/frontends/include)
 
 
 add_library(uadeplugin UADEPlugin.cpp)
-target_link_libraries(uadeplugin uade)
+target_link_libraries(uadeplugin uade ws2_32)
 

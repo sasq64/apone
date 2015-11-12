@@ -22,14 +22,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
+//#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #include <unistd.h>
 
 
-
+int dumb_socketpair(int socks[2], int make_overlapped);
 
 int uade_filesize(size_t *size, const char *pathname)
 {
@@ -111,6 +111,12 @@ int uade_find_amiga_file(char *realname, size_t maxlen, const char *aname,
 		return -1;
 	}
 	ptr = copy;
+	// Deal with windows paths
+	if(ptr[1] == ':' && ptr[2] == '/') {
+		memcpy(dirname, ptr, 3);
+		dirname[3] = 0;
+		ptr += 3;
+	} else
 	if ((separator = strchr(ptr, (int) ':'))) {
 		len = (int) (separator - ptr);
 		memcpy(dirname, ptr, len);
@@ -256,7 +262,7 @@ static int spawn_fds[2];
 
 int uade_arch_spawn(struct uade_ipc *ipc, pid_t *uadepid, const char *uadename)
 {
-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, spawn_fds)) {
+	if (dumb_socketpair(spawn_fds, 0)) {
 		uade_warning("Can not create socketpair: %s\n",
 			     strerror(errno));
 		return -1;
@@ -277,7 +283,11 @@ char *canonicalize_file_name(const char *path)
 	if (s == NULL)
 		return NULL;
 
+#ifdef _WIN32
+	if(!_fullpath(s, path, PATH_MAX)) {
+#else
 	if (realpath(path, s) == NULL) {
+#endif
 		free(s);
 		return NULL;
 	}

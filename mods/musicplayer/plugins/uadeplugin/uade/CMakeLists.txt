@@ -61,6 +61,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
 	uade/src/uademain.c
 	uade/src/sinctable.c
 	uade/src/text_scope.c
+	uade/src/socketpair.c
 )
 
 add_library(uade ${SOURCE_FILES})

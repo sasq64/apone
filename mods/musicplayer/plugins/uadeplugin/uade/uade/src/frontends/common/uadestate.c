@@ -11,11 +11,11 @@
 #include <uade/options.h>
 #include <uade/rmc.h>
 
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 #include <assert.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #include <unistd.h>
 #include <time.h>
 #include <dirent.h>
@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <string.h>
 #include <bencodetools/bencode.h>
+#include <uade/sysincludes.h>
 
 #define ASSERT_RECEIVE_STATE(state) do { assert((state)->ipc.state == UADE_R_STATE); } while (0)
 #define ASSERT_SEND_STATE(state) do { assert((state)->ipc.state == UADE_S_STATE); } while (0)
