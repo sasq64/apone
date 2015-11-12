@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <set>
 #include <unordered_map>
+#include <thread>
 
 /*
 extern "C" {
@@ -19,6 +20,17 @@ extern "C" {
 	void exit_song();
 	void set_song(int song);
 }*/
+static std::thread uadeThread;
+extern "C" void uade_run_thread(void (*f)(void*), void *data)
+{
+	LOGD("Starting thread");
+	uadeThread = std::thread(f, data);
+}
+
+extern "C" void uade_wait_thread()
+{
+	uadeThread.join();
+}
 
 namespace chipmachine {
 
@@ -113,7 +125,7 @@ public:
 	~UADEPlayer() override {
 		//if(valid)
 		//	exit_song();
-	   uade_stop(state);
+	   //uade_stop(state);
 	   uade_cleanup_state(state);
 	   state = nullptr;
 	}
