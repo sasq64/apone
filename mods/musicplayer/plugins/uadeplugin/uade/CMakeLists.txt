@@ -45,7 +45,7 @@ SET(SOURCE_FILES
 )
 
 if(NOT APPLE)
-	SET(SOURCE_FILES ${SOURCE_FILES} uade/compat/strlrep.c)
+	SET(SOURCE_FILES ${SOURCE_FILES} src/strlrep.c)
 endif()
 
 include_directories(include)
