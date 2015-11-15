@@ -23,7 +23,9 @@
 #include "audio.h"
 #include <uade/amigafilter.h>
 #include "uadectl.h"
-#include <uade/compilersupport.h>
+
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
 
 #include "sinctable.h"
 

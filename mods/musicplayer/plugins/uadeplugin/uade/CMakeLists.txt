@@ -48,7 +48,7 @@ if(NOT APPLE)
 	SET(SOURCE_FILES ${SOURCE_FILES} src/strlrep.c)
 endif()
 
-include_directories(include)
+include_directories(. include)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer -Wall -Wno-unused -Wno-format -Wmissing-prototypes -Wstrict-prototypes -fno-exceptions")
 
