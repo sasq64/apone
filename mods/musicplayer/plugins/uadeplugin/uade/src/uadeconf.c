@@ -17,7 +17,7 @@
 #include <uade/amigafilter.h>
 #include <uade/effects.h>
 #include <uade/uadestate.h>
-#include <support.h>
+#include "support.h"
 
 #include <stdlib.h>
 #include <stdio.h>

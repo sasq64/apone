@@ -3,7 +3,7 @@ project(cpp-mods.musicplayer.uade)
 
 add_subdirectory(uade)
 
-include_directories(../.. uade/uade/src/frontends/include)
+include_directories(../.. uade/include)
 
 if(WIN32)
 set(EXTRA_LIBS ws2_32)

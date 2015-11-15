@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <unixwalkdir.h>
+#include "unixwalkdir.h"
 
 void *uade_walk_directories(const char *dirname,
 			    void *(*fn) (const char *file,
