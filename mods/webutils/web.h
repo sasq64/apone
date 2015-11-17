@@ -18,7 +18,6 @@ namespace webutils {
 
 class Web {
 public:
-
 	using StreamFunc = std::function<bool(uint8_t *, size_t)>;
 
 	class Job {
@@ -30,7 +29,11 @@ public:
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &rc);
 			return rc;
 		}
-		
+
+		utils::File file() {
+			return targetFile;
+		}
+
 		void wait(int timeout = -1);
 
 		void stop() {
@@ -39,17 +42,11 @@ public:
 				targetFile.remove();
 		}
 
-		void setTarget(const utils::File &file) {
-			targetFile = file;
-		}
+		void setTarget(const utils::File &file) { targetFile = file; }
 
-		void setUrl(const std::string &url) {
-			this->url = url;
-		}
+		void setUrl(const std::string &url) { this->url = url; }
 
-		void setStreamCallback(StreamFunc cb) {
-			streamCb = cb;
-		}
+		void setStreamCallback(StreamFunc cb) { streamCb = cb; }
 
 		std::string textResult() const {
 			// TODO: At _least_ UTF8 support here
@@ -57,7 +54,6 @@ public:
 		}
 
 	protected:
-
 		void start(CURLM *curlm);
 		static size_t writeFunc(void *ptr, size_t size, size_t x, void *userdata);
 		static size_t headerFunc(char *text, size_t size, size_t n, void *userdata);
@@ -78,60 +74,52 @@ public:
 
 		friend Web;
 	};
-	
-	template <typename ... ARGS> struct JobImpl;
+
+	template <typename... ARGS> struct JobImpl;
 
 	template <typename FX, typename A0> struct JobImpl<void (FX::*)(A0) const>;
 
 	template <typename FX> struct JobImpl<FX, void (FX::*)() const> : public Job {
 		JobImpl(FX fx) : cb(fx) {}
-		void call_handler() override {
-			cb();
-		}
+		void call_handler() override { cb(); }
 		FX cb;
 	};
 
-	template <typename FX> struct JobImpl<FX, void (FX::*)(Job&) const> : public Job {
+	template <typename FX> struct JobImpl<FX, void (FX::*)(Job) const> : public Job {
 		JobImpl(FX fx) : cb(fx) {}
-		void call_handler() override {
-			cb(*this);
-		}
+		void call_handler() override { cb(*this); }
 		FX cb;
 	};
 
-	template <typename FX> struct JobImpl<FX, void (FX::*)(const std::string &contents) const> : public Job {
+	template <typename FX>
+	struct JobImpl<FX, void (FX::*)(const std::string &contents) const> : public Job {
 		JobImpl(FX fx) : cb(fx) {}
-		void call_handler() override {
-			cb(textResult());
-		}
+		void call_handler() override { cb(textResult()); }
 		FX cb;
 	};
 
-	template <typename FX> struct JobImpl<FX, void (FX::*)(Job&, const std::string &contents) const> : public Job {
+	template <typename FX>
+	struct JobImpl<FX, void (FX::*)(Job &, const std::string &contents) const> : public Job {
 		JobImpl(FX fx) : cb(fx) {}
-		void call_handler() override {
-			cb(*this, textResult());
-		}
+		void call_handler() override { cb(*this, textResult()); }
 		FX cb;
 	};
 
 	template <typename FX> struct JobImpl<FX, void (FX::*)(utils::File) const> : public Job {
 		JobImpl(FX fx) : cb(fx) {}
-		void call_handler() override {
-			cb(targetFile);
-		}
+		void call_handler() override { cb(targetFile); }
 		FX cb;
 	};
 
-	Web(const std::string &cacheDir = "", const std::string &baseUrl = "") : 
-		cacheDir(cacheDir), baseUrl(baseUrl) {
-			std::lock_guard<std::mutex> lock(sm);
-			if(!initDone) {
-				curl_global_init(CURL_GLOBAL_ALL);
-				initDone = true;
-			}
-			curlm = curl_multi_init();
-			webThread = std::thread { &Web::run, this };
+	Web(const std::string &cacheDir = "", const std::string &baseUrl = "")
+	    : cacheDir(cacheDir), baseUrl(baseUrl) {
+		std::lock_guard<std::mutex> lock(sm);
+		if(!initDone) {
+			curl_global_init(CURL_GLOBAL_ALL);
+			initDone = true;
+		}
+		curlm = curl_multi_init();
+		webThread = std::thread{&Web::run, this};
 	}
 
 	~Web() {
@@ -144,7 +132,7 @@ public:
 			int handleCount;
 			CURLMcode rc = CURLM_CALL_MULTI_PERFORM;
 			{
-				std::lock_guard<std::mutex> lock(m);		
+				std::lock_guard<std::mutex> lock(m);
 				while(rc == CURLM_CALL_MULTI_PERFORM)
 					rc = curl_multi_perform(curlm, &handleCount);
 				lastCount = handleCount;
@@ -155,7 +143,7 @@ public:
 
 	static int inProgress() {
 		std::lock_guard<std::mutex> lock(sm);
-		return runningJobs;	
+		return runningJobs;
 	}
 
 	template <typename FX> std::shared_ptr<Job> get(const std::string &url, FX cb) {
@@ -167,7 +155,7 @@ public:
 	}
 
 	void poll() {
-		std::lock_guard<std::mutex> lock(m);		
+		std::lock_guard<std::mutex> lock(m);
 
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
@@ -196,7 +184,6 @@ public:
 						} else
 							it++;
 					}
-
 				}
 			}
 
@@ -221,7 +208,7 @@ public:
 		}
 		job->start(curlm);
 		jobs.push_back(job);
-		return job;	
+		return job;
 	}
 
 	bool inCache(const std::string &url) const {
@@ -235,10 +222,10 @@ public:
 		job->setUrl(url);
 		job->start(curlm);
 		jobs.push_back(job);
-		return job;	
+		return job;
 	}
 
-	static Web& getInstance() {
+	static Web &getInstance() {
 		static Web w;
 		return w;
 	}
@@ -249,13 +236,12 @@ public:
 	}
 
 	static void pollAll() {
-		Web& w = getInstance();
+		Web &w = getInstance();
 		std::lock_guard<std::mutex> lock(sm);
 		w.poll();
 	}
 
 private:
-
 	static std::mutex sm;
 	std::mutex m;
 	std::thread webThread;
@@ -272,9 +258,6 @@ private:
 	static std::atomic<int> runningJobs;
 };
 
-
-
 } // namespace webutils
 
 #endif // WEBUTILS_WEB_H
-

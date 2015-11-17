@@ -88,7 +88,7 @@ void Web::Job::finish() {
 		if(rc != 200) {
 			if(targetFile.exists())
 				targetFile.remove();
-			return;
+			targetFile = utils::File();
 		} else {
 			targetFile.close();
 			if(orgFile) {
