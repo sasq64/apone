@@ -90,7 +90,7 @@ void Window::open(int w, int h, bool fs) {
 	uint16_t dha = 0;
 
 	// Scale 50% on hires screens
-	if(display_width > 1280) {
+	if(display_width > 1024) {
 		display_width /= 2;
 		display_height /= 2;
 		dwa = display_width;

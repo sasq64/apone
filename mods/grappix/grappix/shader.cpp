@@ -196,17 +196,6 @@ std::string Program::getVertexSource() {
 	return vSource;
 }
 
-GLuint Program::getAttribLocation(const std::string &name) const {
-	GLuint a;
-	if(attributes.count(name) == 0) {
-		a = glGetAttribLocation(program->id, name.c_str());
-		attributes[name] = a;
-	} else {
-		a = attributes[name];
-	}
-	return a;
-}
-
 GLuint Program::getUniformLocation(const std::string &name) const {
 	GLuint u;
 	if(uniforms.count(name) == 0) {
@@ -258,6 +247,16 @@ void Program::setUniform(const std::string &name, float *ptr, int count) const {
 //	glUniform1fv();
 //	}
 
+GLuint Program::getAttribLocation(const std::string &name) const {
+	GLuint a;
+	if(attributes.count(name) == 0) {
+		a = glGetAttribLocation(program->id, name.c_str());
+		attributes[name] = a;
+	} else {
+		a = attributes[name];
+	}
+	return a;
+}
 void Program::vertexAttribPointer(const std::string &name, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) const {
 	GLuint h = getAttribLocation(name);
 	glVertexAttribPointer(h, size, type, normalized, stride, ptr);
