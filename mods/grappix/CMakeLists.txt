@@ -55,14 +55,17 @@ elseif(UNIX)
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})
 
-  if(NOT TARGET glew)
-    add_subdirectory(../glew glew)
-    add_definitions(-DGLEW_STATIC)
-    include_directories(../glew/glew-1.11.0/include)
-    set(EXTRA_LIBS ${EXTRA_LIBS} glew)
-  endif()
+  #  if(NOT TARGET glew)
+  #    add_subdirectory(../glew glew)
+  #    add_definitions(-DGLEW_STATIC)
+  #    include_directories(../glew/glew-1.11.0/include)
+  #    set(EXTRA_LIBS ${EXTRA_LIBS} glew)
+  #  endif()
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
+
+  find_library(GLEW_LIBRARY GLEW REQUIRED)
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARY})
 
   if(NOT APPLE)
     if(GLFW_LIBRARY MATCHES "\\.a")

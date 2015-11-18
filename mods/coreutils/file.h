@@ -162,6 +162,8 @@ public:
 
 	const std::string getDirectory() const { return path_directory(resolvePath(fileName)); }
 
+	File changeExt(const std::string &ext);
+
 	int64_t getSize() const;
 	uint64_t getModified() const;
 

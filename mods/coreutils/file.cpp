@@ -423,6 +423,13 @@ void File::writeln(const std::string &line) {
 	write(line + "\n");
 }
 
+File File::changeExt(const std::string &ext) {
+	int dot = fileName.find_last_of('.');
+	if(dot != string::npos)
+		return File(fileName.substr(0, dot) + ext);
+	return File(fileName + ext);
+}
+
 }
 
 #ifdef UNIT_TEST
