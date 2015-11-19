@@ -39,7 +39,7 @@ if(EMSCRIPTEN)
 
 elseif(RASPBERRY)
 
-  	set(VC ${PI_SYS_ROOT}/vc)
+  set(VC ${PI_SYS_ROOT}/vc)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pi.cpp grappix/specific/eglutil.cpp)
   set(EXTRA_LIBS ${EXTRA_LIBS} EGL GLESv2 vcos vchiq_arm bcm_host)
   include_directories(${VC}/include ${VC}/include/interface/vcos/pthreads ${VC}/include/interface/vmcs_host/linux)
@@ -48,7 +48,7 @@ elseif(WIN32)
 
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
 
-  #find_package(OpenGL REQUIRED)
+  find_package(OpenGL REQUIRED)
   find_package(GLEW REQUIRED)
   find_library(GLFW_LIBRARY glfw3 REQUIRED)
 
@@ -68,7 +68,6 @@ elseif(WIN32)
 elseif(UNIX)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
   find_package(OpenGL REQUIRED)
- # find_package(GLEW REQUIRED)
 
   if(APPLE)
     find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
