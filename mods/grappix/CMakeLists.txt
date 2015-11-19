@@ -33,53 +33,22 @@ if(APPLE)
 endif()
 
 if(EMSCRIPTEN)
+  
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
   set(EXTRA_LIBS ${EXTRA_LIBS} -lGL)
 
 elseif(RASPBERRY)
-  set(VC ${PI_SYS_ROOT}/vc)
+
+  	set(VC ${PI_SYS_ROOT}/vc)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pi.cpp grappix/specific/eglutil.cpp)
   set(EXTRA_LIBS ${EXTRA_LIBS} EGL GLESv2 vcos vchiq_arm bcm_host)
   include_directories(${VC}/include ${VC}/include/interface/vcos/pthreads ${VC}/include/interface/vmcs_host/linux)
-elseif(UNIX)
-  set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
-  find_package(OpenGL REQUIRED)
- # find_package(GLEW REQUIRED)
 
-  if(APPLE)
-    find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
-  else() # Ubuntu changed naming between 14.0 and 14.10
-    find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
-  endif()
+elseif(WIN32)
 
-  set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
-  include_directories(${OPENGL_INCLUDE_DIRS})
-
-  #  if(NOT TARGET glew)
-  #    add_subdirectory(../glew glew)
-  #    add_definitions(-DGLEW_STATIC)
-  #    include_directories(../glew/glew-1.11.0/include)
-  #    set(EXTRA_LIBS ${EXTRA_LIBS} glew)
-  #  endif()
-
-  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
-
-  find_library(GLEW_LIBRARY GLEW REQUIRED)
-  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARY})
-
-  if(NOT APPLE)
-    if(GLFW_LIBRARY MATCHES "\\.a")
-      message("GLFW is static")
-      set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
-    else()
-      message("GLFW is dynamic")
-      set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lpthread)
-    endif()
-  endif()
-else()
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
 
-  find_package(OpenGL REQUIRED)
+  #find_package(OpenGL REQUIRED)
   find_package(GLEW REQUIRED)
   find_library(GLFW_LIBRARY glfw3 REQUIRED)
 
@@ -95,6 +64,35 @@ else()
 
   set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
 
+
+elseif(UNIX)
+  set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
+  find_package(OpenGL REQUIRED)
+ # find_package(GLEW REQUIRED)
+
+  if(APPLE)
+    find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
+  else() # Ubuntu changed naming between 14.0 and 14.10
+    find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
+  endif()
+
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
+  include_directories(${OPENGL_INCLUDE_DIRS})
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLFW_LIBRARY})
+  find_library(GLEW_LIBRARY GLEW REQUIRED)
+  set(EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARY})
+
+  if(NOT APPLE)
+    if(GLFW_LIBRARY MATCHES "\\.a")
+      message("GLFW is static")
+      set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lXinerama -lXcursor)
+    else()
+      message("GLFW is dynamic")
+      set(EXTRA_LIBS ${EXTRA_LIBS} -lX11 -lXxf86vm -lpthread)
+    endif()
+  endif()
+
+else()
 endif()
 
 add_definitions(-DWITH_FREETYPE)
