@@ -211,6 +211,20 @@ public:
 		return job;
 	}
 
+	utils::File getFileBlocking(const std::string &url) {
+		std::atomic<bool> done(false);
+		utils::File retFile;
+		auto job = getFile(url, [&](utils::File f) {
+			retFile = f;
+			done = true;
+		});
+		while(!done) {
+			poll();
+			utils::sleepms(100);
+		}
+		return retFile;
+	}
+
 	bool inCache(const std::string &url) const {
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		return utils::File::exists(target);
