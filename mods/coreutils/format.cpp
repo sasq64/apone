@@ -102,13 +102,19 @@ char parse_format(stringstream &ss, string &fmt) {
 
 	if(ptr >= end)
 		return 0;
-
+	ss.fill(' ');
 	switch(*ptr++) {
 	case '0':
 		ss.fill('0');
 		break;
 	case ' ':
 		ss.fill(' ');
+		break;
+	case ',':
+		ss.fill(',');
+		break;
+	case '>':
+		ss.fill('\t');
 		break;
 	case '-':
 		ss << left;

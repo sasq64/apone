@@ -8,7 +8,7 @@ int bindArg(Statement &s, int64_t arg)  {
 }
 
 int bindArg(Statement &s, const char *arg)  {
-	return sqlite3_bind_text(s.stmt, s.pos++, arg, (int)strlen(arg), SQLITE_TRANSIENT);
+	return sqlite3_bind_text(s.stmt, s.pos++, arg, arg ? (int)strlen(arg) : 0, SQLITE_TRANSIENT);
 }
 
 int bindArg(Statement &s, const std::string &arg)  {
@@ -49,10 +49,14 @@ template <> const char * stepper(sqlite3_stmt *s, int pos) {
 }
 
 template <> std::string stepper(sqlite3_stmt *s, int pos) {
-	START()
+	//START()
+	auto t = sqlite3_column_type(s, pos);
+	if(t == SQLITE_NULL)
+		return "";
 	//if(t != SQLITE_TEXT)
 	//	throw std::invalid_argument(utils::format("Not a string %d %s", std::to_string(t), sqlite3_column_text(s, pos)));
-	return std::string((const char*)sqlite3_column_text(s, pos));
+	auto *x = (const char*)sqlite3_column_text(s, pos);
+	return std::string(x ? x : "");
 }
 
 template <> std::vector<uint8_t> stepper(sqlite3_stmt *s, int pos) {

@@ -22,7 +22,7 @@ template<template <typename, typename> class Container, class V, class A> void f
 		bool first = true;
 		int w = (int)ss.width();
 		for(auto b : arg) {
-			if(!first) ss << " ";
+			if(!first) ss << ss.fill();
 			ss.width(w);
 			ss << b;
 			first = false;
@@ -36,7 +36,7 @@ template<template <typename, typename> class Container, class A> void format_str
 		bool first = true;
 		int w = (int)ss.width();
 		for(auto b : arg) {
-			if(!first) ss << " ";
+			if(!first) ss << ss.fill();
 			ss.width(w);
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
@@ -54,7 +54,7 @@ template<template <typename, typename> class Container, class A> void format_str
 		bool first = true;
 		int w = (int)ss.width();
 		for(auto b : arg) {
-			if(!first) ss << " ";
+			if(!first) ss << ss.fill();
 			ss.width(w);
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
@@ -72,7 +72,7 @@ template<template <typename, typename> class Container, class A> void format_str
 		bool first = true;
 		int w = (int)ss.width();
 		for(auto b : arg) {
-			if(!first) ss << " ";
+			if(!first) ss << ss.fill();
 			ss.width(w);
 			if(letter == 'd' || letter == 'x')
 				ss << (int)(b&0xff);
