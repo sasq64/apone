@@ -162,7 +162,7 @@ public:
 
 	const std::string getDirectory() const { return path_directory(resolvePath(fileName)); }
 
-	File changeExt(const std::string &ext);
+	File changeSuffix(const std::string &ext);
 
 	int64_t getSize() const;
 	uint64_t getModified() const;
@@ -178,6 +178,8 @@ public:
 	bool isChildOf(const File &f) const;
 
 	void seek(int where);
+
+	std::string suffix() const;
 
 	static File NO_FILE;
 

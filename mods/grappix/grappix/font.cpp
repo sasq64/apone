@@ -43,8 +43,8 @@ Font::Font(bool stfont) : size(32) {
 
 
 
-const static wchar_t *fontLetters = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
+const static wchar_t *fontLetters = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖabcdefghijklmnopqrstuvwxyzåäö0123456789 ";
+const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ0123456789 ";
 
 Font::Font(const string &ttfName, int size, int flags) : size(size) {
 
@@ -103,23 +103,16 @@ template <typename T, typename U, typename...ARGS> static void push_back(vector<
 	push_back(vec, args...);
 }
 
-TextBuf Font::make_text2(const string &text) const {
+TextBuf Font::make_text2(const wstring &text) const {
 
-	//LOGD("Make text2");
-
-	//auto tl = text.length();
-	//vector<GLfloat> p;
 	vector<GLfloat> verts;
 	vector<GLushort> indexes;
 
-	//char lastChar = 0;
 	int i = 0;
 	float x = 0;
 	float y = 0;
 
-	auto t2 = utf8_decode(text);
-
-	for(auto c : t2) {
+	for(auto c : text) {
 
         texture_glyph2_t *glyph = 0;
         for(unsigned int j=0; j<static_font.glyphs_count; ++j) {
@@ -133,8 +126,6 @@ TextBuf Font::make_text2(const string &text) const {
             continue;
         }
 
-		//if(lastChar)
-		//	x += texture_glyph_get_kerning(glyph, lastChar);
 		float x0  = x + glyph->offset_x;
 		float x1  = x0 + glyph->width;
 
@@ -172,12 +163,12 @@ TextBuf Font::make_text2(const string &text) const {
 	return tbuf;
 }
 
-TextBuf Font::make_text(const string &text) const {
+TextBuf Font::make_text(const wstring &text) const {
 
 	if(!ref->font)
 		return make_text2(text);
 
-	char lastChar = 0;
+	int lastChar = 0;
 	int i = 0;
 	float x = 0;
 	texture_font_t *font = (texture_font_t*)ref->font;
@@ -286,10 +277,12 @@ void Font::render_text(const RenderTarget &target, const TextBuf &text, float x,
 void Font::render_text(const RenderTarget &target, const std::string &text, float x, float y, uint32_t col, float scale) const {
 	if(text == "")
 		return;
-	auto buf = cache.get(text);
-	if(buf.text == "") {
-		buf = make_text(text);
-		cache.put(text, buf);
+
+	auto t = utf8_decode(text);
+	auto buf = cache.get(t);
+	if(buf.text.empty()) {
+		buf = make_text(t);
+		cache.put(t, buf);
 	}
 	render_text(target, buf, x, y, col, scale);
 }
@@ -302,11 +295,14 @@ int Font::get_width(const string &text, float scale) const {
 	return get_size(text, scale).x;
 }
 
-vec2i Font::get_size(const string &text, float scale) const {
-	if(text == "")
+vec2i Font::get_size(const string &t, float scale) const {
+
+	auto text = utf8_decode(t);
+
+	if(text.empty())
 		return vec2i(0,0);
 	auto buf = cache.get(text);
-	if(buf.text == "") {
+	if(buf.text.empty()) {
 		buf = make_text(text);
 		cache.put(text, buf);
 	}
@@ -316,18 +312,15 @@ vec2i Font::get_size(const string &text, float scale) const {
 
 
 Font::FontRef::FontRef(int w, int h, const std::string &ttfName, int fsize, int flags) : w(w), h(h), flags(flags), ttfName(ttfName), atlas(nullptr), font(nullptr) {
-	//LOGD("FONTREF CONSTRUCT");
 	texture_atlas_t *a = nullptr;
 	if(w > 0 && h > 0)
 		a = texture_atlas_new(w, h, 1);
 	if(a && fsize > 0) {
 		font = (texture_font_t*)texture_font_new(a, ttfName.c_str(), fsize);
-		//LOGD("FONTREF DONE");
 	}
 	atlas = a;
 }
 Font::FontRef::~FontRef() {
-	//LOGD("FONTREF DESTROY");
 	if(font)
 		texture_font_delete((texture_font_t*)font);
 	if(atlas)

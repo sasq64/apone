@@ -33,7 +33,7 @@ public:
 		bufPtr = buffer;
 	}
 
-	void put(T *target, int count) {
+	void put(const T *source, int count) {
 
 		std::unique_lock<std::mutex> lock(m);
 		if(left() < count) {
@@ -42,8 +42,8 @@ public:
 			cv.wait(lock, [=] { return left() >= count; });
 		}	
 
-		if(target)
-			memcpy(bufPtr, target, sizeof(T) * count);
+		if(source)
+			memcpy(bufPtr, source, sizeof(T) * count);
 		bufPtr += count;
 		wantToWrite = 0;
 	}

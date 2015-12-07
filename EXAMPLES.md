@@ -5,7 +5,7 @@
 ```c++
 File root { "somedir" };
 for(const auto &f : root.listFiles()) {
-    if(path_extension(f.getName()) == "txt") {
+    if(f.suffix()) == ".txt") {
         for(const auto &line : f.getLines()) {
             print_fmt("%s: %s\n", f.getName(), line);
         }

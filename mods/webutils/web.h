@@ -13,12 +13,16 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <unordered_map>
 
 namespace webutils {
 
 class Web {
 public:
-	using StreamFunc = std::function<bool(uint8_t *, size_t)>;
+
+	class Job;
+
+	using StreamFunc = std::function<bool(Job&, uint8_t *, size_t)>;
 
 	class Job {
 	public:
@@ -28,6 +32,12 @@ public:
 			if(curl)
 				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &rc);
 			return rc;
+		}
+		
+		int64_t contentLength() { return cLength; }
+		
+		std::string getHeader(const std::string &name) {
+			return headers[name];
 		}
 
 		utils::File file() {
@@ -63,7 +73,7 @@ public:
 		virtual void call_handler() {}
 
 		CURL *curl = nullptr;
-
+		std::unordered_map<std::string, std::string> headers;
 		std::string url;
 		std::vector<uint8_t> data;
 		utils::File targetFile;
@@ -71,6 +81,7 @@ public:
 		StreamFunc streamCb;
 		bool isDone = false;
 		bool stopped = false;
+		int64_t cLength;
 
 		friend Web;
 	};
@@ -233,6 +244,14 @@ public:
 	std::shared_ptr<Job> streamData(const std::string &url, StreamFunc cb) {
 		auto job = std::make_shared<Job>();
 		job->setStreamCallback(cb);
+		job->setUrl(url);
+		job->start(curlm);
+		jobs.push_back(job);
+		return job;
+	}
+
+	std::shared_ptr<Job> createJob(const std::string &url) {
+		auto job = std::make_shared<Job>();
 		job->setUrl(url);
 		job->start(curlm);
 		jobs.push_back(job);

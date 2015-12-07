@@ -27,7 +27,9 @@ void AudioPlayer::play(std::function<void(int16_t *, int)> cb, int hz) {
 
 void AudioPlayer::close() {
 	// TODO: Uncomment if close not called from destructor
-	//staticInternalPlayer = nullptr;
+	staticInternalPlayer = nullptr;
+	//if(staticInternalPlayer)
+	//	staticInternalPlayer->close();
 }
 
 void AudioPlayer::pause() { internalPlayer->pause(true); }

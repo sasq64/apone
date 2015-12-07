@@ -26,8 +26,7 @@ Take a look at EXAMPLES.md for more code examples.
 
 ## Platform support
 
-* Linux, Mac, Rasperry PI, Emscripten currently works.
-* Windows/Mingw and Android soon working (again).
+* Linux, Mac, Windows, Rasperry PI, Emscripten currently works.
 * iOS port should be doable.
 
 
@@ -37,7 +36,7 @@ Should build right out of the box
 
 ### Windows
 
-Mingw support is almost done. Visual Studio will probably never work.
+...
 
 ### Raspberry PI
 

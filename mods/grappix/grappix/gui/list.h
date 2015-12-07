@@ -60,7 +60,7 @@ public:
 	BaseList(Renderer *renderer, const Rectangle &area, int visibleItems) : renderer(renderer), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
 	}
 
-	void render() {
+	void render(std::shared_ptr<RenderTarget> target) {
 		//LOGD("POSITION %f", position);
 		auto n = visibleItems+1;
 		float dummy;

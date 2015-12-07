@@ -22,8 +22,18 @@ void Web::Job::start(CURLM *curlm) {
 
 	auto u = utils::urlencode(url, " #");
 
-	LOGD("Getting %s", url);
+	struct curl_slist *slist = NULL;
+	//slist = curl_slist_append(slist, "User-Agent: chipmachine");
+	slist = curl_slist_append(slist, "Icy-MetaData: 1");
+	slist = curl_slist_append(slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, audio/x-mpeg3, audio/mpg, audio/x-mpg, audio/x-mpegaudio, application/octet-stream, audio/mpegurl, audio/mpeg-url, audio/x-mpegurl, audio/x-scpls, audio/scpls, application/pls, application/x-scpls, */*");
+	struct curl_slist *aliases = NULL;
+	aliases = curl_slist_append(aliases, "ICY 200 OK");
+	LOGD("Curl Getting %s", url);
 	curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+	curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+	curl_easy_setopt(curl, CURLOPT_HTTP200ALIASES, aliases);
+
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
@@ -44,7 +54,7 @@ size_t Web::Job::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
 	if(job->targetFile) {
 		job->targetFile.write(static_cast<uint8_t*>(ptr), size);
 	} else if(job->streamCb) {
-		job->streamCb(static_cast<uint8_t*>(ptr), size);
+		job->streamCb(*job, static_cast<uint8_t*>(ptr), size);
 	} else {
 		unsigned pos = job->data.size();
 		job->data.resize(pos + size);
@@ -60,16 +70,25 @@ size_t Web::Job::headerFunc(char *text, size_t size, size_t n, void *userdata) {
 	while(sz > 0 && (text[sz-1] == '\n' || text[sz-1] == '\r'))
 		sz--;
 
-	auto line = std::string(text, sz);
+	char *split = strnstr(text, ":", sz);
+	std::string name, val;
+	if(!split)	
+		name = std::string(text, sz);
+	else {
+		int pos = split-text;
+		name = std::string(text, 0, pos);
+		pos++;
+		if(text[pos] == ' ') pos++;
+		val = std::string(text, pos, sz-pos);
+		job->headers[name] = val;
+	}	
 
-	LOGV("HEADER: '%s'", line);
-	if(line.substr(0, 15) == "Content-Length:") {
-		int sz = std::stol(line.substr(16));
-		if(sz > 0 && job->streamCb)
-			job->streamCb(nullptr, sz);
+	LOGD("HEADER: '%s = %s'", name, val);
+	if(name == "Content-Length") {
+		job->cLength = std::stol(val);
 	} else
-	if(line.substr(0, 9) == "Location:") {
-		std::string newUrl = line.substr(10);
+	if(name== "Location") {
+		std::string newUrl = val;
 		LOGD("Redirecting to %s", newUrl);
 		std::string newTarget = utils::urlencode(newUrl, ":/\\?;");
 		// TODO: Some way to simulate symlinks on win?
@@ -99,7 +118,7 @@ void Web::Job::finish() {
 		}
 	}
 	if(streamCb)
-		streamCb(nullptr, 0);
+		streamCb(*this, nullptr, 0);
 	call_handler();
 	targetFile = utils::File();
 	destroy();

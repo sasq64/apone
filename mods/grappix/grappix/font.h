@@ -59,7 +59,7 @@ struct TextBuf {
 	TextBuf() : vbuf(2) {}
 	int size;
 	std::vector<GLuint> vbuf;
-	std::string text;
+	std::wstring text;
 	float rec[4];
 	void destroy();
 };
@@ -78,7 +78,7 @@ public:
 	Font(bool s);
 	Font(const std::string &ttfName, int size, int flags = DISTANCE_MAP);
 
-	TextBuf make_text(const std::string &text) const;
+	TextBuf make_text(const std::wstring &text) const;
 	void render_text(const RenderTarget &target, const TextBuf &text, float x = 0, float y = 0, uint32_t color = 0xffffffff, float scale = 1.0) const;
 	void render_text(const RenderTarget &target, const std::string &text, float x = 0, float y = 0, uint32_t col = 0xffffffff, float scale = 1.0) const;
 
@@ -112,11 +112,11 @@ private:
 
 	static std::vector<std::weak_ptr<FontRef>> fontRefs;
 
-	TextBuf make_text2(const std::string &text) const;
+	TextBuf make_text2(const std::wstring &text) const;
 
 	std::shared_ptr<FontRef> ref;
 
-	mutable VBLCache<std::string, TextBuf> cache;
+	mutable VBLCache<std::wstring, TextBuf> cache;
 };
 
 }
