@@ -117,6 +117,7 @@ std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
 
 std::string htmldecode(const std::string &source, bool stripTags = false);
+std::wstring jis2unicode(uint8_t *text);
 
 void sleepms(unsigned ms);
 uint64_t getms();

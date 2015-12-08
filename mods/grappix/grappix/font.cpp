@@ -220,11 +220,16 @@ TextBuf Font::make_text(const wstring &text) const {
 
 	tbuf.text = text;
 	tbuf.size = i/4;
-	tbuf.rec[0] = verts[0];
-	tbuf.rec[1] = 0;//verts[1];
-	tbuf.rec[2] = verts[verts.size()-4];
-	tbuf.rec[3] = font->height;//verts[verts.size()-3];
 
+	if(verts.size() >= 4) {
+
+		tbuf.rec[0] = verts[0];
+		tbuf.rec[1] = 0;//verts[1];
+		tbuf.rec[2] = verts[verts.size()-4];
+		tbuf.rec[3] = font->height;//verts[verts.size()-3];
+	} else {
+		tbuf.rec[0] = tbuf.rec[1] = tbuf.rec[2] = tbuf.rec[3] = 0;
+	}
 	glGenBuffers(2, &tbuf.vbuf[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, tbuf.vbuf[0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tbuf.vbuf[1]);

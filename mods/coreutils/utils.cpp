@@ -17,6 +17,7 @@
 #include <emscripten.h>
 #endif
 
+#include "jis.h"
 
 #if (defined ANDROID) || (defined WIN32)
 namespace std {
@@ -102,6 +103,34 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	}
 	return lines;
 }
+std::wstring jis2unicode(uint8_t *text) {
+
+	static uint16_t jis_table[65536];
+	static bool init = false;
+	if(!init) {
+		memset(jis_table, 0, 65536*2);
+		for(int i=0; i<0xff; i++)
+			jis_table[i] = i;
+		for(const auto &p : jis_map) {
+			jis_table[p.first] = p.second > 0xffff ? 0 : p.second;
+		}
+		jis_table[0x5c] = 0xa5;
+		jis_table[0x7e] = 0x203e;
+		init = true;
+	}
+	uint8_t *p = text;
+	std::wstring result;
+	while(*p) {
+		uint16_t c = *p++;
+		if((c >= 0x81 && c <= 0x9f) || (c >= 0xe0)) {
+			c <<= 8;
+			c |= *p++;
+		}
+		result.push_back(jis_table[c]);
+	}
+	return result;
+}
+
 
 static uint16_t decode(const string &symbol) {
 	static unordered_map<std::string, uint16_t> codes = {
@@ -401,7 +430,7 @@ string utf8_encode(const string &txt) {
 
 string utf8_encode(const wstring &s) {
 	string out;
-	for(const auto &c : s) {
+	for(uint16_t c : s) {
 		if(c <= 0x7f)
 			out.push_back(c);
 		else if(c < 0x800) {
@@ -409,7 +438,7 @@ string utf8_encode(const wstring &s) {
 			out.push_back(0x80 | (c & 0x3F));
 		} else /*if (c < 0x10000) */ {
 			out.push_back(0xE0 | (c >> 12));
-			out.push_back(0x80 | (c >> 6));
+			out.push_back(0x80 | ((c >> 6) & 0x3f));
 			out.push_back(0x80 | (c & 0x3F));
 		}
 	}
