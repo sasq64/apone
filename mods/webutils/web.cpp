@@ -69,8 +69,8 @@ size_t Web::Job::headerFunc(char *text, size_t size, size_t n, void *userdata) {
 	int sz = size-1;
 	while(sz > 0 && (text[sz-1] == '\n' || text[sz-1] == '\r'))
 		sz--;
-
-	char *split = strnstr(text, ":", sz);
+	text[sz] = 0;
+	char *split = strstr(text, ":");
 	std::string name, val;
 	if(!split)	
 		name = std::string(text, sz);
