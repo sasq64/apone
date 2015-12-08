@@ -116,7 +116,7 @@ void replace_char(char *s, char c, char r);
 std::string urlencode(const std::string &s, const std::string &chars);
 std::string urldecode(const std::string &s, const std::string &chars);
 
-std::string htmldecode(const std::string &source);
+std::string htmldecode(const std::string &source, bool stripTags = false);
 
 void sleepms(unsigned ms);
 uint64_t getms();

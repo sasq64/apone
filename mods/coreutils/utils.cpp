@@ -119,19 +119,33 @@ static uint16_t decode(const string &symbol) {
 	return '?';
 }
 
-string htmldecode(const string &s) {
+string htmldecode(const string &s, bool stripTags) {
 
 	char target [s.length() + 1];
-	char *ptr = target;
+	unsigned char *ptr = (unsigned char*)target;
 	char symbol[32];
 	char *sptr;
+	bool inTag = false;
 
 	for(unsigned i=0; i<s.length(); i++) {
 		uint16_t c = s[i];
+		if(inTag) {
+			if(c == '>') {
+				inTag = false;
+			}
+			continue;
+		}
+		if(stripTags && c == '<') {
+			inTag = true;
+			continue;
+		}
+		
 		if(c == '&') {
 			sptr = symbol;
 			int saved = i;
 			i++;
+			if(s[i] == '#')
+				i++;
 			while(isalnum(s[i]))
 				*sptr++ = s[i++];
 			*sptr = 0;
@@ -140,8 +154,19 @@ string htmldecode(const string &s) {
 			} else
 				i = saved;
 
+			if(c <= 0x7f)
+				*ptr++ = c;
+			else if(c < 0x800) {
+				*ptr++ = (0xC0 | (c >> 6));
+				*ptr++ = (0x80 | (c & 0x3F));
+			} else /*if (c < 0x10000) */ {
+				*ptr++ = (0xE0 | (c >> 12));
+				*ptr++ = (0x80 | (c >> 6));
+				*ptr++ = (0x80 | (c & 0x3F));
+			}
+			continue;
 		}
-		*ptr ++ = c;
+		*ptr++ = c;
 	}
 	*ptr = 0;
 	return string(target);
@@ -308,45 +333,52 @@ string path_prefix(const string &name) {
 	return name.substr(slashPos, dotPos-slashPos);
 }
 
-static const uint32_t offsetsFromUTF8[6] = {
-    0x00000000UL, 0x00003000UL, 0x000E2000UL,
-    0x03C82000UL, 0xFA082000UL, 0x82082000UL
+// Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+
+#define UTF8_ACCEPT 0
+#define UTF8_REJECT 1
+
+static const uint8_t utf8d[] = {
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 00..1f
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 20..3f
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 40..5f
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 60..7f
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9, // 80..9f
+  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7, // a0..bf
+  8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, // c0..df
+  0xa,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x4,0x3,0x3, // e0..ef
+  0xb,0x6,0x6,0x6,0x5,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8, // f0..ff
+  0x0,0x1,0x2,0x3,0x5,0x8,0x7,0x1,0x1,0x1,0x4,0x6,0x1,0x1,0x1,0x1, // s0..s0
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1, // s1..s2
+  1,2,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1, // s3..s4
+  1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,3,1,1,1,1,1,1, // s5..s6
+  1,3,1,1,1,1,1,3,1,3,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // s7..s8
 };
 
-static const uint8_t trailingBytesForUTF8[256] = {
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
-};
+uint32_t inline
+decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
+  uint32_t type = utf8d[byte];
 
-// TODO: Replace this bloody code, it assumes signedess of char
+  *codep = (*state != UTF8_ACCEPT) ?
+    (byte & 0x3fu) | (*codep << 6) :
+    (0xff >> type) & (byte);
+
+  *state = utf8d[256 + *state*16 + type];
+  return *state;
+}
 wstring utf8_decode(const string &txt)
 {
-    size_t i = 0;
     wstring result;
+	
+	uint32_t codepoint;
+ 	uint32_t state = 0;
 
-	uint8_t *s = (uint8_t*)txt.c_str();
-
-    while (i < txt.length()) {
-        auto nb = trailingBytesForUTF8[s[i]];
-        if(s[i] == 0)
-        	break;
-        uint32_t ch = 0;
-        switch (nb) {
-            /* these fall through deliberately */
-        case 3: ch |= s[i++]; ch <<= 6;
-        case 2: ch |= s[i++]; ch <<= 6;
-        case 1: ch |= s[i++]; ch <<= 6;
-        case 0: ch |= s[i++];
-        }
-        ch -= offsetsFromUTF8[nb];
-
-        result.push_back(ch);
+	for(auto s : txt) {
+		if(!decode(&state, &codepoint, s)) {
+			if(codepoint <= 0xffff)
+        		result.push_back(codepoint);
+		}
     }
     return result;
 }
