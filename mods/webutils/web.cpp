@@ -33,7 +33,7 @@ void Web::Job::start(CURLM *curlm) {
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 	curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
 	curl_easy_setopt(curl, CURLOPT_HTTP200ALIASES, aliases);
-
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, FALSE);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
