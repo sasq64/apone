@@ -75,6 +75,11 @@ public:
 		//pixels.resize(width * height);
 		pixels = make_shared<vector<T>>(width*height);
 	}
+	
+	basic_bitmap(int width, int height, const std::vector<T> &data) : w(width), h(height) {
+		pixels = make_shared<vector<T>>(width*height);
+		memcpy(&(*pixels)[0], &data[0], sizeof(T) * width * height);
+	}
 
 	basic_bitmap(int width, int height, const T& color) : w(width), h(height) {
 		//pixels.resize(width * height);

@@ -190,7 +190,7 @@ string htmldecode(const string &s, bool stripTags) {
 				*ptr++ = (0x80 | (c & 0x3F));
 			} else /*if (c < 0x10000) */ {
 				*ptr++ = (0xE0 | (c >> 12));
-				*ptr++ = (0x80 | (c >> 6));
+				*ptr++ = (0x80 | ((c >> 6) & 0x3f));
 				*ptr++ = (0x80 | (c & 0x3F));
 			}
 			continue;
