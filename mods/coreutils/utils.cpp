@@ -111,8 +111,8 @@ std::wstring jis2unicode(uint8_t *text) {
 		memset(jis_table, 0, 65536*2);
 		for(int i=0; i<0xff; i++)
 			jis_table[i] = i;
-		for(const auto &p : jis_map) {
-			jis_table[p.first] = p.second > 0xffff ? 0 : p.second;
+		for(int i=0; i<sizeof(jis_map)/4; i+= 2) {
+			jis_table[jis_map[i]] = jis_map[i+1];
 		}
 		jis_table[0x5c] = 0xa5;
 		jis_table[0x7e] = 0x203e;
@@ -130,7 +130,6 @@ std::wstring jis2unicode(uint8_t *text) {
 	}
 	return result;
 }
-
 
 static uint16_t decode(const string &symbol) {
 	static unordered_map<std::string, uint16_t> codes = {
