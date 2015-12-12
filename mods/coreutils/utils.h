@@ -126,6 +126,7 @@ void makedirs(const std::string &name);
 
 bool endsWith(const std::string &name, const std::string &ext);
 bool startsWith(const std::string &name, const std::string &pref);
+//bool contains(const std::string &haystack, const std::string &needle);
 void makeLower(std::string &s);
 std::string toLower(const std::string &s);
 
