@@ -81,7 +81,7 @@ public:
 		StreamFunc streamCb;
 		bool isDone = false;
 		bool stopped = false;
-		int64_t cLength;
+		int64_t cLength = 0;
 
 		friend Web;
 	};
