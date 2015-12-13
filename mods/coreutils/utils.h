@@ -68,12 +68,11 @@ std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
 			args.push_back(s.substr(pos));
 			break;
 		}
-		//LOGD("%d->%d = '''%s'''", pos, newpos, utils::utf8_encode(s.substr(pos, newpos-pos)));
-		args.push_back(s.substr(pos, newpos-pos));
+		if(crlf && newpos > 0 && s[newpos-1] == 0x0d)
+			args.push_back(s.substr(pos, newpos-pos-1));
+		else
+			args.push_back(s.substr(pos, newpos-pos));
 		pos = newpos + l;
-		//while(s.substr(pos, l) == delim)
-		//	pos += l;
-		if(crlf && pos < s.length() && s[pos] == 13) pos++;
 	}
 
 	return args;

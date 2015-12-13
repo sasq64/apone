@@ -82,6 +82,7 @@ public:
 		bool isDone = false;
 		bool stopped = false;
 		int64_t cLength = 0;
+		std::thread::id tid;
 
 		friend Web;
 	};
@@ -171,6 +172,8 @@ public:
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
 			auto *curl = it->get()->curl;
+			if(it->get()->tid != std::this_thread::get_id())
+				LOGE("POLLING FROM WRONG THREAD!");
 			if(curl && it->get()->stopped) {
 				curl_multi_remove_handle(curlm, curl);
 				it->get()->destroy();

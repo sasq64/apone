@@ -15,6 +15,8 @@ void Web::Job::start(CURLM *curlm) {
 
 	curl = curl_easy_init();
 
+	tid = std::this_thread::get_id();
+
 	if(targetFile) {
 		orgFile = targetFile;
 		targetFile = targetFile + ".download";
@@ -28,7 +30,7 @@ void Web::Job::start(CURLM *curlm) {
 	slist = curl_slist_append(slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, audio/x-mpeg3, audio/mpg, audio/x-mpg, audio/x-mpegaudio, application/octet-stream, audio/mpegurl, audio/mpeg-url, audio/x-mpegurl, audio/x-scpls, audio/scpls, application/pls, application/x-scpls, */*");
 	struct curl_slist *aliases = NULL;
 	aliases = curl_slist_append(aliases, "ICY 200 OK");
-	LOGD("Curl Getting %s", url);
+	LOGD("Curl Getting %s", u);
 	curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 	curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
