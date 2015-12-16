@@ -102,12 +102,19 @@ bool File::isChildOf(const File &f) const {
 	return (myPath.find(parentPath) == 0);
 }
 
-void File::seek(int where) {
+void File::seek(int64_t where) {
 	open(READ);
 	if(!readFP)
 		throw file_not_found_exception(fileName);
 	fseek(readFP, where, SEEK_SET);
 }
+int64_t File::tell() {
+	open(READ);
+	if(!readFP)
+		throw file_not_found_exception(fileName);
+	return ftell(readFP);
+}
+
 
 
 vector<string> File::getLines() {

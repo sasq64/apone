@@ -132,6 +132,7 @@ public:
 
 	void close();
 
+	// read elements
 	template <typename T> int read(T * const target, const int count) {
 		open(READ);
 		int rc = fread(target, sizeof(T), (size_t)count, readFP);
@@ -139,13 +140,28 @@ public:
 			throw io_exception { "Read failed" };
 		return rc;
 	}
-
+	
+	// Read (little endian) data type directly
 	template <typename T> T read() {
 		open(READ);
 		T temp;
 		if(fread(&temp, sizeof(T), 1, readFP) >= 0)
 			return temp;
 		throw io_exception { "Read failed" };
+	}
+
+	std::string readString(int maxlen = -1) {
+		open(READ);
+		std::vector<char> data;
+		int c = 0;
+		while(data.size() != maxlen) {
+	   		c = fgetc(readFP);
+			if(c == 0 || c == EOF)
+				break;
+			data.push_back(c);
+		}
+
+		return std::string(data.begin(), data.end());
 	}
 
 	std::string read();
@@ -179,7 +195,14 @@ public:
 
 	bool isChildOf(const File &f) const;
 
-	void seek(int where);
+	int64_t tell();
+
+	void seek(int64_t where);
+
+	bool eof() {
+		open(READ);
+		return feof(readFP) != 0;
+	}
 
 	std::string suffix() const;
 
