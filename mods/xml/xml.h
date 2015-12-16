@@ -65,10 +65,11 @@ private:
 
 class xml_exception : public std::exception {
 public:
-	xml_exception(const char *ptr = "XML Exception") : msg(ptr) {}
-	virtual const char *what() const throw() { return msg; }
+	xml_exception(const std::string &m = "XML Exception") : msg(m) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
 private:
-	const char *msg;
+	std::string msg;
+
 };
 
 
@@ -157,7 +158,14 @@ public:
 private:
 	xmldoc(const std::string &text) : xmlnode(nullptr) {
 		doc = std::make_shared<tinyxml2::XMLDocument>();
-    	doc->Parse(text.c_str());
+    	if(doc->Parse(text.c_str()) != tinyxml2::XML_NO_ERROR) {
+			const char *s0 = doc->GetErrorStr1();
+			const char *s1 = doc->GetErrorStr2();
+			std::string text;
+			if(s0) text += std::string(s0);
+			if(s1) text += std::string(s1);
+			throw xml_exception(text);
+		}
     	node = doc.get();
 	}
 
