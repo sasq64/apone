@@ -3,6 +3,8 @@
 
 #include "../GL_Header.h"
 #include "../rectangle.h"
+#include "renderable.h"
+
 #include <algorithm>
 
 namespace grappix {
@@ -45,8 +47,11 @@ private:
 	Rectangle itemSize;
 };
 
-template <typename LAYOUT> class BaseList {
+
+template <typename LAYOUT> class BaseList : public Renderable {
 public:
+
+	using RenderItemFn = std::function<void(Rectangle &, int, uint32_t, bool)>;
 
 	struct Renderer {
 		virtual void renderItem(Rectangle &rec, int y, uint32_t index, bool hilight) = 0;
@@ -54,13 +59,13 @@ public:
 
 	BaseList() {}
 
-	BaseList(std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc, const Rectangle &area, int visibleItems) : renderFunc(renderFunc), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
-	}
-
 	BaseList(Renderer *renderer, const Rectangle &area, int visibleItems) : renderer(renderer), area(area), visibleItems(visibleItems), layout(area, visibleItems) {
 	}
 
-	void render(std::shared_ptr<RenderTarget> target) {
+	BaseList(const Rectangle &area, int visibleItems, RenderItemFn fn) : renderer(nullptr), area(area), visibleItems(visibleItems), layout(area, visibleItems), renderFunc(fn) {
+	}
+
+	void render(std::shared_ptr<RenderTarget> target, uint32_t delta) override {
 		//LOGD("POSITION %f", position);
 		auto n = visibleItems+1;
 		float dummy;
@@ -168,7 +173,7 @@ public:
 private:
 
 	Renderer *renderer;
-	std::function<void(Rectangle &rec, int y, uint32_t index, bool hilight)> renderFunc;
+	RenderItemFn renderFunc;
 	Rectangle area;
 	int32_t visibleItems;
 	LAYOUT layout;

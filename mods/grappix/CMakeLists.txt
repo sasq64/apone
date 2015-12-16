@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.grappix)
 
-file(GLOB MAIN_FILES grappix/*.cpp)
+file(GLOB MAIN_FILES grappix/*.cpp grappix/gui/*.cpp)
 file(GLOB FREETYPE_FILES grappix/freetype-gl/*.c)
 set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES})
 
