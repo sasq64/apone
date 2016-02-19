@@ -4,7 +4,8 @@ project(cpp-mods.coreutils)
 
 set(SOURCE_FILES file.cpp format.cpp log.cpp utils.cpp)
 
-
+FILE(GLOB_RECURSE IncFiles "*.h")
+add_custom_target(utilsincfiles SOURCES ${IncFiles})
 
 if(APPLE)
 	add_definitions(-DAPPLE)

@@ -285,6 +285,8 @@ template<class T, class... Args>
     typename _Unique_if<T>::_Known_bound
     make_unique(Args&&...) = delete;
 
+#ifndef CUSTOM_INDEX_SEQUENCE
+#define CUSTOM_INDEX_SEQUENCE
 
 // index_sequence
 
@@ -295,6 +297,8 @@ struct make_index_sequence : make_index_sequence<N - 1, N - 1, Is...> {};
 
 template <std::size_t... Is>
 struct make_index_sequence<0u, Is...> : index_sequence<Is...> { using type = index_sequence<Is...>; };
+
+#endif
 
 };
 
