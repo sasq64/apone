@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <initializer_list>
 #include <utility>
+#include <string>
 #include <cmath>
 
 namespace utils {
@@ -25,7 +26,7 @@ template <class T> struct vbase<T, 1> {
 };
 
 template <class T> struct vbase<T, 2> {
-	vbase() {}
+	vbase() { memset(data, 0, 2*sizeof(T)); }
 	vbase(const T& x, const T& y) : data {x,y} {}
 	union {
 		T data[2];
@@ -39,7 +40,7 @@ template <class T> struct vbase<T, 2> {
 };
 
 template <class T> struct vbase<T, 3> {
-	vbase() {}
+	vbase() { memset(data, 0, 3*sizeof(T)); }
 	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
 	union {
 		T data[3];
@@ -48,7 +49,7 @@ template <class T> struct vbase<T, 3> {
 };
 
 template <class T> struct vbase<T, 4> {
-	vbase() {}
+	vbase() { memset(data, 0, 4*sizeof(T)); }
 	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
 	union {
 		T data[4];
@@ -63,13 +64,15 @@ template <typename C, typename R> using has_index = typename std::conditional<fa
 template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 
 
-	vec() {}
+	vec() : vbase<T,SIZE>() {}
 
 	vec(const T &x) : vbase<T,SIZE>(x) {}
 	vec(const T &x, const T &y) : vbase<T,SIZE>(x, y) {}
 	vec(const T &x, const T &y, const T &z) : vbase<T,SIZE>(x, y, z) {}
 
 	vec(const std::pair<T, T> &pair) : vbase<T,SIZE>(pair.first, pair.second) {}
+	
+	T* get() { return &vbase<T,SIZE>::data[0]; }
 
 	vec(const std::initializer_list<T> &il) {
 		T *ptr = &vbase<T,SIZE>::data[0];
@@ -100,13 +103,13 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 			r[i] = vbase<T,SIZE>::data[i] + t;
 		return r;
 	}
-
+/*
 	vec operator+=(const vec &v) {
 		vbase<T,SIZE>::x += v.x;
 		vbase<T,SIZE>::y += v.y;
 		return *this;
 	}
-
+*/
 	template <typename VEC> has_index<VEC, vec> operator*(const VEC &v) const {
 		vec r;
 		for(int i=0; i<SIZE; i++)
@@ -181,7 +184,24 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 			r += (vbase<T,SIZE>::data[i] * v[i]);
 		return r;
 	}
+	
+	std::string toString() {
+		char temp[256] = "[";
+		char *ptr = temp + 1;
+		
+		for(int i=0; i<SIZE; i++) {
+			printf(ptr, "%f ", vbase<T,SIZE>::data[i]);
+			ptr += (strlen(ptr));
+		}
+		ptr[-1] = ']';
+		return std::string(ptr);
+	}
+	
 };
+
+typedef vec<double, 2> vec2;
+typedef vec<double, 3> vec3;
+typedef vec<double, 4> vec4;
 
 typedef vec<float, 2> vec2f;
 typedef vec<float, 3> vec3f;

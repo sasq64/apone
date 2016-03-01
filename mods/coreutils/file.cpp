@@ -40,16 +40,18 @@ static mutex fm;
 File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
 File::File(const string &name, const Mode mode) : fileName(rstrip(name, '/')), size(-1), writeFP(nullptr), readFP(nullptr) {
-
-	//fileName = resolvePath(fileName);
-
 	if(mode != NONE)
 		open(mode);
-};
+}
 
-// join: strip 
-
-File::File(const string &parent, const string &name, const Mode mode) : File(rstrip(parent) + "/" + name, mode) {}
+File::File(const string &parent, const string &name, const Mode mode) : size(-1), writeFP(nullptr), readFP(nullptr) {
+	if(parent == "")
+		fileName = rstrip(name, '/');
+	else
+		fileName = rstrip(parent, '/') + "/" + rstrip(name, '/');
+	if(mode != NONE)
+		open(mode);
+}
 
 vector<File> File::listFiles() const {
 	DIR *dir;
