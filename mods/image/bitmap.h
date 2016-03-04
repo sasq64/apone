@@ -147,7 +147,7 @@ public:
 		return dest;
 	}
 
-	const T* data() const { return &(*pixels)[0]; }
+	T* data() { return &(*pixels)[0]; }
 
 	const T* flipped() const {
 
