@@ -279,8 +279,10 @@ void makedirs(const std::string &path) {
 		if(pos != string::npos) {
 			makedir(path.substr(0, pos));
 			start = pos+1;
-		} else
+        } else {
+            makedir(path);
 			break;
+        }
 	}
 }
 

@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <utility>
 #include <string>
+#include <string.h>
 #include <cmath>
 
 namespace utils {

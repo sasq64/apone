@@ -130,6 +130,7 @@ public:
 			curl_global_init(CURL_GLOBAL_ALL);
 			initDone = true;
 		}
+        utils::makedirs(cacheDir);
 		curlm = curl_multi_init();
 		webThread = std::thread{&Web::run, this};
 	}

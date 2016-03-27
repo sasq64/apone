@@ -88,7 +88,7 @@ void File::open(const Mode mode) {
 		}
 	} else if(mode == WRITE) {
 		if(!writeFP) {
-			makedirs(fileName);
+            //makedirs(fileName);
 			writeFP = fopen(fileName.c_str(), "wb");
 			if(!writeFP)
 				throw io_exception { "Could not open file for writing" };
