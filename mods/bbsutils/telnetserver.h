@@ -86,7 +86,7 @@ public:
 
 		void startThread(Callback callback);
 
-		void close();
+		void close() override;
 
 		void join() {
 			sessionThread.join();

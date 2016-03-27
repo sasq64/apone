@@ -53,9 +53,19 @@ void LineEditor::setCursor(int pos) {
 int LineEditor::update(int msec) {
 
 	auto c = console.getKey(msec);
+	if(putKey(c)) {
+		console.flush(true);
+	}
+	return c;
+}
 
+bool LineEditor::putKey(int c) {
 	if(filterFunction) {
-		c = filterFunction(c);
+		auto rc = filterFunction(c);
+		if(rc == 0)
+			return c;
+		else
+			c = rc;
 	}
 
 	switch(c) {
@@ -94,7 +104,7 @@ int LineEditor::update(int msec) {
 				line.insert(xpos++, 1, c);
 			}
 		} else
-			return c;
+			return false;
 		break;
 	}
 
@@ -112,9 +122,9 @@ int LineEditor::update(int msec) {
 		cursorX -= dx;
 	}
 
-	refresh();
+	//refresh();
 	//console.moveCursor(cursorX, startY);
-	return c;
+	return true;
 }
 
 void LineEditor::refresh() {
@@ -146,15 +156,16 @@ void LineEditor::refresh() {
 		for(auto &c : l)
 			c = pwChar;
 	}
-	console.put(startX, startY, l);
+	console.put(startX, startY, l, fg, bg);
 	if(xoffset > 0)
 		console.put(startX, startY, '$', Console::YELLOW);
 	if((int)line.length() - xoffset > width)
 		console.put(startX+width-1, startY, '$', Console::YELLOW);
 
 
-	console.flush(false);
+	//console.flush(false);
 	console.moveCursor(cursorX, startY);
+	console.showCursor(true);
 }
 
 // ABC

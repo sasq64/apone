@@ -394,6 +394,10 @@ void AnsiConsole::impl_gotoxy(int x, int y) {
 	curY = y;
 }
 
+void AnsiConsole::impl_showcursor(bool show) {
+	const auto s = utils::format("\x1b[?25%c", show ? 'h' : 'l');
+	outBuffer.insert(outBuffer.end(), s.begin(), s.end());
+}
 
 class Matcher {
 public:
@@ -410,7 +414,7 @@ public:
 	}
 
 	void addPattern(const vector<int> &pattern) {
-	};
+	}
 
 	//int findPattern() {
 	//}

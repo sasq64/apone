@@ -67,6 +67,8 @@ static const char trailingBytesForUTF8[256] = {
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
+#if 0
+
 /* returns length of next utf-8 sequence */
 int u8_seqlen(char *s)
 {
@@ -108,6 +110,7 @@ int u8_to_ucs(const char *src, uint32_t *dest, int sz)
 	dest[i] = 0;
 	return i;
 }
+#endif
 
 int Console::get_utf8(){
 
@@ -127,7 +130,6 @@ int Console::get_utf8(){
 	LOGD("Got %04x", ch);
 	return ch;
 }
-
 
 void Console::put(int x, int y, Char c, int fg, int bg) {
 	if(x < 0) x = width+x;
@@ -153,12 +155,18 @@ void Console::put(int x, int y, Char c, int fg, int bg) {
 
 }
 
+void Console::put(const std::string &text, int fg, int bg) {
+	put(curX, curY, text, fg, bg);
+}
+
 void Console::put(int x, int y, const string &text, int fg, int bg) {
-	vector<uint32_t> output(128);
+	vector<uint32_t> output(512);
 	if(raw_mode) {
 		output.insert(output.end(), text.begin(), text.end());
 	} else {
-		int l = u8_to_ucs(text.c_str(), &output[0], 128);
+
+		int l = utf8_decode(text, &output[0]);
+		//int l = u8_to_ucs(text.c_str(), &output[0], 128);
 		output.resize(l);
 	}
 	put(x, y, output, fg, bg);
@@ -184,6 +192,9 @@ void Console::put(int x, int y, const vector<uint32_t> &text, int fg, int bg) {
 			continue;
 		if(x+i >= clipX1)
 			return;
+			
+		if(text[i] > 0x100)
+			LOGI("Ouputting %x", text[i]);
 
 		auto &t = grid[(x+i) + y * width];
 		t.c = text[i];
@@ -327,14 +338,15 @@ void Console::write(const std::wstring &text) {
 
 void Console::write(const std::string &text) {
 	vector<uint32_t> output(128);
-	int l = u8_to_ucs(text.c_str(), &output[0], 128);
+	int l = utf8_decode(text, &output[0]);
+//	int l = u8_to_ucs(text.c_str(), &output[0], 128);
 	output.resize(l);
 	write(output);
 }
 
 void Console::write(const vector<uint32_t> &text) {
 
-	LOGD("Write on Y %d", curY);
+	//LOGD("Write on Y %d", curY);
 
 	auto x = curX;
 	auto y = curY;

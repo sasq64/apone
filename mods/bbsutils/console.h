@@ -114,6 +114,8 @@ public:
 	}
 
 	~Console() {
+		showCursor(true);
+		flush(false);
 		terminal.close();
 	}
 
@@ -123,6 +125,7 @@ public:
 	virtual void put(int x, int y, const std::wstring &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, const std::vector<uint32_t> &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void put(int x, int y, Char c, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
+	virtual void put(const std::string &text, int fg = CURRENT_COLOR, int bg = CURRENT_COLOR);
 	virtual void write(const std::string &text);
 	virtual void write(const std::wstring &text);
 	virtual void write(const std::vector<uint32_t> &text);
@@ -187,6 +190,11 @@ public:
 	utils::vec<int, 2> getCursor() const { return utils::vec<int, 2>(curX, curY); }
 	void moveCursor(const utils::vec<int, 2> &pos) { moveCursor(pos.x, pos.y); }
 	void crlf() { moveCursor(0, curY++); }
+	
+	virtual void showCursor(bool show) {
+		impl_showcursor(show);
+	}
+	
 
 	void clipArea(int x = 0, int y = 0, int w = -1, int h = -1) {
 		if(w <= 0)  w = width-w;
@@ -219,10 +227,12 @@ protected:
 
 	virtual void impl_color(int fg, int bg) = 0;
 	virtual void impl_gotoxy(int x, int y) = 0;
-	virtual bool impl_scroll_screen(int dy) { return false; };
-	virtual bool impl_scroll_line(int dx) { return false; };
+	virtual bool impl_scroll_screen(int dy) { return false; }
+	virtual bool impl_scroll_line(int dx) { return false; }
 	virtual int impl_handlekey() = 0;
 	virtual void impl_clear() = 0;
+	virtual void impl_showcursor(bool show) {}
+	
 	virtual void impl_translate(Char &c) {
 		if(c == '\t') c = ' ';
 	}

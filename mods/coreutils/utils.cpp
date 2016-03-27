@@ -395,6 +395,21 @@ decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
   *state = utf8d[256 + *state*16 + type];
   return *state;
 }
+
+int utf8_decode(const string &utf8, uint32_t *target) {
+	uint32_t codepoint;
+ 	uint32_t state = 0;
+ 	auto *ptr = target;
+
+	for(auto s : utf8) {
+		if(!decode(&state, &codepoint, s)) {
+			if(codepoint <= 0xffff)
+        		*ptr++ = codepoint;
+		}
+    }
+    return ptr - target;
+}
+
 wstring utf8_decode(const string &txt)
 {
     wstring result;

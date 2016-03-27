@@ -54,6 +54,7 @@ const char path_separator = '/';
 std::string utf8_encode(const std::string &s);
 std::string utf8_encode(const std::wstring &s);
 std::wstring utf8_decode(const std::string &s);
+int utf8_decode(const std::string &utf8, uint32_t *target);
 
 template <typename T>
 std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {

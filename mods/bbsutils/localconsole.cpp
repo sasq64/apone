@@ -19,6 +19,8 @@ void LocalTerminal::open() {
 
 	if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) < 0)
 		LOGD("IOCTL FAIL");
+		
+	setvbuf(stdout, NULL, _IONBF, 0);
 }
 
 int LocalTerminal::getWidth() const {
@@ -34,14 +36,17 @@ void LocalTerminal::close() {
 	tcsetattr(fileno(stdin), TCSANOW, &orig_term_attr);
 }
 
-int LocalTerminal::write(const std::vector<Char> &source, int len) { return fwrite(&source[0], 1, len, stdout); }
-int LocalTerminal::read(std::vector<Char> &target, int len) { 
+int LocalTerminal::write(const std::vector<Char> &source, int len) { 
+	return ::write(fileno(stdout), &source[0], len);
+}
+
+int LocalTerminal::read(std::vector<Char> &target, int len) {
 	return ::read(fileno(stdin), &target[0], len);
 }
 
 
 
-#if 1 //def LINUX
+#ifndef _WIN32
 LocalTerminal localTerminal;
 
 Console *Console::createLocalConsole() {

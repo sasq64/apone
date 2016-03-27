@@ -20,6 +20,7 @@ protected:
 	virtual void impl_gotoxy(int x, int y) override;
 	virtual int impl_handlekey() override;
 	virtual void impl_clear() override;
+	virtual void impl_showcursor(bool show) override;
 	//virtual void impl_translate(Char &c) override;
 
 };

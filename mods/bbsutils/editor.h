@@ -12,7 +12,8 @@ class LineEditor : public Editor {
 public:
 	LineEditor(Console &console, int width = 0, int pwChar = -1);
 	LineEditor(Console &console, std::function<int(int)> filter, int width = 0, int pwChar = -1);
-	int update(int msec);
+	int update(int msec); // Convinience function
+	bool putKey(int key);
 	bool isDone();
 	std::string getResult();
 	std::wstring getWResult();
