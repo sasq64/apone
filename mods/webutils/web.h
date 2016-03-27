@@ -15,6 +15,7 @@
 #include <mutex>
 #include <unordered_map>
 
+
 namespace webutils {
 
 class Web {
@@ -174,7 +175,7 @@ public:
 		while(it != jobs.end()) {
 			auto *curl = it->get()->curl;
 			if(it->get()->tid != std::this_thread::get_id())
-				LOGE("POLLING FROM WRONG THREAD!");
+				LOGW("POLLING FROM WRONG THREAD!");
 			if(curl && it->get()->stopped) {
 				curl_multi_remove_handle(curlm, curl);
 				it->get()->destroy();
