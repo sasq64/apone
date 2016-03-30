@@ -24,22 +24,27 @@ void Web::Job::start(CURLM *curlm) {
 
 	auto u = utils::urlencode(url, " #");
 
-	struct curl_slist *slist = NULL;
+    struct curl_slist *slist = NULL;
+
 	//slist = curl_slist_append(slist, "User-Agent: chipmachine");
-	slist = curl_slist_append(slist, "Icy-MetaData: 1");
-	slist = curl_slist_append(slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, audio/x-mpeg3, audio/mpg, audio/x-mpg, audio/x-mpegaudio, application/octet-stream, audio/mpegurl, audio/mpeg-url, audio/x-mpegurl, audio/x-scpls, audio/scpls, application/pls, application/x-scpls, */*");
-	struct curl_slist *aliases = NULL;
-	aliases = curl_slist_append(aliases, "ICY 200 OK");
+    slist = curl_slist_append(slist, "Icy-MetaData: 1");
+	slist = curl_slist_append(slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, audio/x-mpeg3, audio/mpg, audio/x-mpg, audio/x-mpegaudio, application/octet-stream, audio/mpegurl, audio/mpeg-url, audio/x-mpegurl, audio/x-scpls, audio/scpls, application/pls, application/x-scpls, */*");  
+    header_list = std::shared_ptr<struct curl_slist>(slist, &curl_slist_free_all);
+
+    slist = NULL;
+    slist = curl_slist_append(slist, "ICY 200 OK");
+    alias_list = std::shared_ptr<struct curl_slist>(slist, &curl_slist_free_all);
+
 	LOGD("Curl Getting %s", u);
 	curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list.get());
 	curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-	curl_easy_setopt(curl, CURLOPT_HTTP200ALIASES, aliases);
+    curl_easy_setopt(curl, CURLOPT_HTTP200ALIASES, alias_list.get());
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunc);
-	curl_easy_setopt(curl, CURLOPT_WRITEHEADER, this);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerFunc);
 	curl_multi_add_handle(curlm, curl);
 

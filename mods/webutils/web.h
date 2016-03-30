@@ -85,6 +85,9 @@ public:
 		int64_t cLength = 0;
 		std::thread::id tid;
 
+        std::shared_ptr<struct curl_slist> header_list;
+        std::shared_ptr<struct curl_slist> alias_list;
+
 		friend Web;
 	};
 

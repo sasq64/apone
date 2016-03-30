@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(cpp-mods.audioplayer)
 
 set(SOURCE_FILES audioplayer.cpp)
+add_custom_target(audioplayer.include_files SOURCES player_sdl.h player_win.h player_linux.h player_sl.h player_osx.h)
 
 if(EMSCRIPTEN)
 	add_definitions(-DSDL_AUDIO)

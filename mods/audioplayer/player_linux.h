@@ -33,6 +33,7 @@ public:
 			playerThread.join();
 		if(playback_handle)
 			snd_pcm_close(playback_handle);
+        snd_config_update_free_global();
 	}
 
 	void run() {
@@ -50,7 +51,9 @@ public:
 
 		std::vector<int16_t> buffer(8192);
 		while(!quit) {
-			if(!paused) {
+			if(paused)
+				utils::sleepms(10);
+			else {
 				callback(&buffer[0], buffer.size());
 				writeAudio(&buffer[0], buffer.size());
 			}
