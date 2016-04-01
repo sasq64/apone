@@ -12,7 +12,7 @@
 #endif
 
 using namespace std;
-
+	
 namespace grappix {
 void debug_callback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, void* userParam) {
 	LOGD("GLDEBUG:%s", message);
@@ -328,6 +328,7 @@ unordered_map<int, int> Window::translate = {
 	{ ESCAPE, GLFW_KEY_ESCAPE },
 	{ SPACE, GLFW_KEY_SPACE },
 	{ LEFT, GLFW_KEY_LEFT },
+	{ TAB, GLFW_KEY_TAB },
 	{ CTRL_LEFT, GLFW_KEY_LEFT_CONTROL },
 	{ CTRL_RIGHT, GLFW_KEY_RIGHT_CONTROL },
 	{ ALT_LEFT, GLFW_KEY_LEFT_ALT },

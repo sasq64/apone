@@ -5,7 +5,8 @@ file(GLOB MAIN_FILES grappix/*.cpp grappix/gui/*.cpp)
 file(GLOB FREETYPE_FILES grappix/freetype-gl/*.c)
 set(SOURCE_FILES ${MAIN_FILES} ${FREETYPE_FILES})
 
-
+file(GLOB SPECIFIC_FILES grappix/specific/*.cpp)
+add_custom_target(grappix.specific_files SOURCES ${SPECIFIC_FILES})
 
 if(NOT TARGET image)
   add_subdirectory(../image image)
