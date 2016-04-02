@@ -85,8 +85,8 @@ public:
 		int64_t cLength = 0;
 		std::thread::id tid;
 
-        std::shared_ptr<struct curl_slist> header_list;
-        std::shared_ptr<struct curl_slist> alias_list;
+        std::shared_ptr<curl_slist> header_list;
+        std::shared_ptr<curl_slist> alias_list;
 
 		friend Web;
 	};
@@ -127,6 +127,12 @@ public:
 		FX cb;
 	};
 
+	
+	// Web
+	
+	// Sets 'baseUrl' as base for all web accesses.
+	// makes sure cacheDir is created
+	// Starts the worker thread
 	Web(const std::string &cacheDir = "", const std::string &baseUrl = "")
 	    : cacheDir(cacheDir), baseUrl(baseUrl) {
 		std::lock_guard<std::mutex> lock(sm);
@@ -144,6 +150,7 @@ public:
 		webThread.join();
 	}
 
+	// This is run by the worker thread and polls curl for all outstanding actions
 	void run() {
 		while(!quit) {
 			int handleCount;
@@ -154,6 +161,7 @@ public:
 					rc = curl_multi_perform(curlm, &handleCount);
 				lastCount = handleCount;
 			}
+			// TODO: Sleep longer, or use semaphore when there are no ongoing transfers
 			utils::sleepms(5);
 		}
 	}

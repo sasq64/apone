@@ -24,16 +24,16 @@ void Web::Job::start(CURLM *curlm) {
 
 	auto u = utils::urlencode(url, " #");
 
-    struct curl_slist *slist = NULL;
+    curl_slist *slist = NULL;
 
 	//slist = curl_slist_append(slist, "User-Agent: chipmachine");
     slist = curl_slist_append(slist, "Icy-MetaData: 1");
 	slist = curl_slist_append(slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, audio/x-mpeg3, audio/mpg, audio/x-mpg, audio/x-mpegaudio, application/octet-stream, audio/mpegurl, audio/mpeg-url, audio/x-mpegurl, audio/x-scpls, audio/scpls, application/pls, application/x-scpls, */*");  
-    header_list = std::shared_ptr<struct curl_slist>(slist, &curl_slist_free_all);
+    header_list = std::shared_ptr<curl_slist>(slist, &curl_slist_free_all);
 
     slist = NULL;
     slist = curl_slist_append(slist, "ICY 200 OK");
-    alias_list = std::shared_ptr<struct curl_slist>(slist, &curl_slist_free_all);
+    alias_list = std::shared_ptr<curl_slist>(slist, &curl_slist_free_all);
 
 	LOGD("Curl Getting %s", u);
 	curl_easy_setopt(curl, CURLOPT_URL, u.c_str());
