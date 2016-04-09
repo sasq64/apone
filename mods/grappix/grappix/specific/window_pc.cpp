@@ -144,9 +144,13 @@ void Window::open(int w, int h, bool fs) {
 		modew = mode->width;
 		modeh = mode->height;
 	}
+	
+	int wmm, hmm;
 
+	glfwGetMonitorPhysicalSize(monitor, &wmm, &hmm);
+	
 
-	//LOGD("Desktop is %dx%d", mode->width, mode->height);
+	LOGD("Desktop is %dx%d @ %dx%dmm", mode->width, mode->height, wmm, hmm);
 	//mode->width = 1600;
 
 	//if((float)mode->width / (float)mode.Height > 2.2)
@@ -186,9 +190,13 @@ void Window::open(int w, int h, bool fs) {
 	int fw, fh;
 	glfwGetFramebufferSize(gwindow, &fw, &fh);
 	glViewport(0, 0, fw, fh);
-	LOGD("Window Size %dx%d -- Framebuffer Size  %dx%d", _width, _height, fw, fh);
+	ppi = (float)(fw / _width) * mode->width * 25.4 / (float)wmm; // 2880 / 331 = 
+	
+	LOGD("DPI %f Window Size %dx%d -- Framebuffer Size  %dx%d", ppi, _width, _height, fw, fh);
+	
 	_width = fw;
 	_height = fh;
+	
 
 	setup(_width, _height);
 

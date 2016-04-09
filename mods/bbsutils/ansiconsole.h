@@ -8,6 +8,7 @@ namespace bbs {
 class AnsiConsole : public Console {
 public:
 	AnsiConsole(Terminal &terminal);
+	~AnsiConsole();
 
 	void putChar(Char c) override;
 

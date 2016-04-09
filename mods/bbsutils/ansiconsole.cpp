@@ -324,8 +324,12 @@ AnsiConsole::AnsiConsole(Terminal &terminal) : Console(terminal) {
 
 	//impl_gotoxy(0,0);
 	//flush();
-};
+}
 
+AnsiConsole::~AnsiConsole() {
+	impl_showcursor(true);
+	terminal.write(outBuffer, outBuffer.size());
+}
 
 void AnsiConsole::putChar(Char c) {
 

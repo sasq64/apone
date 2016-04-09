@@ -42,7 +42,18 @@ public:
 	}
 
 	void pause(bool on) {
+		if(on)
+			AudioQueuePause(aQueue);
+		else
+     		AudioQueueStart(aQueue, NULL);
 	}
+	
+	void set_volume(int volume) {
+		float v = (float)volume / 100.f;
+		AudioQueueSetParameter(aQueue, kAudioQueueParam_Volume, v);
+	}
+		
+
 
 	static void fill_audio(void *ptr, AudioQueueRef aQueue, AudioQueueBuffer *buf) {
 		int count = buf->mAudioDataByteSize / 2;

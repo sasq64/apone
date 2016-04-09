@@ -139,6 +139,8 @@ public:
 	void update_callbacks();
 	void remove_repeating(int index);
 	void benchmark();
+	
+	int getPPI() const { return ppi; }
 
 	void lock() {
 		lockIt = true;
@@ -192,6 +194,8 @@ private:
 	std::deque<std::function<void()>> safeFuncs;
 
 	std::thread keyboardThread;
+	
+	int ppi = -1;
 };
 
 

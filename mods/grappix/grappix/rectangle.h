@@ -1,6 +1,8 @@
 #ifndef GRAPPIX_RECTANGLE_H
 #define GRAPPIX_RECTANGLE_H
 
+#include <tuple>
+
 namespace grappix {
 
 struct Rectangle {
@@ -21,6 +23,10 @@ struct Rectangle {
 
 	Rectangle operator/(const Rectangle &r) const {
 		return Rectangle(x, y, w / r.w, h / r.h);
+	}
+	
+	operator std::tuple<float, float, float, float>() const {
+		return std::tuple<float,float,float,float>(x, y, w, h);
 	}
 
 };

@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <initializer_list>
 #include <utility>
+#include <tuple>
 #include <string>
 #include <string.h>
 #include <cmath>
@@ -37,12 +38,19 @@ template <class T> struct vbase<T, 2> {
 	vbase operator*(const vbase &v) const {
 		return vbase(v.x + x, v.y + y);
 	}
-
+	
+	template <typename X, typename Y> operator std::tuple<X, Y>() const {
+		return std::tuple<X, Y>(x, y);
+	}
+	
 };
 
 template <class T> struct vbase<T, 3> {
 	vbase() { memset(data, 0, 3*sizeof(T)); }
 	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
+	template <typename X, typename Y, typename Z> operator std::tuple<X, Y, Z>() const {
+		return std::tuple<X, Y, Z>(x, y, z);
+	}
 	union {
 		T data[3];
 		struct { T x, y, z; };
@@ -52,6 +60,9 @@ template <class T> struct vbase<T, 3> {
 template <class T> struct vbase<T, 4> {
 	vbase() { memset(data, 0, 4*sizeof(T)); }
 	vbase(const T& x, const T& y, const T& z) : data {x,y,z} {}
+	template <typename X, typename Y, typename Z, typename W> operator std::tuple<X, Y, Z, W>() const {
+		return std::tuple<X, Y, Z, W>(x, y, z, w);
+	}
 	union {
 		T data[4];
 		struct { T x, y, z, w; };
@@ -86,7 +97,7 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 			if(v[i] != vbase<T,SIZE>::data[i]) return false;
 		return true;
 	}
-
+	
 	template <typename VEC> has_index<VEC, vec> copy(const VEC &v) {
 
 	}

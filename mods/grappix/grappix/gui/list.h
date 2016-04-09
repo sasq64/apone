@@ -169,7 +169,7 @@ public:
 	}
 
 	int size() { return totalItems; }
-
+	
 private:
 
 	Renderer *renderer;
