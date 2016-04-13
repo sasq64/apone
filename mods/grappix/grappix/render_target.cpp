@@ -240,13 +240,7 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	glDisableVertexAttribArray(posHandle);
 }
 
-//static float xrot = 0;
-
 void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, const Program &program, uint32_t color) const {
-//	static float uvs2[] = { 0,0,1,0,0,1,1,1 };
-
-	//uvs = nullptr;//uvs2;
-
 
 	if(recBuf == -1) {
 		static vector<float> p {

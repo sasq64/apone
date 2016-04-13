@@ -109,6 +109,8 @@ public:
 	GLint id() const { return program->id; }
 
 	static uint32_t frame_counter;
+	
+	operator bool() const { return program != nullptr; }
 
 	//std::unordered_map<uint32_t, GLint> programs;
 	//std::vector<std::string> flags;
