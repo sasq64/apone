@@ -12,10 +12,10 @@ namespace utils {
 
 class io_exception : public std::exception {
 public:
-	io_exception(const char *ptr = "IO Exception") : msg(ptr) {}
-	virtual const char *what() const throw() { return msg; }
+	io_exception(const std::string &m = "IO Exception") : msg(m) {}
+	virtual const char *what() const throw() { return msg.c_str(); }
 private:
-	const char *msg;
+	std::string msg;
 };
 
 class file_not_found_exception : public std::exception {
@@ -138,7 +138,7 @@ public:
 		open(READ);
 		int rc = fread(target, sizeof(T), (size_t)count, readFP);
 		if(rc <= 0 && ferror(readFP))
-			throw io_exception { "Read failed" };
+			throw io_exception { std::string("Read failed on ") + fileName };
 		return rc;
 	}
 	
@@ -148,8 +148,7 @@ public:
 		T temp;
 		if(fread(&temp, sizeof(T), 1, readFP) > 0)
 			return temp;
-		if(ferror(readFP))
-			throw io_exception { "Read failed" };
+		throw io_exception { std::string("Read failed on ") + fileName };
 	}
 
 	std::string readString(int maxlen = -1) {
