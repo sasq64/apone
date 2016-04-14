@@ -39,10 +39,15 @@ template <class T> struct vbase<T, 2> {
 		return vbase(v.x + x, v.y + y);
 	}
 	
-	template <typename X, typename Y> operator std::tuple<X, Y>() const {
-		return std::tuple<X, Y>(x, y);
+    template <typename R> using rr = std::remove_reference<R>;
+
+    operator std::tuple<T, T>() const {
+        return std::tuple<T, T>(x, y);
 	}
 	
+    std::tuple<T, T> to_tuple() const {
+        return std::tuple<T, T>(x, y);
+	}
 };
 
 template <class T> struct vbase<T, 3> {

@@ -130,13 +130,14 @@ public:
 
 	void writeln(const std::string &line);
 
-	void close();
+    void open(Mode mode);
+    void close();
 
 	// read elements
 	template <typename T> int read(T * const target, const int count) {
 		open(READ);
 		int rc = fread(target, sizeof(T), (size_t)count, readFP);
-		if(rc < 0)
+		if(rc <= 0 && ferror(readFP))
 			throw io_exception { "Read failed" };
 		return rc;
 	}
@@ -145,9 +146,10 @@ public:
 	template <typename T> T read() {
 		open(READ);
 		T temp;
-		if(fread(&temp, sizeof(T), 1, readFP) >= 0)
+		if(fread(&temp, sizeof(T), 1, readFP) > 0)
 			return temp;
-		throw io_exception { "Read failed" };
+		if(ferror(readFP))
+			throw io_exception { "Read failed" };
 	}
 
 	std::string readString(int maxlen = -1) {
@@ -209,8 +211,6 @@ public:
 	static File NO_FILE;
 
 private:
-
-	void open(Mode mode);
 
 	static File appDir;
 	static File userDir;
