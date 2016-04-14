@@ -46,6 +46,8 @@ public:
 		paused = on;
 	}
 
+	void set_volume(int level) {}
+
 	int get_delay() const { return 2; }
 
 
