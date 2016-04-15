@@ -46,7 +46,11 @@ public:
 		paused = on;
 	}
 
-	void set_volume(int level) {}
+	void set_volume(int level) {
+		lock.lock();
+		waveOutSetVolume(hWaveOut, (level * 0xffff) / 100);
+		lock.unlock();
+	}
 
 	int get_delay() const { return 2; }
 

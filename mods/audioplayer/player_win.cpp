@@ -42,12 +42,11 @@ InternalPlayer::~InternalPlayer() {
 	paused = false;
 	if(playThread.joinable())
 		playThread.join();
+	waveOutReset(hWaveOut);
 	waveOutClose(hWaveOut);
 }
 
 void InternalPlayer::writeAudio(int16_t *samples, int sampleCount) {
-
-		//printf("Writing block %d\n", blockPosition);
 
 		WAVEHDR &h = header[blockPosition];
 		h.dwBufferLength = sampleCount * 2;
