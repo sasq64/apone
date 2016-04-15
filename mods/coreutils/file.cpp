@@ -34,6 +34,7 @@ File File::userDir;
 File File::cacheDir;
 File File::configDir;
 File File::exeDir;
+File File::homeDir;
 
 static mutex fm;
 
@@ -206,20 +207,24 @@ File File::findFile(const string &path, const string &name) {
 	return NO_FILE;
 }
 
-
-static string getHome() {
-#ifdef _WIN32
-	char path[MAX_PATH];
-	string h = getenv("HOMEPATH");
-	if(h[0] == '\\') {
-		h = string("C:") + h;
-		replace_char(h, '\\', '/');
+const File& File::getHomeDir() {
+	if(!homeDir) {
+	#ifdef _WIN32
+		char path[MAX_PATH];
+		string h = getenv("HOMEPATH");
+		if(h[0] == '\\') {
+			h = string("C:") + h;
+			replace_char(h, '\\', '/');
+		}
+		homeDir = File(h);
+	#else
+		homeDir = File(getenv("HOME"));
+	#endif
 	}
-	return h;
-#else
-	return getenv("HOME");
-#endif
+	return homeDir;
 }
+
+static std::string getHome() { return File::getHomeDir().getName(); }
 
 #ifdef APP_NAME
 

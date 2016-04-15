@@ -86,28 +86,37 @@ std::vector<T> split(const T &s, const char *delim, int limit = 0) {
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const V &separator) {
 	V out;
+	bool first = true;
 	for(const auto &s : strings) {
-		out += (s + separator);
+		out += (first ? s : separator + s);
+		first = false;
 	}
 	return out;
 }
 
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const wchar_t *separator) {
-	V out;
-	for(const auto &s : strings) {
-		out += (s + separator);
-	}
-	return out;
+	return join(strings, V(separator));
 }
+
 
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const char *separator) {
-	V out;
-	for(const auto &s : strings) {
-		out += (s + separator);
-	}
-	return out;
+	return join(strings, V(separator));
+}
+
+template <typename T> std::string my_tos(const T &t) {
+	return std::to_string(t);
+}
+
+inline std::string my_tos(const std::string &t) {
+	return t;
+}
+
+template <class ... ARGS>
+std::string join(const std::string &sep, const ARGS& ... args) {
+	std::vector<std::string> v { my_tos(args)... };
+	return join(v, sep);
 }
 
 void replace_char(std::string &s, char c, char r);

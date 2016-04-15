@@ -58,7 +58,7 @@ public:
 	static const File& getCacheDir();
 	static const File& getConfigDir();
 	static const File& getAppDir();
-
+	static const File& getHomeDir();
 	static const File& getExeDir();
 
 	static void setAppDir(const std::string &a);
@@ -216,6 +216,7 @@ private:
 	static File cacheDir;
 	static File configDir;
 	static File exeDir;
+	static File homeDir;
 
 	std::string fileName;
 	mutable int64_t size;
