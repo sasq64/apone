@@ -54,6 +54,7 @@ public:
 	static std::string resolvePath(const std::string &fileName);
 	static File cwd();
 	static void remove(const std::string &fileName);
+    static void listRecursive(const File &root, std::vector<File> &result, bool includeDirs);
 
 	static const File& getCacheDir();
 	static const File& getConfigDir();
@@ -172,6 +173,8 @@ public:
 	std::vector<std::string> getLines();
 
 	std::vector<File> listFiles() const;
+    std::vector<File> listRecursive(bool includeDirs = false) const;
+
 
 	bool exists() const;
 

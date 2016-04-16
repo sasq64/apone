@@ -70,6 +70,32 @@ vector<File> File::listFiles() const {
 	return rc;
 }
 
+void File::listRecursive(const File &root, vector<File> &result, bool includeDirs) {
+    DIR *dir;
+    struct dirent *ent;
+    if( (dir = opendir(root.getName().c_str())) != nullptr) {
+        while ((ent = readdir (dir)) != nullptr) {
+            char *p = ent->d_name;
+            if(p[0] == '.' && (p[1] == 0 || (p[1] == '.' && p[2] == 0)))
+                continue;
+            File f{root / ent->d_name };
+            if(ent->d_type == DT_DIR) {
+                if(includeDirs)
+                    result.push_back(f);
+                listRecursive(f, result, includeDirs);
+            } else
+                result.push_back(f);
+        }
+    }
+    closedir(dir);
+}
+
+vector<File> File::listRecursive(bool includeDirs) const {
+    vector<File> rc;
+    listRecursive(*this, rc, includeDirs);
+    return rc;
+}
+
 vector<uint8_t> File::readAll() {
 	vector<uint8_t> data;
 	seek(0);
