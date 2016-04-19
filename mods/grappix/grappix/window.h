@@ -141,6 +141,8 @@ public:
 	void benchmark();
 	
 	int getPPI() const { return ppi; }
+	
+	void setTitle(const std::string &t) { title = t; }
 
 	void lock() {
 		lockIt = true;
@@ -196,6 +198,7 @@ private:
 	std::thread keyboardThread;
 	
 	int ppi = -1;
+	std::string title;
 };
 
 

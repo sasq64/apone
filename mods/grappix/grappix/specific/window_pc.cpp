@@ -37,6 +37,13 @@ Window::Scroll Window::NO_SCROLL = { -9999, -9999};
 std::deque<Window::click> Window::click_buffer;
 std::deque<Window::Scroll> Window::scroll_buffer;
 
+static int gotFocus = 0;
+
+void focus_fn(GLFWwindow *gwin, int focus) {
+	if(focus)
+		gotFocus = 32;	
+}
+
 static void scroll_fn(GLFWwindow *gwin, double x, double y) {
 	LOGD("SCROLL %f, %f", x, y);
 	Window::scroll_buffer.push_back(Window::Scroll(x,y));
@@ -44,6 +51,13 @@ static void scroll_fn(GLFWwindow *gwin, double x, double y) {
 
 
 static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
+	
+	// Workaround for phantom 'A' key after focus change on OSX
+	if(key == 65 && gotFocus > 0) {
+		gotFocus = 0;
+		return;
+	}
+	
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
 
 		int realkey = key;
@@ -172,7 +186,7 @@ void Window::open(int w, int h, bool fs) {
 	//_height *= 2;
 
 	//gwindow = glfwOpenWindow(_width, _height, mode.RedBits, mode.GreenBits, mode.BlueBits, 8, 8, 0, fs ? GLFW_FULLSCREEN : GLFW_WINDOW);
-	gwindow = glfwCreateWindow(_width, _height, "", fs ? monitor : nullptr, nullptr);
+	gwindow = glfwCreateWindow(_width, _height, title.c_str(), fs ? monitor : nullptr, nullptr);
 	glfwMakeContextCurrent(gwindow);
 	//LOGD("%p WH %d %d", gwindow, _width, _height);
 
@@ -203,6 +217,7 @@ void Window::open(int w, int h, bool fs) {
 	//glDebugMessageInsertARB(GL_DEBUG_SOURCE_APPLICATION_ARB, GL_DEBUG_TYPE_ERROR_ARB, 1,
      //        GL_DEBUG_SEVERITY_HIGH_ARB, 5, "YAY! ");
 
+	glfwSetWindowFocusCallback(gwindow, focus_fn);
 	glfwSetKeyCallback(gwindow, key_fn);
 	glfwSetMouseButtonCallback(gwindow, mouse_fn);
 	glfwSetScrollCallback(gwindow, scroll_fn);
@@ -251,6 +266,7 @@ void Window::render_loop(function<void(uint32_t)> f, int fps) {
 			uint32_t rate = ms - lastMs;
 			lastMs = ms;
 			renderLoopFunction(rate);
+			if(gotFocus > 0) gotFocus--;
 			//while(screen.locked()) {
 			//	utils::sleepms(5);
 			//}
