@@ -79,7 +79,11 @@ void File::listRecursive(const File &root, vector<File> &result, bool includeDir
             if(p[0] == '.' && (p[1] == 0 || (p[1] == '.' && p[2] == 0)))
                 continue;
             File f{root / ent->d_name };
+#ifdef _WIN32
+			if(f.isDir()) {
+#else
             if(ent->d_type == DT_DIR) {
+#endif
                 if(includeDirs)
                     result.push_back(f);
                 listRecursive(f, result, includeDirs);
