@@ -48,7 +48,8 @@ public:
 
 	void set_volume(int level) {
 		lock.lock();
-		waveOutSetVolume(hWaveOut, (level * 0xffff) / 100);
+		uint16_t v = (level * 0xffff) / 100;
+		waveOutSetVolume(hWaveOut, v | (v<<16));
 		lock.unlock();
 	}
 
