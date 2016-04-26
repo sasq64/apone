@@ -42,6 +42,7 @@ template <class T> T getArg0(struct lua_State *L, int index) {
 }
 
 // Push a value to the lua stack
+int pushArg(struct lua_State *L, const bool &b);
 int pushArg(struct lua_State *L, const int &r);
 int pushArg(struct lua_State *L, const unsigned int &r);
 int pushArg(struct lua_State *L, const double& a);
