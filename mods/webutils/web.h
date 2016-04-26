@@ -185,8 +185,8 @@ public:
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
 			auto *curl = it->get()->curl;
-			if(it->get()->tid != std::this_thread::get_id())
-				LOGW("POLLING FROM WRONG THREAD!");
+			//if(it->get()->tid != std::this_thread::get_id())
+			//	LOGW("POLLING FROM WRONG THREAD!");
 			if(curl && it->get()->stopped) {
 				curl_multi_remove_handle(curlm, curl);
 				it->get()->destroy();
@@ -252,6 +252,23 @@ public:
 		return retFile;
 	}
 
+	static std::string getBlocking(const std::string &url) {
+		std::atomic<bool> done(false);
+		std::string result;
+		auto job = get_url(url, [&](const std::string &res) {
+			LOGD("DONE");
+			result = res;
+			done = true;
+		});
+		LOGD("DONE: %s", done ? "yes" : "false");
+		while(!done) {
+			LOGD("POLL");
+			getInstance().poll();
+			utils::sleepms(500);
+		}
+		return result;
+	}
+
 	bool inCache(const std::string &url) const {
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		return utils::File::exists(target);
@@ -280,7 +297,7 @@ public:
 	}
 
 	template <typename FX> static std::shared_ptr<Job> get_url(const std::string &url, FX cb) {
-		std::lock_guard<std::mutex> lock(sm);
+		//std::lock_guard<std::mutex> lock(sm);
 		return getInstance().get(url, cb);
 	}
 

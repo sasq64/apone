@@ -61,6 +61,8 @@ template <> std::unordered_map<std::string, std::string> getArg(struct lua_State
 
 }
 
+template <> void getArg(struct lua_State *L, int index) {
+}
 
 int pushArg(struct lua_State *L, const int& a) {
 	lua_pushnumber(L, a);

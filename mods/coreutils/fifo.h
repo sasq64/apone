@@ -6,10 +6,10 @@
 #include <cstdint>
 
 #include <coreutils/thread.h>
-//#include <condition_variable>
-//#include <mutex>
 
 #include <coreutils/log.h>
+
+namespace utils {
 
 template <typename T> class Fifo {
 
@@ -29,8 +29,11 @@ public:
 	}
 
 	void clear() {
-		std::unique_lock<std::mutex> lock(m);
-		bufPtr = buffer;
+		{
+			std::unique_lock<std::mutex> lock(m);
+			bufPtr = buffer;
+		}
+		cv.notify_all();
 	}
 
 	void put(const T *source, int count) {
@@ -68,7 +71,6 @@ public:
 
 		return count;
 	}
-
 
 	int filled() {
 	   	return bufPtr - buffer; 
@@ -148,5 +150,10 @@ private:
 
 };
 
+} // namespace
+
+// NOTE: This is to be compatibly with current version of Chipmachine
+template <typename T> using Fifo = utils::Fifo<T>;
+template <typename T> using AudioFifo = utils::AudioFifo<T>;
 
 #endif

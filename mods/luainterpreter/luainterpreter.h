@@ -34,6 +34,7 @@ template <> float getArg(struct lua_State *L, int index);
 template <> std::string getArg(struct lua_State *L, int index);
 template <> std::vector<std::string> getArg(struct lua_State *L, int index);
 template <> std::unordered_map<std::string, std::string> getArg(struct lua_State *L, int index);
+template <> void getArg(struct lua_State *L, int index);
 
 // 0-based getArg() -- for use with index_sequence unpacking
 template <class T> T getArg0(struct lua_State *L, int index) {
@@ -186,8 +187,7 @@ public:
 		pushArg(L, args...);
 		luaCall(sizeof...(args), 1);
 
-		auto x = getArg<R>(L, -1);
-		return x;
+		return getArg<R>(L, -1);
 	}
 
 	template <class T> void setGlobal(const std::string &name, T arg) {
