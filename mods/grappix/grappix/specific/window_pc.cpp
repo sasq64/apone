@@ -57,21 +57,28 @@ static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods
 		gotFocus = 0;
 		return;
 	}
+    //LOGD("KEY %d mods %x", key, mods);
 	
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
 
-		int realkey = key;
 		for(auto t : Window::translate) {
 			if(t.second == key) {
-				realkey = t.first;
-				break;
+				putEvent<KeyEvent>(t.first);
+				return;	
 			}
 		}
 
-		putEvent<KeyEvent>(realkey);
 	}
-		//Window::key_buffer.push_back(key);
+	
+	if(mods & GLFW_MOD_CONTROL)
+		putEvent<KeyEvent>(key);
 }
+
+static void char_fn(GLFWwindow *gwin, unsigned int codepoint) {
+    //LOGD("CODEPOINT %d", codepoint);
+	putEvent<KeyEvent>(codepoint);
+}
+
 
 static void mouse_fn(GLFWwindow *gwin, int button, int action, int mods) {
 	if(action == GLFW_PRESS) {
@@ -219,6 +226,7 @@ void Window::open(int w, int h, bool fs) {
 
 	glfwSetWindowFocusCallback(gwindow, focus_fn);
 	glfwSetKeyCallback(gwindow, key_fn);
+	glfwSetCharCallback(gwindow, char_fn);
 	glfwSetMouseButtonCallback(gwindow, mouse_fn);
 	glfwSetScrollCallback(gwindow, scroll_fn);
 #ifndef EMSCRIPTEN
