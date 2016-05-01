@@ -27,6 +27,8 @@ bool initEGL(EGLConfig& eglConfig, EGLContext& eglContext, EGLDisplay& eglDispla
 
 namespace grappix {
 
+void Window::setTitle(const std::string &t) {}
+
 Window::Window() : RenderTarget(), winOpen(false), bmCounter(0), lockIt(false) {
 	NO_CLICK.x = NO_CLICK.y = NO_CLICK.button = -1;
 }

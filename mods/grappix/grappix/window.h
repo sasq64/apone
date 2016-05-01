@@ -142,7 +142,7 @@ public:
 	
 	int getPPI() const { return ppi; }
 	
-	void setTitle(const std::string &t) { title = t; }
+	void setTitle(const std::string &t); 
 
 	void lock() {
 		lockIt = true;

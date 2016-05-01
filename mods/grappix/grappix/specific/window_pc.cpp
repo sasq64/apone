@@ -114,6 +114,11 @@ static void glfw_error(int code, const char *text) {
 	LOGE("GLFW: %s (%d)", text, code);
 }
 
+void Window::setTitle(const std::string &t) {
+	title = t;
+	if(gwindow)
+		glfwSetWindowTitle(gwindow, t.c_str());
+}
 
 void Window::open(int w, int h, bool fs) {
 
