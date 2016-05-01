@@ -13,3 +13,12 @@ std::vector<uint8_t> MD5::get() {
 	MD5_Final(&result[0], &ctx);
 	return result;
 }
+
+uint64_t MD5::hash(const std::string &text) {
+	MD5_CTX ctx;
+	std::vector<uint8_t> result(16);
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, text.c_str(), text.length());	
+	MD5_Final(&result[0], &ctx);
+	return *((uint64_t*)&result[8]);
+}

@@ -7,12 +7,14 @@ extern "C" {
 
 #include <vector>
 #include <cstdint>
+#include <string>
 
 class MD5 {
 public:
 
 	MD5(int flags = 0);
 
+	static uint64_t hash(const std::string &text);
 	static std::vector<uint8_t> calculate(std::vector<uint8_t> &data);
 	void add(std::vector<uint8_t> &data, int offset = 0);
 

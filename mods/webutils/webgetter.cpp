@@ -101,7 +101,7 @@ void WebGetter::Job::urlGet(const std::string &url) {
 
 		ongoingCalls++;
 
-		auto u = urlencode(url, " #");
+		auto u = urlencode(url, " #()");
 
 		LOGD("Downloading %s", url);
 		CURL *curl;

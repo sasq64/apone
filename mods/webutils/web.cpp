@@ -22,7 +22,7 @@ void Web::Job::start(CURLM *curlm) {
 		targetFile = targetFile + ".download";
 	}
 
-	auto u = utils::urlencode(url, " #");
+	auto u = utils::urlencode(url, " #()");
 
     curl_slist *slist = NULL;
 
