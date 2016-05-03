@@ -184,6 +184,7 @@ private:
 	unsigned int h;
 };
 
+
 typedef basic_bitmap<uint32_t> bitmap;
 typedef basic_bitmap<uint8_t> bitmap8;
 

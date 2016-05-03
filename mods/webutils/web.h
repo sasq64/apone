@@ -185,8 +185,10 @@ public:
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
 			auto *curl = it->get()->curl;
-			//if(it->get()->tid != std::this_thread::get_id())
-			//	LOGW("POLLING FROM WRONG THREAD!");
+			if(it->get()->tid != std::this_thread::get_id()) {
+				it++;
+				continue;
+			}
 			if(curl && it->get()->stopped) {
 				curl_multi_remove_handle(curlm, curl);
 				it->get()->destroy();
@@ -303,7 +305,7 @@ public:
 
 	static void pollAll() {
 		Web &w = getInstance();
-		std::lock_guard<std::mutex> lock(sm);
+		//std::lock_guard<std::mutex> lock(sm);
 		w.poll();
 	}
 

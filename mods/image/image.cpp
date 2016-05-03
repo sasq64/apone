@@ -12,6 +12,10 @@
 
 #include "lodepng.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
 using namespace std;
 using namespace utils;
 
@@ -32,11 +36,16 @@ bitmap load_png(const std::string &file_name) {
 bitmap load_png(const std::string &file_name) {
 
 	unsigned char* image;
-	unsigned width, height, error;
-
+	int width, height, comp;
+	image = stbi_load(file_name.c_str(), &width, &height, &comp, 4);
+	if(image == nullptr)
+		throw image_exception(format("stb_image failed to load '%s'", file_name));
+		
+#if 0
+	unsigned width, height, error, comp;
 	if((error = lodepng_decode32_file(&image, &width, &height, file_name.c_str())))
 		throw image_exception(lodepng_error_text(error));
-
+#endif
 	bitmap bm(width, height, reinterpret_cast<uint32_t*>(image));
 
 	free(image);
