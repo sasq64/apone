@@ -294,7 +294,7 @@ public:
 	}
 
 	static Web &getInstance() {
-		static Web w;
+		static Web w(utils::File::getCacheDir() / "_webfiles");
 		return w;
 	}
 

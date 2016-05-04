@@ -3,6 +3,7 @@
 
 #include "bitmap.h"
 #include <stdexcept>
+#include <vector>
 
 namespace image {
 
@@ -14,7 +15,9 @@ private:
 	std::string msg;
 };
 
-bitmap load_png(const std::string &file_name);
+std::vector<bitmap> load_gifs(const std::string &filename);
+bitmap load_image(const std::string &file_name);
+//bitmap load_png(const std::string &file_name);
 void save_png(bitmap bitmap, const std::string &path);
 
 }

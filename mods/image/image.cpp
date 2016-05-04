@@ -15,12 +15,48 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
 using namespace std;
 using namespace utils;
 
-
 namespace image {
+
+
+std::vector<bitmap> load_gifs(const std::string &filename)
+{
+	std::vector<bitmap> bitmaps;
+	FILE *f;
+	stbi__context s;
+
+	if (!(f = stbi__fopen(filename.c_str(), "rb")))
+		throw image_exception(format("Could not load %s", filename));
+
+	stbi__start_file(&s, f);
+
+	if (stbi__gif_test(&s))
+	{
+		int c;
+		stbi__gif g;
+		memset(&g, 0, sizeof(g));
+
+		unsigned char *data;
+
+		while((data = stbi__gif_load_next(&s, &g, &c, 4)))
+		{
+			if (data == (unsigned char*)&s)
+			{
+				data = 0;
+				break;
+			}
+			
+			bitmaps.emplace_back(g.w, g.h, (uint32_t*)data);
+			//gr->delay = g.delay;
+		}
+
+		STBI_FREE(g.out);
+	}
+	fclose(f);
+	return bitmaps;
+}
 
 #ifdef EMSCRIPTEN
 
@@ -33,7 +69,7 @@ bitmap load_png(const std::string &file_name) {
 
 #else
 
-bitmap load_png(const std::string &file_name) {
+bitmap load_image(const std::string &file_name) {
 
 	unsigned char* image;
 	int width, height, comp;

@@ -63,7 +63,7 @@ template <> std::shared_ptr<std::string> load_data(utils::File &f) {
 };
 
 template <> std::shared_ptr<image::bitmap> load_data(utils::File &f) {
-	return std::make_shared<image::bitmap>(image::load_png(f.getName()));
+	return std::make_shared<image::bitmap>(image::load_image(f.getName()));
 }
 
 template <> void save_data(utils::File &f, const std::string &data) {

@@ -102,7 +102,7 @@ void save_data(File &f, const TileSet &data) {
 
 template <> shared_ptr<TileSet> load_data(File &f) {
 	auto ts = make_shared<TileSet>();
-	auto bm = image::load_png(f.getName());
+	auto bm = image::load_image(f.getName());
 	ts->texture = Texture(bm);
 	File mf { f.getName() + ".tiles" };
 	for(const auto &t : mf.getLines()) {
@@ -112,18 +112,6 @@ template <> shared_ptr<TileSet> load_data(File &f) {
 	mf.close();
 	return ts;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
