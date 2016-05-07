@@ -81,7 +81,7 @@ public:
 	int size() {
 	   	return bufSize; 
 	}
-	//T *ptr() { return bufPtr; }
+	T *ptr() { return bufPtr; }
 
 protected:
 
