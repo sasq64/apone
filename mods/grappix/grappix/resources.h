@@ -103,7 +103,7 @@ private:
 		std::function<std::shared_ptr<T>()> on_generate;
 	};
 
-	std::unordered_map<std::string, shared_ptr<Resource>> resources;
+	std::unordered_map<std::string, std::shared_ptr<Resource>> resources;
 	std::unordered_map<std::string, int> dirnames;
 #ifndef EMSCRIPTEN
 	int infd;

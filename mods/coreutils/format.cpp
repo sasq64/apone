@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 namespace utils {
 

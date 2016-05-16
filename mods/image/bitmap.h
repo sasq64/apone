@@ -8,8 +8,6 @@
 #include <cstdlib>
 #include <memory>
 
-using namespace std;
-
 namespace image {
 
 template <typename T = uint32_t> class basic_bitmap {
@@ -73,23 +71,23 @@ public:
 
 	basic_bitmap(int width, int height) : w(width), h(height) {
 		//pixels.resize(width * height);
-		pixels = make_shared<vector<T>>(width*height);
+		pixels = std::make_shared<std::vector<T>>(width*height);
 	}
 	
 	basic_bitmap(int width, int height, const std::vector<T> &data) : w(width), h(height) {
-		pixels = make_shared<vector<T>>(width*height);
+		pixels = std::make_shared<std::vector<T>>(width*height);
 		memcpy(&(*pixels)[0], &data[0], sizeof(T) * width * height);
 	}
 
 	basic_bitmap(int width, int height, const T& color) : w(width), h(height) {
 		//pixels.resize(width * height);
-		pixels = make_shared<vector<T>>(width*height);
+		pixels = std::make_shared<std::vector<T>>(width*height);
 		std::fill(pixels->begin(), pixels->end(), color);
 	}
 
 	basic_bitmap(int width, int height, const T *px) : w(width), h(height) {
 		//pixels.resize(width * height);
-		pixels = make_shared<vector<T>>(width*height);
+		pixels = std::make_shared<std::vector<T>>(width*height);
 		memcpy(&(*pixels)[0], px, sizeof(T) * width * height);
 	}
 
@@ -152,7 +150,7 @@ public:
 	const T* flipped() const {
 
 		if(dirty) {
-			 flipPixels = std::make_shared<vector<T>>(w*h);
+			 flipPixels = std::make_shared<std::vector<T>>(w*h);
 			int l = sizeof(T) * w;
 			flipPixels->resize(w*h);
 			for(int y=0; y<h; y++)
@@ -164,7 +162,7 @@ public:
 
 	void flip() {
 		if(!flipPixels)
-			flipPixels = std::make_shared<vector<T>>(w*h);
+			flipPixels = std::make_shared<std::vector<T>>(w*h);
 		flipPixels->resize(w*h);
 		*flipPixels = *pixels;
 		int l = sizeof(T) * w;

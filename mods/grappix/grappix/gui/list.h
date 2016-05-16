@@ -4,7 +4,7 @@
 #include "../GL_Header.h"
 #include "../rectangle.h"
 #include "renderable.h"
-
+#include <math.h>
 #include <algorithm>
 
 namespace grappix {
@@ -69,7 +69,7 @@ public:
 		//LOGD("POSITION %f", position);
 		auto n = visibleItems+1;
 		float dummy;
-		float p = modf(position, &dummy);
+		float p = modff(position, &dummy);
 		int ip = (int)dummy;
 
 		glEnable(GL_SCISSOR_TEST);

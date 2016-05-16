@@ -4,7 +4,6 @@
 #include "format.h"
 #include <string>
 #include <cstring>
-#include <unordered_map>
 
 namespace logging {
 

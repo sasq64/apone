@@ -1,18 +1,18 @@
-#include <sys/stat.h>
 
 #include "utils.h"
 #include "log.h"
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <cstring>
+#include <unordered_map>
+#include <sys/time.h>
+#include <stdlib.h>
+
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include <unistd.h>
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <sys/time.h>
-#include <stdlib.h>
+
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -80,8 +80,6 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	}
 
 	// Find space from right
-	//LOGD("wrapping '%s' at %d,%d", text, width, subseqWidth);
-
 	while(true) {
 		if(end > text.length()) {
 			lines.push_back(text.substr(start));
@@ -89,11 +87,9 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 		}
 		auto pos = text.rfind(' ', end);
 		if(pos != string::npos && pos > start) {
-			//LOGD("Breaking at %d,%d", start, pos - start);
 			lines.push_back(text.substr(start, pos - start));
 			start = pos+1;
 		} else {
-			//LOGD("Found no space, at %d,%d", start,width);
 			lines.push_back(text.substr(start, width));
 			start += width;
 		}

@@ -4,8 +4,6 @@
 #include <coreutils/utils.h>
 #include <coreutils/file.h>
 
-using namespace std;
-
 class archive_exception : public std::exception {
 public:
     archive_exception(const char *ptr = "Archive Exception") : msg(ptr) {

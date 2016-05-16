@@ -35,7 +35,7 @@ void Window::setup(int w, int h) {
 	lastTime = -1;
 	winOpen = true;
 
-	startTime = chrono::high_resolution_clock::now();
+	startTime = std::chrono::high_resolution_clock::now();
 	frameBuffer = 0;
 }
 
@@ -46,8 +46,8 @@ int Window::call_repeatedly(std::function<void(void)> f, int msec) {
 
 void Window::update_callbacks() {
 
-	auto t = chrono::high_resolution_clock::now();
-	uint32_t us = chrono::duration_cast<chrono::microseconds>(t - startTime).count();
+	auto t = std::chrono::high_resolution_clock::now();
+	uint32_t us = std::chrono::duration_cast<std::chrono::microseconds>(t - startTime).count();
 	tween::Tween::updateTweens(us / 1000000.0f);
 	Resources::getInstance().update();
 
@@ -84,7 +84,7 @@ void Window::remove_repeating(int index) {
 }
 
 void Window::benchmark() {
-	benchStart = chrono::high_resolution_clock::now();
+	benchStart = std::chrono::high_resolution_clock::now();
 	bmCounter = 100;
 }
 

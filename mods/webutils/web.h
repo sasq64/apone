@@ -18,111 +18,113 @@
 
 namespace webutils {
 
+class WebJob;
+using StreamFunc = std::function<bool(WebJob&, uint8_t *, size_t)>;
+class Web;
+
+class WebJob {
+public:
+	bool done() const { return isDone; }
+	long code() const {
+		long rc = -1;
+		if(curl)
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &rc);
+		return rc;
+	}
+	
+	int64_t contentLength() { return cLength; }
+	
+	std::string getHeader(const std::string &name) {
+		return headers[name];
+	}
+
+	utils::File file() {
+		return targetFile;
+	}
+
+	void wait(int timeout = -1);
+
+	void stop() {
+		stopped = true;
+		if(targetFile.exists())
+			targetFile.remove();
+	}
+
+	void setTarget(const utils::File &file) { targetFile = file; }
+
+	void setUrl(const std::string &url) { this->url = url; }
+
+	void setStreamCallback(StreamFunc cb) { streamCb = cb; }
+
+	std::string textResult() const {
+		// TODO: At _least_ UTF8 support here
+		return std::string(data.begin(), data.end());
+	}
+
+protected:
+	void start(CURLM *curlm);
+	static size_t writeFunc(void *ptr, size_t size, size_t x, void *userdata);
+	static size_t headerFunc(char *text, size_t size, size_t n, void *userdata);
+	void finish();
+	void destroy();
+
+	virtual void call_handler() {}
+
+	CURL *curl = nullptr;
+	std::unordered_map<std::string, std::string> headers;
+	std::string url;
+	std::vector<uint8_t> data;
+	utils::File targetFile;
+	utils::File orgFile;
+	StreamFunc streamCb;
+	bool isDone = false;
+	bool stopped = false;
+	int64_t cLength = 0;
+	std::thread::id tid;
+
+	std::shared_ptr<curl_slist> header_list;
+	std::shared_ptr<curl_slist> alias_list;
+
+	friend Web;
+};
+
 class Web {
 public:
 
-	class Job;
 
-	using StreamFunc = std::function<bool(Job&, uint8_t *, size_t)>;
 
-	class Job {
-	public:
-		bool done() const { return isDone; }
-		long code() const {
-			long rc = -1;
-			if(curl)
-				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &rc);
-			return rc;
-		}
-		
-		int64_t contentLength() { return cLength; }
-		
-		std::string getHeader(const std::string &name) {
-			return headers[name];
-		}
+	template <typename... ARGS> struct WebJobImpl;
 
-		utils::File file() {
-			return targetFile;
-		}
+	template <typename FX, typename A0> struct WebJobImpl<void (FX::*)(A0) const>;
 
-		void wait(int timeout = -1);
-
-		void stop() {
-			stopped = true;
-			if(targetFile.exists())
-				targetFile.remove();
-		}
-
-		void setTarget(const utils::File &file) { targetFile = file; }
-
-		void setUrl(const std::string &url) { this->url = url; }
-
-		void setStreamCallback(StreamFunc cb) { streamCb = cb; }
-
-		std::string textResult() const {
-			// TODO: At _least_ UTF8 support here
-			return std::string(data.begin(), data.end());
-		}
-
-	protected:
-		void start(CURLM *curlm);
-		static size_t writeFunc(void *ptr, size_t size, size_t x, void *userdata);
-		static size_t headerFunc(char *text, size_t size, size_t n, void *userdata);
-		void finish();
-		void destroy();
-
-		virtual void call_handler() {}
-
-		CURL *curl = nullptr;
-		std::unordered_map<std::string, std::string> headers;
-		std::string url;
-		std::vector<uint8_t> data;
-		utils::File targetFile;
-		utils::File orgFile;
-		StreamFunc streamCb;
-		bool isDone = false;
-		bool stopped = false;
-		int64_t cLength = 0;
-		std::thread::id tid;
-
-        std::shared_ptr<curl_slist> header_list;
-        std::shared_ptr<curl_slist> alias_list;
-
-		friend Web;
-	};
-
-	template <typename... ARGS> struct JobImpl;
-
-	template <typename FX, typename A0> struct JobImpl<void (FX::*)(A0) const>;
-
-	template <typename FX> struct JobImpl<FX, void (FX::*)() const> : public Job {
-		JobImpl(FX fx) : cb(fx) {}
+	template <typename FX> struct WebJobImpl<FX, void (FX::*)() const> : public WebJob {
+		WebJobImpl(FX fx) : cb(fx) {}
 		void call_handler() override { cb(); }
 		FX cb;
 	};
 
-	template <typename FX> struct JobImpl<FX, void (FX::*)(Job) const> : public Job {
-		JobImpl(FX fx) : cb(fx) {}
+	template <typename FX> struct WebJobImpl<FX, void (FX::*)(WebJob) const> : public WebJob {
+		WebJobImpl(FX fx) : cb(fx) {}
 		void call_handler() override { cb(*this); }
 		FX cb;
 	};
 
 	template <typename FX>
-	struct JobImpl<FX, void (FX::*)(const std::string &contents) const> : public Job {
-		JobImpl(FX fx) : cb(fx) {}
+	struct WebJobImpl<FX, void (FX::*)(const std::string &contents) const> : public WebJob {
+		WebJobImpl(FX fx) : cb(fx) {}
 		void call_handler() override { cb(textResult()); }
 		FX cb;
 	};
 
 	template <typename FX>
-	struct JobImpl<FX, void (FX::*)(Job &, const std::string &contents) const> : public Job {
-		JobImpl(FX fx) : cb(fx) {}
+	struct WebJobImpl<FX, void (FX::*)(WebJob &, const std::string &contents) const> : public WebJob {
+		WebJobImpl(FX fx) : cb(fx) {}
 		void call_handler() override { cb(*this, textResult()); }
 		FX cb;
 	};
 
-	template <typename FX> struct JobImpl<FX, void (FX::*)(utils::File) const> : public Job {
-		JobImpl(FX fx) : cb(fx) {}
+	template <typename FX> struct WebJobImpl<FX, void (FX::*)(utils::File) const> : public WebJob {
+		WebJobImpl(FX fx) : cb(fx) {}
 		void call_handler() override { cb(targetFile); }
 		FX cb;
 	};
@@ -168,11 +170,11 @@ public:
 
 	static int inProgress() {
 		std::lock_guard<std::mutex> lock(sm);
-		return runningJobs;
+		return runningWebJobs;
 	}
 
-	template <typename FX> std::shared_ptr<Job> get(const std::string &url, FX cb) {
-		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
+	template <typename FX> std::shared_ptr<WebJob> get(const std::string &url, FX cb) {
+		auto job = std::make_shared<WebJobImpl<FX, decltype(&FX::operator())>>(cb);
 		job->setUrl(url);
 		job->start(curlm);
 		jobs.push_back(job);
@@ -200,7 +202,7 @@ public:
 		}
 
 		CURLMsg *msg;
-		std::vector<std::shared_ptr<Job>> toRemove;
+		std::vector<std::shared_ptr<WebJob>> toRemove;
 		do {
 			int count;
 			if((msg = curl_multi_info_read(curlm, &count))) {
@@ -223,8 +225,8 @@ public:
 		}
 	}
 
-	template <typename FX> std::shared_ptr<Job> getFile(const std::string &url, FX cb) {
-		auto job = std::make_shared<JobImpl<FX, decltype(&FX::operator())>>(cb);
+	template <typename FX> std::shared_ptr<WebJob> getFile(const std::string &url, FX cb) {
+		auto job = std::make_shared<WebJobImpl<FX, decltype(&FX::operator())>>(cb);
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
 		job->setTarget(target);
 		job->setUrl(url);
@@ -276,8 +278,8 @@ public:
 		return utils::File::exists(target);
 	}
 
-	std::shared_ptr<Job> streamData(const std::string &url, StreamFunc cb) {
-		auto job = std::make_shared<Job>();
+	std::shared_ptr<WebJob> streamData(const std::string &url, StreamFunc cb) {
+		auto job = std::make_shared<WebJob>();
 		job->setStreamCallback(cb);
 		job->setUrl(url);
 		job->start(curlm);
@@ -285,8 +287,8 @@ public:
 		return job;
 	}
 
-	std::shared_ptr<Job> createJob(const std::string &url) {
-		auto job = std::make_shared<Job>();
+	std::shared_ptr<WebJob> createWebJob(const std::string &url) {
+		auto job = std::make_shared<WebJob>();
 		job->setUrl(url);
 		job->start(curlm);
 		jobs.push_back(job);
@@ -298,7 +300,7 @@ public:
 		return w;
 	}
 
-	template <typename FX> static std::shared_ptr<Job> get_url(const std::string &url, FX cb) {
+	template <typename FX> static std::shared_ptr<WebJob> get_url(const std::string &url, FX cb) {
 		//std::lock_guard<std::mutex> lock(sm);
 		return getInstance().get(url, cb);
 	}
@@ -321,9 +323,11 @@ private:
 
 	CURLM *curlm = nullptr;
 
-	std::vector<std::shared_ptr<Web::Job>> jobs;
+	std::vector<std::shared_ptr<WebJob>> jobs;
 	int lastCount;
-	static std::atomic<int> runningJobs;
+	static std::atomic<int> runningWebJobs;
+
+	friend WebJob;
 };
 
 } // namespace webutils

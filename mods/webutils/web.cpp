@@ -4,14 +4,11 @@
 
 namespace webutils {
 
-//std::vector<std::shared_ptr<Web::Job::Job>> Web::Job::jobs;
-std::atomic<int> Web::runningJobs(0);
+std::atomic<int> Web::runningWebJobs(0);
 std::mutex Web::sm;
 bool Web::initDone = false;
 
-
-
-void Web::Job::start(CURLM *curlm) {
+void WebJob::start(CURLM *curlm) {
 
 	curl = curl_easy_init();
 
@@ -50,12 +47,12 @@ void Web::Job::start(CURLM *curlm) {
 
 	{
 		std::lock_guard<std::mutex> lock(Web::sm);
-		Web::runningJobs += 1;
+		Web::runningWebJobs += 1;
 	}
 }
 
-size_t Web::Job::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
-	Job* job = static_cast<Job*>(userdata);
+size_t WebJob::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
+	WebJob* job = static_cast<WebJob*>(userdata);
 	size *= x;
 
 	if(job->targetFile) {
@@ -70,8 +67,8 @@ size_t Web::Job::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
 	return size;
 }
 
-size_t Web::Job::headerFunc(char *text, size_t size, size_t n, void *userdata) {
-	Job* job = static_cast<Job*>(userdata);
+size_t WebJob::headerFunc(char *text, size_t size, size_t n, void *userdata) {
+	WebJob* job = static_cast<WebJob*>(userdata);
 	size *= n;
 	int sz = size-1;
 	while(sz > 0 && (text[sz-1] == '\n' || text[sz-1] == '\r'))
@@ -107,7 +104,7 @@ size_t Web::Job::headerFunc(char *text, size_t size, size_t n, void *userdata) {
 	return size;
 }
 
-void Web::Job::finish() {
+void WebJob::finish() {
 	isDone = true;
 	auto rc = code();
 	if(targetFile) {
@@ -131,11 +128,11 @@ void Web::Job::finish() {
 	destroy();
 }
 
-void Web::Job::destroy() {
+void WebJob::destroy() {
 	if(curl) {
 		curl_easy_cleanup(curl);
 		std::lock_guard<std::mutex> lock(Web::sm);
-		Web::runningJobs -= 1;
+		Web::runningWebJobs -= 1;
 	}
 	curl = nullptr;
 }
