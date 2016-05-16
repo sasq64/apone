@@ -246,8 +246,6 @@ template <typename T> struct _cf {
 template <typename T> _ct<T> count_to(const T &t) { return _ct<T>(t); }
 template <typename T> _cf<T> count_from(const T &f) { return _cf<T>(f); }
 
-};
-
 // Can hold smart_ptr or raw pointer
 template <typename T> struct Pointer {
 	Pointer(std::shared_ptr<T> p) : sptr(p), ptr(p.get()) {}
@@ -259,6 +257,21 @@ private:
 	T *ptr = nullptr;
 };
 
+// Wrap an object with a name to use where sorting is needed etc
+template <typename T> struct Named {
+	Named() {}
+	Named(const std::string &name, const T &obj) : name(name), obj(obj) {}
+	
+	operator T&() { return obj; }
+	bool operator==(const char *n) const { return strcmp(name.c_str(), n) == 0; }
+	bool operator==(const std::string &n) const { return name ==  n; }
+	bool operator<(const Named &other) const { return name < other.name; }
+private:
+	std::string name;
+	T obj;
+};
+
+};
 
 #if __cplusplus <= 201200L
 

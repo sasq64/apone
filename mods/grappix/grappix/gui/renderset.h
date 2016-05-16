@@ -25,7 +25,7 @@ public:
 	}
 
 private:
-	std::vector<Pointer<Renderable>> fields;
+	std::vector<utils::Pointer<Renderable>> fields;
 };
 
 #endif // RENDER_SET_H
