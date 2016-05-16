@@ -99,7 +99,7 @@ vector<string> text_wrap(const string &t, int width, int initialWidth) {
 	}
 	return lines;
 }
-std::wstring jis2unicode(uint8_t *text) {
+wstring jis2unicode(uint8_t *text) {
 
 	static uint16_t jis_table[65536];
 	static bool init = false;
@@ -115,7 +115,7 @@ std::wstring jis2unicode(uint8_t *text) {
 		init = true;
 	}
 	uint8_t *p = text;
-	std::wstring result;
+	wstring result;
 	while(*p) {
 		uint16_t c = *p++;
 		if((c >= 0x81 && c <= 0x9f) || (c >= 0xe0)) {
@@ -128,7 +128,7 @@ std::wstring jis2unicode(uint8_t *text) {
 }
 
 static uint16_t decode(const string &symbol) {
-	static unordered_map<std::string, uint16_t> codes = {
+	static unordered_map<string, uint16_t> codes = {
 		{ "amp", '&' },
 		{ "gt", '>' },
 		{ "lt", '<' }
@@ -259,7 +259,7 @@ float clamp(float x, float a0, float a1) {
 	return min(max(x, a0), a1);
 }
 
-void makedir(const std::string &name) {
+void makedir(const string &name) {
 
 #ifdef _WIN32
 	mkdir(name.c_str());
@@ -268,7 +268,7 @@ void makedir(const std::string &name) {
 #endif
 }
 
-void makedirs(const std::string &path) {
+void makedirs(const string &path) {
 	int start = 0;
 	while(true) {
 		auto pos = path.find_first_of("/\\", start);
@@ -457,7 +457,7 @@ string utf8_encode(const wstring &s) {
 	return out;
 }
 
-void replace_char(std::string &s, char c, char r) {
+void replace_char(string &s, char c, char r) {
 	replace_char(&s[0], c, r);
 }
 
@@ -473,7 +473,7 @@ static bool performCalled = false;
 static bool inPerform = false;
 static vector<function<void()>> callbacks;
 
-void schedule_callback(std::function<void()> f) {
+void schedule_callback(function<void()> f) {
 	if(!performCalled || inPerform)
 		f();
 	else
