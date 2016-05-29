@@ -9,8 +9,9 @@
 #include <sys/time.h>
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
+#include <ShellApi.h>
 #endif
 
 #ifdef EMSCRIPTEN
@@ -469,7 +470,7 @@ void replace_char(char *s, char c, char r) {
 	}
 }
 
-int shellExec(const std::string &cmd) {
+int shellExec(const std::string &cmd, const std::string &binDir) {
 #ifdef _WIN32
 		auto cmdLine = utils::format("/C %s", cmd);
 		SHELLEXECUTEINFO ShExecInfo = {0};
@@ -479,23 +480,16 @@ int shellExec(const std::string &cmd) {
 		ShExecInfo.lpVerb = NULL;
 		ShExecInfo.lpFile = "cmd.exe";
 		
-		int pos = cmd.find_last_of('/');
-		if(pos >= 0) {
-			auto cmdLine = utils::format("/C %s", cmd.substr(pos+1));
-			ShExecInfo.lpParameters = cmdLine.c_str();
-			ShExecInfo.lpDirectory = cmd.substr(0,pos).c_str();
-
-		} else {
-			auto cmdLine = utils::format("/C %s", cmd);
-			ShExecInfo.lpParameters = cmdLine.c_str();
-		}
+		ShExecInfo.lpParameters = cmdLine.c_str();
+		if(binDir != "")
+			ShExecInfo.lpDirectory = binDir.c_str();
 		ShExecInfo.nShow = SW_HIDE;
 		ShExecInfo.hInstApp = NULL;
 		ShellExecuteEx(&ShExecInfo);
 		WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 		return 0;
 #else
-		return system(cmd.c_str());
+		return system(binDir + "/" + cmd);
 #endif
 }
 

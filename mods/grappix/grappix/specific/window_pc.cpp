@@ -57,7 +57,7 @@ static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods
 		gotFocus = 0;
 		return;
 	}
-    //LOGD("KEY %d mods %x", key, mods);
+    LOGD("KEY %d mods %x", key, mods);
 	
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
 
@@ -74,7 +74,7 @@ static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods
 }
 
 static void char_fn(GLFWwindow *gwin, unsigned int codepoint) {
-    //LOGD("CODEPOINT %d", codepoint);
+    LOGD("CODEPOINT %d", codepoint);
 	if(glfwGetKey(gwin, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(gwin, GLFW_KEY_RIGHT_CONTROL))
 		return;
 	putEvent<KeyEvent>(codepoint);

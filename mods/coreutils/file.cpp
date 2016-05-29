@@ -447,9 +447,9 @@ const File& File::getAppDir() {
 	if(!appDir) {
 		if(APP_NAME_STR != "")
 #ifdef __APPLE
-			appDir = (exeDir() / ".." / "Resources").resolve();
+			appDir = (getExeDir() / ".." / "Resources").resolve();
 #elif (defined _WIN32)
-			appDir = exeDir();
+			appDir = getExeDir();
 #else
 			appDir = File("/usr/share/" APP_NAME_STR);
 #endif
