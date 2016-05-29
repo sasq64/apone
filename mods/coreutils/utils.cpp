@@ -489,7 +489,7 @@ int shellExec(const std::string &cmd, const std::string &binDir) {
 		WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 		return 0;
 #else
-		return system(binDir + "/" + cmd);
+		return system((binDir + "/" + cmd).c_str());
 #endif
 }
 
