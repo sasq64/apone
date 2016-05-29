@@ -27,7 +27,7 @@ namespace utils {
 
 using namespace std;
 
-File File::NO_FILE;
+const File File::NO_FILE;
 
 File File::appDir ("/usr/share/" APP_NAME_STR);
 File File::userDir;
@@ -206,11 +206,14 @@ bool File::exists(const string &fileName) {
 	return (stat(fileName.c_str(), &ss) == 0);
 }
 
-string File::makePath(vector<File> files) {
+string File::makePath(vector<File> files, bool resolve) {
 	string path = "";
 	string sep = "";
 	for(const File& f : files) {
-		path = path + sep + f.getName();
+		if(resolve)
+			path = path + sep + f.resolve().getName();
+		else
+			path = path + sep + f.getName();
 		sep = PATH_SEPARATOR_STR;
 	}
 	return path;
@@ -280,27 +283,16 @@ const File& File::getConfigDir() {
 #ifdef _WIN32
 		replace_char(home, '\\', '/');
 #endif
-	auto d = format("%s/.config/" APP_NAME_STR, home);
-	LOGD("CACHE: %s", d);
-	if(!exists(d))
-	utils::makedirs(d);
-	configDir = File(d);
+		auto d = format("%s/.config/" APP_NAME_STR, home);
+		LOGD("CACHE: %s", d);
+		if(!exists(d))
+			utils::makedirs(d);
+		configDir = File(d);
 	}
 	return configDir;
 }
 
-const std::string File::getUserDir() {
-	std::string home = getHome();
-#ifdef _WIN32
-	replace_char(home, '\\', '/');
-#endif
-	auto d = format("%s/" APP_NAME_STR, home);
-	if(!exists(d))
-	utils::makedirs(d);
-	return d + "/";
-}
-
-#endif
+#endif // APP_NAME
 
 uint64_t File::getModified() const {
 	struct stat ss;
@@ -378,21 +370,20 @@ std::string File::resolvePath(const std::string &fileName) {
 }
 
 
-File& File::resolve() {
+File File::resolve() const {
 	char temp[PATH_MAX];
 #ifdef _WIN32
 	if(_fullpath(temp, fileName.c_str(), PATH_MAX)) {
 		replace_char(temp, '\\', '/');
-		fileName = temp;
+		return File(temp);
 	}
 #else
 	if(::realpath(fileName.c_str(), temp)) {
-		fileName = temp;
+		return File(temp);
 	}
 #endif
 	else
-		fileName = "";
-	return *this;
+		return File("");
 }
 
 File File::cwd() {
@@ -455,7 +446,13 @@ const File& File::getAppDir() {
 	lock_guard<mutex> lock(fm);
 	if(!appDir) {
 		if(APP_NAME_STR != "")
+#ifdef __APPLE
+			appDir = (exeDir() / ".." / "Resources").resolve();
+#elif (defined _WIN32)
+			appDir = exeDir();
+#else
 			appDir = File("/usr/share/" APP_NAME_STR);
+#endif
 		else
 			throw io_exception("No appDir specified");
 	}

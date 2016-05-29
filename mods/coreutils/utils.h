@@ -158,6 +158,8 @@ bool isalpha(const std::string &s);
 
 float clamp(float x, float a0 = 0.0, float a1 = 1.0);
 
+int shellExec(const std::string &cmd);
+
 void schedule_callback(std::function<void()> f);
 void perform_callbacks();
 

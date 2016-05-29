@@ -469,6 +469,36 @@ void replace_char(char *s, char c, char r) {
 	}
 }
 
+int shellExec(const std::string &cmd) {
+#ifdef _WIN32
+		auto cmdLine = utils::format("/C %s", cmd);
+		SHELLEXECUTEINFO ShExecInfo = {0};
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.hwnd = NULL;
+		ShExecInfo.lpVerb = NULL;
+		ShExecInfo.lpFile = "cmd.exe";
+		
+		int pos = cmd.find_last_of('/');
+		if(pos >= 0) {
+			auto cmdLine = utils::format("/C %s", cmd.substr(pos+1));
+			ShExecInfo.lpParameters = cmdLine.c_str();
+			ShExecInfo.lpDirectory = cmd.substr(0,pos).c_str();
+
+		} else {
+			auto cmdLine = utils::format("/C %s", cmd);
+			ShExecInfo.lpParameters = cmdLine.c_str();
+		}
+		ShExecInfo.nShow = SW_HIDE;
+		ShExecInfo.hInstApp = NULL;
+		ShellExecuteEx(&ShExecInfo);
+		WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+		return 0;
+#else
+		return system(cmd.c_str());
+#endif
+}
+
 static bool performCalled = false;
 static bool inPerform = false;
 static vector<function<void()>> callbacks;

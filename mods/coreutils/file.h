@@ -56,18 +56,22 @@ public:
 	static void remove(const std::string &fileName);
     static void listRecursive(const File &root, std::vector<File> &result, bool includeDirs);
 
+	/** User specific writable cache dir, normall $HOME/.config/$APPNAME */
 	static const File& getCacheDir();
+	/** User specific config dir, normally $HOME/.config/$APPNAME */
 	static const File& getConfigDir();
+	/** The application data directory. Normally $EXEDIR/../Resources on OSX or /usr/share/$APPNAME on *nix */
 	static const File& getAppDir();
+	/** $HOME dir */
 	static const File& getHomeDir();
+	/** Directory of the running executable */
 	static const File& getExeDir();
 
 	static void setAppDir(const std::string &a);
-	static const std::string getUserDir();
 	static File findFile(const std::string &path, const std::string &name);
 	static uint64_t getModified(const std::string &fileName);
 
-	static std::string makePath(std::vector<File> files);
+	static std::string makePath(std::vector<File> files, bool resolve = false);
 
 /*
 	template <typename F0> static std::string makePath(const F0& f0) {
@@ -190,7 +194,7 @@ public:
 	uint64_t getModified() const;
 
 	bool isDir() const;
-	File& resolve();
+	File resolve() const;
 	void remove();
 	void rename(const std::string &newName);
 
@@ -210,7 +214,7 @@ public:
 
 	std::string suffix() const;
 
-	static File NO_FILE;
+	static const File NO_FILE;
 
 private:
 
