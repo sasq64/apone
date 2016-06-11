@@ -47,7 +47,7 @@ public:
 		else
      		AudioQueueStart(aQueue, NULL);
 	}
-	
+
 	void set_volume(int volume) {
 		float v = (float)volume / 100.f;
 		AudioQueueSetParameter(aQueue, kAudioQueueParam_Volume, v);
@@ -68,6 +68,7 @@ public:
 
 
 	~InternalPlayer() {
+		AudioQueueDispose(aQueue, true);
 	}
 
 	void writeAudio(int16_t *samples, int sampleCount) {
