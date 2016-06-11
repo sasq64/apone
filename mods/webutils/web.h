@@ -5,7 +5,7 @@
 #include <coreutils/log.h>
 #include <string>
 #include <cstdio>
-
+#include <algorithm>
 #define NOGDI
 #include <curl/curl.h>
 #include <unistd.h>
@@ -227,9 +227,12 @@ public:
 
 	void removeJob(std::shared_ptr<WebJob> job) {
 		std::lock_guard<std::mutex> lock(m);
-		jobs.erase(std::find(jobs.begin(), jobs.end(), job));
-		curl_multi_remove_handle(curlm, job->curl);
-		job->destroy();
+		auto it = std::find(jobs.begin(), jobs.end(), job);
+		if(it != jobs.end()) {
+			jobs.erase(it);
+			curl_multi_remove_handle(curlm, job->curl);
+			job->destroy();
+		}
 	}
 
 	template <typename FX> std::shared_ptr<WebJob> getFile(const std::string &url, FX cb) {
