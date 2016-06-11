@@ -47,6 +47,61 @@ std::string to_string(T value)
 }
 #endif
 
+#if __cplusplus <= 201200L
+
+namespace std {
+
+// make_unique by STL
+
+template<class T> struct _Unique_if {
+    typedef std::unique_ptr<T> _Single_object;
+};
+
+template<class T> struct _Unique_if<T[]> {
+    typedef std::unique_ptr<T[]> _Unknown_bound;
+};
+
+template<class T, size_t N> struct _Unique_if<T[N]> {
+    typedef void _Known_bound;
+};
+
+template<class T, class... Args>
+    typename _Unique_if<T>::_Single_object
+    make_unique(Args&&... args) {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
+template<class T>
+    typename _Unique_if<T>::_Unknown_bound
+    make_unique(size_t n) {
+        typedef typename std::remove_extent<T>::type U;
+        return std::unique_ptr<T>(new U[n]());
+    }
+
+template<class T, class... Args>
+    typename _Unique_if<T>::_Known_bound
+    make_unique(Args&&...) = delete;
+
+#ifndef CUSTOM_INDEX_SEQUENCE
+#define CUSTOM_INDEX_SEQUENCE
+
+// index_sequence
+
+template <std::size_t...> struct index_sequence {};
+
+template <std::size_t N, std::size_t... Is>
+struct make_index_sequence : make_index_sequence<N - 1, N - 1, Is...> {};
+
+template <std::size_t... Is>
+struct make_index_sequence<0u, Is...> : index_sequence<Is...> { using type = index_sequence<Is...>; };
+
+#endif
+
+}
+
+#endif
+
+
 namespace utils {
 
 const char path_separator = '/';
@@ -55,6 +110,20 @@ std::string utf8_encode(const std::string &s);
 std::string utf8_encode(const std::wstring &s);
 std::wstring utf8_decode(const std::string &s);
 int utf8_decode(const std::string &utf8, uint32_t *target);
+
+template <typename T, size_t... Is>
+auto gen_tuple_impl(const std::vector<T> &v, std::index_sequence<Is...>)
+-> decltype(std::make_tuple(v[Is]...))
+{
+    return std::make_tuple(v[Is]...);
+}
+
+template <size_t N, typename T>
+auto gen_tuple(const std::vector<T> &v)
+-> decltype(gen_tuple_impl(v, std::make_index_sequence<N>{} ))
+{
+    return gen_tuple_impl(v, std::make_index_sequence<N>{} );
+}
 
 template <typename T>
 std::vector<T> split(const T &s, const T &delim = T(" "), int limit = 0) {
@@ -82,6 +151,17 @@ template <typename T>
 std::vector<T> split(const T &s, const char *delim, int limit = 0) {
 	return split(s, std::string(delim), limit);
 }
+
+template <size_t N>
+auto tusplit(const std::string &text, const std::string &sep)
+-> decltype(gen_tuple<N>(std::vector<std::string>()))
+{
+	return gen_tuple<N>(split(text, sep));
+}
+
+
+//template <typename ... ARGS> std::tuple<ARGS ...> split(const std::string &text,
+
 
 template<template <typename, typename> class Container, class V, class A>
 V join(const Container<V, A> &strings, const V &separator) {
@@ -123,7 +203,7 @@ void replace_char(std::string &s, char c, char r);
 void replace_char(char *s, char c, char r);
 
 std::string urlencode(const std::string &s, const std::string &chars);
-std::string urldecode(const std::string &s, const std::string &chars);
+std::string urldecode(const std::string &s, const std::string &chars = "");
 
 std::string htmldecode(const std::string &source, bool stripTags = false);
 std::wstring jis2unicode(uint8_t *text);
@@ -274,60 +354,5 @@ private:
 };
 
 };
-
-#if __cplusplus <= 201200L
-
-namespace std {
-
-// make_unique by STL
-
-template<class T> struct _Unique_if {
-    typedef std::unique_ptr<T> _Single_object;
-};
-
-template<class T> struct _Unique_if<T[]> {
-    typedef std::unique_ptr<T[]> _Unknown_bound;
-};
-
-template<class T, size_t N> struct _Unique_if<T[N]> {
-    typedef void _Known_bound;
-};
-
-template<class T, class... Args>
-    typename _Unique_if<T>::_Single_object
-    make_unique(Args&&... args) {
-        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-    }
-
-template<class T>
-    typename _Unique_if<T>::_Unknown_bound
-    make_unique(size_t n) {
-        typedef typename std::remove_extent<T>::type U;
-        return std::unique_ptr<T>(new U[n]());
-    }
-
-template<class T, class... Args>
-    typename _Unique_if<T>::_Known_bound
-    make_unique(Args&&...) = delete;
-
-#ifndef CUSTOM_INDEX_SEQUENCE
-#define CUSTOM_INDEX_SEQUENCE
-
-// index_sequence
-
-template <std::size_t...> struct index_sequence {};
-
-template <std::size_t N, std::size_t... Is>
-struct make_index_sequence : make_index_sequence<N - 1, N - 1, Is...> {};
-
-template <std::size_t... Is>
-struct make_index_sequence<0u, Is...> : index_sequence<Is...> { using type = index_sequence<Is...>; };
-
-#endif
-
-};
-
-#endif
-
 
 #endif // UTILS_H
