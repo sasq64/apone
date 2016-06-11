@@ -5,12 +5,13 @@
 #include <exception>
 #include <functional>
 #include <memory>
+#include <cstring>
 
 namespace utils {
 
-class no_such_var_exception : public std::exception {
+class var_not_set_exception : public std::exception {
 public:
-	virtual const char *what() const throw() { return "No such variable"; }
+	virtual const char *what() const throw() { return "Variable is not set"; }
 };
 
 class illegal_conversion_exception : public std::exception {
@@ -22,7 +23,7 @@ class Holder {
 public:
 	virtual const std::type_info& getType() = 0;
 	virtual void *getValue() = 0;
-	virtual void *getValue(int index) = 0;
+	//virtual void *getValue(int index) = 0;
 };
 
 template <class T> class VHolder : public Holder {
@@ -37,9 +38,9 @@ public:
 		return (void*)&value;
 	}
 
-	virtual void *getValue(int index) {		
-		return (void*)&value[index];
-	}
+	//virtual void *getValue(int index) {		
+	//	return (void*)&value[index];
+	//}
 
 private:
 	T value;
@@ -58,9 +59,9 @@ public:
 		return (void*)&value;
 	}
 
-	virtual void *getValue(int index) {		
-		return (void*)&value[index];
-	}
+	//virtual void *getValue(int index) {		
+	//	return (void*)&value[index];
+	//}
 
 private:
 	std::string value;
@@ -73,6 +74,9 @@ public:
 	var() : holder(nullptr) {
 	}
 
+	var(var&& other) : holder { std::move(other.holder) } {
+	}
+
 	template <typename T> var& operator=(T t) {
 		holder = std::unique_ptr<Holder>(new VHolder<T>(t));
 		return *this;
@@ -80,7 +84,7 @@ public:
 
 	template <typename T> operator T&() {
 		if(!holder)
-			throw no_such_var_exception();
+			throw var_not_set_exception();
 		if(holder->getType() == typeid(T)) {
 			T &t = *((T*)holder->getValue());
 			return t;
@@ -88,29 +92,28 @@ public:
 		throw illegal_conversion_exception();
 	}
 
-	template <typename S> const S& operator [](const int &index) {
-		S &s = *((S*)holder->getValue(index));
-		return s;
-	}
+	bool defined() const { return holder != nullptr; }
+
+	//template <typename S> const S& operator [](const int &index) {
+	//	S &s = *((S*)holder->getValue(index));
+	//	return s;
+	//}
 
 	operator int() {
 		if(!holder)
-			throw no_such_var_exception();
+			throw var_not_set_exception();
 		if(holder->getType() == typeid(int)) {
 			return *((int*)holder->getValue());
 		} else if(holder->getType() == typeid(std::string)) {
 			const std::string &s = *((std::string*)holder->getValue());
-			char *endptr = nullptr;
-			int i = strtol(s.c_str(), &endptr, 0);
-			if(endptr == nullptr || *endptr == 0)
-				return i;
+			return stol(s);
 		}
 		throw illegal_conversion_exception();
 	}
 
 	operator std::string() {
 		if(!holder)
-			throw no_such_var_exception();
+			throw var_not_set_exception();
 		if(holder->getType() == typeid(std::string)) {
 			return *((std::string*)holder->getValue());
 		} else if(holder->getType() == typeid(int)) {
