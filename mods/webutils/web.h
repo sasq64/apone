@@ -225,6 +225,13 @@ public:
 		}
 	}
 
+	void removeJob(std::shared_ptr<WebJob> job) {
+		std::lock_guard<std::mutex> lock(m);
+		jobs.erase(std::find(jobs.begin(), jobs.end(), job));
+		curl_multi_remove_handle(curlm, job->curl);
+		job->destroy();
+	}
+
 	template <typename FX> std::shared_ptr<WebJob> getFile(const std::string &url, FX cb) {
 		auto job = std::make_shared<WebJobImpl<FX, decltype(&FX::operator())>>(cb);
 		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
