@@ -67,6 +67,12 @@ public:
 	/** Directory of the running executable */
 	static const File& getExeDir();
 
+	static File getTempFile() {
+		File f;
+		f.writeFP = tmpfile();
+		return f;
+	}
+
 	static void setAppDir(const std::string &a);
 	static File findFile(const std::string &path, const std::string &name);
 	static uint64_t getModified(const std::string &fileName);

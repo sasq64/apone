@@ -51,7 +51,7 @@ void Window::update_callbacks() {
 	tween::Tween::updateTweens(us / 1000000.0f);
 	Resources::getInstance().update();
 
-	webutils::Web::pollAll();
+	//webutils::Web::pollAll();
 
 	utils::perform_callbacks();
 
