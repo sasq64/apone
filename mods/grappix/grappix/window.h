@@ -107,7 +107,7 @@ public:
 
 	static click NO_CLICK;
 	static Scroll NO_SCROLL;
-
+ 
 	click get_click(bool peek = false);
 	Scroll get_scroll(bool peek = false);
 	bool mouse_pressed();
@@ -156,6 +156,8 @@ public:
 
 	void run_safely(std::function<void()> f);
 
+	bool haveKeyboard() { return keyboardCount > 0; }
+
 	std::function<void()> focus_func;
 	std::function<void()> focus_lost_func;
 
@@ -199,6 +201,7 @@ private:
 	
 	int ppi = -1;
 	std::string title;
+	int keyboardCount = 1;
 };
 
 
