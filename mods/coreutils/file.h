@@ -67,9 +67,11 @@ public:
 	/** Directory of the running executable */
 	static const File& getExeDir();
 
+	static const File& getTempDir();
+
 	static File getTempFile() {
-		File f;
-		f.writeFP = tmpfile();
+		File f = getTempDir() / "XXXXXXXXXX";
+		mkstemp(&f.fileName[0]);
 		return f;
 	}
 
@@ -230,6 +232,7 @@ private:
 	static File configDir;
 	static File exeDir;
 	static File homeDir;
+	static File tempDir;
 
 	std::string fileName;
 	mutable int64_t size;

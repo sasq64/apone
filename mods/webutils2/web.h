@@ -16,6 +16,7 @@
 
 namespace webutils {
 
+// One CURLM per thread
 extern __thread CURLM *curlm;
 
 struct BaseJob {
@@ -75,7 +76,6 @@ struct Job : public BaseJob {
 
 		curl_slist *slist = NULL;
 
-		// slist = curl_slist_append(slist, "User-Agent: chipmachine");
 		slist = curl_slist_append(slist, "Icy-MetaData: 1");
 		slist = curl_slist_append(
 		    slist, "Accept: audio/mpeg, audio/x-mpeg, audio/mp3, audio/x-mp3, audio/mpeg3, "
@@ -131,9 +131,11 @@ struct Job : public BaseJob {
 
 	/// Make sure the transfer is done, blocking if necessary
 	void finish() {
-		detachFromCurl();
-		curl_easy_perform(curl.get());
-		res = sink.result();
+		if(!done) {
+			detachFromCurl();
+			curl_easy_perform(curl.get());
+			onDone();
+		}
 	}
 
 	long code() const {
@@ -146,9 +148,18 @@ struct Job : public BaseJob {
 
 	virtual void onDone() override {
 		detachFromCurl();
-		res = sink.result();
-		if(done_cb) {
-			done_cb(res);
+		auto rc = code();
+		done = true;
+		if(rc != 200) {
+			if(error_cb)
+				error_cb(rc, "");
+			else if(done_cb)
+				done_cb(res);
+		} else {
+			res = sink.result();
+			if(done_cb) {
+				done_cb(res);
+			}
 		}
 	}
 
@@ -227,6 +238,8 @@ private:
 	Sink<RESULT> sink;
 	RESULT res;
 
+	// curl handle is removed from CURLM, result is available
+	bool done = false;
 
 	std::unordered_map<std::string, std::string> headers;
 	std::string url;
@@ -237,6 +250,7 @@ private:
 	std::shared_ptr<curl_slist> alias_list;
 	
 	std::function<void(RESULT&)> done_cb;
+	std::function<void(int code, std::string msg)> error_cb;
 
 	std::shared_ptr<CURL> curl;
 };
@@ -261,6 +275,8 @@ template <typename RESULT> struct WebResult {
 		job->onDone(cb);
 		return *this;
 	}
+
+	void finish() { job->finish(); }
 
 	operator bool() {
 		return job != nullptr;

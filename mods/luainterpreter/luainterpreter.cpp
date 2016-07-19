@@ -204,7 +204,7 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 
 	LuaInterpreter lua;
 
-	lua.registerFunction<int, string, int, float>("testFunc", [=](string s, int x, float f) -> int {
+	lua.registerFunction("testFunc", [=](std::string s, int x, float f) -> int {
 		LOGD("Got '%s' and %d", s, x);
 		return 1 + x + f;
 	});
@@ -213,16 +213,16 @@ TEST_CASE("utils::luainterpreter", "interpreter") {
 	//	LOGD("Got '%s' and %d", s, x);
 	//});
 
-	const string luaCode = R"(
+	const std::string luaCode = R"(
 	function test (a, b)
-		testVFunc('arne', 199)
+		testFunc('arne', 199)
 		x = testFunc('hello', 2, 3)
 		return x * 2 + a + b
 	end
 	)";
 
 	lua.load(luaCode);
-	auto res = lua.call<double>("test", 4, 2);
+	auto res = lua.call<float>("test", 4, 2);
 	REQUIRE(res == 18);
 
 }

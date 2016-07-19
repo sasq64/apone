@@ -530,14 +530,13 @@ TEST_CASE("utils::text", "Text operations") {
 
 	auto lines = text_wrap(text, 25);
 	REQUIRE(lines.size() == 6);
-	string fullText;
 	for(const auto &l : lines) {
 		REQUIRE(l.length() <= 25);
-		fullText = fullText + l +  "\n\r";
 	}
+	string fullText = join(lines, "\n");
 
 	auto lines2 = split(fullText, "\n");
-	REQUIRE(lines.size() == 6);
+	REQUIRE(lines2.size() == 6);
 	for(int i=0; i<6; i++) {
 		REQUIRE(lines[i] == lines2[i]);
 	}

@@ -34,6 +34,7 @@ File File::cacheDir;
 File File::configDir;
 File File::exeDir;
 File File::homeDir;
+File File::tempDir;
 
 static mutex fm;
 
@@ -310,7 +311,15 @@ uint64_t File::getModified(const std::string &fileName) {
 int64_t File::getSize() const {
 	if(size < 0) {
 		struct stat ss;
-		if(stat(fileName.c_str(), &ss) != 0)
+		int rc = -1;
+		LOGD("FN: '%s' %p", fileName, writeFP);
+		if(fileName != "") {
+			rc = stat(fileName.c_str(), &ss);
+		} else if(writeFP != nullptr) {
+			rc = fstat(fileno(writeFP), &ss);
+			LOGD("RC %d", rc);
+		}
+		if(rc != 0)
 			throw io_exception {"Could not stat file"};
 		size = (uint64_t)ss.st_size;
 	}
@@ -441,6 +450,13 @@ void File::setAppDir(const std::string &a) {
 	appDir = a;
 }
 
+const File& File::getTempDir() {
+	if(!tempDir) {
+		tempDir = File(getenv("TMPDIR"));
+	}
+	return tempDir;
+}
+
 const File& File::getAppDir() {
 	lock_guard<mutex> lock(fm);
 	if(!appDir) {
@@ -463,7 +479,7 @@ void File::writeln(const std::string &line) {
 }
 
 File File::changeSuffix(const std::string &ext) {
-	int dot = fileName.find_last_of('.');
+	auto dot = fileName.find_last_of('.');
 	if(dot != string::npos)
 		return File(fileName.substr(0, dot) + ext);
 	return File(fileName + ext);
@@ -471,7 +487,7 @@ File File::changeSuffix(const std::string &ext) {
 
 std::string File::suffix() const {
 
-	int dot = fileName.find_last_of('.');
+	auto dot = fileName.find_last_of('.');
 	if(dot != string::npos)
 		return fileName.substr(dot);
 	return "";

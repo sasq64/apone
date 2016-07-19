@@ -153,7 +153,7 @@ std::vector<T> split(const T &s, const char *delim, int limit = 0) {
 }
 
 template <size_t N>
-auto tusplit(const std::string &text, const std::string &sep)
+auto splitn(const std::string &text, const std::string &sep)
 -> decltype(gen_tuple<N>(std::vector<std::string>()))
 {
 	return gen_tuple<N>(split(text, sep));

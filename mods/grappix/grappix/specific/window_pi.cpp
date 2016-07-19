@@ -122,6 +122,7 @@ void Window::open(int w, int h, bool fs) {
 	setup(display_width, display_height);
 	memset(pressed_keys, 0, sizeof(pressed_keys));
 
+	keyboardCount = 0;
 
 	keyboardThread = thread([=]() {
 
@@ -138,6 +139,8 @@ void Window::open(int w, int h, bool fs) {
 					ioctl(fd, EVIOCGBIT(0, evbit.size()), &evbit[0]);
 					if(test_bit(evbit, EV_KEY)) {
 						ioctl(fd, EVIOCGBIT(EV_KEY, keybit.size()), &keybit[0]);
+						if(test_bit(keybit, KEY_F8))
+							keyboardCount++;
 						if(test_bit(keybit, KEY_LEFT) || test_bit(keybit, BTN_LEFT)) {
 							ioctl(fd, EVIOCGRAB, 1);
 							fdv.push_back(fd);
