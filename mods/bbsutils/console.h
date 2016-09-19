@@ -115,7 +115,7 @@ public:
 
 	~Console() {
 		showCursor(true);
-		flush(false);
+		//flush(false);
 		terminal.close();
 	}
 

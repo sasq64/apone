@@ -54,6 +54,7 @@ int LineEditor::update(int msec) {
 
 	auto c = console.getKey(msec);
 	if(putKey(c)) {
+		refresh();
 		console.flush(true);
 	}
 	return c;
