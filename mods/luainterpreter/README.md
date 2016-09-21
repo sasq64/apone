@@ -6,7 +6,7 @@ directly from C++, without messing with the lua stack yourself;
 	LuaInterpreter lua;
 
 	// Register a function callable from lua, with specific arguments
-	lua.registerFunction<int, string, int, float>("testFunc", [=](string s, int x, float f) -> int {
+	lua.registerFunction("testFunc", [=](string s, int x, float f) -> int {
 		LOGD("Got '%s' and %f", s, f);
 		return x+10;
 	});
