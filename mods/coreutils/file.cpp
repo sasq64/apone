@@ -2,8 +2,8 @@
 
 #include <sys/stat.h>
 
-#include "format.h"
-#include "log.h"
+//#include "log.h"
+#define LOGD(x, ...)
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <dirent.h>
 #include <stdlib.h>
-
+#include <sstream>
 #ifdef APPLE
 #include <mach-o/dyld.h>
 #endif
@@ -40,16 +40,25 @@ static mutex fm;
 
 File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
-File::File(const string &name, const Mode mode) : fileName(rstrip(name, '/')), size(-1), writeFP(nullptr), readFP(nullptr) {
+static std::string fstrip(const std::string &t) {
+	int i = t.length()-1;
+	while(t[i] == '/') i--;
+	if(i != t.length()-1)
+		return t.substr(0, i+1);
+	else
+		return t;
+}
+
+File::File(const string &name, const Mode mode) : fileName(fstrip(name)), size(-1), writeFP(nullptr), readFP(nullptr) {
 	if(mode != NONE)
 		open(mode);
 }
 
 File::File(const string &parent, const string &name, const Mode mode) : size(-1), writeFP(nullptr), readFP(nullptr) {
 	if(parent == "")
-		fileName = rstrip(name, '/');
+		fileName = fstrip(name);
 	else
-		fileName = rstrip(parent, '/') + "/" + rstrip(name, '/');
+		fileName = fstrip(parent) + "/" + fstrip(name);
 	if(mode != NONE)
 		open(mode);
 }
@@ -267,7 +276,7 @@ const File& File::getCacheDir() {
 #ifdef _WIN32
 		replace_char(home, '\\', '/');
 #endif
-	auto d = format("%s/.cache/" APP_NAME_STR, home);
+	auto d = home + "/.cache/" APP_NAME_STR;
 		LOGD("CACHE: %s", d);
 		if(!exists(d))
 			utils::makedirs(d);
@@ -283,7 +292,7 @@ const File& File::getConfigDir() {
 #ifdef _WIN32
 		replace_char(home, '\\', '/');
 #endif
-		auto d = format("%s/.config/" APP_NAME_STR, home);
+		auto d = home + "/.config/" APP_NAME_STR;
 		LOGD("CACHE: %s", d);
 		if(!exists(d))
 			utils::makedirs(d);

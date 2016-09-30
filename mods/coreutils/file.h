@@ -2,7 +2,7 @@
 #define FILE_H
 
 #include "utils.h"
-
+#include <unistd.h>
 #include <cstdint>
 #include <cstdio>
 #include <vector>
