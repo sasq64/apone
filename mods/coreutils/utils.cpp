@@ -20,14 +20,6 @@
 
 #include "jis.h"
 
-#if (defined ANDROID) || (defined WIN32)
-namespace std {
-	long stol(const string &x) { return atol(x.c_str()); }
-	long long stoll(const string &x) { return atoll(x.c_str()); }
-	long long stod(const string &x) { return atof(x.c_str()); }
-}
-#endif
-
 namespace utils {
 
 using namespace std;
@@ -249,7 +241,6 @@ uint64_t getms() {
 
 bool isalpha(const string &s) {
 	for(const auto &c : s) {
-		LOGD("c %c", c);
 		if(!::isalpha(c))
 			return false;
 	}

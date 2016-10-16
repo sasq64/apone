@@ -32,9 +32,32 @@
 
 namespace std {
 
-long stol(const std::string &x);
-long long stoll(const std::string &x);
-long long stod(const std::string &x);
+inline long stol(const std::string &x, std::size_t* pos = 0, int base = 10) {
+	if(!pos)
+		return strtol(x.c_str(), nullptr, base);
+	char *ptr;
+	long rc = strtol(x.c_str(), &ptr, base);
+	*pos = ptr - x.c_str();
+	return rc;
+}
+
+inline long long stoll(const std::string &x, std::size_t* pos = 0, int base = 10) {
+	if(!pos)
+		return strtoll(x.c_str(), nullptr, base);
+	char *ptr;
+	long long rc = strtoll(x.c_str(), &ptr, base);
+	*pos = ptr - x.c_str();
+	return rc;
+}
+
+inline double stod(const std::string &x, std::size_t* pos = 0) {
+	if(!pos)
+		return strtod(x.c_str(), nullptr);
+	char *ptr;
+	long long rc = strtod(x.c_str(), &ptr);
+	*pos = ptr - x.c_str();
+	return rc;
+}
 
 template <typename T>
 std::string to_string(T value)

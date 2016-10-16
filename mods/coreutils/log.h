@@ -16,9 +16,21 @@ enum LogLevel {
 	OFF = 100
 };
 
+#ifdef SIMPLE_LOG
+
+inline void log2(const char *fn, int line, const LogLevel level, const std::string &text) {
+	if(level >= INFO)
+		printf("[%s:%d] %s\n", fn, line, text.c_str());
+}
+
+
+#else
+
 void log(const std::string &text);
 void log(const LogLevel level, const std::string &text);
 void log2(const char *fn, int line, const LogLevel level, const std::string &text);
+
+#endif
 
 template <class... A>
 void log(const std::string &fmt, const A& ... args) {
@@ -41,16 +53,19 @@ void setOutputFile(const std::string &fileName);
 
 void useLogSpace(const std::string &spaceName, bool on = true);
 
-const char *xbasename(const char *x);
+inline const char *xbasename(const char *x) {
+	const char *slash = x;
+	while(*x) {
+		if(*x++ == '/') slash = x;
+	}
+	return slash;
+}
 
-#define BASE(x) logging::xbasename(x) 
-//<(strrchr(x, '/') ? strchr(x, '/')+1 : x)
-
-#define LOGV(...) logging::log2(BASE(__FILE__), __LINE__, logging::VERBOSE, __VA_ARGS__)
-#define LOGD(...) logging::log2(BASE(__FILE__), __LINE__, logging::DEBUG, __VA_ARGS__)
-#define LOGI(...) logging::log2(BASE(__FILE__), __LINE__, logging::INFO, __VA_ARGS__)
-#define LOGW(...) logging::log2(BASE(__FILE__), __LINE__, logging::WARNING, __VA_ARGS__)
-#define LOGE(...) logging::log2(BASE(__FILE__), __LINE__, logging::ERROR, __VA_ARGS__)
+#define LOGV(...) logging::log2(logging::xbasename(__FILE__), __LINE__, logging::VERBOSE, __VA_ARGS__)
+#define LOGD(...) logging::log2(logging::xbasename(__FILE__), __LINE__, logging::DEBUG, __VA_ARGS__)
+#define LOGI(...) logging::log2(logging::xbasename(__FILE__), __LINE__, logging::INFO, __VA_ARGS__)
+#define LOGW(...) logging::log2(logging::xbasename(__FILE__), __LINE__, logging::WARNING, __VA_ARGS__)
+#define LOGE(...) logging::log2(logging::xbasename(__FILE__), __LINE__, logging::ERROR, __VA_ARGS__)
 
 class LogSpace {
 public:

@@ -34,14 +34,6 @@ LogLevel defaultLevel = DEBUG;
 static FILE *logFile = nullptr;
 //unordered_map<string, pair<string, bool>> LogSpace::spaces;
 
-const char *xbasename(const char *x) {
-	const char *slash = x;
-	while(*x) {
-		if(*x++ == '/') slash = x;
-	}
-	return slash;
-}
-
 
 void log(const std::string &text) {
 	log(defaultLevel, text);
