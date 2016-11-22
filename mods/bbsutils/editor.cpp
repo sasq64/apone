@@ -29,6 +29,8 @@ void LineEditor::setString(const std::string &text) {
 	line = utf8_decode(text);
 	if(xpos > (int)line.size())
 		xpos = (int)line.size();
+	refresh();
+	console.flush(true);
 }
 
 void LineEditor::setString(const std::wstring &text) {
@@ -38,6 +40,10 @@ void LineEditor::setString(const std::wstring &text) {
 }
 
 void LineEditor::setXY(int x, int y) {
+	if(x < 0)
+		x = console.getCursorX();
+	if(y < 0)
+		y = console.getCursorY();
 	startX = x;
 	startY = y;
 }
