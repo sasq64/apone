@@ -21,7 +21,7 @@ public:
 
 	void setString(const std::string &text);
 	void setString(const std::wstring &text);
-	void setXY(int x, int y);
+	void setXY(int x = -1, int y = -1);
 	void setCursor(int pos);
 	void setWidth(int w) { width = w; }
 
