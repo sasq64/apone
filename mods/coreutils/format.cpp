@@ -7,8 +7,6 @@
 #include <sstream>
 #include <iomanip>
 
-namespace utils {
-
 #ifdef UNIT_TEST
 
 #include "catch.hpp"

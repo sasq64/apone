@@ -71,7 +71,7 @@ elseif(UNIX)
   find_package(OpenGL REQUIRED)
 
   if(APPLE)
-    find_library(GLFW_LIBRARY NAMES glfw3 REQUIRED)
+    find_library(GLFW_LIBRARY NAMES glfw REQUIRED)
   else() # Ubuntu changed naming between 14.0 and 14.10
     find_library(GLFW_LIBRARY NAMES libglfw.so.3 libglfw3.a REQUIRED)
   endif()
