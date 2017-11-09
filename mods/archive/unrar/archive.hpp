@@ -5,6 +5,8 @@ class Pack;
 
 enum {EN_LOCK=1,EN_VOL=2,EN_FIRSTVOL=4};
 
+#include "file.hpp"
+
 class Archive:public File
 {
   private:

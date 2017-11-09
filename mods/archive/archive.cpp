@@ -17,7 +17,8 @@ extern "C" {
 #include  "unrar/dll.hpp"
 
 using namespace std;
-using namespace utils;
+
+namespace utils {
 
 /*
 class ExtArchive : public Archive {
@@ -140,7 +141,7 @@ public:
 	}
 
 	virtual string nameFromPosition(int pos) const {
-		
+
 		//LOGD("POS %d vs %d", pos , currentPos);
 		while(currentPos < pos) {
 			int PFCode = RARProcessFile(rarFile, RAR_SKIP, NULL, NULL);
@@ -166,7 +167,7 @@ public:
 	}
 
 private:
-	
+
 	HANDLE rarFile;
 	mutable int currentPos;
 	//struct zip *zipFile;
@@ -188,3 +189,4 @@ bool Archive::canHandle(const std::string &name) {
 	return utils::endsWith(name, ".zip");
 }
 
+} // namespace utils

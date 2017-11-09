@@ -4,6 +4,8 @@
 #include <coreutils/utils.h>
 #include <coreutils/file.h>
 
+namespace utils {
+
 class archive_exception : public std::exception {
 public:
     archive_exception(const char *ptr = "Archive Exception") : msg(ptr) {
@@ -36,11 +38,11 @@ public:
 		bool operator!= (const const_iterator& other) const {
         	return position != other.position;
     	}
- 
+
 	    std::string operator* () const {
 	    	return archive->nameFromPosition(position);
 	    }
- 
+
     	const const_iterator& operator++ () {
     		position++;
             auto s = archive->nameFromPosition(position);
@@ -65,5 +67,7 @@ public:
 	static bool canHandle(const std::string &name);
 
 };
+
+} // namespace
 
 #endif // ARCHIVE_H

@@ -8,7 +8,7 @@ struct Decode
   unsigned int MaxNum;
   unsigned int DecodeLen[16];
   unsigned int DecodePos[16];
-  unsigned int DecodeNum[2];
+  unsigned int DecodeNum[1024];
 };
 
 struct LitDecode
