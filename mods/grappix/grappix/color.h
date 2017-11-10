@@ -67,24 +67,13 @@ public:
 	}
 
 	float& operator[](int i) { return data[i]; }
-	//constexpr int size() const { return 4; }
 
 	T *begin() { return std::begin(data); }
 	T *end() { return std::end(data); }
-
-	static const Base_Color<T> WHITE;
-	static const Base_Color<T> RED;
-	static const Base_Color<T> GREEN;
-	static const Base_Color<T> BLUE;
-	static const Base_Color<T> YELLOW;
-	static const Base_Color<T> BLACK;
-
 };
 
+
 typedef Base_Color<float> Color;
-
-//Color make_color(uint32_t color);
-
 uint32_t blend(uint32_t col0, uint32_t col1, float alpha);
 
 }

@@ -13,7 +13,7 @@ class VerticalLayout {
 public:
 	VerticalLayout() {}
 	VerticalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
-		itemSize = screenArea / Rectangle(1, visibleItems);
+		itemSize = visibleItems <= 0 ? screenArea : screenArea / Rectangle(1, visibleItems);
 	}
 
 	Rectangle layout(double position) {
@@ -32,7 +32,7 @@ class HorizontalLayout {
 public:
 	HorizontalLayout() {}
 	HorizontalLayout(const Rectangle &screenArea, int visibleItems) : screenArea(screenArea) /*, visibleItems(visibleItems) */ {
-		itemSize = screenArea / Rectangle(visibleItems, 1);
+		itemSize = visibleItems <= 0 ? screenArea : screenArea / Rectangle(visibleItems, 1);
 	}
 
 	Rectangle layout(double position) {

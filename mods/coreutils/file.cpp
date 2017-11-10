@@ -41,6 +41,7 @@ static mutex fm;
 File::File() : size(-1), writeFP(nullptr), readFP(nullptr) {}
 
 static std::string fstrip(const std::string &t) {
+	if(t.length() == 0) return t;
 	int i = t.length()-1;
 	while(t[i] == '/') i--;
 	if(i != t.length()-1)
@@ -113,9 +114,11 @@ vector<uint8_t> File::readAll() {
 	vector<uint8_t> data;
 	seek(0);
 	data.resize(getSize());
-	int rc = read(&data[0], data.size());
-	if(rc != data.size())
-		throw io_exception{};
+	if(data.size() > 0) {
+		int rc = read(&data[0], data.size());
+		if(rc != data.size())
+			throw io_exception{};
+	}
 	return data;
 }
 
@@ -162,6 +165,8 @@ int64_t File::tell() {
 vector<string> File::getLines() {
 	vector<string> lines;
 	auto data = readAll();
+	if(data.size() == 0)
+		return lines;
 	string source { reinterpret_cast<char*>(&data[0]), (unsigned int)data.size() };
 	stringstream ss(source);
 	string to;
