@@ -2,7 +2,7 @@
 #define FILE_H
 
 #include "utils.h"
-#include <unistd.h>
+//#include <unistd.h>
 #include <cstdint>
 #include <cstdio>
 #include <vector>
@@ -71,7 +71,7 @@ public:
 
 	static File getTempFile() {
 		File f = getTempDir() / "XXXXXXXXXX";
-		mkstemp(&f.fileName[0]);
+		//mkstemp(&f.fileName[0]);
 		return f;
 	}
 

@@ -20,7 +20,7 @@ public:
 	}
 
 	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false) {
-		playThread = std::thread { InternalPlayer::run, this };
+		playThread = std::thread { &InternalPlayer::run, this };
 	}
 
 

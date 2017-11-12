@@ -26,7 +26,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#if (defined ANDROID) || (defined WIN32)
+#if (defined ANDROID) // || (defined WIN32)
 
 // Android (for complicated reasons) misses some standard string conversion functions
 
@@ -70,7 +70,8 @@ std::string to_string(T value)
 }
 #endif
 
-#if __cplusplus <= 201200L
+#if 0 
+//__cplusplus <= 201200L
 
 namespace std {
 

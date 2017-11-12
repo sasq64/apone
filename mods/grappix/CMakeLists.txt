@@ -50,12 +50,12 @@ elseif(WIN32)
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)
 
   find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
-  find_library(GLFW_LIBRARY glfw3 REQUIRED)
+  find_package(glew REQUIRED)
+  find_package(glfw3 REQUIRED)
 
-  find_path(GLFW_PATH GLFW/glfw3.h)
-  include_directories(${GLFW_PATH})
-  message(${GLFW_PATH})
+#  find_path(GLFW_PATH GLFW/glfw3.h)
+#  include_directories(${GLFW_PATH})
+#  message(${GLFW_PATH})
   #
   set(EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES})
   include_directories(${OPENGL_INCLUDE_DIRS})

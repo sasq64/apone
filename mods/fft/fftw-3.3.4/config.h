@@ -361,8 +361,9 @@
 #define STDC_HEADERS 1
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#ifndef _WIN32
 #define TIME_WITH_SYS_TIME 1
-
+#endif
 /* Define if we have and are using POSIX threads. */
 /* #undef USING_POSIX_THREADS */
 
