@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
+#include <atomic>
 
 #include <coreutils/thread.h>
 
