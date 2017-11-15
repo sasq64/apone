@@ -20,18 +20,20 @@ public:
 		if(size > 0) {
 			buffer = new T [size];
 		}
-		bufPtr = buffer;
+		bufPtr.store(buffer.load());
 		wantToWrite = 0;
 	}
 	~Fifo() {
-		if(buffer)
-			delete [] buffer;
+		if(buffer) {
+			auto* b = buffer.load();
+			delete [] b;
+		}
 	}
 
 	void clear() {
 		{
 			std::unique_lock<std::mutex> lock(m);
-			bufPtr = buffer;
+			bufPtr.store(buffer);
 		}
 		cv.notify_all();
 	}
@@ -55,7 +57,6 @@ public:
 
 		{
 			std::unique_lock<std::mutex> lock(m);
-
 			int f = filled();
 			if(count > f)
 				count = f;
@@ -88,11 +89,11 @@ protected:
 	std::mutex m;
 	std::condition_variable cv;
 
-	int wantToWrite;
-	int bufSize;
-	int position;
-	T *buffer;
-	T *bufPtr;
+	std::atomic<int> wantToWrite;
+	std::atomic<int> bufSize;
+	std::atomic<int> position;
+	std::atomic<T*> buffer;
+	std::atomic<T*> bufPtr;
 
 };
 

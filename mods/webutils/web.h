@@ -13,6 +13,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <unordered_map>
 
 
@@ -325,7 +326,7 @@ private:
 	static std::mutex sm;
 	std::mutex m;
 	std::thread webThread;
-	bool quit = false;
+	std::atomic<bool> quit{false};
 	std::string baseUrl;
 	utils::File cacheDir;
 
