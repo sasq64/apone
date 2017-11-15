@@ -3,10 +3,10 @@
 #include "log.h"
 
 #include <sys/stat.h>
-//#include <unistd.h>
+#include <unistd.h>
 #include <cstring>
 #include <unordered_map>
-//#include <sys/time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 #ifdef _WIN32
