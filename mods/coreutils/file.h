@@ -44,9 +44,11 @@ public:
 #ifdef _WIN32
 	static const char PATH_SEPARATOR = ';';
 	static constexpr const char* PATH_SEPARATOR_STR = ";";
+	static const char DIR_SEPARATOR = '\\';
 #else
 	static const char PATH_SEPARATOR = ':';
 	static constexpr const char* PATH_SEPARATOR_STR = ":";
+	static const char DIR_SEPARATOR = '/';
 #endif
 
 	static bool exists(const std::string &fileName);
@@ -80,6 +82,10 @@ public:
 	static uint64_t getModified(const std::string &fileName);
 
 	static std::string makePath(std::vector<File> files, bool resolve = false);
+
+	inline static bool isAbsolutePath(std::string &fname) {
+		return fname[0] == PATH_SEPARATOR;
+	}
 
 /*
 	template <typename F0> static std::string makePath(const F0& f0) {

@@ -262,6 +262,40 @@ bool isalpha(const std::string &s);
 
 float clamp(float x, float a0 = 0.0, float a1 = 1.0);
 
+struct ExecPipe {
+	ExecPipe() {}
+	ExecPipe(const std::string &cmd);
+	~ExecPipe();
+
+	ExecPipe(ExecPipe&& other) = default;
+	ExecPipe(const ExecPipe& other) = delete;
+	ExecPipe& operator=(const ExecPipe& other) = delete;
+	ExecPipe& operator=(ExecPipe&& other) {
+		pid = other.pid;
+		outfd = other.outfd;
+		infd = other.infd;
+		other.pid = -1;
+		return *this;
+	}
+
+	void Kill();
+	int read(uint8_t* target, int size);
+	operator std::string();
+#ifdef WIN32
+	HANDLE hPipeRead;
+	HANDLE hPipeWrite;
+	PROCESS_INFORMATION pi  = { 0 };
+#else
+	pid_t pid = -1;
+	int outfd;
+	int infd;
+#endif
+};
+
+inline ExecPipe execPipe(const std::string& cmd) {
+	return ExecPipe(cmd);
+}
+
 int shellExec(const std::string &cmd, const std::string &binDir = "");
 
 void schedule_callback(std::function<void()> f);

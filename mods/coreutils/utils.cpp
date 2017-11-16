@@ -461,6 +461,134 @@ void replace_char(char *s, char c, char r) {
 	}
 }
 
+#ifdef WIN32
+struct ExecPipe {
+	ExecPipe(const std::string &cmd) {
+		SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
+		saAttr.bInheritHandle = TRUE;   //Pipe handles are inherited by child process.
+		saAttr.lpSecurityDescriptor = NULL;
+
+		// Create a pipe to get results from child's stdout.
+		if ( !CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0) )
+			return strResult;
+
+		STARTUPINFO si = { sizeof(STARTUPINFO) };
+		si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+		si.hStdOutput  = hPipeWrite;
+		si.hStdError   = hPipeWrite;
+		si.wShowWindow = SW_HIDE;       // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
+
+		BOOL fSuccess = CreateProcessA( NULL, (LPSTR)cmd.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+		if (! fSuccess)
+		{
+			LOGD("FAILED %d", GetLastError());
+			CloseHandle( hPipeWrite );
+			CloseHandle( hPipeRead );
+			return -1;
+		}
+
+}
+#else
+
+#include <fcntl.h>
+#include <signal.h>
+
+pid_t popen2(const char *command, int *infp, int *outfp)
+{
+	enum { READ, WRITE };
+    int p_stdin[2], p_stdout[2];
+    pid_t pid;
+
+    if (pipe(p_stdin) != 0 || pipe(p_stdout) != 0)
+
+        return -1;
+
+    pid = fork();
+
+    if (pid < 0)
+        return pid;
+    else if (pid == 0)
+    {
+        close(p_stdin[WRITE]);
+        dup2(p_stdin[READ], READ);
+        close(p_stdout[READ]);
+        dup2(p_stdout[WRITE], WRITE);
+
+        execl("/bin/sh", "sh", "-c", command, NULL);
+        perror("execl");
+        exit(1);
+    }
+
+    if (infp == NULL)
+        close(p_stdin[WRITE]);
+    else
+        *infp = p_stdin[WRITE];
+
+    if (outfp == NULL)
+        close(p_stdout[READ]);
+    else
+        *outfp = p_stdout[READ];
+
+    return pid;
+}
+
+ExecPipe::ExecPipe(const std::string &cmd) {
+	pid = popen2(cmd.c_str(), &infd, &outfd);
+	fcntl(outfd, F_SETFL, O_NONBLOCK);
+}
+
+ExecPipe::~ExecPipe() {
+	int result;
+	if(pid != -1) {
+		LOGD("Waiting");
+		waitpid(pid, &result, 0);
+		LOGD("RESULT %d", result);
+	}
+}
+
+void ExecPipe::Kill() {
+	if(pid != -1) {
+		int result;
+		kill(pid, SIGKILL);
+		waitpid(pid, &result, 0);
+		pid = -1;
+	}
+}
+
+// 0 = Done, -1 = Still data left, -2 = error
+int ExecPipe::read(uint8_t* target, int size) {
+	int rc = ::read(outfd, target, size);
+	if(rc == -1 && errno != EAGAIN)
+		rc = -2;
+	return rc;
+}
+
+ExecPipe::operator std::string() {
+	char buf[1024];
+	std::string result;
+	LOGD("TO string");
+	while(true) {
+		int sz = read(reinterpret_cast<uint8_t*>(&buf[0]), sizeof(buf));
+		if(sz > 0) {
+			LOGD("Got %d bytes", sz);
+			result += std::string(buf, 0, sz);
+		} else if(sz != -1 || pid == -1)
+			return result;
+		sleepms(100);
+		int rc;
+		int p;
+		if(pid != -1) {
+			if((p = waitpid(pid, &rc, WNOHANG)) == pid) {
+				LOGD("PID ended %d %d %d", pid, p, rc);
+				pid = -1;
+			}
+		}
+	}
+	return result;
+}
+
+#endif
+
 int shellExec(const std::string &cmd, const std::string &binDir) {
 #ifdef _WIN32
 		auto cmdLine = utils::format("/C %s", cmd);
