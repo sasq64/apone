@@ -462,32 +462,77 @@ void replace_char(char *s, char c, char r) {
 }
 
 #ifdef WIN32
-struct ExecPipe {
-	ExecPipe(const std::string &cmd) {
-		SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
-		saAttr.bInheritHandle = TRUE;   //Pipe handles are inherited by child process.
-		saAttr.lpSecurityDescriptor = NULL;
+ExecPipe::ExecPipe(const std::string &cmd) {
+	SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
+	saAttr.bInheritHandle = TRUE;   //Pipe handles are inherited by child process.
+	saAttr.lpSecurityDescriptor = NULL;
 
-		// Create a pipe to get results from child's stdout.
-		if ( !CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0) )
-			return strResult;
+	// Create a pipe to get results from child's stdout.
+	if ( !CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0) )
+		return strResult;
 
-		STARTUPINFO si = { sizeof(STARTUPINFO) };
-		si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-		si.hStdOutput  = hPipeWrite;
-		si.hStdError   = hPipeWrite;
-		si.wShowWindow = SW_HIDE;       // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
+	STARTUPINFO si = { sizeof(STARTUPINFO) };
+	si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+	si.hStdOutput  = hPipeWrite;
+	si.hStdError   = hPipeWrite;
+	si.wShowWindow = SW_HIDE;       // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
 
-		BOOL fSuccess = CreateProcessA( NULL, (LPSTR)cmd.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
-		if (! fSuccess)
-		{
-			LOGD("FAILED %d", GetLastError());
-			CloseHandle( hPipeWrite );
-			CloseHandle( hPipeRead );
-			return -1;
-		}
+	BOOL fSuccess = CreateProcessA( NULL, (LPSTR)cmd.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+	if (! fSuccess)
+	{
+		LOGD("FAILED %d", GetLastError());
+		CloseHandle( hPipeWrite );
+		CloseHandle( hPipeRead );
+		return -1;
+	}
 
 }
+
+ExecPipe::read(uint8_t* target, int size) {
+
+	DWORD dwRead = 0;
+	DWORD dwAvail = 0;
+
+	if (!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
+		return -2;
+
+	if (!dwAvail) // no data available, return
+		return -1;
+
+	if(dwAvail > size)
+		dwAvail = size;
+
+	if (!::ReadFile(hPipeRead, target, dwAvail, &dwRead, NULL) || !dwRead)
+		// error, the child process might ended
+		return -2;
+
+	return (int)dwRead;
+}
+
+ExecPipe& ExecPipe::operator=(ExecPipe&& other) {
+	hPipeRead = other.hPipeRead;
+	hPipeWrite = other.hPipeWrite;
+	pi = other.pi;
+	other.pi.hProcess = 0;
+	return *this;
+}
+
+bool ExecPipe::hasEnded() {
+	if(pi.hProcess == 0)
+		return true;
+	if(WaitForSingleObject( pi.hProcess, 50) == WAIT_OBJECT_0) {
+		pi.hProcess = 0;
+		return true;
+	}
+	return false;
+}
+
+ExecPipe::~ExecPipe() {
+}
+
+ExecPipe::Kill() {
+}
+
 #else
 
 #include <fcntl.h>
@@ -546,6 +591,14 @@ ExecPipe::~ExecPipe() {
 	}
 }
 
+ExecPipe& ExecPipe::operator=(ExecPipe&& other) {
+	pid = other.pid;
+	outfd = other.outfd;
+	infd = other.infd;
+	other.pid = -1;
+	return *this;
+}
+
 void ExecPipe::Kill() {
 	if(pid != -1) {
 		int result;
@@ -563,31 +616,35 @@ int ExecPipe::read(uint8_t* target, int size) {
 	return rc;
 }
 
+bool ExecPipe::hasEnded() {
+	if(pid == -1) return true;
+	int rc;
+	if(waitpid(pid, &rc, WNOHANG) == pid) {
+		LOGD("PID ended %d %d", pid, rc);
+		pid = -1;
+		return true;
+	}
+	return false;
+}
+
+#endif
+
 ExecPipe::operator std::string() {
 	char buf[1024];
 	std::string result;
-	LOGD("TO string");
+	LOGD("To string");
 	while(true) {
 		int sz = read(reinterpret_cast<uint8_t*>(&buf[0]), sizeof(buf));
 		if(sz > 0) {
 			LOGD("Got %d bytes", sz);
 			result += std::string(buf, 0, sz);
-		} else if(sz != -1 || pid == -1)
+		} else if(sz != -1 || hasEnded())
 			return result;
 		sleepms(100);
-		int rc;
-		int p;
-		if(pid != -1) {
-			if((p = waitpid(pid, &rc, WNOHANG)) == pid) {
-				LOGD("PID ended %d %d %d", pid, p, rc);
-				pid = -1;
-			}
-		}
 	}
 	return result;
 }
 
-#endif
 
 int shellExec(const std::string &cmd, const std::string &binDir) {
 #ifdef _WIN32

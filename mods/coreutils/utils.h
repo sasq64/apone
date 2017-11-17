@@ -270,17 +270,13 @@ struct ExecPipe {
 	ExecPipe(ExecPipe&& other) = default;
 	ExecPipe(const ExecPipe& other) = delete;
 	ExecPipe& operator=(const ExecPipe& other) = delete;
-	ExecPipe& operator=(ExecPipe&& other) {
-		pid = other.pid;
-		outfd = other.outfd;
-		infd = other.infd;
-		other.pid = -1;
-		return *this;
-	}
+	ExecPipe& operator=(ExecPipe&& other);
 
+	bool hasEnded();
 	void Kill();
 	int read(uint8_t* target, int size);
 	operator std::string();
+
 #ifdef WIN32
 	HANDLE hPipeRead;
 	HANDLE hPipeWrite;
