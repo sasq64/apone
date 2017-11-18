@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(cpp-mods.fft)
 
-find_library(FFT_LIBRARY fftw3f)
+find_library(FFT_LIBRARY NAMES libfftw3f.a fftw3f)
 find_path(FFT_PATH fftw3.h)
 
 set(SOURCE_FILES spectrum.cpp)

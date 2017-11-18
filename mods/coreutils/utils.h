@@ -262,6 +262,10 @@ bool isalpha(const std::string &s);
 
 float clamp(float x, float a0 = 0.0, float a1 = 1.0);
 
+#ifdef _WIN32
+typedef void* HANDLE;
+#endif
+
 struct ExecPipe {
 	ExecPipe() {}
 	ExecPipe(const std::string &cmd);
@@ -277,10 +281,10 @@ struct ExecPipe {
 	int read(uint8_t* target, int size);
 	operator std::string();
 
-#ifdef WIN32
+#ifdef _WIN32
 	HANDLE hPipeRead;
 	HANDLE hPipeWrite;
-	PROCESS_INFORMATION pi  = { 0 };
+	HANDLE hProcess;
 #else
 	pid_t pid = -1;
 	int outfd;

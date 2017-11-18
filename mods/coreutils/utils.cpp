@@ -221,7 +221,7 @@ string urldecode(const string &s, const string &chars) {
 }
 
 void sleepms(unsigned ms) {
-#ifdef WIN32
+#ifdef _WIN32
 	Sleep(ms);
 #else
 	usleep(ms*1000);
@@ -461,67 +461,83 @@ void replace_char(char *s, char c, char r) {
 	}
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 ExecPipe::ExecPipe(const std::string &cmd) {
 	SECURITY_ATTRIBUTES saAttr = { sizeof(SECURITY_ATTRIBUTES) };
 	saAttr.bInheritHandle = TRUE;   //Pipe handles are inherited by child process.
 	saAttr.lpSecurityDescriptor = NULL;
 
+	auto c = std::string("cmd.exe /C ") + cmd;
+
 	// Create a pipe to get results from child's stdout.
 	if ( !CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0) )
-		return strResult;
+		return;
+
+	PROCESS_INFORMATION pi  = { 0 };
 
 	STARTUPINFO si = { sizeof(STARTUPINFO) };
 	si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 	si.hStdOutput  = hPipeWrite;
-	si.hStdError   = hPipeWrite;
+	si.hStdError   = NULL;
 	si.wShowWindow = SW_HIDE;       // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
 
-	BOOL fSuccess = CreateProcessA( NULL, (LPSTR)cmd.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+	BOOL fSuccess = CreateProcessA( NULL, (LPSTR)c.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
 	if (! fSuccess)
 	{
 		LOGD("FAILED %d", GetLastError());
 		CloseHandle( hPipeWrite );
 		CloseHandle( hPipeRead );
-		return -1;
+		hProcess = 0;
 	}
+	hProcess = pi.hProcess;
 
 }
 
-ExecPipe::read(uint8_t* target, int size) {
+int ExecPipe::read(uint8_t* target, int size) {
 
 	DWORD dwRead = 0;
 	DWORD dwAvail = 0;
+	int total = 0;
 
-	if (!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
-		return -2;
+	while (size > 0) {
 
-	if (!dwAvail) // no data available, return
+		if (!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
+			return -2;
+
+		if (!dwAvail) // no data available, return
+			break;
+
+		if (dwAvail > size)
+			dwAvail = size;
+
+		if (!::ReadFile(hPipeRead, target, dwAvail, &dwRead, NULL) || !dwRead)
+			// error, the child process might ended
+			return -2;
+		sleepms(1);
+		size -= dwRead;
+		total += dwRead;
+		target += dwRead;
+	}
+
+	if (total == 0)
 		return -1;
 
-	if(dwAvail > size)
-		dwAvail = size;
-
-	if (!::ReadFile(hPipeRead, target, dwAvail, &dwRead, NULL) || !dwRead)
-		// error, the child process might ended
-		return -2;
-
-	return (int)dwRead;
+	return total;
 }
 
 ExecPipe& ExecPipe::operator=(ExecPipe&& other) {
 	hPipeRead = other.hPipeRead;
 	hPipeWrite = other.hPipeWrite;
-	pi = other.pi;
-	other.pi.hProcess = 0;
+	hProcess = other.hProcess;
+	other.hProcess = 0;
 	return *this;
 }
 
 bool ExecPipe::hasEnded() {
-	if(pi.hProcess == 0)
+	if(hProcess == 0)
 		return true;
-	if(WaitForSingleObject( pi.hProcess, 50) == WAIT_OBJECT_0) {
-		pi.hProcess = 0;
+	if(WaitForSingleObject( hProcess, 50) == WAIT_OBJECT_0) {
+		hProcess = 0;
 		return true;
 	}
 	return false;
@@ -530,7 +546,7 @@ bool ExecPipe::hasEnded() {
 ExecPipe::~ExecPipe() {
 }
 
-ExecPipe::Kill() {
+void ExecPipe::Kill() {
 }
 
 #else
@@ -633,13 +649,14 @@ ExecPipe::operator std::string() {
 	char buf[1024];
 	std::string result;
 	LOGD("To string");
+	bool ended = false;
 	while(true) {
 		int sz = read(reinterpret_cast<uint8_t*>(&buf[0]), sizeof(buf));
 		if(sz > 0) {
-			LOGD("Got %d bytes", sz);
 			result += std::string(buf, 0, sz);
-		} else if(sz != -1 || hasEnded())
+		} else if(sz != -1 || ended)
 			return result;
+		ended = hasEnded();
 		sleepms(100);
 	}
 	return result;
