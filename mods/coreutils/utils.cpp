@@ -547,6 +547,8 @@ ExecPipe::~ExecPipe() {
 }
 
 void ExecPipe::Kill() {
+	if(hProcess != 0)
+		CloseHandle(hProcess);
 }
 
 #else
