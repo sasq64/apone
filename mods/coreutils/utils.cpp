@@ -7,6 +7,7 @@
 #include <cstring>
 #include <unordered_map>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 
 #ifdef _WIN32
