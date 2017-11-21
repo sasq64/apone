@@ -57,7 +57,7 @@ static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods
 		gotFocus = 0;
 		return;
 	}
-    LOGD("KEY %d mods %x", key, mods);
+    //LOGD("KEY %d mods %x", key, mods);
 	
 	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
 
