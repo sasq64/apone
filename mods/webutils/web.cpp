@@ -54,6 +54,11 @@ void WebJob::start(CURLM *curlm) {
 size_t WebJob::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
 	WebJob* job = static_cast<WebJob*>(userdata);
 	size *= x;
+	
+	if(job->stopped) {
+		LOGD("Job s stopped");
+		return -1;
+	}
 
 	if(job->targetFile) {
 		job->targetFile.write(static_cast<uint8_t*>(ptr), size);

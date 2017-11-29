@@ -689,25 +689,28 @@ int shellExec(const std::string &cmd, const std::string &binDir) {
 #endif
 }
 
-static bool performCalled = false;
-static bool inPerform = false;
+static std::atomic<bool> performCalled(false);
+thread_local static std::atomic<bool> inPerform(false);
+static std::mutex callbackMutex;
 static vector<function<void()>> callbacks;
 
 void schedule_callback(function<void()> f) {
 	if(!performCalled || inPerform)
 		f();
-	else
+	else {
+		lock_guard<mutex> guard(callbackMutex);
 		callbacks.push_back(f);
+	}
 }
 
 void perform_callbacks() {
 	performCalled = true;
 	inPerform = true;
+	lock_guard<mutex> guard(callbackMutex);
 	for(const auto &f : callbacks) {
 		LOGD("Calling cb");
 		f();
 	}
-	inPerform = false;
 	callbacks.clear();
 }
 

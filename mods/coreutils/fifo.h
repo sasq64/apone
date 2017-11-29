@@ -25,6 +25,9 @@ public:
 		wantToWrite = 0;
 	}
 	~Fifo() {
+		// Wait for writers to finish
+		while(wantToWrite > 0)
+			cv.notify_all();
 		if(buffer) {
 			auto* b = buffer.load();
 			delete [] b;
@@ -154,8 +157,5 @@ private:
 
 } // namespace
 
-// NOTE: This is to be compatibly with current version of Chipmachine
-template <typename T> using Fifo = utils::Fifo<T>;
-template <typename T> using AudioFifo = utils::AudioFifo<T>;
 
 #endif

@@ -183,8 +183,9 @@ public:
 	}
 
 	void poll() {
-		std::lock_guard<std::mutex> lock(m);
 
+		if(!m.try_lock())
+			return;
 		auto it = jobs.begin();
 		while(it != jobs.end()) {
 			auto *curl = it->get()->curl;
@@ -193,6 +194,7 @@ public:
 				continue;
 			}
 			if(curl && it->get()->stopped) {
+				LOGD("Removing stopped job");
 				curl_multi_remove_handle(curlm, curl);
 				it->get()->destroy();
 			}
@@ -224,6 +226,7 @@ public:
 		for(auto &r : toRemove) {
 			r->finish();
 		}
+		m.unlock();
 	}
 
 	void removeJob(std::shared_ptr<WebJob> job) {
