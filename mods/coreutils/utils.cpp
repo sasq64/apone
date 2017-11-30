@@ -9,6 +9,8 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <atomic>
+#include <mutex>
 
 #ifdef _WIN32
 #include <windows.h>

@@ -61,9 +61,9 @@ public:
 		Session(const Session &s) = delete;
 		Session(const Session &&s) : socket(s.socket), state(NORMAL), localEcho(true), disconnected(false), winWidth(-1), winHeight(-1), termExplored(false), tsParent(s.tsParent) {}
 
-		char getChar() throw(disconnect_excpetion);
+		char getChar();
 		bool hasChar() const;
-		std::string getLine() throw(disconnect_excpetion);
+		std::string getLine();
 
 		void putChar(int c);
 

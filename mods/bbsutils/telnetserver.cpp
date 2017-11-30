@@ -243,7 +243,7 @@ int TelnetServer::Session::read(std::vector<uint8_t> &data, int len) {
 }
 
 
-char TelnetServer::Session::getChar() throw(disconnect_excpetion) {
+char TelnetServer::Session::getChar() {
 	chrono::milliseconds ms { 100 };
 	while(true) {
 
@@ -270,7 +270,7 @@ bool TelnetServer::Session::hasChar() const {
 	return (inBuffer.size() > 0);
 }
 
-string TelnetServer::Session::getLine() throw(disconnect_excpetion) {
+string TelnetServer::Session::getLine() {
 	chrono::milliseconds ms { 100 };
 	while(true) {
 

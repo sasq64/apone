@@ -1,14 +1,12 @@
-#ifndef DS_FIFO_H
-#define DS_FIFO_H
-
-#include <cstdlib>
-#include <cstring>
-#include <cstdint>
-#include <atomic>
-
-#include <coreutils/thread.h>
+#pragma once
 
 #include <coreutils/log.h>
+#include <coreutils/thread.h>
+
+#include <atomic>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 namespace utils {
 
@@ -26,13 +24,23 @@ public:
 	}
 	~Fifo() {
 		// Wait for writers to finish
+		quitting = true;
 		while(wantToWrite > 0)
 			cv.notify_all();
 		if(buffer) {
-			auto* b = buffer.load();
+			T* b = buffer.load();
 			delete [] b;
 		}
 	}
+
+	void quit() {
+		quitting = true;
+		while(wantToWrite > 0)
+			cv.notify_all();
+	}
+
+	Fifo& operator=(Fifo&) = delete;
+	Fifo(const Fifo&) = delete;
 
 	void clear() {
 		{
@@ -43,21 +51,29 @@ public:
 	}
 
 	void put(const T *source, int count) {
+		if(quitting)
+			return;
 
 		std::unique_lock<std::mutex> lock(m);
 		if(left() < count) {
 			if(wantToWrite == 0)
 				wantToWrite = count;
-			cv.wait(lock, [=] { return left() >= count; });
-		}	
+			cv.wait(lock, [=] {
+				return left() >= count || quitting;
+			});
+		}
+		wantToWrite = 0;
+		if(quitting)
+			return;
 
 		if(source)
 			memcpy(bufPtr, source, sizeof(T) * count);
 		bufPtr += count;
-		wantToWrite = 0;
 	}
 
 	int get(T *target, int count) {
+		if(quitting)
+			return -1;
 
 		{
 			std::unique_lock<std::mutex> lock(m);
@@ -98,6 +114,7 @@ protected:
 	std::atomic<int> position;
 	std::atomic<T*> buffer;
 	std::atomic<T*> bufPtr;
+	std::atomic<bool> quitting{false};
 
 };
 
@@ -155,7 +172,5 @@ private:
 
 };
 
-} // namespace
+} // namespace utils
 
-
-#endif
