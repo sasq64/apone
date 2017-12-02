@@ -279,6 +279,7 @@ struct ExecPipe {
 	bool hasEnded();
 	void Kill();
 	int read(uint8_t* target, int size);
+	int write(uint8_t* source, int size);
 	operator std::string();
 
 #ifdef _WIN32

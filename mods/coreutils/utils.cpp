@@ -637,6 +637,11 @@ int ExecPipe::read(uint8_t* target, int size) {
 	return rc;
 }
 
+int ExecPipe::write(uint8_t* source, int size) {
+	int rc = ::write(outfd, source, size);
+	return rc;
+}
+
 bool ExecPipe::hasEnded() {
 	if(pid == -1) return true;
 	int rc;
@@ -653,7 +658,6 @@ bool ExecPipe::hasEnded() {
 ExecPipe::operator std::string() {
 	char buf[1024];
 	std::string result;
-	LOGD("To string");
 	bool ended = false;
 	while(true) {
 		int sz = read(reinterpret_cast<uint8_t*>(&buf[0]), sizeof(buf));

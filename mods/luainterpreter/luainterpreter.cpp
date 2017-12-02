@@ -192,7 +192,6 @@ void LuaInterpreter::setGlobalFromStack(const string &name) {
 }
 
 void LuaInterpreter::luaCall(int nargs, int nret) {
-	LOGD("Call %d %d", nargs, nret);
 	lua_call(L, nargs, nret);
 }
 

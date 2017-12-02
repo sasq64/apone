@@ -92,7 +92,7 @@ size_t WebJob::headerFunc(char *text, size_t size, size_t n, void *userdata) {
 		job->headers[name] = val;
 	}	
 
-	LOGD("HEADER: '%s = %s'", name, val);
+	LOGV("HEADER: '%s = %s'", name, val);
 	if(name == "Content-Length") {
 		job->cLength = std::stol(val);
 	} else

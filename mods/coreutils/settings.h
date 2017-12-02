@@ -11,12 +11,12 @@ public:
 	Settings(Settings && s) : variables(std::move(s.variables)) {}
 
 	template <typename T> void set(const std::string &val, const T& t) {
-		LOGD("Setting %s", val);
+		LOGV("Setting %s", val);
 		variables[val] = t;
 	}
 
 	template <typename T> T get(const std::string &val, const T& def) {
-		LOGD("Getting %s", val);
+		LOGV("Getting %s", val);
 		if(!variables[val].defined())
 			return def;
 		return variables[val];
