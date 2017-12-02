@@ -7,7 +7,6 @@
 #include <cstring>
 #include <unordered_map>
 #include <sys/time.h>
-#include <sys/wait.h>
 #include <stdlib.h>
 #include <atomic>
 #include <mutex>
@@ -15,6 +14,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <ShellApi.h>
+#else
+#include <sys/wait.h>
 #endif
 
 #ifdef EMSCRIPTEN
@@ -528,6 +529,11 @@ int ExecPipe::read(uint8_t* target, int size) {
 	return total;
 }
 
+int ExecPipe::write(uint8_t* source, int size) {
+	return 0;
+}
+
+
 ExecPipe& ExecPipe::operator=(ExecPipe&& other) {
 	hPipeRead = other.hPipeRead;
 	hPipeWrite = other.hPipeWrite;
@@ -550,8 +556,13 @@ ExecPipe::~ExecPipe() {
 }
 
 void ExecPipe::Kill() {
-	if(hProcess != 0)
+	LOGD("KILL %d", hProcess);
+	if(hProcess != 0) {
+		if(TerminateProcess(hProcess, 0) == 0) {
+			LOGD("Could not kill process: %d", GetLastError());
+		}
 		CloseHandle(hProcess);
+	}
 }
 
 #else
