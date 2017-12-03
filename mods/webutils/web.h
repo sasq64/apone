@@ -46,9 +46,8 @@ public:
 	void wait(int timeout = -1);
 
 	void stop() {
+		// TODO: Should be atomic, but must be copyable
 		stopped = true;
-		if(targetFile.exists())
-			targetFile.remove();
 	}
 
 	void setTarget(const utils::File &file) { targetFile = file; }

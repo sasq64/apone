@@ -56,7 +56,9 @@ size_t WebJob::writeFunc(void *ptr, size_t size, size_t x, void *userdata) {
 	size *= x;
 	
 	if(job->stopped) {
-		LOGD("Job s stopped");
+		LOGD("Job stopped");
+		if(job->targetFile.exists())
+			job->targetFile.remove();
 		return -1;
 	}
 
