@@ -250,6 +250,7 @@ public:
 			job->isDone = true;
 			return job;
 		}
+		std::lock_guard<std::mutex> lock(m);
 		job->start(curlm);
 		jobs.push_back(job);
 		return job;
@@ -295,6 +296,7 @@ public:
 		auto job = std::make_shared<WebJob>();
 		job->setStreamCallback(cb);
 		job->setUrl(url);
+		std::lock_guard<std::mutex> lock(m);
 		job->start(curlm);
 		jobs.push_back(job);
 		return job;
@@ -303,6 +305,7 @@ public:
 	std::shared_ptr<WebJob> createWebJob(const std::string &url) {
 		auto job = std::make_shared<WebJob>();
 		job->setUrl(url);
+		std::lock_guard<std::mutex> lock(m);
 		job->start(curlm);
 		jobs.push_back(job);
 		return job;

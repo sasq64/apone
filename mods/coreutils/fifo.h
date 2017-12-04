@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <chrono>
+using namespace std::chrono_literals;
 
 namespace utils {
 
@@ -55,10 +57,10 @@ public:
 			return;
 
 		std::unique_lock<std::mutex> lock(m);
-		if(left() < count) {
+		while(left() < count && !quitting) {
 			if(wantToWrite == 0)
 				wantToWrite = count;
-			cv.wait(lock, [=] {
+			cv.wait_for(lock, 100ms, [=] {
 				return left() >= count || quitting;
 			});
 		}
