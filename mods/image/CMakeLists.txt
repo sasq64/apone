@@ -11,3 +11,4 @@ set(SOURCE_FILES image.cpp lodepng.cpp)
 
 add_library(image ${SOURCE_FILES})
 #target_link_libraries(image ${PNG_LIBRARIES})
+target_include_directories(image PRIVATE ..)

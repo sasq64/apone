@@ -113,7 +113,7 @@ public:
 		terminal.open();
 	}
 
-	~Console() {
+	virtual ~Console() {
 		showCursor(true);
 		//flush(false);
 		terminal.close();

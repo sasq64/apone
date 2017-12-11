@@ -25,6 +25,7 @@ class Web;
 
 class WebJob {
 public:
+	virtual ~WebJob() = default;
 	bool done() const { return isDone; }
 	long code() const {
 		long rc = -1;
@@ -136,7 +137,7 @@ public:
 	// makes sure cacheDir is created
 	// Starts the worker thread
 	Web(const std::string &cacheDir = "", const std::string &baseUrl = "")
-	    : cacheDir(cacheDir), baseUrl(baseUrl) {
+	    :  baseUrl(baseUrl), cacheDir(cacheDir) {
 		std::lock_guard<std::mutex> lock(sm);
 		if(!initDone) {
 			curl_global_init(CURL_GLOBAL_ALL);

@@ -4,6 +4,7 @@ project(cpp-mods.tween)
 
 
 add_library(tween tween.cpp)
+target_include_directories(tween PRIVATE ..)
 
 if(DO_UNIT_TEST)
 

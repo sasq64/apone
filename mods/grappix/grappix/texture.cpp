@@ -26,7 +26,7 @@ Texture::Texture(const bitmap &bm) {
 
 }
 
-Texture::Texture(uint8_t *data, unsigned int w, unsigned int h) {
+Texture::Texture(const uint8_t *data, unsigned int w, unsigned int h) {
 	_width = w;
 	_height = h;
 	update_matrix();
@@ -34,6 +34,15 @@ Texture::Texture(uint8_t *data, unsigned int w, unsigned int h) {
 
 	tref = make_shared<texref>();
 
+	glBindTexture(GL_TEXTURE_2D, tref->id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+void Texture::putPixels(const uint8_t *data) {
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

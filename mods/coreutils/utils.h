@@ -299,6 +299,8 @@ inline ExecPipe execPipe(const std::string& cmd) {
 
 int shellExec(const std::string &cmd, const std::string &binDir = "");
 
+uint32_t crc32(const uint32_t *data, int size);
+
 void schedule_callback(std::function<void()> f);
 void perform_callbacks();
 

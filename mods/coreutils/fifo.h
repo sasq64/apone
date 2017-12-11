@@ -95,7 +95,7 @@ public:
 		return count;
 	}
 
-	int filled() {
+	int filled() const {
 	   	return bufPtr - buffer; 
 	}
 	int left() { 

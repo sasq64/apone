@@ -117,3 +117,4 @@ include_directories(.. grappix/freetype-gl)
 
 add_library(grappix ${SOURCE_FILES})
 target_link_libraries(grappix coreutils image tween freetype ${EXTRA_LIBS})
+target_include_directories(grappix PRIVATE ..)

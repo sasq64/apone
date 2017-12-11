@@ -47,6 +47,14 @@ void log2(const char *fn, int line, LogLevel level, const std::string &fmt, cons
 	log2(fn, line, level, utils::format(fmt, args...));
 };
 
+inline void LogVL(int line, const char* fileName, const char* text, va_list vl)
+{
+	char temp[2048];
+    vsnprintf(temp, sizeof(temp), text, vl);
+	log2(fileName, line, DEBUG, temp);
+}
+
+
 void setLevel(LogLevel level);
 void setOutputFile(const std::string &fileName);
 //void setLogSpace(const std::string &sourceFile, const std::string &function, const std::string &spaceName);

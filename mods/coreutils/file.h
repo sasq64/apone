@@ -42,14 +42,33 @@ public:
 	};
 
 #ifdef _WIN32
-	static const char PATH_SEPARATOR = ';';
-	static constexpr const char* PATH_SEPARATOR_STR = ";";
+    static const char SLASH = '\\';
+    static constexpr const char* SLASH_STR = "\\";
 	static const char DIR_SEPARATOR = '\\';
+    static const char PATH_SEPARATOR = ';';
+    static constexpr const char* PATH_SEPARATOR_STR = ";";
+    static constexpr int maxPath = MAX_PATH;
+    static int Fileno(FILE* fp) { return _fileno(fp); }
+    static FILE* Fopen(const char* name, const char* mode)
+    {
+        FILE* fp = nullptr;
+        auto e = fopen_s(&fp, name, mode);
+        if (e != 0)
+            fp = null;
+        return fp;
+    }
 #else
-	static const char PATH_SEPARATOR = ':';
-	static constexpr const char* PATH_SEPARATOR_STR = ":";
+#	include <linux/limits.h>
+	static const char SLASH = '/';
 	static const char DIR_SEPARATOR = '/';
+    static constexpr const char* SLASH_STR = "/";
+    static const char PATH_SEPARATOR = ':';
+    static constexpr const char* PATH_SEPARATOR_STR = ":";
+    static constexpr int maxPath = PATH_MAX;
+    static int Fileno(FILE* fp) { return fileno(fp); }
+    static FILE* Fopen(const char* name, const char* mode) { return fopen(name, mode); }
 #endif
+
 
 	static bool exists(const std::string &fileName);
 	static void copy(const std::string &from, const std::string &to);
@@ -69,7 +88,7 @@ public:
 	/** Directory of the running executable */
 	static const File& getExeDir();
 
-	static const File& getTempDir();
+	static File getTempDir();
 
 	static File getTempFile() {
 		File f = getTempDir() / "XXXXXXXXXX";
@@ -210,6 +229,13 @@ public:
 	bool isDir() const;
 	File resolve() const;
 	void remove();
+
+	bool tryRemove()
+    {
+        close();
+        return (std::remove(fileName.c_str()) == 0);
+    }
+
 	void rename(const std::string &newName);
 
 	void copyFrom(File &otherFile);

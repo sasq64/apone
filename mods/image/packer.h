@@ -27,6 +27,8 @@ public:
 		uint16_t h;
 	};
 
+	virtual ~ImagePacker() = default;
+
 	virtual bool add(Rect &r) = 0;
 	virtual void remove(const Rect &r) = 0;
 

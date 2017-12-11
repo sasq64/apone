@@ -117,7 +117,7 @@ public:
 	}
 
 	std::function<void(int16_t *, int)> callback;
-	bool quit;
+	std::atomic<bool> quit;
 	int dspFD;
 	snd_pcm_t *playback_handle;
 	std::atomic<bool> paused;

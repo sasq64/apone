@@ -185,7 +185,7 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 	}
 
 	T dist() {
-		T rc;
+		T rc = 0;
 		for(int i=0; i<SIZE; i++)
 			rc += vbase<T,SIZE>::data[i] * vbase<T,SIZE>::data[i];
 		return sqrt(rc);

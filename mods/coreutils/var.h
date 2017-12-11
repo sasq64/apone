@@ -21,6 +21,7 @@ public:
 
 class Holder {
 public:
+	virtual ~Holder() = default;
 	virtual const std::type_info& getType() = 0;
 	virtual void *getValue() = 0;
 	//virtual void *getValue(int index) = 0;

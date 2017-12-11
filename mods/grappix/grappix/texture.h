@@ -24,8 +24,9 @@ public:
 
 	Texture(unsigned int width, unsigned int height, Format fmt = RGBA32);
 	Texture(const image::bitmap &bm);
-	Texture(uint8_t *data, unsigned int w, unsigned int h);
+	Texture(const uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }
+	void putPixels(const uint8_t *data);
 private:
 
 	struct texref {

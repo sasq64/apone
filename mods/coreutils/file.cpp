@@ -272,7 +272,11 @@ const File& File::getHomeDir() {
 
 static std::string getHome() { return File::getHomeDir().getName(); }
 
-#ifdef APP_NAME
+/* #ifdef APP_NAME */
+/* static const char* appName = APP_NAME_STR; */
+/* #else */
+/* static const char* appName = "apone"; */
+/* #endif */
 
 const File& File::getCacheDir() {
 	lock_guard<mutex> lock(fm);
@@ -305,8 +309,6 @@ const File& File::getConfigDir() {
 	}
 	return configDir;
 }
-
-#endif // APP_NAME
 
 uint64_t File::getModified() const {
 	struct stat ss;
@@ -464,11 +466,20 @@ void File::setAppDir(const std::string &a) {
 	appDir = a;
 }
 
-const File& File::getTempDir() {
-	if(!tempDir) {
-		tempDir = File(getenv("TMPDIR"));
-	}
-	return tempDir;
+File File::getTempDir() {
+        char buffer[maxPath];
+#ifdef _WIN32
+        if(GetTempPathA(sizeof(buffer), buffer) == 0)
+            throw io_exception{"Could not get temporary directory"};
+#else
+        const char* tmpdir = getenv("TMPDIR");
+        if (!tmpdir)
+            tmpdir = P_tmpdir;
+        if (!tmpdir)
+            tmpdir = "/tmp/";
+        strcpy(buffer, tmpdir);
+#endif
+        return File{buffer};
 }
 
 const File& File::getAppDir() {
