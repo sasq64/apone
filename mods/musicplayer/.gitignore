@@ -1,6 +1,0 @@
-*.a
-obj/
-*~
-_cache
-*.sublime-*
-.tags*

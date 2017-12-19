@@ -1,2 +1,0 @@
-This folder is to compile ayfly.dll with mingw. You must have mingw32-gcc and mingw32-g++ installed in your PATH.
-Just type make or gmake to build.

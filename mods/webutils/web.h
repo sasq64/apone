@@ -223,10 +223,11 @@ public:
 
 		} while(msg);
 
+		m.unlock();
+
 		for(auto &r : toRemove) {
 			r->finish();
 		}
-		m.unlock();
 	}
 
 	void removeJob(std::shared_ptr<WebJob> job) {
