@@ -148,18 +148,18 @@ public:
 	void pagedown() { select(selected_item + visibleItems); }
 	void pageup() { select(selected_item - visibleItems); }
 
-	virtual bool onKey(grappix::Window::key k) {
+	virtual bool onKey(int32_t k) {
 		switch(k) {
-		case Window::UP:
+		case keycodes::UP:
 			select(selected()-1);
 			break;
-		case Window::DOWN:
+		case keycodes::DOWN:
 			select(selected()+1);
 			break;
-		case Window::PAGEUP:
+		case keycodes::PAGEUP:
 			pageup();
 			break;
-		case Window::PAGEDOWN:
+		case keycodes::PAGEDOWN:
 			pagedown();
 			break;
 		default:
