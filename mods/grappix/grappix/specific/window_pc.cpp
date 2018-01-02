@@ -50,33 +50,40 @@ static void scroll_fn(GLFWwindow *gwin, double x, double y) {
 }
 
 
-static void key_fn(GLFWwindow *gwin, int key, int scancode, int action, int mods) {
-	
+static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
+	static const std::string literals = "0123456789[]\\;',./`-=";
 	// Workaround for phantom 'A' key after focus change on OSX
 	if(key == 65 && gotFocus > 0) {
 		gotFocus = 0;
 		return;
 	}
-    //LOGD("KEY %d mods %x", key, mods);
+    LOGD("KEY %x mods %x", key, mods);
 	
-	if(action == GLFW_PRESS || action == GLFW_REPEAT) {
+    bool pressed = (action == GLFW_PRESS || action == GLFW_REPEAT);
 
-		for(auto t : Window::translate) {
-			if(t.second == key) {
-				putEvent<KeyEvent>(t.first);
-				return;	
-			}
-		}
-		if(mods & GLFW_MOD_CONTROL)
-			putEvent<KeyEvent>(key);
-	}
+    if(key >= 'A' && key <= 'Z')
+        putEvent<KeyEvent>(key + 0x20 | (pressed ? 0 : 0x80000000));
+    else if(key < 0x7f && literals.find((char)key) != std::string::npos)
+        putEvent<KeyEvent>(key | (pressed ? 0 : 0x80000000));
+    else
+    for(auto t : Window::translate) {
+        if(t.second == key) {
+            putEvent<KeyEvent>(t.first | (pressed ? 0 : 0x80000000));
+            return;	
+        }
+    }
+    if(mods & GLFW_MOD_CONTROL)
+        putEvent<KeyEvent>(key);
 	
 }
 
 static void char_fn(GLFWwindow *gwin, unsigned int codepoint) {
+
+    LOGD("CHAR %x", codepoint);
 	if(glfwGetKey(gwin, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(gwin, GLFW_KEY_RIGHT_CONTROL))
 		return;
-	putEvent<KeyEvent>(codepoint);
+//	putEvent<KeyEvent>(codepoint);
+//	putEvent<KeyEvent>(codepoint | 0x80000000);
 }
 
 
@@ -346,37 +353,41 @@ void Window::flip() {
 #endif
 }
 
-unordered_map<int, int> Window::translate = {
-	{ F1, GLFW_KEY_F1 },
-	{ F2, GLFW_KEY_F2 },
-	{ F3, GLFW_KEY_F3 },
-	{ F4, GLFW_KEY_F4 },
-	{ F5, GLFW_KEY_F5 },
-	{ F6, GLFW_KEY_F6 },
-	{ F7, GLFW_KEY_F7 },
-	{ F8, GLFW_KEY_F8 },
-	{ F9, GLFW_KEY_F9 },
-	{ F10, GLFW_KEY_F10 },
-	{ F11, GLFW_KEY_F11},
-	{ F12, GLFW_KEY_F12 },
-	{ BACKSPACE, GLFW_KEY_BACKSPACE },
-	{ DELETE, GLFW_KEY_DELETE },
-	{ ENTER, GLFW_KEY_ENTER },
-	{ ESCAPE, GLFW_KEY_ESCAPE },
-	{ SPACE, GLFW_KEY_SPACE },
-	{ LEFT, GLFW_KEY_LEFT },
-	{ TAB, GLFW_KEY_TAB },
-	{ CTRL_LEFT, GLFW_KEY_LEFT_CONTROL },
-	{ CTRL_RIGHT, GLFW_KEY_RIGHT_CONTROL },
-	{ ALT_LEFT, GLFW_KEY_LEFT_ALT },
-	{ ALT_RIGHT, GLFW_KEY_RIGHT_ALT },
-	{ SHIFT_LEFT, GLFW_KEY_LEFT_SHIFT },
-	{ SHIFT_RIGHT, GLFW_KEY_RIGHT_SHIFT },
-	{ RIGHT, GLFW_KEY_RIGHT },
-	{ UP, GLFW_KEY_UP },
-	{ DOWN, GLFW_KEY_DOWN },
-	{ PAGEUP, GLFW_KEY_PAGE_UP },
-	{ PAGEDOWN, GLFW_KEY_PAGE_DOWN }
+unordered_map<uint32_t, uint32_t> Window::translate = {
+	{ keycodes::F1, GLFW_KEY_F1 },
+	{ keycodes::F2, GLFW_KEY_F2 },
+	{ keycodes::F3, GLFW_KEY_F3 },
+	{ keycodes::F4, GLFW_KEY_F4 },
+	{ keycodes::F5, GLFW_KEY_F5 },
+	{ keycodes::F6, GLFW_KEY_F6 },
+	{ keycodes::F7, GLFW_KEY_F7 },
+	{ keycodes::F8, GLFW_KEY_F8 },
+	{ keycodes::F9, GLFW_KEY_F9 },
+	{ keycodes::F10, GLFW_KEY_F10 },
+	{ keycodes::F11, GLFW_KEY_F11},
+	{ keycodes::F12, GLFW_KEY_F12 },
+	{ keycodes::BACKSPACE, GLFW_KEY_BACKSPACE },
+	{ keycodes::DELETE, GLFW_KEY_DELETE },
+	{ keycodes::INSERT, GLFW_KEY_INSERT },
+	{ keycodes::HOME, GLFW_KEY_HOME },
+	{ keycodes::END, GLFW_KEY_END },
+	{ keycodes::ENTER, GLFW_KEY_ENTER },
+	{ keycodes::ESCAPE, GLFW_KEY_ESCAPE },
+	{ keycodes::SPACE, GLFW_KEY_SPACE },
+	{ keycodes::LEFT, GLFW_KEY_LEFT },
+	{ keycodes::TAB, GLFW_KEY_TAB },
+	{ keycodes::CTRL_LEFT, GLFW_KEY_LEFT_CONTROL },
+	{ keycodes::CTRL_RIGHT, GLFW_KEY_RIGHT_CONTROL },
+	{ keycodes::ALT_LEFT, GLFW_KEY_LEFT_ALT },
+	{ keycodes::ALT_RIGHT, GLFW_KEY_RIGHT_ALT },
+	{ keycodes::SHIFT_LEFT, GLFW_KEY_LEFT_SHIFT },
+	{ keycodes::SHIFT_RIGHT, GLFW_KEY_RIGHT_SHIFT },
+	{ keycodes::RIGHT, GLFW_KEY_RIGHT },
+	{ keycodes::UP, GLFW_KEY_UP },
+	{ keycodes::DOWN, GLFW_KEY_DOWN },
+	{ keycodes::PAGEUP, GLFW_KEY_PAGE_UP },
+	{ keycodes::PAGEDOWN, GLFW_KEY_PAGE_DOWN },
+	{ keycodes::CAPS_LOCK, GLFW_KEY_CAPS_LOCK }
 };
 
 bool Window::mouse_pressed() {
@@ -389,8 +400,18 @@ tuple<int, int> Window::mouse_position() {
 	return make_tuple((int)x, (int)y);
 }
 
-bool Window::key_pressed(key k) {
-	auto glfwKey = translate[k];
+bool Window::key_pressed(uint32_t k) {
+    int glfwKey = 0;
+    if(k >= 'a' && k <= 'z')
+        glfwKey = k - 0x20;
+    else if(k < 0x100)
+        glfwKey = k;
+    else
+	    glfwKey = translate[k];
+    if(!glfwKey)
+        return false;
+    //if(glfwGetKey(gwindow, glfwKey))
+    //LOGD("GLFW KEY %x", glfwKey);
 	return glfwGetKey(gwindow, glfwKey) != 0;
 }
 
@@ -421,13 +442,12 @@ Window::Scroll Window::get_scroll(bool peek) {
 //Window::click Window::get_click(bool peek) {
 
 
-Window::key Window::get_key(bool peek) {
+uint32_t Window::get_key(bool peek) {
 	if(hasEvents<KeyEvent>()) {
-		auto ke = getEvent<KeyEvent>();
-		auto k = ke.code;
-		return (key)k;
+		auto k = getEvent<KeyEvent>();
+		return k;
 	}
-	return NO_KEY;
+	return keycodes::NO_KEY;
 };
 
 //Window screen;

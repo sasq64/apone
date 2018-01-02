@@ -194,12 +194,14 @@ void File::copyFrom(File &otherFile) {
 	open(WRITE);
 	const auto data = otherFile.readAll();
 	fwrite(&data[0], 1, data.size(), writeFP);
+    close();
 }
 
 void File::copyFrom(const string &other) {
 	File f { other };
 	copyFrom(f);
 	f.close();
+    close();
 }
 
 void File::close() {

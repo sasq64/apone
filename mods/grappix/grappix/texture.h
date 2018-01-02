@@ -22,7 +22,7 @@ public:
 	template <typename T, class = typename std::enable_if<std::is_compound<T>::value>::type>
 		Texture(T size) : Texture(size[0], size[1]) {}
 
-	Texture(unsigned int width, unsigned int height, Format fmt = RGBA32);
+	Texture(int width, int height, Format fmt = RGBA32);
 	Texture(const image::bitmap &bm);
 	Texture(const uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }

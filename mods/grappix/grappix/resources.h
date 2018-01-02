@@ -1,11 +1,10 @@
-#ifndef RESOURCES_H
-#define RESOURCES_H
+#pragma once
 
 #include <image/image.h>
-#include <unordered_map>
 #include <coreutils/file.h>
 
 #include <memory>
+#include <unordered_map>
 
 namespace grappix {
 
@@ -83,7 +82,7 @@ private:
 			file_name(fileName), on_load(onLoad), on_generate(onGenerate) {
 		}
 
-		virtual void load() {
+		virtual void load() override {
 			utils::File f { file_name };
 			if(f.exists()) {
 				auto data = load_data<T>(f);
@@ -105,13 +104,12 @@ private:
 
 	std::unordered_map<std::string, std::shared_ptr<Resource>> resources;
 	std::unordered_map<std::string, int> dirnames;
-#ifndef EMSCRIPTEN
+#ifdef USE_INOTIFY
 	int infd;
 	//int watchfd;
-	int delay_counter;
 #endif
+	int delay_counter;
 };
 
 }
 
-#endif // RESOURCES_H

@@ -15,7 +15,7 @@ namespace utils {
 template <typename T> class Fifo {
 
 public:
-	Fifo(int size) {
+	Fifo(int size = 0) {
 		bufSize = size;
 		buffer = nullptr;
 		if(size > 0) {
@@ -24,6 +24,16 @@ public:
 		bufPtr.store(buffer.load());
 		wantToWrite = 0;
 	}
+
+    void resize(int size) {
+		bufSize = size;
+        if(buffer)
+            delete[] buffer;
+        buffer = new T [size];
+		bufPtr.store(buffer.load());
+		wantToWrite = 0;
+    }
+
 	~Fifo() {
 		// Wait for writers to finish
 		quitting = true;
@@ -42,7 +52,18 @@ public:
 	}
 
 	Fifo& operator=(Fifo&) = delete;
-	Fifo(const Fifo&) = delete;
+
+	Fifo(const Fifo& other) {
+		bufSize.store(other.bufSize);
+		buffer = nullptr;
+		if(bufSize > 0) {
+			buffer = new T [bufSize];
+            memcpy(buffer, other.buffer, bufSize * sizeof(T));
+		}
+
+		bufPtr.store(buffer.load());
+		wantToWrite = 0;
+    };
 
 	void clear() {
 		{
@@ -73,6 +94,31 @@ public:
 		bufPtr += count;
 	}
 
+    void put(T a, T b) {
+        T t[2] = { a, b };
+        put(t, 2);
+    }
+
+    template<typename FN> void put(int count, const FN& f) {
+		if(quitting)
+			return;
+
+		std::unique_lock<std::mutex> lock(m);
+		while(left() < count && !quitting) {
+			if(wantToWrite == 0)
+				wantToWrite = count;
+			cv.wait_for(lock, 100ms, [=] {
+				return left() >= count || quitting;
+			});
+		}
+		wantToWrite = 0;
+		if(quitting)
+			return;
+
+        f(bufPtr);
+		bufPtr += count;
+    }
+
 	int get(T *target, int count) {
 		if(quitting)
 			return -1;
@@ -84,6 +130,28 @@ public:
 				count = f;
 
 			memcpy(target, buffer, count * sizeof(T));
+			if(f > count)
+				memmove(buffer, &buffer[count], (f - count) * sizeof(T));
+			bufPtr = &buffer[f - count];
+		}
+
+		if(left() >= wantToWrite)
+			cv.notify_all();
+
+		return count;
+	}
+
+	template<typename FN> int get(int count, const FN& fn) {
+		if(quitting)
+			return -1;
+
+		{
+			std::unique_lock<std::mutex> lock(m);
+			int f = filled();
+			if(count > f)
+				count = f;
+
+            fn(buffer);
 			if(f > count)
 				memmove(buffer, &buffer[count], (f - count) * sizeof(T));
 			bufPtr = &buffer[f - count];

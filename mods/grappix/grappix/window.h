@@ -7,6 +7,7 @@
 #include <coreutils/log.h>
 #include <coreutils/utils.h>
 #include <coreutils/events.h>
+#include <coreutils/keycodes.h>
 #include <chrono>
 #include <unordered_map>
 #include <set>
@@ -31,10 +32,12 @@ private:
 	std::string msg;
 };
 
-struct KeyEvent {
-	KeyEvent(int c) : code(c) {}
-	int code;
-};
+using KeyEvent = uint32_t;
+/* struct KeyEvent { */
+/* 	KeyEvent(int c, bool press = true) : code(c), press(press) {} */
+/* 	int code; */
+/*     bool press; */
+/* }; */
 
 class Window : public RenderTarget {
 public:
@@ -47,46 +50,6 @@ public:
 	void flip();
 	void vsync();
 	void close();
-
-	enum key {
-		SPACE = 0x20,
-		UP = 0x100,
-		DOWN,
-		LEFT,
-		RIGHT,
-		ENTER,
-		ESCAPE,
-		BACKSPACE,
-		TAB,
-		PAGEUP,
-		PAGEDOWN,
-		DELETE,
-		HOME,
-		END,
-		F1,
-		F2,
-		F3,
-		F4,
-		F5,
-		F6,
-		F7,
-		F8,
-		F9,
-		F10,
-		F11,
-		F12,
-		SHIFT_LEFT = 0x200,
-		SHIFT_RIGHT,
-		ALT_LEFT,
-		ALT_RIGHT,
-		CTRL_LEFT,
-		CTRL_RIGHT,
-		WINDOW_LEFT,
-		WINDOW_RIGHT,
-		CLICK = 0x300,
-		RIGHT_CLICK,
-		NO_KEY = 0xffff
-	};
 
 	struct click {
 		click(int xx = 0, int yy = 0, int b = 0) : x(xx), y(yy), button(b) {}
@@ -113,9 +76,9 @@ public:
 	bool mouse_pressed();
 	std::tuple<int, int> mouse_position();
 
-	bool key_pressed(key k);
+	bool key_pressed(uint32_t k);
 	bool key_pressed(char k);
-	key get_key(bool peek = false);
+	uint32_t get_key(bool peek = false);
 
 	bool is_open() { return winOpen; }
 	std::pair<float, float> size() { return std::make_pair(_width, _height); }
@@ -161,7 +124,7 @@ public:
 	std::function<void()> focus_func;
 	std::function<void()> focus_lost_func;
 
-	static std::unordered_map<int, int> translate;
+	static std::unordered_map<uint32_t, uint32_t> translate;
 
 private:
 
@@ -205,8 +168,8 @@ private:
 };
 
 
-constexpr Window::key as_key(const char c) {
-	return static_cast<Window::key>(c);
+constexpr uint32_t as_key(const char c) {
+	return static_cast<uint32_t>(c);
 }
 
 extern Window &screen;

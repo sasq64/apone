@@ -10,15 +10,15 @@
 #include <vector>
 #include <atomic>
 
-#include <coreutils/log.h>
-#include <coreutils/file.h>
+#include "../coreutils/log.h"
+#include "../coreutils/file.h"
 
 class InternalPlayer {
 public:
-	InternalPlayer(int hz = 44100) : quit(false), playback_handle(nullptr), paused(false) {
+	InternalPlayer(int hz = 44100) : hz(hz), quit(false), playback_handle(nullptr), paused(false) {
 	};
 
-	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : callback(cb), quit(false), paused(false) {
+	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : hz(hz), callback(cb), quit(false), paused(false) {
 		playerThread = std::thread {&InternalPlayer::run, this};
 	}
 
@@ -44,7 +44,7 @@ public:
 			exit(1);
 		}
 		if((err = snd_pcm_set_params(playback_handle,
-		          SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, 44100, 1, 30000)) < 0) {
+		          SND_PCM_FORMAT_S16, SND_PCM_ACCESS_RW_INTERLEAVED, 2, hz, 1, 30000)) < 0) {
 			fprintf(stderr, "Playback open error: %s\n", snd_strerror(err));
 			exit(1);
 		}
@@ -70,7 +70,7 @@ public:
 		snd_mixer_t *handle;
 		snd_mixer_selem_id_t *sid;
 		const char *card = "default";
-		const char *selem_name = "Master";
+		//const char *selem_name = "Master";
 
 		if(snd_mixer_open(&handle, 0) < 0)
 			throw utils::io_exception("mixer_open");
@@ -116,6 +116,7 @@ public:
 	#endif
 	}
 
+    int hz;
 	std::function<void(int16_t *, int)> callback;
 	std::atomic<bool> quit;
 	int dspFD;
