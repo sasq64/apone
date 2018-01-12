@@ -240,7 +240,7 @@ void RenderTarget::circle(int x, int y, float radius, uint32_t color) {
 	glDisableVertexAttribArray(posHandle);
 }
 
-void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, float *uvs, const Program &program, uint32_t color) const {
+void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float h, const float *uvs, const Program &program, uint32_t color) const {
 
 	if(recBuf == -1) {
 		static vector<float> p {
@@ -300,7 +300,7 @@ void RenderTarget::draw_texture(GLint texture, float x, float y, float w, float 
 }
 
 
-void RenderTarget::draw_textures(GLint texture, float *points, int count, float w, float h, float *uvs, const Program &program) const {
+void RenderTarget::draw_textures(GLint texture, float *points, int count, float w, float h, const float *uvs, const Program &program) const {
 
 	if(multiBuf[0] == -1) {
 		glGenBuffers(2, (GLuint*)multiBuf);

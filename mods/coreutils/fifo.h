@@ -1,8 +1,8 @@
 #pragma once
 
-#include <coreutils/log.h>
-#include <coreutils/thread.h>
-
+#include "log.h"
+#include <mutex>
+#include <condition_variable>
 #include <atomic>
 #include <cstdint>
 #include <cstdlib>

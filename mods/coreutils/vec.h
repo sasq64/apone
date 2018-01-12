@@ -120,13 +120,20 @@ template <class T, int SIZE> struct vec : public vbase<T, SIZE> {
 			r[i] = vbase<T,SIZE>::data[i] + t;
 		return r;
 	}
-/*
-	vec operator+=(const vec &v) {
-		vbase<T,SIZE>::x += v.x;
-		vbase<T,SIZE>::y += v.y;
+
+	template <typename VEC> has_index<VEC, vec> operator+=(const VEC &v) {
+		for(int i=0; i<SIZE; i++)
+			vbase<T,SIZE>::data[i] += v[i];
 		return *this;
 	}
-*/
+
+	template <typename S> vec operator+=(const std::initializer_list<S> &il) {
+		T *ptr = &vbase<T,SIZE>::data[0];
+		for(const S& t : il)
+			*ptr++ += t;
+		return *this;
+	}
+
 	template <typename VEC> has_index<VEC, vec> operator*(const VEC &v) const {
 		vec r;
 		for(int i=0; i<SIZE; i++)

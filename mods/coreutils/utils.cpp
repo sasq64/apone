@@ -242,6 +242,12 @@ uint64_t getms() {
 #endif
 }
 
+uint64_t getus() {
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec;
+}
+
 
 bool isalpha(const string &s) {
 	for(const auto &c : s) {

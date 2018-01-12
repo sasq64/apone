@@ -234,6 +234,7 @@ std::wstring jis2unicode(uint8_t *text);
 
 void sleepms(unsigned ms);
 uint64_t getms();
+uint64_t getus();
 void makedir(const std::string &name);
 void makedirs(const std::string &name);
 

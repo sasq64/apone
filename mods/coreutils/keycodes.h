@@ -14,8 +14,32 @@ namespace keycodes {
 // Format
 
     enum key {
+        // GAMEPAD BUTTONS are mapped in 0x1 - 0x1F range
+        BUTTON_LEFT = 1,
+        BUTTON_RIGHT,
+        BUTTON_UP,
+        BUTTON_DOWN,
+        BUTTON_A,
+        BUTTON_B,
+        BUTTON_X,
+        BUTTON_Y,
+        BUTTON_START,
+        BUTTON_SELECT,
+
         SPACE = 0x20,
-        UP = 0x100,
+
+        // Non ascii keyboard buttons are 0x80 - 0xEF
+
+        SHIFT_LEFT = 0x80,
+        SHIFT_RIGHT,
+        ALT_LEFT,
+        ALT_RIGHT,
+        CTRL_LEFT,
+        CTRL_RIGHT,
+        WINDOW_LEFT,
+        WINDOW_RIGHT,
+
+        UP,
         DOWN,
         LEFT,
         RIGHT,
@@ -42,17 +66,10 @@ namespace keycodes {
         F11,
         F12,
         CAPS_LOCK,
-        SHIFT_LEFT = 0x200,
-        SHIFT_RIGHT,
-        ALT_LEFT,
-        ALT_RIGHT,
-        CTRL_LEFT,
-        CTRL_RIGHT,
-        WINDOW_LEFT,
-        WINDOW_RIGHT,
+
         CLICK = 0x300,
         RIGHT_CLICK,
-        NO_KEY = 0xffffffff
+        NO_KEY = 0xffffffff,
     };
 
 constexpr uint32_t KEY_RELEASED = 0x40000000;

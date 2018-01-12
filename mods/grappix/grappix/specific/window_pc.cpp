@@ -57,9 +57,10 @@ static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
 		gotFocus = 0;
 		return;
 	}
-    LOGD("KEY %x mods %x", key, mods);
+    //LOGD("KEY %x mods %x", key, mods);
+	if(action == GLFW_REPEAT) return;
 	
-    bool pressed = (action == GLFW_PRESS || action == GLFW_REPEAT);
+    bool pressed = (action == GLFW_PRESS);
 
     if(key >= 'A' && key <= 'Z')
         putEvent<KeyEvent>(key + 0x20 | (pressed ? 0 : 0x80000000));
@@ -404,7 +405,7 @@ bool Window::key_pressed(uint32_t k) {
     int glfwKey = 0;
     if(k >= 'a' && k <= 'z')
         glfwKey = k - 0x20;
-    else if(k < 0x100)
+    else if(k <= 0x7f && k >= 0x20)
         glfwKey = k;
     else
 	    glfwKey = translate[k];
