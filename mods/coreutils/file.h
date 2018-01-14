@@ -42,19 +42,20 @@ public:
 	};
 
 #ifdef _WIN32
+
     static const char SLASH = '\\';
     static constexpr const char* SLASH_STR = "\\";
 	static const char DIR_SEPARATOR = '\\';
     static const char PATH_SEPARATOR = ';';
     static constexpr const char* PATH_SEPARATOR_STR = ";";
-    static constexpr int maxPath = MAX_PATH;
+    static constexpr int maxPath = 8192;
     static int Fileno(FILE* fp) { return _fileno(fp); }
     static FILE* Fopen(const char* name, const char* mode)
     {
         FILE* fp = nullptr;
         auto e = fopen_s(&fp, name, mode);
         if (e != 0)
-            fp = null;
+            fp = nullptr;
         return fp;
     }
 #else

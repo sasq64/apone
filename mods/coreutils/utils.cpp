@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <atomic>
 #include <mutex>
+#include <thread>
+#include <chrono>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -225,11 +227,11 @@ string urldecode(const string &s, const string &chars) {
 }
 
 void sleepms(unsigned ms) {
-#ifdef _WIN32
-	Sleep(ms);
-#else
-	usleep(ms*1000);
-#endif
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
+void sleepus(unsigned us) {
+	std::this_thread::sleep_for(std::chrono::microseconds(us));
 }
 
 uint64_t getms() {

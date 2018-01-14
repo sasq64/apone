@@ -26,7 +26,7 @@ struct Symbol
 		void* ptr = (void*)GetProcAddress(handle, name);
 		if (!ptr) {
 			DWORD e = GetLastError();
-			Log("HANDLE %x ERROR %x", handle, e);
+			//Log("HANDLE %x ERROR %x", handle, e);
 		}
 #else
 		void* ptr = dlsym(handle, name);
@@ -72,7 +72,7 @@ struct DLL
 		handle = LoadLibraryA(name.c_str());
 		if (!handle) {
 			e = GetLastError();
-			Log("HANDLE %x ERROR %x", handle, e);
+			//Log("HANDLE %x ERROR %x", handle, e);
 		}
 #else
 		handle = dlopen(name.c_str(), RTLD_LAZY | RTLD_LOCAL);

@@ -77,7 +77,7 @@ public:
 	std::tuple<int, int> mouse_position();
 
 	bool key_pressed(uint32_t k);
-	bool key_pressed(char k);
+	//bool key_pressed(char k);
 	uint32_t get_key(bool peek = false);
 
 	bool is_open() { return winOpen; }

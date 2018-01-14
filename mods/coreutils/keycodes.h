@@ -1,5 +1,8 @@
 #pragma once
 #include <cstdint>
+#ifdef _WIN32
+#undef DELETE
+#endif
 
 /*
     * Ascii keys (0-9,a-z,`-=[]\;',./) are bound to their ascii value.

@@ -233,6 +233,7 @@ std::string htmldecode(const std::string &source, bool stripTags = false);
 std::wstring jis2unicode(uint8_t *text);
 
 void sleepms(unsigned ms);
+void sleepus(unsigned us);
 uint64_t getms();
 uint64_t getus();
 void makedir(const std::string &name);

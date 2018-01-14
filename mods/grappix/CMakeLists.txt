@@ -51,7 +51,7 @@ elseif(WIN32)
 
   find_package(OpenGL REQUIRED)
   find_package(glew REQUIRED)
-  find_library(GLFW_LIBRARY NAMES libglfw3.a glfw3 REQUIRED)
+  find_library(GLFW_LIBRARY NAMES libglfw3.a glfw3 glfw3dll REQUIRED)
 
 #  find_path(GLFW_PATH GLFW/glfw3.h)
 #  include_directories(${GLFW_PATH})

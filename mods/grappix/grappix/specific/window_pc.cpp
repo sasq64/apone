@@ -416,10 +416,6 @@ bool Window::key_pressed(uint32_t k) {
 	return glfwGetKey(gwindow, glfwKey) != 0;
 }
 
-bool Window::key_pressed(char k) {
-	return glfwGetKey(gwindow, k) != 0;
-}
-
 Window::click Window::get_click(bool peek) {
 	if(click_buffer.size() > 0) {
 		auto k = click_buffer.front();
