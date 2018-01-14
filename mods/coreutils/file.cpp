@@ -75,46 +75,46 @@ vector<File> File::listFiles() const {
 				continue;
 			rc.emplace_back(fileName + "/" + ent->d_name);
 		}
+		closedir(dir);
 	}
-	closedir(dir);
 	return rc;
 }
 
 void File::listRecursive(const File &root, vector<File> &result, bool includeDirs) {
-    DIR *dir;
-    struct dirent *ent;
-    if( (dir = opendir(root.getName().c_str())) != nullptr) {
-        while ((ent = readdir (dir)) != nullptr) {
-            char *p = ent->d_name;
-            if(p[0] == '.' && (p[1] == 0 || (p[1] == '.' && p[2] == 0)))
-                continue;
-            File f{root / ent->d_name };
+	DIR *dir;
+	struct dirent *ent;
+	if( (dir = opendir(root.getName().c_str())) != nullptr) {
+		while ((ent = readdir (dir)) != nullptr) {
+			char *p = ent->d_name;
+			if(p[0] == '.' && (p[1] == 0 || (p[1] == '.' && p[2] == 0)))
+				continue;
+			File f{root / ent->d_name };
 #ifdef _WIN32
 			if(f.isDir()) {
 #else
-            if(ent->d_type == DT_DIR) {
+			if(ent->d_type == DT_DIR) {
 #endif
-                if(includeDirs)
-                    result.push_back(f);
-                listRecursive(f, result, includeDirs);
-            } else
-                result.push_back(f);
-        }
-    }
-    closedir(dir);
+				if(includeDirs)
+					result.push_back(f);
+				listRecursive(f, result, includeDirs);
+			} else
+				result.push_back(f);
+		}
+		closedir(dir);
+	}
 }
 
 vector<File> File::listRecursive(bool includeDirs) const {
-    vector<File> rc;
-    listRecursive(*this, rc, includeDirs);
-    return rc;
+	vector<File> rc;
+	listRecursive(*this, rc, includeDirs);
+	return rc;
 }
 
 vector<uint8_t> File::readAll() {
 	vector<uint8_t> data;
 	seek(0);
 	data.resize(getSize());
-	if(data.size() > 0) {
+	if(!data.empty()) {
 		int rc = read(&data[0], data.size());
 		if(rc != data.size())
 			throw io_exception{};
@@ -131,7 +131,7 @@ void File::open(const Mode mode) {
 		}
 	} else if(mode == WRITE) {
 		if(!writeFP) {
-            //makedirs(fileName);
+			//makedirs(fileName);
 			writeFP = fopen(fileName.c_str(), "wb");
 			if(!writeFP)
 				throw io_exception { "Could not open file for writing" };
@@ -194,14 +194,14 @@ void File::copyFrom(File &otherFile) {
 	open(WRITE);
 	const auto data = otherFile.readAll();
 	fwrite(&data[0], 1, data.size(), writeFP);
-    close();
+	close();
 }
 
 void File::copyFrom(const string &other) {
 	File f { other };
 	copyFrom(f);
 	f.close();
-    close();
+	close();
 }
 
 void File::close() {
@@ -469,19 +469,19 @@ void File::setAppDir(const std::string &a) {
 }
 
 File File::getTempDir() {
-        char buffer[maxPath];
+		char buffer[maxPath];
 #ifdef _WIN32
-        if(GetTempPathA(sizeof(buffer), buffer) == 0)
-            throw io_exception{"Could not get temporary directory"};
+		if(GetTempPathA(sizeof(buffer), buffer) == 0)
+			throw io_exception{"Could not get temporary directory"};
 #else
-        const char* tmpdir = getenv("TMPDIR");
-        if (!tmpdir)
-            tmpdir = P_tmpdir;
-        if (!tmpdir)
-            tmpdir = "/tmp/";
-        strcpy(buffer, tmpdir);
+		const char* tmpdir = getenv("TMPDIR");
+		if (!tmpdir)
+			tmpdir = P_tmpdir;
+		if (!tmpdir)
+			tmpdir = "/tmp/";
+		strcpy(buffer, tmpdir);
 #endif
-        return File{buffer};
+		return File{buffer};
 }
 
 const File& File::getAppDir() {

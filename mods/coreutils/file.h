@@ -43,31 +43,31 @@ public:
 
 #ifdef _WIN32
 
-    static const char SLASH = '\\';
-    static constexpr const char* SLASH_STR = "\\";
+	static const char SLASH = '\\';
+	static constexpr const char* SLASH_STR = "\\";
 	static const char DIR_SEPARATOR = '\\';
-    static const char PATH_SEPARATOR = ';';
-    static constexpr const char* PATH_SEPARATOR_STR = ";";
-    static constexpr int maxPath = 8192;
-    static int Fileno(FILE* fp) { return _fileno(fp); }
-    static FILE* Fopen(const char* name, const char* mode)
-    {
-        FILE* fp = nullptr;
-        auto e = fopen_s(&fp, name, mode);
-        if (e != 0)
-            fp = nullptr;
-        return fp;
-    }
+	static const char PATH_SEPARATOR = ';';
+	static constexpr const char* PATH_SEPARATOR_STR = ";";
+	static constexpr int maxPath = 8192;
+	static int Fileno(FILE* fp) { return _fileno(fp); }
+	static FILE* Fopen(const char* name, const char* mode)
+	{
+		FILE* fp = nullptr;
+		auto e = fopen_s(&fp, name, mode);
+		if (e != 0)
+			fp = nullptr;
+		return fp;
+	}
 #else
 #	include <linux/limits.h>
 	static const char SLASH = '/';
 	static const char DIR_SEPARATOR = '/';
-    static constexpr const char* SLASH_STR = "/";
-    static const char PATH_SEPARATOR = ':';
-    static constexpr const char* PATH_SEPARATOR_STR = ":";
-    static constexpr int maxPath = PATH_MAX;
-    static int Fileno(FILE* fp) { return fileno(fp); }
-    static FILE* Fopen(const char* name, const char* mode) { return fopen(name, mode); }
+	static constexpr const char* SLASH_STR = "/";
+	static const char PATH_SEPARATOR = ':';
+	static constexpr const char* PATH_SEPARATOR_STR = ":";
+	static constexpr int maxPath = PATH_MAX;
+	static int Fileno(FILE* fp) { return fileno(fp); }
+	static FILE* Fopen(const char* name, const char* mode) { return fopen(name, mode); }
 #endif
 
 
@@ -76,7 +76,7 @@ public:
 	static std::string resolvePath(const std::string &fileName);
 	static File cwd();
 	static void remove(const std::string &fileName);
-    static void listRecursive(const File &root, std::vector<File> &result, bool includeDirs);
+	static void listRecursive(const File &root, std::vector<File> &result, bool includeDirs);
 
 	/** User specific writable cache dir, normall $HOME/.config/$APPNAME */
 	static const File& getCacheDir();
@@ -169,8 +169,8 @@ public:
 
 	void writeln(const std::string &line);
 
-    void open(Mode mode);
-    void close();
+	void open(Mode mode);
+	void close();
 
 	// read elements
 	template <typename T> int read(T * const target, const int count) {
@@ -195,7 +195,7 @@ public:
 		std::vector<char> data;
 		int c = 0;
 		while(data.size() != maxlen) {
-	   		c = fgetc(readFP);
+			c = fgetc(readFP);
 			if(c == 0 || c == EOF)
 				break;
 			data.push_back(c);
@@ -211,7 +211,7 @@ public:
 	std::vector<std::string> getLines();
 
 	std::vector<File> listFiles() const;
-    std::vector<File> listRecursive(bool includeDirs = false) const;
+	std::vector<File> listRecursive(bool includeDirs = false) const;
 
 
 	bool exists() const;
@@ -232,10 +232,10 @@ public:
 	void remove();
 
 	bool tryRemove()
-    {
-        close();
-        return (std::remove(fileName.c_str()) == 0);
-    }
+	{
+		close();
+		return (std::remove(fileName.c_str()) == 0);
+	}
 
 	void rename(const std::string &newName);
 
