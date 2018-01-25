@@ -57,7 +57,6 @@ static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
 		gotFocus = 0;
 		return;
 	}
-    //LOGD("KEY %x mods %x", key, mods);
 	if(action == GLFW_REPEAT) return;
 	
     bool pressed = (action == GLFW_PRESS);
@@ -80,9 +79,9 @@ static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
 
 static void char_fn(GLFWwindow *gwin, unsigned int codepoint) {
 
-    LOGD("CHAR %x", codepoint);
-	if(glfwGetKey(gwin, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(gwin, GLFW_KEY_RIGHT_CONTROL))
-		return;
+    //LOGD("CHAR %x", codepoint);
+	//if(glfwGetKey(gwin, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(gwin, GLFW_KEY_RIGHT_CONTROL))
+	//	return;
 //	putEvent<KeyEvent>(codepoint);
 //	putEvent<KeyEvent>(codepoint | 0x80000000);
 }
@@ -244,7 +243,7 @@ void Window::open(int w, int h, bool fs) {
 	glfwSetScrollCallback(gwindow, scroll_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(gwindow, resize_fn);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 #endif
 	//glfwEnable(GLFW_MOUSE_CURSOR);
 	glfwSetInputMode(gwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

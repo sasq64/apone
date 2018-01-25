@@ -99,6 +99,15 @@ public:
 		dirty = true;
 	}
 
+	T* release()
+	{
+		T* t = new T [ w * h * sizeof(T) ];
+		memcpy(t, &(*pixels)[0], sizeof(T) * w * h);
+		pixels = nullptr;
+		return t ;
+	}
+
+
 	basic_bitmap clone() {
 		return basic_bitmap(w, h, &(*pixels)[0]);
 	}
@@ -145,7 +154,7 @@ public:
 		return dest;
 	}
 
-    T* data() { return &(*pixels)[0]; }
+	T* data() { return &(*pixels)[0]; }
 
 	const T* flipped() const {
 
@@ -171,9 +180,9 @@ public:
 	}
 
 
-	unsigned int width() const { return w; }
-	unsigned int height() const { return h; }
-	unsigned int size() const { return w*h; }
+	int width() const { return w; }
+	int height() const { return h; }
+	int size() const { return w*h; }
 private:
 	std::shared_ptr<std::vector<T>> pixels;
 	mutable std::shared_ptr<std::vector<T>> flipPixels;
