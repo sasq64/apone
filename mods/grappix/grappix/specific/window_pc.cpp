@@ -49,6 +49,7 @@ static void scroll_fn(GLFWwindow *gwin, double x, double y) {
 	Window::scroll_buffer.push_back(Window::Scroll(x,y));
 }
 
+static bool keyRepeat = true;
 
 static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
 	static const std::string literals = "0123456789[]\\;',./`-=";
@@ -57,9 +58,10 @@ static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
 		gotFocus = 0;
 		return;
 	}
-	if(action == GLFW_REPEAT) return;
+
+	if(!keyRepeat && action == GLFW_REPEAT) return;
 	
-    bool pressed = (action == GLFW_PRESS);
+    bool pressed = (action == GLFW_PRESS || action == GLFW_REPEAT);
 
     if(key >= 'A' && key <= 'Z')
         putEvent<KeyEvent>(key + 0x20 | (pressed ? 0 : 0x80000000));
@@ -243,7 +245,7 @@ void Window::open(int w, int h, bool fs) {
 	glfwSetScrollCallback(gwindow, scroll_fn);
 #ifndef EMSCRIPTEN
 	glfwSetWindowSizeCallback(gwindow, resize_fn);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 #endif
 	//glfwEnable(GLFW_MOUSE_CURSOR);
 	glfwSetInputMode(gwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -259,6 +261,18 @@ void Window::open(int w, int h, bool fs) {
 	flip();
 
 };
+
+void Window::setVBLSync(bool on)
+{
+
+	glfwSwapInterval(on ? 1 : 0);
+}
+
+void Window::setKeyRepeat(bool on)
+{
+	keyRepeat = on;
+}
+
 
 #ifdef EMSCRIPTEN
 static uint64_t lastMs = 0;

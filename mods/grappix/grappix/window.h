@@ -50,6 +50,8 @@ public:
 	void flip();
 	void vsync();
 	void close();
+	void setVBLSync(bool on);
+	void setKeyRepeat(bool on);
 
 	struct click {
 		click(int xx = 0, int yy = 0, int b = 0) : x(xx), y(yy), button(b) {}

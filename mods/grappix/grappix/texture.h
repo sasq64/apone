@@ -26,7 +26,7 @@ public:
 	Texture(const image::bitmap &bm);
 	Texture(const uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }
-	void putPixels(const uint8_t *data);
+	void putPixels(const void *data);
 private:
 
 	struct texref {

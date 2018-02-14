@@ -42,7 +42,7 @@ Texture::Texture(const uint8_t *data, unsigned int w, unsigned int h) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void Texture::putPixels(const uint8_t *data) {
+void Texture::putPixels(const void *data) {
 	glBindTexture(GL_TEXTURE_2D, tref->id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
