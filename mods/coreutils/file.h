@@ -59,7 +59,10 @@ public:
 		return fp;
 	}
 #else
-#	include <linux/limits.h>
+#ifdef __APPLE__
+#else
+#include <linux/limits.h>
+#endif
 	static const char SLASH = '/';
 	static const char DIR_SEPARATOR = '/';
 	static constexpr const char* SLASH_STR = "/";
