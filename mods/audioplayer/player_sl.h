@@ -36,6 +36,11 @@ public:
 			(*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &buffer[0], 32768*2);
 		}
 	}
+	int get_delay() const {
+		return 1;
+	}
+	void set_volume(int volume) {
+	}
 private:
 
 	static void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context);

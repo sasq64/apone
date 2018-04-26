@@ -114,8 +114,9 @@ size_t WebJob::headerFunc(char *text, size_t size, size_t n, void *userdata) {
 void WebJob::finish() {
 	isDone = true;
 	auto rc = code();
+    LOGD("CODE %d", rc);
 	if(targetFile) {
-		if(rc != 200) {
+		if(rc != 200 && rc != 226) {
 			if(targetFile.exists())
 				targetFile.remove();
 			targetFile = utils::File();

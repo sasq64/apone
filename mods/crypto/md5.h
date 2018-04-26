@@ -19,7 +19,7 @@ public:
 	void add(std::vector<uint8_t> &data, int offset = 0);
 
 	template <typename T> void add(T b) {
-		MD5_Update(&ctx, &b, sizeof(T));	
+		solMD5_Update(&ctx, &b, sizeof(T));	
 	}
 
 	std::vector<uint8_t> get();

@@ -41,7 +41,6 @@ namespace keycodes {
         CTRL_RIGHT,
         WINDOW_LEFT,
         WINDOW_RIGHT,
-
         UP,
         DOWN,
         LEFT,

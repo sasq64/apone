@@ -6,33 +6,21 @@
 #include <coreutils/thread.h>
 #include <array>
 
-//#include <rfftw.h>
-//#include <fftw3.h>
-//#include "fftw-3.3.4/api/fftw3.h"
-
-
 class SpectrumAnalyzer {
 public:
-	const static int fft_size = 1024;
-	const static int eq_slots = 24;
+	constexpr static int fft_size = 1024;
+	constexpr static int eq_slots = 24;
 
 	struct Internal;
 
 private:
 
-
 	std::deque<std::array<uint16_t, eq_slots>> spectrum;
 	std::mutex m;
-
 	std::vector<uint8_t> eq;
-
 	std::vector<float> power;
 
-	//fftw_real fftin[fft_size], fftout[fft_size];
-	//float fftin[fft_size];
 	struct Internal *si;
-	//fftwf_complex fftout[fft_size];
-	//fftwf_plan fftwp;
 public:
 
 	SpectrumAnalyzer();

@@ -25,50 +25,6 @@
 #    define M_PI 3.14159265358979323846
 #endif
 
-#if(defined ANDROID) // || (defined WIN32)
-
-// Android (for complicated reasons) misses some standard string conversion
-// functions
-
-namespace std {
-
-inline long stol(const std::string& x, std::size_t* pos = 0, int base = 10) {
-    if(!pos)
-        return strtol(x.c_str(), nullptr, base);
-    char* ptr;
-    long rc = strtol(x.c_str(), &ptr, base);
-    *pos = ptr - x.c_str();
-    return rc;
-}
-
-inline long long stoll(const std::string& x, std::size_t* pos = 0,
-                       int base = 10) {
-    if(!pos)
-        return strtoll(x.c_str(), nullptr, base);
-    char* ptr;
-    long long rc = strtoll(x.c_str(), &ptr, base);
-    *pos = ptr - x.c_str();
-    return rc;
-}
-
-inline double stod(const std::string& x, std::size_t* pos = 0) {
-    if(!pos)
-        return strtod(x.c_str(), nullptr);
-    char* ptr;
-    long long rc = strtod(x.c_str(), &ptr);
-    *pos = ptr - x.c_str();
-    return rc;
-}
-
-template <typename T> std::string to_string(T value) {
-    std::ostringstream os;
-    os << value;
-    return os.str();
-}
-
-} // namespace std
-#endif
-
 #if 0 
 //__cplusplus <= 201200L
 
@@ -344,7 +300,7 @@ template <typename T> struct _ct {
             index++;
             return *this;
         }
-        int32_t index;
+        T index;
     };
 
     const_iterator begin() const { return const_iterator(0); }

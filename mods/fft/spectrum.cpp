@@ -5,6 +5,9 @@
 
 using namespace std;
 
+constexpr  int SpectrumAnalyzer::fft_size;
+constexpr  int SpectrumAnalyzer::eq_slots;
+
 struct SpectrumAnalyzer::Internal {
 	float fftin[fft_size];
 	fftwf_complex fftout[fft_size];

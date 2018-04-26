@@ -27,6 +27,10 @@ public:
 	Texture(const uint8_t *data, unsigned int w, unsigned int h);
 	unsigned int id() const { return tref->id; }
 	void putPixels(const void *data);
+	template<typename T> void putPixels(const std::unique_ptr<T>& data)
+	{
+		putPixels(data.get());
+	}
 private:
 
 	struct texref {

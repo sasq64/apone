@@ -227,7 +227,7 @@ void Window::open(int w, int h, bool fs) {
 	glViewport(0, 0, fw, fh);
 	ppi = (float)(fw / _width) * mode->width * 25.4 / (float)wmm; // 2880 / 331 = 
 	
-	LOGD("DPI %f Window Size %dx%d -- Framebuffer Size  %dx%d", ppi, _width, _height, fw, fh);
+	LOGD("DPI %d Window Size %dx%d -- Framebuffer Size  %dx%d", ppi, _width, _height, fw, fh);
 	
 	_width = fw;
 	_height = fh;
