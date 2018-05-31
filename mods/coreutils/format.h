@@ -22,6 +22,7 @@ inline void format_arg(BasicFormatter<char>& bf, const char*& fmt_str,
         first = false;
     }
     bf.writer() << ']';
+    bf.writer() << fmt_str;
 }
 } // namespace fmt
 #include "fmt/fmt/printf.h"

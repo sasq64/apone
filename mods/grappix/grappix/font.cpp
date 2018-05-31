@@ -48,6 +48,7 @@ const static wchar_t *fontLettersUpper = L"@!ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ012
 
 Font::Font(const string &ttfName, int size, int flags) : size(size) {
 
+    LOGD("TTF:%s", ttfName);
 	// flags &= ~DISTANCE_MAP;
 	program = flags & DISTANCE_MAP ? get_program(FONT_PROGRAM_DF) : get_program(FONT_PROGRAM);
 
