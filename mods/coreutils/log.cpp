@@ -30,7 +30,7 @@ namespace logging {
 
 using namespace std;
 
-LogLevel defaultLevel = DEBUG;
+Level defaultLevel = Debug;
 static FILE *logFile = nullptr;
 //unordered_map<string, pair<string, bool>> LogSpace::spaces;
 
@@ -41,7 +41,7 @@ void log(const std::string &text) {
 
 static std::mutex logm;
 
-void log(LogLevel level, const std::string &text) {
+void log(Level level, const std::string &text) {
 
 
 	if(level >= defaultLevel) {
@@ -66,7 +66,7 @@ void log(LogLevel level, const std::string &text) {
 	}
 }
 
-void log2(const char *fn, int line, LogLevel level, const std::string &text) {
+void log2(const char *fn, int line, Level level, const std::string &text) {
 	using namespace std;
 	static int termType = 0;
 	//const auto &space = LogSpace::spaces[fn];
@@ -99,7 +99,7 @@ void log2(const char *fn, int line, LogLevel level, const std::string &text) {
 	}
 }
 
-void setLevel(LogLevel level) {
+void setLevel(Level level) {
 	defaultLevel = level;
 }
 
