@@ -28,7 +28,7 @@ inline std::optional<fs::path> findFile(const std::string& searchPath, const std
 	for(fs::path p : parts) {
 		if(!p.empty()) {
 			//LOGD("...in path %s", p);
-			fs::path f { p / name };
+			fs::path f{ p / name };
 			if(fs::exists(f))
 				return f;
 		}

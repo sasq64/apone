@@ -155,7 +155,7 @@ public:
 		return File(*this, f);
 	}
 
-	void write(const uint8_t *data, const int size);
+	void write(const uint8_t *data, int size);
 
 	template <typename T> void write(const std::vector<T> &t) {
 		write(&t[0], t.size());

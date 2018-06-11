@@ -10,7 +10,7 @@ class archive_exception : public std::exception {
 public:
     archive_exception(const char *ptr = "Archive Exception") : msg(ptr) {
     }
-    virtual const char *what() const throw() { return msg; }
+    const char *what() const noexcept override { return msg; }
  private:
     const char *msg;
 };
@@ -24,7 +24,7 @@ public:
         TYPE_RAR
     };
 
-    virtual ~Archive() {}
+    virtual ~Archive() = default;
 	//virtual extractAll() = 0;
 	virtual utils::File extract(const std::string &name) = 0;
 	virtual std::string nameFromPosition(int pos) const = 0;
@@ -33,7 +33,7 @@ public:
 	class const_iterator  {
 	public:
     	const_iterator(const Archive *a, int pos = 0) : archive(a), position(pos) {}
-    	const_iterator(const const_iterator& rhs) : archive(rhs.archive), position(rhs.position) {}
+    	const_iterator(const const_iterator& rhs) = default;
 
 		bool operator!= (const const_iterator& other) const {
         	return position != other.position;

@@ -74,8 +74,8 @@ static void key_fn(GLFWwindow*, int key, int scancode, int action, int mods) {
             return;	
         }
     }
-    if(mods & GLFW_MOD_CONTROL)
-        putEvent<KeyEvent>(key);
+    //if(mods & GLFW_MOD_CONTROL)
+    //    putEvent<KeyEvent>(key);
 	
 }
 
