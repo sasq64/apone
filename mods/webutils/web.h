@@ -242,7 +242,13 @@ public:
 
 	template <typename FX> std::shared_ptr<WebJob> getFile(const std::string &url, FX cb) {
 		auto job = std::make_shared<WebJobImpl<FX, decltype(&FX::operator())>>(cb);
-		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
+
+        auto slash = url.find_last_of('/');
+        auto fileName = url.substr(slash+1);
+        auto pathName = url.substr(0, slash);
+        auto urlPart = utils::urlencode(baseUrl + pathName, ":/\\?;");
+        utils::makedirs(cacheDir / urlPart);
+		auto target = cacheDir / urlPart / fileName;
 		job->setTarget(target);
 		job->setUrl(url);
 		LOGD("target: %s", target.getName());
@@ -290,7 +296,11 @@ public:
 	}
 
 	bool inCache(const std::string &url) const {
-		auto target = cacheDir / utils::urlencode(baseUrl + url, ":/\\?;");
+        auto slash = url.find_last_of('/');
+        auto fileName = url.substr(slash+1);
+        auto pathName = url.substr(0, slash);
+        auto urlPart = utils::urlencode(baseUrl + pathName, ":/\\?;");
+		auto target = cacheDir / urlPart / fileName;
 		return utils::File::exists(target);
 	}
 
