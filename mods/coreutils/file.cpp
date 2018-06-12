@@ -134,7 +134,7 @@ void File::open(const Mode mode) {
 			//makedirs(fileName);
 			writeFP = fopen(fileName.c_str(), "wb");
 			if(!writeFP)
-				throw io_exception { "Could not open file for writing" };
+				throw io_exception { "Could not open file'"s + fileName + "' for writing"s };
 		}
 	} else
 		throw io_exception { "Can't open file with no mode" };
@@ -465,7 +465,7 @@ const File& File::getExeDir() {
 void File::setAppDir(const std::string &a) {
 	lock_guard<mutex> lock(fm);
 	LOGD("Setting appdir to %s", a);
-	appDir = a;
+	appDir = File(a);
 }
 
 File File::getTempDir() {

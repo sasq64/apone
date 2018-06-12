@@ -8,6 +8,9 @@
 #include <vector>
 #include <string>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 namespace utils {
 
 class io_exception : public std::exception {
@@ -130,10 +133,13 @@ public:
 */
 	
 	File();
-	File(const std::string &name, const Mode mode  = NONE);
+	explicit File(const std::string &name, const Mode mode  = NONE);
 	File(const std::string &parent, const std::string &name, const Mode mode = NONE);
 	~File();
 
+	explicit File(fs::path const& path) : File(path.string()) {}
+
+	explicit File(const char* name, const Mode mode = NONE) : File(std::string(name), mode) {}
 
 	File operator+(const std::string &suffix) const {
 		return File(fileName + suffix);

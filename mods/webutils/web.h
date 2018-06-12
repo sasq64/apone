@@ -16,6 +16,8 @@
 #include <atomic>
 #include <unordered_map>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 
 namespace webutils {
 
@@ -148,6 +150,8 @@ public:
 		webThread = std::thread{&Web::run, this};
 	}
 
+	Web(const fs::path &cacheDir, const std::string &baseUrl = "")
+	    :  Web(cacheDir.string(), baseUrl) {}
 	~Web() {
 		quit = true;
 		webThread.join();

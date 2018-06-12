@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <unordered_map>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #ifdef _WIN32
 #    include <windows.h>
 #    include <ShellApi.h>
@@ -316,6 +318,7 @@ std::string path_basename(const std::string& name) {
 }
 
 std::string path_directory(const std::string& name) {
+	//return fs::path(name).parent_path().string();
     auto slashPos = name.rfind(path_separator);
     if(slashPos == std::string::npos)
         slashPos = 0;
@@ -323,7 +326,8 @@ std::string path_directory(const std::string& name) {
 }
 
 std::string path_filename(const std::string& name) {
-    auto slashPos = name.rfind(path_separator);
+	//return fs::path(name).filename().string();
+    auto slashPos = name.find_last_of("/\\");
     if(slashPos == std::string::npos)
         slashPos = 0;
     else
@@ -559,7 +563,7 @@ int ExecPipe::write(uint8_t* source, int size) {
     return 0;
 }
 
-ExecPipe& ExecPipe::operator=(ExecPipe&& other) {
+ExecPipe& ExecPipe::operator=(ExecPipe&& other) noexcept {
     hPipeRead = other.hPipeRead;
     hPipeWrite = other.hPipeWrite;
     hProcess = other.hProcess;

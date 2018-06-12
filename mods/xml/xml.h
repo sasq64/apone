@@ -153,6 +153,11 @@ public:
 		return xmldoc(text);
 	}
 
+	static xmldoc fromFile(std::string const& fileName) {
+		auto text = utils::File{fileName}.read();
+		return xmldoc(text);
+	}
+
 	xmldoc(const xmldoc &other) = default;
 
 private:
