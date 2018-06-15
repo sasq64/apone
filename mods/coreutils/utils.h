@@ -85,6 +85,9 @@ struct make_index_sequence<0u, Is...> : index_sequence<Is...> { using type = ind
 
 namespace utils {
 
+void listRecursive(const std::string& dirName,
+			   const std::function<void(const std::string& path)>& f);
+
 const char path_separator = '/';
 
 std::string utf8_encode(const std::string& s);

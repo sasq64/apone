@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 #ifdef _WIN32
 #    include <io.h>
 #else
@@ -77,22 +80,22 @@ public:
 
     // Reading
 
-    template <typename T> T read() {
+    template <typename T> T read() const {
         T t;
         if(fread(&t, 1, sizeof(T), fp) != sizeof(T))
             throw io_exception("Could not read object");
         return t;
     }
 
-    template <typename T> size_t read(T* target, size_t bytes) {
+    template <typename T> size_t read(T* target, size_t bytes) const noexcept {
         return fread(target, 1, bytes, fp);
     }
 
-    template <typename T, size_t N> size_t read(std::array<T, N>& target) {
+    template <typename T, size_t N> size_t read(std::array<T, N>& target) const noexcept {
         return read(&target[0], target.size() * sizeof(T));
     }
 
-    std::string readString(int maxlen = -1) {
+    std::string readString(int maxlen = -1) const {
         std::vector<char> data;
         int c = 0;
         while(data.size() != maxlen) {
@@ -104,7 +107,7 @@ public:
         return std::string(data.begin(), data.end());
     }
 
-    std::string readLine() {
+    std::string readLine() const {
         std::vector<char> lineTarget(10);
         int endp = 0;
         while(true) {
@@ -134,15 +137,15 @@ public:
         return std::string(&lineTarget[0]);
     }
 
-    void writeln(std::string const& line) {
+    void writeln(std::string const& line) const noexcept {
         fputs((line + "\n").c_str(), fp);
     }
 
-    void writeString(std::string const& line) {
+    void writeString(std::string const& line) const noexcept {
         fwrite(line.c_str(), 1, line.length()+1, fp);
     }
 
-    size_t getSize() {
+    size_t getSize() const noexcept {
         auto pos = tell();
         seek(0, Seek::End);
         auto sz = tell();
@@ -150,7 +153,7 @@ public:
         return sz;
     }
 
-    std::vector<uint8_t> readAll() {
+    std::vector<uint8_t> readAll() const {
         std::vector<uint8_t> data;
         data.resize(getSize());
         seek(0);
@@ -162,7 +165,7 @@ public:
         return data;
     }
 
-    bool eof() {
+    bool eof() const {
         return feof(fp) != 0;
     }
 
@@ -171,20 +174,16 @@ public:
 
     // Writing
 
-    template <typename T> void write(const T& t) {
+    template <typename T> void write(const T& t) const {
         if(fwrite(&t, 1, sizeof(T), fp) != sizeof(T))
             throw io_exception("Could not write object");
     }
 
-    template <typename T> size_t write(const T* target, size_t bytes) {
+    template <typename T> size_t write(const T* target, size_t bytes) const noexcept {
         return fwrite(target, 1, bytes, fp);
     }
 
-    bool atEnd() {
-        return feof(fp);
-    }
-
-    void seek(int64_t pos, int whence = Seek::Set) {
+    void seek(int64_t pos, int whence = Seek::Set) const {
 #ifdef _WIN32
         _fseeki64(fp, pos, whence);
 #else
@@ -192,7 +191,7 @@ public:
 #endif
     }
 
-    size_t tell() {
+    size_t tell() const {
 #ifdef _WIN32
         return _ftelli64(fp);
 #else
@@ -254,7 +253,7 @@ template <bool REFERENCE> class LineReader {
         std::string operator*() const { return line; }
 
         iterator& operator++() {
-            if(f.atEnd())
+            if(f.eof())
                 offset = -1;
             else {
                 offset = f.tell();
@@ -278,6 +277,27 @@ auto File::lines() & {
 
 auto File::lines() && {
     return LineReader<false>(std::move(*this));
+}
+
+inline void _listFiles(fs::path const& dirName,
+				const std::function<void(fs::path const& name)>& f)
+{
+	for (const auto& de : fs::directory_iterator(dirName)) {
+		if (fs::is_directory(de.status()))
+			_listFiles(de.path(), f);
+		else
+			f(de.path());
+	}
+}
+
+inline void listRecursive(fs::path const& dirName,
+			   const std::function<void(fs::path const& name)>& f)
+{
+	if (!fs::is_directory(dirName)) {
+		f(dirName);
+		return;
+	}
+	_listFiles(dirName, f);
 }
 
 } // namespace apone

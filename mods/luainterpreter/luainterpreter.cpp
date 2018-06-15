@@ -8,8 +8,6 @@ extern "C" {
 
 #include <coreutils/log.h>
 
-using namespace std;
-
 void _LUA_createtable(struct lua_State *L, int narr, int nrec) {
 	lua_createtable(L, narr, nrec);
 }
@@ -31,7 +29,7 @@ template <> float getArg(struct lua_State *L, int index) {
 }
 
 template <> std::string getArg(struct lua_State *L, int index) {
-	return string(lua_tostring(L, index));
+	return std::string(lua_tostring(L, index));
 }
 
 template <> std::vector<std::string> getArg(struct lua_State *L, int index) {
@@ -157,7 +155,7 @@ LuaInterpreter::~LuaInterpreter() {
 	}
 }
 
-bool LuaInterpreter::load(const string &code, const string &name) {
+bool LuaInterpreter::load(const std::string &code, const std::string &name) {
 	if(luaL_loadbuffer(L, code.c_str(), code.length(), name.c_str()) == LUA_OK) {
 		int rc = lua_pcall(L, 0, 0, 0);
 		if(rc != LUA_OK) {
@@ -170,7 +168,7 @@ bool LuaInterpreter::load(const string &code, const string &name) {
 	return true;
 }
 
-bool LuaInterpreter::loadFile(const string &fileName) {
+bool LuaInterpreter::loadFile(const std::string &fileName) {
 	if(luaL_loadfile(L, fileName.c_str()) == LUA_OK) {
 		int rc = lua_pcall(L, 0, 0, 0);
 		if(rc != LUA_OK) {
@@ -187,7 +185,7 @@ void LuaInterpreter::getGlobalToStack(const std::string &g) {
 	lua_getglobal(L, g.c_str());
 }
 
-void LuaInterpreter::setGlobalFromStack(const string &name) {
+void LuaInterpreter::setGlobalFromStack(const std::string &name) {
 	lua_setglobal(L, name.c_str());
 }
 
@@ -195,35 +193,3 @@ void LuaInterpreter::luaCall(int nargs, int nret) {
 	lua_call(L, nargs, nret);
 }
 
-#ifdef UNIT_TEST
-
-#include <catch.hpp>
-
-TEST_CASE("utils::luainterpreter", "interpreter") {
-
-	LuaInterpreter lua;
-
-	lua.registerFunction("testFunc", [=](std::string s, int x, float f) -> int {
-		LOGD("Got '%s' and %d", s, x);
-		return 1 + x + f;
-	});
-
-	//lua.registerFunction<void, int>("testVFunc", [=](string s, int x) {
-	//	LOGD("Got '%s' and %d", s, x);
-	//});
-
-	const std::string luaCode = R"(
-	function test (a, b)
-		testFunc('arne', 199)
-		x = testFunc('hello', 2, 3)
-		return x * 2 + a + b
-	end
-	)";
-
-	lua.load(luaCode);
-	auto res = lua.call<float>("test", 4, 2);
-	REQUIRE(res == 18);
-
-}
-
-#endif

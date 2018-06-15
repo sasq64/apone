@@ -33,6 +33,7 @@ namespace utils {
 
 // using namespace std;
 
+
 std::string rstrip(const std::string& x, char c) {
     auto l = x.length();
     if(c == 10) {
