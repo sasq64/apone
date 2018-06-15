@@ -20,6 +20,9 @@
 #include <utility>
 #include <vector>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 #include <cmath>
 #ifndef M_PI
 #    define M_PI 3.14159265358979323846
@@ -368,5 +371,31 @@ private:
     std::string name;
     T obj;
 };
+
+
+inline void _listFiles(const std::string& dirName,
+                const std::function<void(const std::string& path)>& f)
+{
+    for (const auto& p : fs::directory_iterator(dirName)) {
+        auto&& path = p.path().string();
+        if (path[0] == '.' &&
+            (path[1] == 0 || (path[1] == '.' && path[2] == 0)))
+            continue;
+        if (fs::is_directory(p.status()))
+            _listFiles(path, f);
+        else
+            f(path);
+    }
+}
+
+inline void listFiles(const std::string& dirName,
+               const std::function<void(const std::string& path)>& f)
+{
+    if (!fs::is_directory(dirName)) {
+        f(dirName);
+        return;
+    }
+    _listFiles(dirName, f);
+}
 
 }; // namespace utils

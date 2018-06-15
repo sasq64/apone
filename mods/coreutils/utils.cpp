@@ -15,6 +15,7 @@
 
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+
 #ifdef _WIN32
 #    include <windows.h>
 #    include <ShellApi.h>

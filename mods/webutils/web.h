@@ -3,6 +3,7 @@
 
 #include <coreutils/file.h>
 #include <coreutils/log.h>
+#include <coreutils/environment.h>
 #include <string>
 #include <cstdio>
 #include <algorithm>
@@ -150,8 +151,6 @@ public:
 		webThread = std::thread{&Web::run, this};
 	}
 
-	Web(const fs::path &cacheDir, const std::string &baseUrl = "")
-	    :  Web(cacheDir.string(), baseUrl) {}
 	~Web() {
 		quit = true;
 		webThread.join();
@@ -328,7 +327,7 @@ public:
 	}
 
 	static Web &getInstance() {
-		static Web w(utils::File::getCacheDir() / "_webfiles");
+		static Web w(Environment::getCacheDir() / "_webfiles");
 		return w;
 	}
 

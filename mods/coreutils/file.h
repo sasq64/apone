@@ -1,6 +1,8 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include "newfile.h"
+
 #include "utils.h"
 //#include <unistd.h>
 #include <cstdint>
@@ -156,6 +158,7 @@ public:
 	explicit operator bool() const { return fileName != ""; }
 
 	operator std::string() const { return getName(); }
+    operator fs::path() const { return fs::path(fileName); }
 
 	template <typename F> File operator/(const F &f) const {
 		return File(*this, f);
