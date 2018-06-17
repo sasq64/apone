@@ -10,6 +10,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef ERROR
 #else
 #include <unistd.h>
 #endif
@@ -43,7 +44,7 @@ public:
             char buf[1024];
 #if defined _WIN32
             GetModuleFileName(nullptr, buf, sizeof(buf) - 1);
-            exeDir = fs::path(buf);
+            exeDir = fs::path(buf).parent_path();
 #elif defined __APPLE__
             uint32_t size = sizeof(buf);
             if (_NSGetExecutablePath(buf, &size) == 0) {

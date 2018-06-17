@@ -5,12 +5,15 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #    include <io.h>
+#undef ERROR
 #else
 #    include <unistd.h>
 #endif
@@ -52,6 +55,11 @@ public:
     File() {}
 
     explicit File(FILE* fp) :  fp(fp) {}
+
+    explicit File(fs::path const& p, const Mode mode = Read)
+    {
+        openAndThrow(p.string().c_str(), mode);
+    }
 
     explicit File(const char* name, const Mode mode = Read)
     {

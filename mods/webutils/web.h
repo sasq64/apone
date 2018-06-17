@@ -327,7 +327,7 @@ public:
 	}
 
 	static Web &getInstance() {
-		static Web w(Environment::getCacheDir() / "_webfiles");
+		static Web w((Environment::getCacheDir() / "_webfiles").string());
 		return w;
 	}
 
