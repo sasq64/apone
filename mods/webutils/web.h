@@ -250,6 +250,7 @@ public:
         auto fileName = url.substr(slash+1);
         auto pathName = url.substr(0, slash);
         auto urlPart = utils::urlencode(baseUrl + pathName, ":/\\?;");
+		fileName = utils::urlencode(fileName, ":/\\?;");
         utils::makedirs(cacheDir / urlPart);
 		auto target = cacheDir / urlPart / fileName;
 		job->setTarget(target);
@@ -301,6 +302,7 @@ public:
 	bool inCache(const std::string &url) const {
         auto slash = url.find_last_of('/');
         auto fileName = url.substr(slash+1);
+		fileName = utils::urlencode(fileName, ":/\\?;");
         auto pathName = url.substr(0, slash);
         auto urlPart = utils::urlencode(baseUrl + pathName, ":/\\?;");
 		auto target = cacheDir / urlPart / fileName;
