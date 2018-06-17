@@ -1,8 +1,10 @@
+#pragma once 
+
+#include "utils.h"
+
 #include <string>
 #include <vector>
 #include <optional>
-
-#include "utils.h"
 
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
@@ -17,7 +19,6 @@ inline std::string makeSearchPath(std::vector<fs::path> paths, bool resolve) {
 		}
 	}
 	return searchPath;
-
 }
 
 inline std::optional<fs::path> findFile(const std::string& searchPath, const std::string &name) {
