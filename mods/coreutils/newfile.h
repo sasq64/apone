@@ -128,11 +128,11 @@ public:
             // We read something. Strip LF if found
             int len = strlen(ptr);
             bool found = false;
-            while((len > 0) &&
-                  ((ptr[len - 1] == '\n') || (ptr[len - 1] == '\r'))) {
+            while((len > 0) && (ptr[len - 1] == '\n') ) {
                 found = true;
                 len--;
             }
+            if(found && ptr[len-1] == '\r') len--;
             ptr[len] = 0;
             if(found)
                 break;

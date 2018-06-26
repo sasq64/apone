@@ -19,6 +19,7 @@ endif()
 
 add_library(coreutils ${SOURCE_FILES})
 target_link_libraries(coreutils PRIVATE fmt)
+set_property(TARGET coreutils PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if(DO_UNIT_TEST)
 
