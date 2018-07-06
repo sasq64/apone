@@ -59,6 +59,8 @@ void log(Level level, const std::string& text) {
         if(threadId == -1)
             threadId = threadCount++;
 
+        std::lock_guard<std::mutex> lock(logm);
+
         // std::time_t t = chrono::system_clock::to_time_t(system_clock::now());
         // const std::string s = put_time(t, "%H:%M:%S - ");
         time_t now = time(nullptr);
@@ -118,6 +120,7 @@ void setLevel(Level level) {
 }
 
 void setOutputFile(const std::string& fileName) {
+    std::lock_guard<std::mutex> lock(logm);
     if(logFile)
         fclose(logFile);
     logFile = fopen(fileName.c_str(), "wb");
