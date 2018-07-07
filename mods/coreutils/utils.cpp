@@ -1,30 +1,29 @@
-
 #include "utils.h"
 #include "log.h"
 
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include <thread>
-#include <unistd.h>
 #include <unordered_map>
 
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 
 #ifdef _WIN32
-#    include <windows.h>
-#    include <ShellApi.h>
+#include <ShellApi.h>
+#include <windows.h>
 #else
-#    include <sys/wait.h>
+#include <sys/wait.h>
 #endif
 
 #ifdef EMSCRIPTEN
-#    include <emscripten.h>
+#include <emscripten.h>
 #endif
 
 #include "jis.h"
@@ -33,64 +32,53 @@ namespace utils {
 
 // using namespace std;
 
-
 std::string rstrip(const std::string& x, char c) {
     auto l = x.length();
-    if(c == 10) {
-        while(l > 1 && (x[l - 1] == 10 || x[l - 1] == 13))
-            l--;
+    if (c == 10) {
+        while (l > 1 && (x[l - 1] == 10 || x[l - 1] == 13)) l--;
     } else {
-        while(l > 1 && x[l - 1] == c)
-            l--;
+        while (l > 1 && x[l - 1] == c) l--;
     }
-    if(l == x.length())
-        return x;
+    if (l == x.length()) return x;
     return x.substr(0, l);
 }
 
 std::string lstrip(const std::string& x, char c) {
     size_t l = 0;
-    while(x[l] && x[l] == c)
-        l++;
-    if(l == 0)
-        return x;
+    while (x[l] && x[l] == c) l++;
+    if (l == 0) return x;
     return x.substr(l);
 }
 
 std::string lrstrip(const std::string& x, char c) {
     size_t l = 0;
-    while(x[l] && x[l] == c)
-        l++;
+    while (x[l] && x[l] == c) l++;
     size_t r = l;
-    while(x[r] && x[r] != c)
-        r++;
+    while (x[r] && x[r] != c) r++;
     return x.substr(l, r - l);
 }
 
 std::vector<std::string> text_wrap(const std::string& t, int width,
                                    int initialWidth) {
-
     std::vector<std::string> lines;
     size_t start = 0;
     size_t end = width;
     int subseqWidth = width;
-    if(initialWidth >= 0)
-        width = initialWidth;
+    if (initialWidth >= 0) width = initialWidth;
 
     std::string text = t;
-    for(auto& c : text) {
-        if(c == 0xa)
-            c = ' ';
+    for (auto& c : text) {
+        if (c == 0xa) c = ' ';
     }
 
     // Find space from right
-    while(true) {
-        if(end > text.length()) {
+    while (true) {
+        if (end > text.length()) {
             lines.push_back(text.substr(start));
             break;
         }
         auto pos = text.rfind(' ', end);
-        if(pos != std::string::npos && pos > start) {
+        if (pos != std::string::npos && pos > start) {
             lines.push_back(text.substr(start, pos - start));
             start = pos + 1;
         } else {
@@ -103,14 +91,12 @@ std::vector<std::string> text_wrap(const std::string& t, int width,
     return lines;
 }
 std::wstring jis2unicode(uint8_t* text) {
-
     static uint16_t jis_table[65536];
     static bool init = false;
-    if(!init) {
+    if (!init) {
         memset(jis_table, 0, 65536 * 2);
-        for(int i = 0; i < 0xff; i++)
-            jis_table[i] = i;
-        for(int i = 0; i < sizeof(jis_map) / 4; i += 2) {
+        for (int i = 0; i < 0xff; i++) jis_table[i] = i;
+        for (int i = 0; i < sizeof(jis_map) / 4; i += 2) {
             jis_table[jis_map[i]] = jis_map[i + 1];
         }
         jis_table[0x5c] = 0xa5;
@@ -119,9 +105,9 @@ std::wstring jis2unicode(uint8_t* text) {
     }
     uint8_t* p = text;
     std::wstring result;
-    while(*p) {
+    while (*p) {
         uint16_t c = *p++;
-        if((c >= 0x81 && c <= 0x9f) || (c >= 0xe0)) {
+        if ((c >= 0x81 && c <= 0x9f) || (c >= 0xe0)) {
             c <<= 8;
             c |= *p++;
         }
@@ -135,52 +121,47 @@ static uint16_t decode(const std::string& symbol) {
         {"amp", '&'}, {"gt", '>'}, {"lt", '<'}};
 
     uint16_t code = strtol(symbol.c_str(), nullptr, 10);
-    if(code > 0)
-        return code;
+    if (code > 0) return code;
 
-    if(codes.count(symbol))
-        return codes[symbol];
+    if (codes.count(symbol)) return codes[symbol];
     return '?';
 }
 
 std::string htmldecode(const std::string& s, bool stripTags) {
-
     char target[s.length() + 1];
     auto* ptr = (unsigned char*)target;
     char symbol[32];
     char* sptr;
     bool inTag = false;
 
-    for(unsigned i = 0; i < s.length(); i++) {
+    for (unsigned i = 0; i < s.length(); i++) {
         uint16_t c = s[i];
-        if(inTag) {
-            if(c == '>') {
+        if (inTag) {
+            if (c == '>') {
                 inTag = false;
             }
             continue;
         }
-        if(stripTags && c == '<') {
+        if (stripTags && c == '<') {
             inTag = true;
             continue;
         }
 
-        if(c == '&') {
+        if (c == '&') {
             sptr = symbol;
             int saved = i;
             i++;
-            if(s[i] == '#')
-                i++;
-            while(isalnum(s[i]))
-                *sptr++ = s[i++];
+            if (s[i] == '#') i++;
+            while (isalnum(s[i])) *sptr++ = s[i++];
             *sptr = 0;
-            if(s[i] == ';') {
+            if (s[i] == ';') {
                 c = decode(symbol);
             } else
                 i = saved;
 
-            if(c <= 0x7f)
+            if (c <= 0x7f)
                 *ptr++ = c;
-            else if(c < 0x800) {
+            else if (c < 0x800) {
                 *ptr++ = (0xC0 | (c >> 6));
                 *ptr++ = (0x80 | (c & 0x3F));
             } else /*if (c < 0x10000) */ {
@@ -199,9 +180,9 @@ std::string htmldecode(const std::string& s, bool stripTags) {
 std::string urlencode(const std::string& s, const std::string& chars) {
     char target[s.length() * 3 + 1];
     char* ptr = target;
-    for(unsigned i = 0; i < s.length(); i++) {
+    for (unsigned i = 0; i < s.length(); i++) {
         auto c = s[i];
-        if(chars.find(c) != std::string::npos) {
+        if (chars.find(c) != std::string::npos) {
             sprintf(ptr, "%%%02x", c);
             ptr += 3;
         } else
@@ -214,9 +195,9 @@ std::string urlencode(const std::string& s, const std::string& chars) {
 std::string urldecode(const std::string& s, const std::string& chars) {
     char target[s.length() + 1];
     char* ptr = target;
-    for(unsigned i = 0; i < s.length(); i++) {
+    for (unsigned i = 0; i < s.length(); i++) {
         auto c = s[i];
-        if(c == '%') {
+        if (c == '%') {
             *ptr++ = strtol(s.substr(i + 1, 2).c_str(), nullptr, 16);
             i += 2;
         } else
@@ -251,9 +232,8 @@ uint64_t getus() {
 }
 
 bool isalpha(const std::string& s) {
-    for(const auto& c : s) {
-        if(!::isalpha(c))
-            return false;
+    for (const auto& c : s) {
+        if (!::isalpha(c)) return false;
     }
     return true;
 }
@@ -263,7 +243,6 @@ float clamp(float x, float a0, float a1) {
 }
 
 void makedir(const std::string& name) {
-
 #ifdef _WIN32
     mkdir(name.c_str());
 #else
@@ -273,9 +252,9 @@ void makedir(const std::string& name) {
 
 void makedirs(const std::string& path) {
     int start = 0;
-    while(true) {
+    while (true) {
         auto pos = path.find_first_of("/\\", start);
-        if(pos != std::string::npos) {
+        if (pos != std::string::npos) {
             makedir(path.substr(0, pos));
             start = pos + 1;
         } else {
@@ -296,8 +275,7 @@ bool startsWith(const std::string& name, const std::string& pref) {
 }
 
 void makeLower(std::string& s) {
-    for(auto& c : s)
-        c = tolower(c);
+    for (auto& c : s) c = tolower(c);
 }
 
 std::string toLower(const std::string& s) {
@@ -308,29 +286,28 @@ std::string toLower(const std::string& s) {
 
 std::string path_basename(const std::string& name) {
     auto slashPos = name.rfind(path_separator);
-    if(slashPos == std::string::npos)
+    if (slashPos == std::string::npos)
         slashPos = 0;
     else
         slashPos++;
     auto dotPos = name.rfind('.');
     // LOGD("%s : %d %d", name, slashPos, dotPos);
-    if(dotPos == std::string::npos || dotPos < slashPos)
+    if (dotPos == std::string::npos || dotPos < slashPos)
         return name.substr(slashPos);
     return name.substr(slashPos, dotPos - slashPos);
 }
 
 std::string path_directory(const std::string& name) {
-	//return fs::path(name).parent_path().string();
+    // return fs::path(name).parent_path().string();
     auto slashPos = name.rfind(path_separator);
-    if(slashPos == std::string::npos)
-        slashPos = 0;
+    if (slashPos == std::string::npos) slashPos = 0;
     return name.substr(0, slashPos);
 }
 
 std::string path_filename(const std::string& name) {
-	//return fs::path(name).filename().string();
+    // return fs::path(name).filename().string();
     auto slashPos = name.find_last_of("/\\");
-    if(slashPos == std::string::npos)
+    if (slashPos == std::string::npos)
         slashPos = 0;
     else
         slashPos++;
@@ -340,12 +317,11 @@ std::string path_filename(const std::string& name) {
 std::string path_extension(const std::string& name) {
     auto dotPos = name.rfind('.');
     auto slashPos = name.rfind(path_separator);
-    if(slashPos == std::string::npos)
+    if (slashPos == std::string::npos)
         slashPos = 0;
     else
         slashPos++;
-    if(dotPos == std::string::npos || dotPos < slashPos)
-        return "";
+    if (dotPos == std::string::npos || dotPos < slashPos) return "";
     return name.substr(dotPos + 1);
 }
 
@@ -356,12 +332,11 @@ std::string path_suffix(const std::string& name) {
 std::string path_prefix(const std::string& name) {
     auto slashPos = name.rfind(path_separator);
     auto dotPos = name.find('.', slashPos);
-    if(slashPos == std::string::npos)
+    if (slashPos == std::string::npos)
         slashPos = 0;
     else
         slashPos++;
-    if(dotPos == std::string::npos || dotPos < slashPos)
-        return "";
+    if (dotPos == std::string::npos || dotPos < slashPos) return "";
     return name.substr(slashPos, dotPos - slashPos);
 }
 
@@ -374,43 +349,43 @@ std::string path_prefix(const std::string& name) {
 static const uint8_t utf8d[] = {
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, // 00..1f
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 00..1f
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, // 20..3f
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 20..3f
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, // 40..5f
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 40..5f
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, // 60..7f
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 60..7f
     1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
     1,   1,   1,   1,   1,   9,   9,   9,   9,   9,   9,
-    9,   9,   9,   9,   9,   9,   9,   9,   9,   9, // 80..9f
+    9,   9,   9,   9,   9,   9,   9,   9,   9,   9,  // 80..9f
     7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
     7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,
-    7,   7,   7,   7,   7,   7,   7,   7,   7,   7, // a0..bf
+    7,   7,   7,   7,   7,   7,   7,   7,   7,   7,  // a0..bf
     8,   8,   2,   2,   2,   2,   2,   2,   2,   2,   2,
     2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,
-    2,   2,   2,   2,   2,   2,   2,   2,   2,   2, // c0..df
+    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  // c0..df
     0xa, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3,
-    0x3, 0x3, 0x4, 0x3, 0x3, // e0..ef
+    0x3, 0x3, 0x4, 0x3, 0x3,  // e0..ef
     0xb, 0x6, 0x6, 0x6, 0x5, 0x8, 0x8, 0x8, 0x8, 0x8, 0x8,
-    0x8, 0x8, 0x8, 0x8, 0x8, // f0..ff
+    0x8, 0x8, 0x8, 0x8, 0x8,  // f0..ff
     0x0, 0x1, 0x2, 0x3, 0x5, 0x8, 0x7, 0x1, 0x1, 0x1, 0x4,
-    0x6, 0x1, 0x1, 0x1, 0x1, // s0..s0
+    0x6, 0x1, 0x1, 0x1, 0x1,  // s0..s0
     1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
     1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,
-    1,   0,   1,   0,   1,   1,   1,   1,   1,   1, // s1..s2
+    1,   0,   1,   0,   1,   1,   1,   1,   1,   1,  // s1..s2
     1,   2,   1,   1,   1,   1,   1,   2,   1,   2,   1,
     1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    1,   2,   1,   1,   1,   1,   1,   1,   1,   1, // s3..s4
+    1,   2,   1,   1,   1,   1,   1,   1,   1,   1,  // s3..s4
     1,   2,   1,   1,   1,   1,   1,   1,   1,   2,   1,
     1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    1,   3,   1,   3,   1,   1,   1,   1,   1,   1, // s5..s6
+    1,   3,   1,   3,   1,   1,   1,   1,   1,   1,  // s5..s6
     1,   3,   1,   1,   1,   1,   1,   3,   1,   3,   1,
     1,   1,   1,   1,   1,   1,   3,   1,   1,   1,   1,
-    1,   1,   1,   1,   1,   1,   1,   1,   1,   1, // s7..s8
+    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  // s7..s8
 };
 
 uint32_t inline decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
@@ -428,10 +403,9 @@ int utf8_decode(const std::string& utf8, uint32_t* target) {
     uint32_t state = 0;
     auto* ptr = target;
 
-    for(auto s : utf8) {
-        if(!decode(&state, &codepoint, s)) {
-            if(codepoint <= 0xffff)
-                *ptr++ = codepoint;
+    for (auto s : utf8) {
+        if (!decode(&state, &codepoint, s)) {
+            if (codepoint <= 0xffff) *ptr++ = codepoint;
         }
     }
     return ptr - target;
@@ -443,10 +417,9 @@ std::wstring utf8_decode(const std::string& txt) {
     uint32_t codepoint;
     uint32_t state = 0;
 
-    for(auto s : txt) {
-        if(!decode(&state, &codepoint, s)) {
-            if(codepoint <= 0xffff)
-                result.push_back(codepoint);
+    for (auto s : txt) {
+        if (!decode(&state, &codepoint, s)) {
+            if (codepoint <= 0xffff) result.push_back(codepoint);
         }
     }
     return result;
@@ -455,9 +428,9 @@ std::wstring utf8_decode(const std::string& txt) {
 std::string utf8_encode(const std::string& txt) {
     std::string out;
     const uint8_t* s = (uint8_t*)txt.c_str();
-    for(int i = 0; i < txt.length(); i++) {
+    for (int i = 0; i < txt.length(); i++) {
         uint8_t c = s[i];
-        if(c <= 0x7f)
+        if (c <= 0x7f)
             out.push_back(c);
         else {
             out.push_back(0xC0 | (c >> 6));
@@ -469,10 +442,10 @@ std::string utf8_encode(const std::string& txt) {
 
 std::string utf8_encode(const std::wstring& s) {
     std::string out;
-    for(uint16_t c : s) {
-        if(c <= 0x7f)
+    for (uint16_t c : s) {
+        if (c <= 0x7f)
             out.push_back(c);
-        else if(c < 0x800) {
+        else if (c < 0x800) {
             out.push_back(0xC0 | (c >> 6));
             out.push_back(0x80 | (c & 0x3F));
         } else /*if (c < 0x10000) */ {
@@ -484,14 +457,11 @@ std::string utf8_encode(const std::wstring& s) {
     return out;
 }
 
-void replace_char(std::string& s, char c, char r) {
-    replace_char(&s[0], c, r);
-}
+void replace_char(std::string& s, char c, char r) { replace_char(&s[0], c, r); }
 
 void replace_char(char* s, char c, char r) {
-    while(*s) {
-        if(*s == c)
-            *s = r;
+    while (*s) {
+        if (*s == c) *s = r;
         s++;
     }
 }
@@ -499,15 +469,14 @@ void replace_char(char* s, char c, char r) {
 #ifdef _WIN32
 ExecPipe::ExecPipe(const std::string& cmd) {
     SECURITY_ATTRIBUTES saAttr = {sizeof(SECURITY_ATTRIBUTES)};
-    saAttr.bInheritHandle = TRUE; // Pipe handles are inherited by child
-                                  // process.
+    saAttr.bInheritHandle = TRUE;  // Pipe handles are inherited by child
+                                   // process.
     saAttr.lpSecurityDescriptor = NULL;
 
     auto c = std::string("cmd.exe /C ") + cmd;
 
     // Create a pipe to get results from child's stdout.
-    if(!CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0))
-        return;
+    if (!CreatePipe(&hPipeRead, &hPipeWrite, &saAttr, 0)) return;
 
     PROCESS_INFORMATION pi = {0};
 
@@ -515,12 +484,12 @@ ExecPipe::ExecPipe(const std::string& cmd) {
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     si.hStdOutput = hPipeWrite;
     si.hStdError = NULL;
-    si.wShowWindow = SW_HIDE; // Prevents cmd window from flashing. Requires
-                              // STARTF_USESHOWWINDOW in dwFlags.
+    si.wShowWindow = SW_HIDE;  // Prevents cmd window from flashing. Requires
+                               // STARTF_USESHOWWINDOW in dwFlags.
 
     BOOL fSuccess = CreateProcessA(NULL, (LPSTR)c.c_str(), NULL, NULL, TRUE,
                                    CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
-    if(!fSuccess) {
+    if (!fSuccess) {
         LOGD("FAILED %d", GetLastError());
         CloseHandle(hPipeWrite);
         CloseHandle(hPipeRead);
@@ -530,23 +499,20 @@ ExecPipe::ExecPipe(const std::string& cmd) {
 }
 
 int ExecPipe::read(uint8_t* target, int size) {
-
     DWORD dwRead = 0;
     DWORD dwAvail = 0;
     int total = 0;
 
-    while(size > 0) {
-
-        if(!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
+    while (size > 0) {
+        if (!::PeekNamedPipe(hPipeRead, NULL, 0, NULL, &dwAvail, NULL))
             return -2;
 
-        if(!dwAvail) // no data available, return
+        if (!dwAvail)  // no data available, return
             break;
 
-        if(dwAvail > size)
-            dwAvail = size;
+        if (dwAvail > size) dwAvail = size;
 
-        if(!::ReadFile(hPipeRead, target, dwAvail, &dwRead, NULL) || !dwRead)
+        if (!::ReadFile(hPipeRead, target, dwAvail, &dwRead, NULL) || !dwRead)
             // error, the child process might ended
             return -2;
         sleepms(1);
@@ -555,15 +521,12 @@ int ExecPipe::read(uint8_t* target, int size) {
         target += dwRead;
     }
 
-    if(total == 0)
-        return -1;
+    if (total == 0) return -1;
 
     return total;
 }
 
-int ExecPipe::write(uint8_t* source, int size) {
-    return 0;
-}
+int ExecPipe::write(uint8_t* source, int size) { return 0; }
 
 ExecPipe& ExecPipe::operator=(ExecPipe&& other) noexcept {
     hPipeRead = other.hPipeRead;
@@ -574,9 +537,8 @@ ExecPipe& ExecPipe::operator=(ExecPipe&& other) noexcept {
 }
 
 bool ExecPipe::hasEnded() {
-    if(hProcess == 0)
-        return true;
-    if(WaitForSingleObject(hProcess, 50) == WAIT_OBJECT_0) {
+    if (hProcess == 0) return true;
+    if (WaitForSingleObject(hProcess, 50) == WAIT_OBJECT_0) {
         hProcess = 0;
         return true;
     }
@@ -587,8 +549,8 @@ ExecPipe::~ExecPipe() {}
 
 void ExecPipe::Kill() {
     LOGD("KILL %d", hProcess);
-    if(hProcess != 0) {
-        if(TerminateProcess(hProcess, 0) == 0) {
+    if (hProcess != 0) {
+        if (TerminateProcess(hProcess, 0) == 0) {
             LOGD("Could not kill process: %d", GetLastError());
         }
         CloseHandle(hProcess);
@@ -597,23 +559,20 @@ void ExecPipe::Kill() {
 
 #else
 
-#    include <fcntl.h>
-#    include <signal.h>
+#include <fcntl.h>
+#include <signal.h>
 
 pid_t popen2(const char* command, int* infp, int* outfp) {
     enum { READ, WRITE };
     int p_stdin[2], p_stdout[2];
     pid_t pid;
 
-    if(pipe(p_stdin) != 0 || pipe(p_stdout) != 0)
-
-        return -1;
+    if (pipe(p_stdin) != 0 || pipe(p_stdout) != 0) return -1;
 
     pid = fork();
 
-    if(pid < 0)
-        return pid;
-    if(pid == 0) {
+    if (pid < 0) return pid;
+    if (pid == 0) {
         close(p_stdin[WRITE]);
         dup2(p_stdin[READ], READ);
         close(p_stdout[READ]);
@@ -624,12 +583,12 @@ pid_t popen2(const char* command, int* infp, int* outfp) {
         exit(1);
     }
 
-    if(infp == nullptr)
+    if (infp == nullptr)
         close(p_stdin[WRITE]);
     else
         *infp = p_stdin[WRITE];
 
-    if(outfp == nullptr)
+    if (outfp == nullptr)
         close(p_stdout[READ]);
     else
         *outfp = p_stdout[READ];
@@ -644,7 +603,7 @@ ExecPipe::ExecPipe(const std::string& cmd) {
 
 ExecPipe::~ExecPipe() {
     int result;
-    if(pid != -1) {
+    if (pid != -1) {
         LOGD("Waiting");
         waitpid(pid, &result, 0);
         LOGD("RESULT %d", result);
@@ -660,7 +619,7 @@ ExecPipe& ExecPipe::operator=(ExecPipe&& other) noexcept {
 }
 
 void ExecPipe::Kill() {
-    if(pid != -1) {
+    if (pid != -1) {
         int result;
         kill(pid, SIGKILL);
         waitpid(pid, &result, 0);
@@ -671,8 +630,7 @@ void ExecPipe::Kill() {
 // 0 = Done, -1 = Still data left, -2 = error
 int ExecPipe::read(uint8_t* target, int size) {
     int rc = ::read(outfd, target, size);
-    if(rc == -1 && errno != EAGAIN)
-        rc = -2;
+    if (rc == -1 && errno != EAGAIN) rc = -2;
     return rc;
 }
 
@@ -682,10 +640,9 @@ int ExecPipe::write(uint8_t* source, int size) {
 }
 
 bool ExecPipe::hasEnded() {
-    if(pid == -1)
-        return true;
+    if (pid == -1) return true;
     int rc;
-    if(waitpid(pid, &rc, WNOHANG) == pid) {
+    if (waitpid(pid, &rc, WNOHANG) == pid) {
         LOGD("PID ended %d %d", pid, rc);
         pid = -1;
         return true;
@@ -699,11 +656,11 @@ ExecPipe::operator std::string() {
     char buf[1024];
     std::string result;
     bool ended = false;
-    while(true) {
+    while (true) {
         int sz = read(reinterpret_cast<uint8_t*>(&buf[0]), sizeof(buf));
-        if(sz > 0) {
+        if (sz > 0) {
             result += std::string(buf, 0, sz);
-        } else if(sz != -1 || ended)
+        } else if (sz != -1 || ended)
             return result;
         ended = hasEnded();
         sleepms(100);
@@ -722,8 +679,7 @@ int shellExec(const std::string& cmd, const std::string& binDir) {
     ShExecInfo.lpFile = "cmd.exe";
 
     ShExecInfo.lpParameters = cmdLine.c_str();
-    if(binDir != "")
-        ShExecInfo.lpDirectory = binDir.c_str();
+    if (binDir != "") ShExecInfo.lpDirectory = binDir.c_str();
     ShExecInfo.nShow = SW_HIDE;
     ShExecInfo.hInstApp = NULL;
     ShellExecuteEx(&ShExecInfo);
@@ -783,7 +739,7 @@ static const uint32_t crctab[] = {
 
 uint32_t crc32(const uint32_t* data, int size) {
     uint32_t crc = 0;
-    while(size--) {
+    while (size--) {
         uint32_t v = *data++;
         COMPUTE(crc, v & 0xFF);
         COMPUTE(crc, (v >> 8) & 0xFF);
@@ -794,13 +750,28 @@ uint32_t crc32(const uint32_t* data, int size) {
     return crc;
 }
 
+uint32_t crc32_area(const uint32_t* data, int width, int height, int pitch) {
+    uint32_t crc = 0;
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            uint32_t v = *data++;
+            COMPUTE(crc, v & 0xFF);
+            COMPUTE(crc, (v >> 8) & 0xFF);
+            COMPUTE(crc, (v >> 16) & 0xFF);
+            COMPUTE(crc, (v >> 24) & 0xFF);
+        }
+        data += (pitch - width);
+    }
+    crc = ~crc;
+    return crc;
+}
 static std::atomic<bool> performCalled(false);
 thread_local static std::atomic<bool> inPerform(false);
 static std::mutex callbackMutex;
 static std::vector<std::function<void()>> callbacks;
 
 void schedule_callback(const std::function<void()>& f) {
-    if(!performCalled || inPerform)
+    if (!performCalled || inPerform)
         f();
     else {
         std::lock_guard<std::mutex> guard(callbackMutex);
@@ -812,21 +783,20 @@ void perform_callbacks() {
     performCalled = true;
     inPerform = true;
     std::lock_guard<std::mutex> guard(callbackMutex);
-    for(const auto& f : callbacks) {
+    for (const auto& f : callbacks) {
         LOGD("Calling cb");
         f();
     }
     callbacks.clear();
 }
 
-} // namespace utils
+}  // namespace utils
 
 #ifdef UNIT_TEST
 
-#    include "catch.hpp"
+#include "catch.hpp"
 
 TEST_CASE("utils::text", "Text operations") {
-
     using namespace utils;
     using namespace std;
 
@@ -836,14 +806,14 @@ TEST_CASE("utils::text", "Text operations") {
 
     auto lines = text_wrap(text, 25);
     REQUIRE(lines.size() == 6);
-    for(const auto& l : lines) {
+    for (const auto& l : lines) {
         REQUIRE(l.length() <= 25);
     }
     std::string fullText = join(lines, "\n");
 
     auto lines2 = split(fullText, "\n");
     REQUIRE(lines2.size() == 6);
-    for(int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++) {
         REQUIRE(lines[i] == lines2[i]);
     }
 
@@ -851,7 +821,6 @@ TEST_CASE("utils::text", "Text operations") {
 }
 
 TEST_CASE("utils::path", "Path name operations") {
-
     using namespace utils;
     using namespace std;
 
