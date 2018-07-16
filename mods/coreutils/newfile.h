@@ -74,6 +74,11 @@ public:
     File(const File&) = delete;
 
     File& operator=(const File&) = delete;
+    File& operator=(File&& other) {
+        fp = other.fp;
+        other.fp = nullptr;
+        return *this;
+    }
 
     File(File&& other) noexcept {
         fp = other.fp;
@@ -227,6 +232,10 @@ public:
 
     FILE* filePointer() {
         return fp;
+    }
+
+    void flush() {
+        fflush(fp);
     }
 
 private:

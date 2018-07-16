@@ -1,5 +1,4 @@
-#ifndef COREUTILS_VEC_H
-#define COREUTILS_VEC_H
+#pragma once
 
 #include <type_traits>
 #include <initializer_list>
@@ -281,4 +280,3 @@ template <class T, class... S> vec<T, sizeof...(S)+1> make_vec(const T& a0, cons
 
 
 }
-#endif // COREUTILS_VEC_H

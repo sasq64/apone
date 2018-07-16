@@ -49,6 +49,8 @@ static int threadCount = 0;
 
 void log(Level level, const std::string& text) {
 
+    static const char* levelChar = "VDIWE";
+
     if(level >= defaultLevel) {
         const char* cptr = text.c_str();
         std::lock_guard<std::mutex> lock(logm);
@@ -67,11 +69,11 @@ void log(Level level, const std::string& text) {
         struct tm* t = localtime(&now);
         string ts;
         if(threadCount > 1)
-            ts = utils::format("%02d:%02d.%02d -#%d- ", t->tm_hour, t->tm_min,
-                               t->tm_sec, threadId);
+            ts = utils::format("%c: %02d:%02d.%02d -#%d- ", levelChar[level],
+                               t->tm_hour, t->tm_min, t->tm_sec, threadId);
         else
-            ts = utils::format("%02d:%02d.%02d - ", t->tm_hour, t->tm_min,
-                               t->tm_sec);
+            ts = utils::format("%c: %02d:%02d.%02d - ", levelChar[level],
+                               t->tm_hour, t->tm_min, t->tm_sec);
 
         fwrite(ts.c_str(), 1, ts.length(), logFile);
         fwrite(text.c_str(), 1, text.length(), logFile);
