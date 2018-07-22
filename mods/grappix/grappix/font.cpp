@@ -153,6 +153,15 @@ TextBuf Font::make_text2(const wstring &text) const {
 
 	TextBuf tbuf;
 	//vector<GLuint> vbuf(2);
+	if(verts.size() >= 4) {
+
+		tbuf.rec[0] = verts[0];
+		tbuf.rec[1] = 0;//verts[1];
+		tbuf.rec[2] = verts[verts.size()-4];
+		tbuf.rec[3] = static_font.height;//verts[verts.size()-3];
+	} else {
+		tbuf.rec[0] = tbuf.rec[1] = tbuf.rec[2] = tbuf.rec[3] = 0;
+	}
 	tbuf.text = text;
 	tbuf.size = i/4;
 	glGenBuffers(2, &tbuf.vbuf[0]);
