@@ -16,8 +16,8 @@
 namespace fs = std::experimental::filesystem;
 
 #ifdef _WIN32
-#include <ShellApi.h>
 #include <windows.h>
+#include <ShellApi.h>
 #else
 #include <sys/wait.h>
 #endif
