@@ -7,8 +7,8 @@
 #include <vector>
 #include <functional>
 
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+//#include <experimental/filesystem>
+//namespace fs = std::experimental::filesystem;
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -56,10 +56,10 @@ public:
 
     explicit File(FILE* fp) :  fp(fp) {}
 
-    explicit File(fs::path const& p, const Mode mode = Read)
-    {
-        openAndThrow(p.string().c_str(), mode);
-    }
+    /* explicit File(fs::path const& p, const Mode mode = Read) */
+    /* { */
+    /*     openAndThrow(p.string().c_str(), mode); */
+    /* } */
 
     explicit File(const char* name, const Mode mode = Read)
     {
@@ -296,25 +296,25 @@ auto File::lines() && {
     return LineReader<false>(std::move(*this));
 }
 
-inline void _listFiles(fs::path const& dirName,
-				const std::function<void(fs::path const& name)>& f)
-{
-	for (const auto& de : fs::directory_iterator(dirName)) {
-		if (fs::is_directory(de.status()))
-			_listFiles(de.path(), f);
-		else
-			f(de.path());
-	}
-}
+/* inline void _listFiles(fs::path const& dirName, */
+/* 				const std::function<void(fs::path const& name)>& f) */
+/* { */
+/* 	for (const auto& de : fs::directory_iterator(dirName)) { */
+/* 		if (fs::is_directory(de.status())) */
+/* 			_listFiles(de.path(), f); */
+/* 		else */
+/* 			f(de.path()); */
+/* 	} */
+/* } */
 
-inline void listRecursive(fs::path const& dirName,
-			   const std::function<void(fs::path const& name)>& f)
-{
-	if (!fs::is_directory(dirName)) {
-		f(dirName);
-		return;
-	}
-	_listFiles(dirName, f);
-}
+/* inline void listRecursive(fs::path const& dirName, */
+/* 			   const std::function<void(fs::path const& name)>& f) */
+/* { */
+/* 	if (!fs::is_directory(dirName)) { */
+/* 		f(dirName); */
+/* 		return; */
+/* 	} */
+/* 	_listFiles(dirName, f); */
+/* } */
 
 } // namespace apone

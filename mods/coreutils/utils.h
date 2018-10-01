@@ -20,8 +20,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef USE_EXFS
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+#endif
 
 #include <cmath>
 #ifndef M_PI
@@ -376,6 +378,113 @@ private:
     T obj;
 };
 
+struct path
+{
+    std::string separator = "/";
+    bool isRelative = true;
+    std::vector<std::string> segments;
+
+    void init(std::string const& name)
+    {
+        int start = 0;
+        isRelative = true;
+        if(name[0] == '/') {
+            start++;
+            isRelative = false;
+        } else if(name[1] == ':') {
+            segments.push_back(name.substr(0,1));
+            start+=2;
+            if(name[2] == '\\') {
+                isRelative = false;
+                start++;
+            }
+        }
+        for(int i=start; i<name.length(); i++) {
+            if(name[i] == '/' || name[i] == '\\') {
+                segments.push_back(name.substr(start, i-start));
+                start = ++i;
+            }
+        }
+        if(start < name.length())
+            segments.push_back(name.substr(start));
+    }
+
+    path() = default;
+    path(std::string const& name) {
+        init(name);
+    }
+
+    path& operator=(const char* name) {
+        init(name);
+        return *this;
+    }
+
+    path& operator=(std::string const& name) {
+        init(name);
+        return *this;
+    }
+
+    std::vector<std::string> parts() const { return segments; }
+
+    path operator/(std::string const& name) const {
+        path p = *this;
+        p.segments.push_back(name);
+        return p;
+    }
+
+    path filename() const { 
+        path p = *this;
+        p.segments[0] = p.segments[p.segments.size()-1];
+        p.segments.resize(1);
+        return p;
+    }
+
+    path parent_path() const {
+        path p = *this;
+        p.segments.resize(segments.size()-1);
+        return p;
+    }
+
+    bool empty() const {
+        return segments.empty();
+    }
+
+    auto begin() {
+        return segments.begin();
+    }
+
+    auto end() {
+        return segments.end();
+    }
+
+    std::string string() const {
+        bool first = true;
+        std::string target;
+        for(auto const& seg : segments) {
+            target = target + (first && isRelative ? "" : separator) + seg;
+            first = false;
+        }
+        return target;
+    }
+
+    operator std::string() const {
+        return string();
+    }
+
+    bool exists() const {
+        FILE* fp = fopen(string().c_str(), "r");
+        fclose(fp);
+        return fp != nullptr;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const path& p)
+    {
+        os << (std::string)p;
+        return os;
+    }
+};
+
+#ifdef USE_EXFS
 
 inline void _listFiles(const std::string& dirName,
                 const std::function<void(const std::string& path)>& f)
@@ -401,5 +510,6 @@ inline void listFiles(const std::string& dirName,
     }
     _listFiles(dirName, f);
 }
+#endif
 
 }; // namespace utils

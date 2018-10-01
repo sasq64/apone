@@ -1,7 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "newfile.h"
 
 #include "utils.h"
 //#include <unistd.h>
@@ -10,8 +9,12 @@
 #include <vector>
 #include <string>
 
+#include "newfile.h"
+
+#ifdef USE_EXFS
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+#endif
 
 namespace utils {
 
@@ -138,8 +141,9 @@ public:
 	explicit File(const std::string &name, const Mode mode  = NONE);
 	File(const std::string &parent, const std::string &name, const Mode mode = NONE);
 	~File();
-
+#ifdef USE_EXFS
 	explicit File(fs::path const& path) : File(path.string()) {}
+#endif
 
 	explicit File(const char* name, const Mode mode = NONE) : File(std::string(name), mode) {}
 
@@ -158,7 +162,9 @@ public:
 	explicit operator bool() const { return fileName != ""; }
 
 	operator std::string() const { return getName(); }
+#ifdef USE_EXFS
     operator fs::path() const { return fs::path(fileName); }
+#endif
 
 	template <typename F> File operator/(const F &f) const {
 		return File(*this, f);

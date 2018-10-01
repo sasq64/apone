@@ -12,8 +12,10 @@
 #include <thread>
 #include <unordered_map>
 
+#ifdef USE_EXFS
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
