@@ -1,40 +1,42 @@
-#pragma once 
+#pragma once
 
 #include "utils.h"
 
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+//#include <experimental/filesystem>
+// namespace fs = std::experimental::filesystem;
 
-inline std::string makeSearchPath(std::vector<fs::path> paths, bool resolve) {
+inline std::string makeSearchPath(std::vector<utils::path> paths, bool resolve)
+{
     std::string searchPath = "";
     std::string sep = "";
-	for(const auto& p : paths) {
-		if(!resolve || fs::exists(p)) {
-			searchPath = searchPath + sep + (resolve ? fs::canonical(p) : p).string();
-			sep = ";";
-		}
-	}
-	return searchPath;
+    for (const auto& p : paths) {
+        if (!resolve || utils::exists(p)) {
+            searchPath =
+                searchPath + sep + p.string();
+            sep = ";";
+        }
+    }
+    return searchPath;
 }
 
-inline std::optional<fs::path> findFile(const std::string& searchPath, const std::string &name) {
-	//LOGD("Find '%s'", name);
-	if(name == "")
-		return {};
-	auto parts = utils::split(searchPath, ";");
-	for(fs::path p : parts) {
-		if(!p.empty()) {
-			//LOGD("...in path %s", p);
-			fs::path f{ p / name };
-			if(fs::exists(f))
-				return f;
-		}
-	}
-	return {};
+inline std::optional<utils::path> findFile(const std::string& searchPath,
+                                           const std::string& name)
+{
+    // LOGD("Find '%s'", name);
+    if (name == "")
+        return {};
+    auto parts = utils::split(searchPath, ";");
+    for (utils::path p : parts) {
+        if (!p.empty()) {
+            // LOGD("...in path %s", p);
+            utils::path f{p / name};
+            if (utils::exists(f))
+                return f;
+        }
+    }
+    return {};
 }
-
-

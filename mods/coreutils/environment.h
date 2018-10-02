@@ -18,6 +18,7 @@
 //#include <experimental/filesystem>
 //namespace fs = std::experimental::filesystem;
 #include "utils.h"
+#include "path.h"
 
 class Environment
 {
@@ -69,7 +70,7 @@ public:
         std::lock_guard<std::mutex> lock(m);
         if (cacheDir.empty()) {
             cacheDir = homeDir / ".cache" / appName;
-            if (!cacheDir.exists()) utils::makedirs(cacheDir);
+            if (!utils::exists(cacheDir)) utils::makedirs(cacheDir);
         }
         return cacheDir;
     }
@@ -81,7 +82,7 @@ public:
         std::lock_guard<std::mutex> lock(m);
         if (configDir.empty()) {
             configDir = homeDir / ".config" / appName;
-            if (!configDir.exists()) utils::makedirs(configDir);
+            if (!utils::exists(configDir)) utils::makedirs(configDir);
         }
         return configDir;
     }
@@ -104,7 +105,7 @@ public:
                 appDir = "/usr/share/" + appName;
 #endif
 			LOGD("APPDIR %s", appDir);
-			if(appDir.exists())
+			if(utils::exists(appDir))
 				appDir = appDir;//fs::canonical(appDir);
 			else
 				appDir = exeDir;
