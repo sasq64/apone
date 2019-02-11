@@ -71,7 +71,7 @@ struct base_query {
 			if(r != SQLITE_OK)
 				throw db_exception(sqlite3_errmsg(db));
 		}
-	};
+	}
 
 	template <class A> base_query(sqlite3 *db, const std::string &query, const std::vector<A> &args) : db(db), stmt(nullptr), lastCode(-1) {
 		int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
@@ -88,7 +88,7 @@ struct base_query {
 			if(r != SQLITE_OK)
 				throw db_exception(sqlite3_errmsg(db));
 		}
-	};
+	}
 
 	template <class... A> base_query& bind(const A& ... args) {
 		sqlite3_clear_bindings(stmt);
@@ -234,52 +234,52 @@ public:
 		return q.step();
 	}
 
-	struct Transaction {
-		struct Internal {
-			Internal(sqlite3 *db) : db(db) {
-				char *err;
-				int rc = sqlite3_exec(db, "BEGIN TRANSACTION", nullptr, nullptr, &err);
-				if(rc != SQLITE_OK)
-					throw db_exception(err);
-			}
-			~Internal() {
-				if(db) {
-					if(std::uncaught_exception())
-						rollback();
-					else
-						commit();
-				}
-			}
-			void commit() {
-				char *err;
-				int rc = sqlite3_exec(db, "COMMIT", nullptr, nullptr, &err);
-				if(rc != SQLITE_OK)
-					throw db_exception(err);
-				db = nullptr;
-			}
-			void rollback() {
-				char *err;
-				int rc = sqlite3_exec(db, "ROLLBACK", nullptr, nullptr, &err);
-				if(rc != SQLITE_OK)
-					throw db_exception(err);
-				db = nullptr;
-			}
-			sqlite3 *db;
-		};
-		Transaction(sqlite3 *db) : i { std::make_shared<Internal>(db) } {}
-		void commit() {
-			i->commit();
-		}
-		void rollback() {
-			i->rollback();
-		}
-	private:
-		std::shared_ptr<Internal> i;
-	};
+	/* struct Transaction { */
+	/* 	struct Internal { */
+	/* 		Internal(sqlite3 *db) : db(db) { */
+	/* 			char *err; */
+	/* 			int rc = sqlite3_exec(db, "BEGIN TRANSACTION", nullptr, nullptr, &err); */
+	/* 			if(rc != SQLITE_OK) */
+	/* 				throw db_exception(err); */
+	/* 		} */
+	/* 		~Internal() { */
+	/* 			if(db) { */
+	/* 				if(std::uncaught_exception()) */
+	/* 					rollback(); */
+	/* 				else */
+	/* 					commit(); */
+	/* 			} */
+	/* 		} */
+	/* 		void commit() { */
+	/* 			char *err; */
+	/* 			int rc = sqlite3_exec(db, "COMMIT", nullptr, nullptr, &err); */
+	/* 			if(rc != SQLITE_OK) */
+	/* 				throw db_exception(err); */
+	/* 			db = nullptr; */
+	/* 		} */
+	/* 		void rollback() { */
+	/* 			char *err; */
+	/* 			int rc = sqlite3_exec(db, "ROLLBACK", nullptr, nullptr, &err); */
+	/* 			if(rc != SQLITE_OK) */
+	/* 				throw db_exception(err); */
+	/* 			db = nullptr; */
+	/* 		} */
+	/* 		sqlite3 *db; */
+	/* 	}; */
+	/* 	Transaction(sqlite3 *db) : i { std::make_shared<Internal>(db) } {} */
+	/* 	void commit() { */
+	/* 		i->commit(); */
+	/* 	} */
+	/* 	void rollback() { */
+	/* 		i->rollback(); */
+	/* 	} */
+	/* private: */
+	/* 	std::shared_ptr<Internal> i; */
+	/* }; */
 
-	Transaction transaction() {
-		return Transaction(db);
-	}
+	/* Transaction transaction() { */
+	/* 	return Transaction(db); */
+	/* } */
 
 private:
 	sqlite3 *db;
