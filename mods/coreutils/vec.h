@@ -303,6 +303,6 @@ template <class T, int SIZE> struct mat {
 template <class T, class... S>
 vec<T, sizeof...(S) + 1> make_vec(const T& a0, const S&... args) {
     return vec<T, sizeof...(S) + 1>({a0, args...});
-};
+}
 
 } // namespace utils

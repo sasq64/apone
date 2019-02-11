@@ -77,8 +77,8 @@ namespace keycodes {
 constexpr uint32_t KEY_RELEASED = 0x40000000;
 constexpr uint32_t KEY_RAW = 0x80000000;
 
-constexpr bool keyUp(uint32_t k) { return (k & KEY_RELEASED) != 0; };
-constexpr bool keyDown(uint32_t k) { return (k & KEY_RELEASED) == 0; };
+constexpr bool keyUp(uint32_t k) { return (k & KEY_RELEASED) != 0; }
+constexpr bool keyDown(uint32_t k) { return (k & KEY_RELEASED) == 0; }
 
 #ifdef GLFW_VERSION_MAJOR
 

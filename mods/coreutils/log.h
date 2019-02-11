@@ -1,13 +1,15 @@
-#ifndef LOGGING_H
-#define LOGGING_H
+#pragma once
 
 #include "format.h"
 #include <cstring>
 #include <string>
 
+#define LOGSPACE(x)
+
 namespace logging {
 
-enum Level {
+enum Level
+{
     Verbose = 0,
     Debug = 1,
     Info = 2,
@@ -16,11 +18,12 @@ enum Level {
     Off = 100
 };
 
-#ifdef SIMPLE_LOG
+#ifdef COREUTILS_LOGGING_SIMPLE
 
 inline void log2(const char* fn, int line, const Level level,
-                 const std::string& text) {
-    if(level >= Info)
+                 const std::string& text)
+{
+    if (level >= Info)
         printf("[%s:%d] %s\n", fn, line, text.c_str());
 }
 
@@ -32,23 +35,26 @@ void log2(const char* fn, int line, const Level level, const std::string& text);
 
 #endif
 
-template <class... A> void log(const std::string& fmt, const A&... args) {
+template <class... A> void log(const std::string& fmt, const A&... args)
+{
     log(utils::format(fmt, args...));
-};
+}
 
 template <class... A>
-void log(Level level, const std::string& fmt, const A&... args) {
+void log(Level level, const std::string& fmt, const A&... args)
+{
     log(level, utils::format(fmt, args...));
-};
+}
 
 template <class... A>
 void log2(const char* fn, int line, Level level, const std::string& fmt,
-          const A&... args) {
+          const A&... args)
+{
     log2(fn, line, level, utils::format(fmt, args...));
-};
+}
 
-inline void LogVL(int line, const char* fileName, const char* text,
-                  va_list vl) {
+inline void LogVL(int line, const char* fileName, const char* text, va_list vl)
+{
     char temp[2048];
     vsnprintf(temp, sizeof(temp), text, vl);
     log2(fileName, line, Debug, temp);
@@ -59,16 +65,25 @@ void setOutputFile(const std::string& fileName);
 // void setLogSpace(const std::string &sourceFile, const std::string &function,
 // const std::string &spaceName);
 
-void useLogSpace(const std::string& spaceName, bool on = true);
-
-inline const char* xbasename(const char* x) {
+inline constexpr const char* xbasename(const char* x)
+{
     const char* slash = x;
-    while(*x) {
-        if(*x++ == '/')
+    while (*x) {
+        if (*x++ == '/')
             slash = x;
     }
     return slash;
 }
+
+#ifdef COREUTILS_LOGGING_DISABLE
+
+#define LOGV(...)
+#define LOGD(...)
+#define LOGI(...)
+#define LOGW(...)
+#define LOGE(...)
+
+#else
 
 #define LOGV(...)                                                              \
     logging::log2(logging::xbasename(__FILE__), __LINE__, logging::Verbose,    \
@@ -85,20 +100,6 @@ inline const char* xbasename(const char* x) {
 #define LOGE(...)                                                              \
     logging::log2(logging::xbasename(__FILE__), __LINE__, logging::Error,      \
                   __VA_ARGS__)
-
-class LogSpace {
-public:
-    LogSpace(const std::string& sourceFile, const std::string& function,
-             const std::string& spaceName, bool on = true) {
-        // spaces[sourceFile] = std::make_pair(spaceName, on);
-        // LOGD("LogSpace %s for %s '%s'", spaceName, sourceFile, function);
-    }
-    // static std::unordered_map<std::string, std::pair<std::string, bool>>
-    // spaces;
-};
-
-#define LOGSPACE(x) static logging::LogSpace lsp(__FILE__, "", x);
-
+#endif
 } // namespace logging
 
-#endif // LOGGING_H

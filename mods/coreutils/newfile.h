@@ -111,7 +111,7 @@ public:
     std::string readString(int maxlen = -1) const {
         std::vector<char> data;
         int c = 0;
-        while(data.size() != maxlen) {
+        while((int)data.size() != maxlen) {
             c = fgetc(fp);
             if(c == 0 || c == EOF)
                 break;
@@ -171,7 +171,7 @@ public:
         data.resize(getSize());
         seek(0);
         if(!data.empty()) {
-            int rc = read(&data[0], data.size());
+            size_t rc = read(&data[0], data.size());
             if(rc != data.size())
                 throw io_exception("ReadAll failed");
         }

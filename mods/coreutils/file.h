@@ -212,7 +212,7 @@ public:
 		open(READ);
 		std::vector<char> data;
 		int c = 0;
-		while(data.size() != maxlen) {
+		while((int)data.size() != maxlen) {
 			c = fgetc(readFP);
 			if(c == 0 || c == EOF)
 				break;

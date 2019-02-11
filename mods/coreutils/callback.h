@@ -18,6 +18,7 @@ template <typename T, typename R> using require_fn4 = typename std::conditional<
 
 
 template <typename... A> struct FCallerBase {
+    virtual ~FCallerBase() {}
 	virtual void call(const A& ... a) = 0;
 };
 

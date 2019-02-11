@@ -43,7 +43,7 @@ class path
                 start++;
             }
         }
-        for (int i = start; i < name.length(); i++) {
+        for (size_t i = start; i < name.length(); i++) {
             if (name[i] == '/' || name[i] == '\\') {
                 if(format == Format::Unknown)
                     format = name[i] == '/' ? Format::Unix : Format::Win;
@@ -56,17 +56,19 @@ class path
     }
 
     std::string& segment(int i) {
+        int sz = (int)segments.size();
         if(i < 0)
-            i += segments.size();
-        if(i < segments.size())
+            i += sz;
+        if(i < sz)
             return segments[i];
         return empty_string;
     }
 
     const std::string& segment(int i) const {
+        int sz = (int)segments.size();
         if(i < 0)
-            i += segments.size();
-        if(i < segments.size())
+            i += sz;
+        if(i < sz)
             return segments[i];
         return empty_string;
     }
@@ -165,7 +167,7 @@ public:
     {
         std::string target;
         auto l = segments.size();
-        int i = 0;
+        size_t i = 0;
         std::string separator = (format == Format::Win ? "\\" : "/");
         if(!isRelative) {
             if(hasRootDir)

@@ -192,7 +192,7 @@ protected:
 template <typename T> class AudioFifo : public Fifo<T> {
 
 public:
-	AudioFifo(int size) : Fifo<T>(size) {
+	explicit AudioFifo(int size = 0) : Fifo<T>(size) {
 		volume = 1.0;
 		lastSoundPos = position = 0;
 	}

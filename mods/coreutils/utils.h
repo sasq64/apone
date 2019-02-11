@@ -55,7 +55,7 @@ auto gen_tuple(const std::vector<T>& v)
 }
 
 template <typename T>
-std::vector<T> split(const T& s, const T& delim = T(" "), int limit = 0) {
+std::vector<T> split(const T& s, const T& delim = T(" "), size_t limit = 0) {
     std::vector<T> args;
     auto l = delim.length();
     if(l == 0)
@@ -351,4 +351,4 @@ inline void listFiles(const std::string& dirName,
 }
 #endif
 
-}; // namespace utils
+} // namespace utils
