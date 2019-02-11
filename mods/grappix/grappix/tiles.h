@@ -62,12 +62,14 @@ TileSet load_data(utils::File &f);
 
 class TileSource : public std::enable_shared_from_this<TileSource> {
 public:
+    virtual ~TileSource() {}
 	virtual uint32_t getTile(uint32_t, uint32_t) = 0;
 };
 
 
 class TileArray : public TileSource {
 public:
+    virtual ~TileArray() {}
 	TileArray(uint32_t w, uint32_t h) : _width(w), _height(h), _size(w*h), tiles(_size) {}
 	virtual uint32_t getTile(uint32_t x , uint32_t y) { return tiles[(x%_width) + (y%_height) * _width]; }
 	//bool ready() { return true; }
@@ -84,7 +86,7 @@ public:
 				tiles[xx+x+(yy+y)*_width] = tileno;
 	}
 
-	void shift_tiles(int dx, int dy) {
+	void shift_tiles() {
 		for(unsigned int i=tiles.size()-1; i >= _width; i--) {
 			tiles[i] = tiles[i-_width];
 		}

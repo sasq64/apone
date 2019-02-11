@@ -12,7 +12,7 @@ class RenderSet;
 
 class Renderable {
 public:
-	Renderable() {}
+	virtual ~Renderable() {}
 
 	virtual void render(std::shared_ptr<grappix::RenderTarget>, uint32_t delta) = 0;
 	virtual void visible(bool b) { is_visible = b; }

@@ -17,7 +17,7 @@ template <> std::shared_ptr<image::bitmap> load_data(utils::File &f);
 
 template <typename T> void save_data(utils::File &f, const T &data) {
 	f.write<T>();
-};
+}
 
 template <> void save_data(utils::File &f, const std::string &data);
 
@@ -69,6 +69,7 @@ private:
 
 	class Resource {
 	public:
+        virtual ~Resource() {}
 		virtual void load() {}
 		virtual void generate() {}
 	};

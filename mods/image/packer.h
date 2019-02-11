@@ -53,7 +53,7 @@ public:
 		}
 		return true;
 	}
-	void remove(const Rect &r) override {
+	void remove(const Rect &/*r*/) override {
 		throw packer_exception("remove() not supported in SequentialPacker");
 	}
 

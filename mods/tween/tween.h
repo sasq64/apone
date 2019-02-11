@@ -18,8 +18,9 @@ class Tween;
 template <typename C, typename R> using is_compound = typename std::enable_if<std::is_compound<C>::value,R>::type;
 
 struct TweenAttrBase {
+    virtual ~TweenAttrBase() {}
 	virtual void set(double v, Tween& t) = 0;
-	virtual bool compare(void *p) { return false; }
+	virtual bool compare(void * /*p*/) { return false; }
 	double delay = 0.0;
 };
 
@@ -233,6 +234,6 @@ public:
 	std::shared_ptr<TweenAttr<T>> ta;
 };
 
-}; // namespace tween
+} // namespace tween
 
 #endif // TWEEN_H

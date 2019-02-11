@@ -56,7 +56,7 @@ public:
     struct click {
         click(int xx = 0, int yy = 0, int b = 0) : x(xx), y(yy), button(b) {}
         bool operator==(const click& c) {
-            return c.x == x && c.y == y && c.button == c.button;
+            return c.x == x && c.y == y && c.button == button;
         }
         bool operator!=(const click& c) { return !(*this == c); }
         int x;
