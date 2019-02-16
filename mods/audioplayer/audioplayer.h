@@ -1,14 +1,14 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <functional>
 
 class audio_exception : public std::exception {
 public:
-    audio_exception(const std::string &msg) : msg(msg) {}
-    virtual const char *what() const throw() { return msg.c_str(); }
+    explicit audio_exception(const std::string &msg) : msg(msg) {}
+    virtual const char *what() const noexcept { return msg.c_str(); }
 
     std::string msg;
 };
@@ -17,20 +17,21 @@ class InternalPlayer;
 
 class AudioPlayer {
 public:
-    AudioPlayer(int hz = 44100);
+    explicit AudioPlayer(int hz = 44100);
     AudioPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100);
+    virtual ~AudioPlayer() = default;
 
-    void play(std::function<void(int16_t *, int)> cb);
-    void close();
+    virtual void play(std::function<void(int16_t *, int)> cb);
+    virtual void close();
 
-    void pause();
-    void resume();
+    virtual void pause();
+    virtual void resume();
 
-    void set_volume(int percent);
+    virtual void set_volume(int percent);
 
-    void touch() const {}
+    virtual void touch() const {}
 
-    int get_delay();
+    virtual int get_delay();
 
 private:
         std::shared_ptr<InternalPlayer> internalPlayer;

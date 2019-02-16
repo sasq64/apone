@@ -18,6 +18,7 @@ endif()
 
 add_library(coreutils ${SOURCE_FILES})
 target_link_libraries(coreutils PRIVATE fmt)
+target_include_directories(coreutils INTERFACE ..)
 set_property(TARGET coreutils PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_executable(testing path.t.cpp)
