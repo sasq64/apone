@@ -5,11 +5,8 @@
 
 class InternalPlayer {
 public:
-	InternalPlayer(int hz = 44100) : quit(false) {
-		init();
-	}
 
-	InternalPlayer(std::function<void(int16_t *, int)> cb, int hz = 44100) : freq(hz), callback(cb), quit(false) {
+	InternalPlayer(int hz = 44100) : freq(hz), quit(false) {
 		init();
 	}
 	void init() {
@@ -41,6 +38,8 @@ public:
 
 	}
 
+    void play(std::function<void(int16_t*, int)> cb) { callback = cb; }
+
 	void pause(bool on) {
 		if(on)
 			AudioQueuePause(aQueue);
@@ -59,7 +58,8 @@ public:
 		int count = buf->mAudioDataByteSize / 2;
 		int16_t *target = static_cast<int16_t*>(buf->mAudioData);
 		InternalPlayer *player = static_cast<InternalPlayer*>(ptr);
-		player->callback(target, count);
+        if(player->callback)
+            player->callback(target, count);
 
 		OSStatus status = AudioQueueEnqueueBuffer(aQueue, buf, 0, NULL);
 	}
