@@ -1,7 +1,8 @@
 #pragma once
 
-#include "utils.h"
+#include "path.h"
 #include "split.h"
+#include "utils.h"
 
 #include <optional>
 #include <string>
@@ -16,8 +17,7 @@ inline std::string makeSearchPath(std::vector<utils::path> paths, bool resolve)
     std::string sep = "";
     for (const auto& p : paths) {
         if (!resolve || utils::exists(p)) {
-            searchPath =
-                searchPath + sep + p.string();
+            searchPath = searchPath + sep + p.string();
             sep = ";";
         }
     }
