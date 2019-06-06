@@ -42,6 +42,7 @@ std::string utf8_encode(const std::wstring& s);
 std::wstring utf8_decode(const std::string& s);
 int utf8_decode(const std::string& utf8, uint32_t* target);
 
+#if 0
 template <typename T, size_t... Is>
 auto gen_tuple_impl(const std::vector<T>& v, std::index_sequence<Is...>)
     -> decltype(std::make_tuple(v[Is]...)) {
@@ -125,6 +126,7 @@ std::string join(const std::string& sep, const ARGS&... args) {
     std::vector<std::string> v{my_tos(args)...};
     return join(v, sep);
 }
+#endif 
 
 void replace_char(std::string& s, char c, char r);
 void replace_char(char* s, char c, char r);
@@ -293,19 +295,6 @@ template <typename T> _ct<T> count_to(const T& t) {
 template <typename T> _cf<T> count_from(const T& f) {
     return _cf<T>(f);
 }
-
-// Can hold smart_ptr or raw pointer
-template <typename T> struct Pointer {
-    Pointer(std::shared_ptr<T> p) : sptr(p), ptr(p.get()) {}
-    Pointer(T* p) : ptr(p) {}
-    T* operator->() const { return ptr; }
-    T* get() { return ptr; }
-
-private:
-    std::shared_ptr<T> sptr;
-    T* ptr = nullptr;
-};
-
 // Wrap an object with a name to use where sorting is needed etc
 template <typename T> struct Named {
     Named() {}
