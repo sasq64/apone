@@ -3,6 +3,7 @@
 #include "transform.h"
 #include "window.h"
 #include <coreutils/log.h>
+#include <coreutils/split.h>
 #include <image/image.h>
 #include <image/packer.h>
 #include <cmath>

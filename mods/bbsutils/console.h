@@ -6,16 +6,16 @@
 #include <coreutils/utils.h>
 #include <coreutils/vec.h>
 
-#include <stdint.h>
+#include <cstdint>
 //#include <termios.h>
 #include <initializer_list>
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <string.h>
 #include <string>
+#include <string.h>
 #include <thread>
-#include <time.h>
+#include <ctime>
 #include <vector>
 
 namespace bbs {
@@ -74,10 +74,10 @@ public:
 
     enum { CODE_CRLF = 0x2028 };
 
-    typedef uint16_t Char;
+    using Char = uint16_t;
 
     struct Tile {
-        Tile(Char c = ' ', int fg = -1, int bg = -1) : fg(fg), bg(bg), c(c) {}
+        explicit Tile(Char c = ' ', int fg = -1, int bg = -1) : fg(fg), bg(bg), c(c) {}
         Tile& operator=(std::initializer_list<int> il) {
             auto it = il.begin();
             c = *it;
@@ -97,7 +97,7 @@ public:
         Char c;
     };
 
-    Console(Terminal& terminal)
+    explicit Console(Terminal& terminal)
         : terminal(terminal), fgColor(WHITE), bgColor(BLACK), width(40),
           height(25), curX(0), curY(0), raw_mode(false) {
         grid.resize(width * height);

@@ -10,4 +10,4 @@ set(CURL_LIBRARY curl)
 include_directories(${CURL_INCLUDE})
 
 add_library(webutils ${SOURCE_FILES})
-target_link_libraries(webutils ${CURL_LIBRARY})
+target_link_libraries(webutils PRIVATE coreutils ${CURL_LIBRARY})

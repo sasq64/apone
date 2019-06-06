@@ -14,4 +14,4 @@ endif()
 
 add_library(sqlite3 ${SOURCE_FILES})
 
-target_link_libraries(sqlite3  ${EXTRA_LIBS})
+target_link_libraries(sqlite3 PRIVATE coreutils ${EXTRA_LIBS})

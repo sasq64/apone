@@ -33,6 +33,8 @@ if(APPLE)
   set(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${CORE_VIDEO_LIBRARY} ${IOKIT_LIBRARY})
 endif()
 
+set(OpenGL_GL_PREFERENCE GLVND)
+
 if(EMSCRIPTEN)
   
   set(SOURCE_FILES ${SOURCE_FILES} grappix/specific/window_pc.cpp)

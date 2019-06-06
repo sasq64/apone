@@ -6,6 +6,7 @@
 #include <memory>
 #include <coreutils/vec.h>
 #include <coreutils/utils.h>
+#include <coreutils/ptr.h>
 #include <grappix/grappix.h>
 
 class RenderSet {
